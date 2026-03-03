@@ -43,142 +43,152 @@ const AadhaarVerification = () => {
     );
 
     return (
-        <div className="ekyc-aadhaar-verification-container">
-            <Header>{t("EKYC_AADHAAR_VERIFICATION_HEADER") || "Aadhaar Verification"}</Header>
-            <Card>
-                <CardHeader>{t("EKYC_AADHAAR_NUMBER_HEADER") || "Aadhaar Number"}</CardHeader>
-                <LabelFieldPair>
-                    <CardLabel>{t("EKYC_LAST_4_DIGIT_AADHAAR") || "Last 4-Digit Aadhaar Number"}</CardLabel>
-                    <div className="field" style={{ position: "relative" }}>
-                        <TextInput
-                            value={aadhaarLastFour}
-                            onChange={(e) => {
-                                const val = e.target.value;
-                                if (val.length <= 4 && /^\d*$/.test(val)) {
-                                    setAadhaarLastFour(val);
-                                }
-                            }}
-                            placeholder={t("EKYC_ENTER_LAST_4_DIGIT") || "Enter Last 4-digit Aadhaar number"}
-                            textInputStyle={{ paddingLeft: "40px" }}
-                        />
-                        <div style={{ position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)" }}>
-                            <FingerprintIcon />
-                        </div>
-                        {isAadhaarVerified && (
-                            <div style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)" }}>
-                                <TickMark fillColor="#00703C" />
+        <div className="ekyc-employee-container">
+            <div className="ekyc-aadhaar-verification-container" style={{ padding: "24px" }}>
+                {/* <Header>{t("EKYC_AADHAAR_VERIFICATION_HEADER") || "Aadhaar Verification"}</Header> */}
+                <Card className="ekyc-create-card">
+                    <CardHeader>{t("EKYC_AADHAAR_NUMBER_HEADER") || "Aadhaar Number"}</CardHeader>
+                    <LabelFieldPair>
+                        <CardLabel style={{ marginBottom: "8px", fontWeight: "600" }}>{t("EKYC_LAST_4_DIGIT_AADHAAR") || "Last 4-Digit Aadhaar Number"}</CardLabel>
+                        <div className="field" style={{ position: "relative" }}>
+                            <TextInput
+                                value={aadhaarLastFour}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (val.length <= 4 && /^\d*$/.test(val)) {
+                                        setAadhaarLastFour(val);
+                                    }
+                                }}
+                                placeholder={t("EKYC_ENTER_LAST_4_DIGIT") || "Enter Last 4-digit Aadhaar number"}
+                                textInputStyle={{ paddingLeft: "40px", borderRadius: "12px" }}
+                                style={{ borderRadius: "12px" }}
+                            />
+                            <div style={{ position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)" }}>
+                                <FingerprintIcon />
                             </div>
-                        )}
-                    </div>
-                </LabelFieldPair>
-                {!isAadhaarVerified && (
-                    <SubmitBar label={t("EKYC_VERIFY_AADHAAR_BTN") || "Verify Aadhaar"} onSubmit={handleVerifyAadhaar} />
-                )}
-
-                {isAadhaarVerified && (
-                    <div style={{ backgroundColor: "#E7F4EE", padding: "16px", borderRadius: "8px", marginTop: "16px", marginBottom: "24px" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
-                            <TickMark fillColor="#00703C" />
-                            <span style={{ fontWeight: "bold", color: "#00703C", fontSize: "18px" }}>{t("EKYC_AADHAAR_VERIFIED") || "Aadhaar Verified"}</span>
+                            {isAadhaarVerified && (
+                                <div style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)" }}>
+                                    <TickMark fillColor="#00703C" />
+                                </div>
+                            )}
                         </div>
-                        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                            <div>
-                                <div style={{ color: "#707070", fontSize: "14px" }}>{t("EKYC_NAME") || "Name"}</div>
-                                <div style={{ fontWeight: "bold", fontSize: "16px" }}>Rajesh Kumar Singh</div>
+                    </LabelFieldPair>
+                    {!isAadhaarVerified && (
+                        <SubmitBar label={t("EKYC_VERIFY_AADHAAR_BTN") || "Verify Aadhaar"} onSubmit={handleVerifyAadhaar} style={{ borderRadius: "12px" }} />
+                    )}
+
+                    {isAadhaarVerified && (
+                        <div style={{ backgroundColor: "#E7F4EE", padding: "20px", borderRadius: "12px", marginTop: "16px", marginBottom: "24px", border: "1px solid #D1E9DB" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
+                                <div style={{ backgroundColor: "#D1E9DB", padding: "4px", borderRadius: "50%", display: "flex" }}>
+                                    <TickMark fillColor="#00703C" />
+                                </div>
+                                <span style={{ fontWeight: "700", color: "#00703C", fontSize: "18px" }}>{t("EKYC_AADHAAR_VERIFIED") || "Aadhaar Verified"}</span>
                             </div>
-                            <div>
-                                <div style={{ color: "#707070", fontSize: "14px" }}>{t("EKYC_ADDRESS") || "Address"}</div>
-                                <div style={{ fontWeight: "normal", fontSize: "16px" }}>House No. 45, Sector 12, New Delhi - 110001</div>
+                            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                                <div style={{ display: "flex", flexDirection: "column" }}>
+                                    <span style={{ color: "#667085", fontSize: "14px", fontWeight: "500" }}>{t("EKYC_NAME") || "Name"}</span>
+                                    <span style={{ fontWeight: "700", fontSize: "16px", color: "#101828" }}>Rajesh Kumar Singh</span>
+                                </div>
+                                <div style={{ display: "flex", flexDirection: "column" }}>
+                                    <span style={{ color: "#667085", fontSize: "14px", fontWeight: "500" }}>{t("EKYC_ADDRESS") || "Address"}</span>
+                                    <span style={{ fontWeight: "400", fontSize: "16px", color: "#344054" }}>House No. 45, Sector 12, New Delhi - 110001</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                )}
+                    )}
 
-                <CardHeader style={{ marginTop: "24px" }}>{t("EKYC_CONTACT_DETAILS_HEADER") || "Contact Details"}</CardHeader>
+                    <CardHeader style={{ marginTop: "24px" }}>{t("EKYC_CONTACT_DETAILS_HEADER") || "Contact Details"}</CardHeader>
 
-                <LabelFieldPair>
-                    <CardLabel>{t("EKYC_NAME_CORRECTION_PROMPT") || "Do you want to correct the Name?"}</CardLabel>
-                    <RadioButtons
-                        options={yesNoOptions}
-                        optionsKey="name"
-                        selectedOption={nameCorrect}
-                        onSelect={setNameCorrect}
-                        t={t}
-                        innerStyles={{ display: "flex", gap: "20px" }}
-                    />
-                </LabelFieldPair>
-
-                <LabelFieldPair>
-                    <CardLabel>{t("EKYC_ENTER_NAME") || "Enter Name"}</CardLabel>
-                    <div className="field">
-                        <TextInput
-                            value={userName}
-                            onChange={(e) => setUserName(e.target.value)}
-                            placeholder={t("EKYC_ENTER_NAME_PLACEHOLDER") || "Enter Enter name"}
+                    <LabelFieldPair>
+                        <CardLabel style={{ marginBottom: "8px", fontWeight: "600" }}>{t("EKYC_NAME_CORRECTION_PROMPT") || "Do you want to correct the Name?"}</CardLabel>
+                        <RadioButtons
+                            options={yesNoOptions}
+                            optionsKey="name"
+                            selectedOption={nameCorrect}
+                            onSelect={setNameCorrect}
+                            t={t}
+                            innerStyles={{ display: "flex", gap: "24px", marginTop: "8px" }}
                         />
-                    </div>
-                </LabelFieldPair>
+                    </LabelFieldPair>
 
-                <LabelFieldPair>
-                    <CardLabel>{t("EKYC_MOBILE_CHANGE_PROMPT") || "Change your mobile number?"}</CardLabel>
-                    <RadioButtons
-                        options={yesNoOptions}
-                        optionsKey="name"
-                        selectedOption={mobileChange}
-                        onSelect={setMobileChange}
-                        t={t}
-                        innerStyles={{ display: "flex", gap: "20px" }}
-                    />
-                </LabelFieldPair>
+                    <LabelFieldPair>
+                        <CardLabel style={{ marginBottom: "8px", fontWeight: "600" }}>{t("EKYC_ENTER_NAME") || "Enter Name"}</CardLabel>
+                        <div className="field">
+                            <TextInput
+                                value={userName}
+                                onChange={(e) => setUserName(e.target.value)}
+                                placeholder={t("EKYC_ENTER_NAME_PLACEHOLDER") || "Enter Enter name"}
+                                style={{ borderRadius: "12px" }}
+                            />
+                        </div>
+                    </LabelFieldPair>
 
-                <LabelFieldPair>
-                    <CardLabel>{t("EKYC_MOBILE_NUMBER") || "Mobile Number"}</CardLabel>
-                    <div className="field">
-                        <TextInput
-                            value={mobileNumber}
-                            onChange={(e) => setMobileNumber(e.target.value)}
-                            placeholder={t("EKYC_ENTER_MOBILE_NUMBER") || "Enter Mobile number"}
+                    <LabelFieldPair>
+                        <CardLabel style={{ marginBottom: "8px", fontWeight: "600" }}>{t("EKYC_MOBILE_CHANGE_PROMPT") || "Change your mobile number?"}</CardLabel>
+                        <RadioButtons
+                            options={yesNoOptions}
+                            optionsKey="name"
+                            selectedOption={mobileChange}
+                            onSelect={setMobileChange}
+                            t={t}
+                            innerStyles={{ display: "flex", gap: "24px", marginTop: "8px" }}
                         />
-                    </div>
-                </LabelFieldPair>
+                    </LabelFieldPair>
 
-                <LabelFieldPair>
-                    <CardLabel>{t("EKYC_WHATSAPP_NUMBER") || "Whatsapp Number"}</CardLabel>
-                    <div className="field">
-                        <TextInput
-                            value={whatsappNumber}
-                            onChange={(e) => setWhatsappNumber(e.target.value)}
-                            placeholder={t("EKYC_ENTER_WHATSAPP_NUMBER") || "Enter Whatsapp Number"}
-                        />
-                    </div>
-                </LabelFieldPair>
+                    <LabelFieldPair>
+                        <CardLabel style={{ marginBottom: "8px", fontWeight: "600" }}>{t("EKYC_MOBILE_NUMBER") || "Mobile Number"}</CardLabel>
+                        <div className="field">
+                            <TextInput
+                                value={mobileNumber}
+                                onChange={(e) => setMobileNumber(e.target.value)}
+                                placeholder={t("EKYC_ENTER_MOBILE_NUMBER") || "Enter Mobile number"}
+                                style={{ borderRadius: "12px" }}
+                            />
+                        </div>
+                    </LabelFieldPair>
 
-                <LabelFieldPair>
-                    <CardLabel>{t("EKYC_EMAIL_ADDRESS") || "Email address (Optional)"}</CardLabel>
-                    <div className="field">
-                        <TextInput
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder={t("EKYC_EMAIL_ADDRESS_PLACEHOLDER") || "Email address"}
-                        />
-                    </div>
-                </LabelFieldPair>
+                    <LabelFieldPair>
+                        <CardLabel style={{ marginBottom: "8px", fontWeight: "600" }}>{t("EKYC_WHATSAPP_NUMBER") || "Whatsapp Number"}</CardLabel>
+                        <div className="field">
+                            <TextInput
+                                value={whatsappNumber}
+                                onChange={(e) => setWhatsappNumber(e.target.value)}
+                                placeholder={t("EKYC_ENTER_WHATSAPP_NUMBER") || "Enter Whatsapp Number"}
+                                style={{ borderRadius: "12px" }}
+                            />
+                        </div>
+                    </LabelFieldPair>
 
-                <CardHeader style={{ marginTop: "24px" }}>{t("EKYC_FAMILY_DETAILS_HEADER") || "Family Details"}</CardHeader>
-                <LabelFieldPair>
-                    <CardLabel>{t("EKYC_NO_OF_PERSONS") || "No Of Persons"}</CardLabel>
-                    <div className="field">
-                        <TextInput
-                            value={noOfPersons}
-                            onChange={(e) => setNoOfPersons(e.target.value)}
-                            placeholder={t("EKYC_ENTER_NO_OF_PERSONS") || "Enter No of Persons"}
-                        />
-                    </div>
-                </LabelFieldPair>
-            </Card>
+                    <LabelFieldPair>
+                        <CardLabel style={{ marginBottom: "8px", fontWeight: "600" }}>{t("EKYC_EMAIL_ADDRESS") || "Email address (Optional)"}</CardLabel>
+                        <div className="field">
+                            <TextInput
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder={t("EKYC_EMAIL_ADDRESS_PLACEHOLDER") || "Email address"}
+                                style={{ borderRadius: "12px" }}
+                            />
+                        </div>
+                    </LabelFieldPair>
+
+                    <CardHeader style={{ marginTop: "24px" }}>{t("EKYC_FAMILY_DETAILS_HEADER") || "Family Details"}</CardHeader>
+                    <LabelFieldPair>
+                        <CardLabel style={{ marginBottom: "8px", fontWeight: "600" }}>{t("EKYC_NO_OF_PERSONS") || "No Of Persons"}</CardLabel>
+                        <div className="field">
+                            <TextInput
+                                value={noOfPersons}
+                                onChange={(e) => setNoOfPersons(e.target.value)}
+                                placeholder={t("EKYC_ENTER_NO_OF_PERSONS") || "Enter No of Persons"}
+                                style={{ borderRadius: "12px" }}
+                            />
+                        </div>
+                    </LabelFieldPair>
+                </Card>
+            </div>
 
             <ActionBar>
-                <SubmitBar label={t("ES_COMMON_SAVE_CONTINUE") || "Save & Continue"} onSubmit={handleSaveAndContinue} />
+                <SubmitBar label={t("ES_COMMON_SAVE_CONTINUE") || "Save & Continue"} onSubmit={handleSaveAndContinue} style={{ borderRadius: "12px" }} />
             </ActionBar>
         </div>
     );

@@ -3,6 +3,7 @@ import { useRouteMatch } from "react-router-dom";
 import EKYCCard from "./components/EKYCCard";
 import Inbox from "./pages/employee/Inbox";
 import DesktopInbox from "./components/DesktopInbox";
+import MobileInbox from "./components/MobileInbox";
 import EmployeeApp from "./pages/employee";
 
 export const EkycModule = ({ stateCode, userType, tenants }) => {
@@ -25,6 +26,7 @@ const componentsToRegister = {
     EKYCCard,
     EKYCInbox: Inbox,
     EKYCDesktopInbox: DesktopInbox,
+    EKYCMobileInbox: MobileInbox,
 };
 
 export const initEkycComponents = () => {

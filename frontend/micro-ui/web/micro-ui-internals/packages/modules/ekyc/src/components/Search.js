@@ -22,35 +22,46 @@ const SearchApplication = ({ onSearch, searchFields, searchParams }) => {
     return (
         <form onSubmit={handleSubmit(onSubmitInput)} className="ekyc-search-container">
             <div className="search-inner">
-                <div style={{ display: "flex", alignItems: "flex-end", gap: "24px", flexWrap: "wrap" }}>
-                    {searchFields?.map((input) => (
-                        <div key={input.name} style={{ display: "flex", flexDirection: "column", gap: "8px", minWidth: "250px" }}>
-                            <Label style={{ marginBottom: 0, marginTop: "20px" }}>{input.label}</Label>
-                            {input.type === "dropdown" ? (
-                                <Controller
-                                    control={control}
-                                    name={input.name}
-                                    render={(props) => (
-                                        <Dropdown
-                                            selected={props.value}
-                                            select={(val) => {
-                                                props.onChange(val);
-                                            }}
-                                            onBlur={props.onBlur}
-                                            option={input.options}
-                                            optionKey={input.optionsKey}
-                                            t={t}
-                                        />
-                                    )}
-                                />
-                            ) : (
-                                <TextInput {...input} inputRef={register} watch={watch} />
-                            )}
-                        </div>
-                    ))}
-                    <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                        <SubmitBar label={t("ES_COMMON_SEARCH")} submit={true} style={{ height: "40px", padding: "0 24px", marginBottom: "0" }} />
-                        <LinkLabel onClick={clearSearch} style={{ margin: 0, marginTop: "60px" }}>{t("ES_COMMON_CLEAR_ALL")}</LinkLabel>
+                <div className="search-field-wrapper">
+                    <div className="search-fields-container">
+                        {searchFields?.map((input) => (
+                            <div key={input.name} className="search-field">
+                                <Label>{input.label}</Label>
+                                {input.type === "dropdown" ? (
+                                    <Controller
+                                        control={control}
+                                        name={input.name}
+                                        render={(props) => (
+                                            <Dropdown
+                                                selected={props.value}
+                                                select={(val) => {
+                                                    props.onChange(val);
+                                                }}
+                                                onBlur={props.onBlur}
+                                                option={input.options}
+                                                optionKey={input.optionsKey}
+                                                t={t}
+                                            />
+                                        )}
+                                    />
+                                ) : (
+                                    <TextInput
+                                        {...input}
+                                        inputRef={register}
+                                        watch={watch}
+                                    />
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                    <div className="search-action-container">
+                        <SubmitBar
+                            label={t("ES_COMMON_SEARCH")}
+                            submit={true}
+                        />
+                        <LinkLabel onClick={clearSearch}>
+                            {t("ES_COMMON_CLEAR_ALL")}
+                        </LinkLabel>
                     </div>
                 </div>
             </div>

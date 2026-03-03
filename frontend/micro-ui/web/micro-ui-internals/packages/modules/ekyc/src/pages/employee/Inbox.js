@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import DesktopInbox from "../../components/DesktopInbox";
+import MobileInbox from "../../components/MobileInbox";
 
 const MOCK_DATA_ITEMS = [
     { applicationNumber: "EKYC-2024-001", citizenName: "Rahul Sharma", mobileNumber: "9876543210", status: "COMPLETED" },
@@ -94,24 +95,36 @@ const Inbox = ({
     return (
         <div className="ekyc-employee-container">
             <div className="inbox-main-container">
-                <DesktopInbox
-                    businessService={businessService}
-                    data={{ items: filteredStaticData, totalCount: filteredStaticData.length }}
-                    isLoading={false}
-                    searchFields={searchFields}
-                    onSearch={handleSearch}
-                    onSort={handleSort}
-                    onNextPage={fetchNextPage}
-                    onPrevPage={fetchPrevPage}
-                    currentPage={Math.floor(pageOffset / pageSize)}
-                    pageSizeLimit={pageSize}
-                    onPageSizeChange={handlePageSizeChange}
-                    parentRoute={parentRoute}
-                    searchParams={searchParams}
-                    sortParams={sortParams}
-                    totalRecords={filteredStaticData.length}
-                    countData={staticCountData}
-                />
+                {Digit.Utils.browser.isMobile() ? (
+                    <MobileInbox
+                        data={{ items: filteredStaticData, totalCount: filteredStaticData.length }}
+                        isLoading={false}
+                        onSearch={handleSearch}
+                        searchFields={searchFields}
+                        searchParams={searchParams}
+                        parentRoute={parentRoute}
+                        countData={staticCountData}
+                    />
+                ) : (
+                    <DesktopInbox
+                        businessService={businessService}
+                        data={{ items: filteredStaticData, totalCount: filteredStaticData.length }}
+                        isLoading={false}
+                        searchFields={searchFields}
+                        onSearch={handleSearch}
+                        onSort={handleSort}
+                        onNextPage={fetchNextPage}
+                        onPrevPage={fetchPrevPage}
+                        currentPage={Math.floor(pageOffset / pageSize)}
+                        pageSizeLimit={pageSize}
+                        onPageSizeChange={handlePageSizeChange}
+                        parentRoute={parentRoute}
+                        searchParams={searchParams}
+                        sortParams={sortParams}
+                        totalRecords={filteredStaticData.length}
+                        countData={staticCountData}
+                    />
+                )}
             </div>
         </div>
     );

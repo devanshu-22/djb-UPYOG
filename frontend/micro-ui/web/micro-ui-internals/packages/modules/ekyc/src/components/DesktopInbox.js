@@ -76,7 +76,7 @@ const DesktopInbox = ({
             <div className="ekyc-header-container module-header">
                 <Header className="title">{t("EKYC_INBOX_HEADER")}</Header>
                 <Link to={`${parentRoute}/create-kyc`}>
-                    <SubmitBar label={t("EKYC_CREATE_KYC")} />
+                    <SubmitBar label={t("EKYC_CREATE_KYC")} style={{ borderRadius: "8px" }} />
                 </Link>
             </div>
 

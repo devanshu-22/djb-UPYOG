@@ -8,7 +8,8 @@
 
   .ground-container {
     margin-bottom: 56px;
-    /* @apply p-md; */
+    padding-inline: 30px;
+    /* @apply flex flex-col; */
   }
 
   .card-home {
@@ -381,6 +382,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  padding-left: 30px;
+  padding-right: 30px;
   .header-top-section {
     display: flex;
     width: 100%;
