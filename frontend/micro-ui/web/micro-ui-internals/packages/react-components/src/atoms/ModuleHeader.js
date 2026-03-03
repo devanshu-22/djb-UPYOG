@@ -1,5 +1,6 @@
 import React from "react";
-import { useHistory,Link } from "react-router-dom";
+import { useHistory, Link } from "react-router-dom";
+import RecentActivity from "../../../modules/core/src/components/RecentActivity";
 
 const ModuleHeader = ({
   leftContent,
@@ -13,6 +14,7 @@ const ModuleHeader = ({
 
   return (
     <div className={`module-header ${wrapperClass}`}>
+
       <div className={`header-bottom-section ${containerClass}`}>
         {/* Left Section */}
         {leftContent && (
@@ -37,12 +39,12 @@ const ModuleHeader = ({
               return (
                 <React.Fragment key={index}>
                   {Icon && item.path ? (
-  <Link to={item.path} style={{ display: "inline-flex" }}>
-    <Icon className="icon home-icon" />
-  </Link>
-) : Icon ? (
-  <Icon className="icon home-icon" />
-) : null}
+                    <Link to={item.path} style={{ display: "inline-flex" }}>
+                      <Icon className="icon home-icon" />
+                    </Link>
+                  ) : Icon ? (
+                    <Icon className="icon home-icon" />
+                  ) : null}
 
                   {item.label && (
                     <span
@@ -63,7 +65,10 @@ const ModuleHeader = ({
           </div>
 
           {/* ✅ Extra Right Side Content */}
-          {rightContent && <div className="extra-right-content">{rightContent}</div>}
+          {rightContent && <div className="extra-right-content">
+            {rightContent}
+
+          </div>}
         </div>
       </div>
     </div>

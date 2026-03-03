@@ -72,6 +72,13 @@
   width: 100%;
 }
 
+.gridModuleWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 10px;
+}
+
 @screen dt {
   .employee-app-wrapper {
     flex-direction: row;
