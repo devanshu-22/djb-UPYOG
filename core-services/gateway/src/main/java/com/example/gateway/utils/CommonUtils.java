@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import lombok.extern.slf4j.Slf4j;
 import org.egov.tracer.model.CustomException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,7 @@ import java.util.*;
 
 import static com.example.gateway.constants.GatewayConstants.*;
 
+@Slf4j
 @Component
 public class CommonUtils {
 
@@ -78,7 +80,7 @@ public class CommonUtils {
 
 
     public Set<String> validateRequestAndSetRequestTenantId(ServerWebExchange exchange, Map body) {
-
+        log.info("Resolved tenantIds={} for uri={}", getTenantIdsFromRequest(exchange.getRequest(), body), exchange.getRequest().getURI());
         return getTenantIdsFromRequest(exchange.getRequest(), body);
     }
 
