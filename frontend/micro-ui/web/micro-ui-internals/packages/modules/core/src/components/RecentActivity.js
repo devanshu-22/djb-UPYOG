@@ -34,7 +34,6 @@ const Icons = {
 
 const RecentActivity = () => {
     const { t } = useTranslation();
-    const [isOpen, setIsOpen] = useState(false);
 
     const activities = [
         {
@@ -64,70 +63,46 @@ const RecentActivity = () => {
         },
     ];
 
-    const togglePanel = () => setIsOpen(!isOpen);
-
     return (
-        <div className="ra-wrapper">
-            <div className={`ra-container ${isOpen ? "open" : "closed"}`}>
-                
-                {/* The "Sliding Door" that hides/shows the content by animating its width */}
-                <div className="ra-content-door">
-                    {/* Fixed-width content inside ensures text doesn't squish during animation */}
-                    <div className="ra-content-inner">
-                        <div className="ra-header">
-                            <div>
-                                <h3>{t("Recent Activity")}</h3>
-                                <p className="ra-subtitle">{t("Latest updates and actions")}</p>
+        <div className="recent-activity-wrapper static-card">
+            <div className="ra-header">
+                <div>
+                    <h3>{t("Recent Activity")}</h3>
+                    <p className="ra-subtitle">{t("Latest updates and actions")}</p>
+                </div>
+                <button className="ra-view-all">
+                    {t("View All")} <Icons.ArrowRight size={14} />
+                </button>
+            </div>
+
+            <div className="ra-timeline">
+                {activities.map((activity, index) => {
+                    const IconComponent = activity.Icon;
+                    return (
+                        <div key={activity.id} className="ra-item">
+                            <div className="ra-indicator">
+                                <div
+                                    className="ra-icon-wrapper"
+                                    style={{ backgroundColor: activity.bgHex, color: activity.iconHex }}
+                                >
+                                    <IconComponent size={18} />
+                                </div>
+                                {/* Line perfectly centered under the icon */}
+                                {index !== activities.length - 1 && <div className="ra-line"></div>}
                             </div>
-                            <button className="ra-view-all">
-                                {t("View All")} <Icons.ArrowRight size={14} />
-                            </button>
+
+                            <div className="ra-details">
+                                <p className="ra-text">
+                                    <span className="ra-user">{activity.user}</span> {activity.action}
+                                </p>
+                                <div className="ra-meta" style={{ marginTop: "4px" }}>
+                                    <span className="ra-module">{activity.moduleId}</span>
+                                    <span className="ra-time">{activity.time}</span>
+                                </div>
+                            </div>
                         </div>
-
-                        <div className="ra-timeline">
-                            {activities.map((activity, index) => {
-                                const IconComponent = activity.Icon;
-                                return (
-                                    <div key={activity.id} className="ra-item">
-                                        <div className="ra-indicator">
-                                            <div 
-                                                className="ra-icon-wrapper" 
-                                                style={{ backgroundColor: activity.bgHex, color: activity.iconHex }}
-                                            >
-                                                <IconComponent size={18} />
-                                            </div>
-                                            {/* Line perfectly centered under the icon */}
-                                            {index !== activities.length - 1 && <div className="ra-line"></div>}
-                                        </div>
-
-                                        <div className="ra-details">
-                                            <p className="ra-text">
-                                                <span className="ra-user">{activity.user}</span> {activity.action}
-                                            </p>
-                                            <div className="ra-meta">
-                                                <span className="ra-module">{activity.moduleId}</span>
-                                                <span className="ra-time">{activity.time}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                </div>
-
-                {/* The beautifully integrated toggle strip fixed on the right */}
-                <div className="ra-strip" onClick={togglePanel}>
-                    <div className="ra-chevron-icon">
-                        {isOpen ? <Icons.ChevronRight size={24} /> : <Icons.ChevronLeft size={24} />}
-                    </div>
-                    
-                    <div className="ra-strip-text">
-                        <Icons.History size={16} className="ra-history-icon" />
-                        <span>{t("Recent Activity")}</span>
-                    </div>
-                </div>
-
+                    );
+                })}
             </div>
         </div>
     );

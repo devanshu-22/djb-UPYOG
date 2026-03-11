@@ -18,6 +18,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import EmployeeDashboard from "./EmployeeDashboard";
 import RecentActivity from "./RecentActivity";
+import NewsAndEvents from "./NewsAndEvents";
 
 /* 
 Feature :: Citizen All service screen cards
@@ -139,46 +140,155 @@ const CitizenHome = ({ modules, getCitizenMenu, fetchedCitizen, isLoading }) => 
   );
 };
 
+const LeftArrowIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M15 18l-6-6 6-6" />
+  </svg>
+);
+
+const RightArrowIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 18l6-6-6-6" />
+  </svg>
+);
+
 const EmployeeHome = ({ modules }) => {
   const { t } = useTranslation();
   const userInfo = JSON.parse(localStorage.getItem("Employee.user-info"));
   const name = userInfo?.name;
   const dashboardCemp = Digit.UserService.hasAccess(["DASHBOARD_EMPLOYEE"]) ? true : false;
+
+    const scrollContainerRef = React.useRef(null);
+  const [showLeftArrow, setShowLeftArrow] = React.useState(false);
+  const [showRightArrow, setShowRightArrow] = React.useState(true);
+
+  const handleScroll = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      setShowLeftArrow(scrollLeft > 0);
+      setShowRightArrow(Math.ceil(scrollLeft + clientWidth) < scrollWidth - 1);
+    }
+  };
+
+  React.useEffect(() => {
+    handleScroll();
+    window.addEventListener("resize", handleScroll);
+    return () => window.removeEventListener("resize", handleScroll);
+  }, [modules]);
+
+  const scroll = (direction) => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = direction === "left"
+        ? -scrollContainerRef.current.clientWidth
+        : scrollContainerRef.current.clientWidth;
+
+      scrollContainerRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
+    }
+  };
+
   if (window.Digit.SessionStorage.get("PT_CREATE_EMP_TRADE_NEW_FORM")) window.Digit.SessionStorage.set("PT_CREATE_EMP_TRADE_NEW_FORM", {});
+
   const { data: dashboardConfig } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(), "common-masters", [{ name: "CommonConfig" }], {
     select: (data) => {
       const formattedData = data?.["common-masters"]?.["CommonConfig"];
-      // Find the object with cityDashboardEnabled and return its isActive value
       const cityDashboardObject = formattedData?.find((item) => item?.name === "cityDashboardEnabled");
       return cityDashboardObject?.isActive;
     },
   });
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return { text: "Good Morning", emoji: "☀️" };
+    if (hour < 17) return { text: "Good Afternoon", emoji: "🌤️" };
+    return { text: "Good Evening", emoji: "🌙" };
+  };
+
+  const getFormattedDate = () => {
+    return new Date().toLocaleDateString('en-IN', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long'
+    });
+  };
+
+  const greeting = getGreeting();
+
+  const [searchQuery, setSearchQuery] = React.useState("");
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+    console.log("Omni-Search Triggered for:", searchQuery);
+  };
+
   return (
     <div className="employee-app-homepage-container">
       {dashboardConfig && dashboardCemp ? <EmployeeDashboard modules={modules} /> : null}
+
       <div className="home-header">
         <div className="header-top-section">
-          <span style={{ color: "white", fontSize: "20px", fontWeight: "800" }}>{t('Welcome!')}</span>
+          {/* Left: Dynamic Greeting & Date */}
+          <div className="header-greeting-area">
+            <h1 className="greeting-title">
+              {t(greeting.text)}, {name} <span className="greeting-emoji">{greeting.emoji}</span>
+            </h1>
+            <p className="greeting-date">{getFormattedDate()}</p>
+          </div>
 
-          <span style={{ color: "white", fontSize: "20px", fontWeight: "800", marginLeft: "10px" }}>{name}</span>
 
         </div>
       </div>
+
       <div className="employee-home-main-content">
-        <div className="ground-container moduleCardWrapper gridModuleWrapper">
-          {modules.map(({ code }, index) => {
-            const Card = Digit.ComponentRegistryService.getComponent(`${code}Card`) || (() => <React.Fragment />);
-            return <Card key={index} />;
-          })}
+        <div className="ground-container">
+
+          <div className="top-info-cards-wrapper">
+            <NewsAndEvents />
+            <RecentActivity />
+          </div>
+
+          <div className="module-carousel-section">
+
+            <div className="module-carousel-header">
+              <div className="module-carousel-actions">
+                <button
+                  className="carousel-arrow left"
+                  onClick={() => scroll("left")}
+                  aria-label="Previous"
+                  disabled={!showLeftArrow}
+                >
+                  <LeftArrowIcon />
+                </button>
+                <button
+                  className="carousel-arrow right"
+                  onClick={() => scroll("right")}
+                  aria-label="Next"
+                  disabled={!showRightArrow}
+                >
+                  <RightArrowIcon />
+                </button>
+              </div>
+            </div>
+
+            <div className="module-carousel-wrapper">
+              <div className="carousel-track" ref={scrollContainerRef} onScroll={handleScroll}>
+                {modules.map(({ code }, index) => {
+                  const Card = Digit.ComponentRegistryService.getComponent(`${code}Card`);
+
+                  // Block if component is not in registry
+                  if (!Card) return null;
+
+                  return <Card key={index} />;
+                })}
+              </div>
+            </div>
+
+          </div>
         </div>
-        <RecentActivity />
       </div>
-     
-    
     </div>
   );
 };
-
 export const AppHome = ({ userType, modules, getCitizenMenu, fetchedCitizen, isLoading }) => {
   if (userType === "citizen") {
     return <CitizenHome modules={modules} getCitizenMenu={getCitizenMenu} fetchedCitizen={fetchedCitizen} isLoading={isLoading} />;
