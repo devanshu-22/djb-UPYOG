@@ -2,14 +2,13 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { Header, Card, SubmitBar, DetailsCard, Loader } from "@djb25/digit-ui-react-components";
 import { Link } from "react-router-dom";
-import SearchApplication from "./Search";
+import SearchConsumer from "./SearchConsumer";
 import StatusCards from "./StatusCards";
 
 const MobileInbox = ({
     data,
     isLoading,
     onSearch,
-    searchFields,
     searchParams,
     parentRoute,
     countData,
@@ -40,13 +39,10 @@ const MobileInbox = ({
                 <StatusCards countData={countData} />
             </div>
 
-            <Card className="ekyc-search-card">
-                <SearchApplication
-                    onSearch={onSearch}
-                    searchFields={searchFields}
-                    searchParams={searchParams}
-                />
-            </Card>
+            <SearchConsumer
+                onSearch={onSearch}
+                searchParams={searchParams}
+            />
 
             <div className="mobile-data-container">
                 {isLoading ? (
