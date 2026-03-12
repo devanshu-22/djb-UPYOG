@@ -14,6 +14,7 @@ const NewEvents = () => {
       events: [
         {
           source: "WEBAPP",
+          status: "ACTIVE",
           eventType: "EVENTSONGROUND",
           tenantId: data?.tenantId?.code,
           description: data?.description,
