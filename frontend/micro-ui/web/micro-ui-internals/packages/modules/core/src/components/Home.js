@@ -20,14 +20,15 @@ import EmployeeDashboard from "./EmployeeDashboard";
 import RecentActivity from "./RecentActivity";
 import NewsAndEvents from "./NewsAndEvents";
 
-/* 
-Feature :: Citizen All service screen cards
+/* Feature :: Citizen All service screen cards
 */
 export const processLinkData = (newData, code, t) => {
   const obj = newData?.[`${code}`];
   if (obj) {
     obj.map((link) => {
-      (link.link = link["navigationURL"]), (link.i18nKey = t(link["name"]));
+      (link.link = link["navigationURL"]); 
+      (link.i18nKey = t(link["name"]));
+      return link;
     });
   }
   const newObj = {
@@ -44,7 +45,6 @@ export const processLinkData = (newData, code, t) => {
         loginLink: "CS_LINK_LOGIN_DSO",
       },
     ];
-    //RAIN-7297
     roleBasedLoginRoutes.map(({ role, from, loginLink, dashoardLink }) => {
       if (Digit.UserService.hasAccess(role))
         newObj?.links?.push({
@@ -62,34 +62,24 @@ export const processLinkData = (newData, code, t) => {
 
   return newObj;
 };
+
 const iconSelector = (code) => {
   switch (code) {
-    case "PT":
-      return <PTIcon className="fill-path-primary-main" />;
-    case "WS":
-      return <WSICon className="fill-path-primary-main" />;
-    case "FSM":
-      return <FSMIcon className="fill-path-primary-main" />;
-    case "MCollect":
-      return <MCollectIcon className="fill-path-primary-main" />;
-    case "PGR":
-      return <PGRIcon className="fill-path-primary-main" />;
-    case "TL":
-      return <TLIcon className="fill-path-primary-main" />;
-    case "OBPS":
-      return <OBPSIcon className="fill-path-primary-main" />;
-    case "Bills":
-      return <BillsIcon className="fill-path-primary-main" />;
-    case "PTR":
-      return <PTRIcon className="fill-path-primary-main" />;
-    case "CHB":
-      return <CHBIcon className="fill-path-primary-main" />;
-    case "ADS":
-      return <CHBIcon className="fill-path-primary-main" />;
-    default:
-      return <PTIcon className="fill-path-primary-main" />;
+    case "PT": return <PTIcon className="fill-path-primary-main" />;
+    case "WS": return <WSICon className="fill-path-primary-main" />;
+    case "FSM": return <FSMIcon className="fill-path-primary-main" />;
+    case "MCollect": return <MCollectIcon className="fill-path-primary-main" />;
+    case "PGR": return <PGRIcon className="fill-path-primary-main" />;
+    case "TL": return <TLIcon className="fill-path-primary-main" />;
+    case "OBPS": return <OBPSIcon className="fill-path-primary-main" />;
+    case "Bills": return <BillsIcon className="fill-path-primary-main" />;
+    case "PTR": return <PTRIcon className="fill-path-primary-main" />;
+    case "CHB": return <CHBIcon className="fill-path-primary-main" />;
+    case "ADS": return <CHBIcon className="fill-path-primary-main" />;
+    default: return <PTIcon className="fill-path-primary-main" />;
   }
 };
+
 const CitizenHome = ({ modules, getCitizenMenu, fetchedCitizen, isLoading }) => {
   const paymentModule = modules.filter(({ code }) => code === "Payment")[0];
   const moduleArr = modules.filter(({ code }) => code !== "Payment");
@@ -112,6 +102,7 @@ const CitizenHome = ({ modules, getCitizenMenu, fetchedCitizen, isLoading }) => 
               if (mdmsDataObj?.links?.length > 0) {
                 return (
                   <CitizenHomeCard
+                    key={index}
                     header={t(mdmsDataObj?.header)}
                     links={mdmsDataObj?.links?.filter((ele) => ele?.link)?.sort((x, y) => x?.orderNumber - y?.orderNumber)}
                     Icon={() => iconSelector(code)}
@@ -128,14 +119,11 @@ const CitizenHome = ({ modules, getCitizenMenu, fetchedCitizen, isLoading }) => 
                     }
                     isInfo={code === "OBPS" ? true : false}
                   />
-
                 );
-              } else return <React.Fragment />;
+              } else return <React.Fragment key={index} />;
             })}
         </div>
-
       </div>
-
     </React.Fragment>
   );
 };
@@ -154,66 +142,46 @@ const RightArrowIcon = () => (
 
 const PresentationIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
-    <ellipse cx="55" cy="50" rx="40" ry="38" fill="#ffffff" opacity="0.08" />
+    <rect x="8"  y="38" width="14" height="32" rx="1" fill="#ffffff" opacity="0.4"/>
+    <rect x="5"  y="30" width="8"  height="8"  rx="1" fill="#ffffff" opacity="0.4"/>
+    <rect x="25" y="26" width="20" height="44" rx="1" fill="#ffffff" opacity="0.6"/>
+    <circle cx="35" cy="12" r="2.5" fill="#ffffff" opacity="0.5"/>
 
-    <rect x="52" y="24" width="32" height="32" rx="5" fill="none" stroke="#ffffff" stroke-width="5" opacity="0.3" />
+    <rect x="48" y="34" width="14" height="36" rx="1" fill="#ffffff" opacity="0.45"/>
+    <rect x="65" y="28" width="18" height="42" rx="1" fill="#ffffff" opacity="0.55"/>
+    <rect x="86" y="40" width="12" height="30" rx="1" fill="#ffffff" opacity="0.4"/>
 
-    <g fill="#ffffff" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" opacity="0.65">
-      <circle cx="36" cy="24" r="6" stroke="none" />
+    <line x1="4" y1="70" x2="96" y2="70" stroke="#ffffff" strokeWidth="1" opacity="0.2"/>
 
-      <rect x="29" y="34" width="14" height="26" rx="2" stroke="none" />
-
-      <line x1="31" y1="38" x2="25" y2="52" stroke-width="4.5" />
-
-      <line x1="41" y1="38" x2="62" y2="38" stroke-width="4.5" />
-
-      <line x1="32" y1="59" x2="32" y2="78" stroke-width="4.5" />
-
-      <line x1="40" y1="59" x2="40" y2="78" stroke-width="4.5" />
-    </g>
+    <path d="M4 78 Q16 70 28 78 Q40 86 52 78 Q64 70 76 78 Q88 86 96 78"
+          fill="none" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" opacity="0.9"/>
+    <path d="M4 86 Q18 80 32 86 Q46 92 60 86 Q74 80 88 86"
+          fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" opacity="0.4"/>
   </svg>
 );
 
-const EmployeeHome = ({ modules }) => {
-  const { t } = useTranslation();
-  const userInfo = JSON.parse(localStorage.getItem("Employee.user-info"));
-  const name = userInfo?.name;
-  const dashboardCemp = Digit.UserService.hasAccess(["DASHBOARD_EMPLOYEE"]) ? true : false;
-
+const ModuleCarousel = ({ modules, title }) => {
   const scrollContainerRef = React.useRef(null);
   const [showLeftArrow, setShowLeftArrow] = React.useState(false);
   const [showRightArrow, setShowRightArrow] = React.useState(true);
-
-  // NEW: State for pagination
   const [currentPage, setCurrentPage] = React.useState(1);
   const [totalPages, setTotalPages] = React.useState(1);
 
   const handleScroll = () => {
     if (scrollContainerRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
-
       setShowLeftArrow(scrollLeft > 0);
       setShowRightArrow(Math.ceil(scrollLeft + clientWidth) < scrollWidth - 1);
 
       if (clientWidth > 0) {
-        // Calculate total pages based on viewport width
         const total = Math.ceil(scrollWidth / clientWidth) || 1;
         setTotalPages(total);
-
-        // Calculate the maximum possible scroll distance
         const maxScrollLeft = scrollWidth - clientWidth;
-
         if (maxScrollLeft > 0) {
-          // Calculate scroll progress as a percentage (0 to 1)
           const scrollProgress = scrollLeft / maxScrollLeft;
-
-          // Map the percentage to the current page number
           const current = Math.round(scrollProgress * (total - 1)) + 1;
-
-          // Ensure it stays within valid bounds (1 to totalPages)
           setCurrentPage(Math.min(Math.max(current, 1), total));
         } else {
-          // If there's no overflow, we are always on page 1
           setCurrentPage(1);
         }
       }
@@ -221,7 +189,6 @@ const EmployeeHome = ({ modules }) => {
   };
 
   React.useEffect(() => {
-    // Slight delay to ensure child components (cards) have rendered their widths in the DOM
     setTimeout(() => handleScroll(), 100);
     window.addEventListener("resize", handleScroll);
     return () => window.removeEventListener("resize", handleScroll);
@@ -232,10 +199,59 @@ const EmployeeHome = ({ modules }) => {
       const scrollAmount = direction === "left"
         ? -scrollContainerRef.current.clientWidth
         : scrollContainerRef.current.clientWidth;
-
       scrollContainerRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
     }
   };
+
+  if (!modules || modules.length === 0) return null;
+
+  return (
+    <div className="module-carousel-section" style={{ marginBottom: "20px", marginTop: "10px" }}>
+      <div className="module-carousel-header" style={{ display: 'flex', justifyContent: title ? 'space-between' : 'flex-end', alignItems: 'center' }}>
+        {title && <h3 style={{ margin: 0, fontSize: "18px", fontWeight: "700", color: "#ffffff" }}>{title}</h3>}
+        
+        <div className="module-carousel-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button
+            className="carousel-arrow left"
+            onClick={() => scroll("left")}
+            aria-label="Previous"
+            disabled={!showLeftArrow}
+          >
+            <LeftArrowIcon />
+          </button>
+          <span className="carousel-pagination-text" style={{ fontSize: "14px", fontWeight: "500", color: "#505A5F" }}>
+            {currentPage} / {totalPages}
+          </span>
+          <button
+            className="carousel-arrow right"
+            onClick={() => scroll("right")}
+            aria-label="Next"
+            disabled={!showRightArrow}
+          >
+            <RightArrowIcon />
+          </button>
+        </div>
+      </div>
+
+      <div className="module-carousel-wrapper">
+        <div className="carousel-track" ref={scrollContainerRef} onScroll={handleScroll}>
+          {modules.map(({ code }, index) => {
+            const Card = Digit.ComponentRegistryService.getComponent(`${code}Card`);
+            if (!Card) return null;
+            return <Card key={index} />;
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+const EmployeeHome = ({ modules }) => {
+  const { t } = useTranslation();
+  const userInfo = JSON.parse(localStorage.getItem("Employee.user-info"));
+  const name = userInfo?.name;
+  const dashboardCemp = Digit.UserService.hasAccess(["DASHBOARD_EMPLOYEE"]) ? true : false;
 
   if (window.Digit.SessionStorage.get("PT_CREATE_EMP_TRADE_NEW_FORM")) window.Digit.SessionStorage.set("PT_CREATE_EMP_TRADE_NEW_FORM", {});
 
@@ -264,13 +280,19 @@ const EmployeeHome = ({ modules }) => {
 
   const greeting = getGreeting();
 
-  const [searchQuery, setSearchQuery] = React.useState("");
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (!searchQuery.trim()) return;
-    console.log("Omni-Search Triggered for:", searchQuery);
-  };
+  
+  const engagementModuleCodes = [
+    "Engagement",
+    "Events", 
+    "Documents", 
+    "Public Message broadcast", 
+    "MessageBroadcast", 
+    "Broadcast", 
+    "Surveys"
+  ];
+  
+  const engagementModules = modules.filter(mod => engagementModuleCodes.includes(mod?.code));
+  const mainModules = modules.filter(mod => !engagementModuleCodes.includes(mod?.code));
 
   return (
     <div className="employee-app-homepage-container">
@@ -280,7 +302,7 @@ const EmployeeHome = ({ modules }) => {
         <div className="header-top-section">
           <div className="header-greeting-area">
             <h1 className="greeting-title">
-              {t(greeting.text)}, {name} <span className="greeting-emoji">{greeting.emoji}</span>
+              <span className="greeting-emoji">{greeting.emoji}</span> {t(greeting.text)}, {name} 
             </h1>
             <p className="greeting-date">{getFormattedDate()}</p>
           </div>
@@ -298,53 +320,18 @@ const EmployeeHome = ({ modules }) => {
             <RecentActivity />
           </div>
 
-          <div className="module-carousel-section">
+          <ModuleCarousel modules={mainModules} title={t("Core Services")} />
 
-            <div className="module-carousel-header">
-              <div className="module-carousel-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <button
-                  className="carousel-arrow left"
-                  onClick={() => scroll("left")}
-                  aria-label="Previous"
-                  disabled={!showLeftArrow}
-                >
-                  <LeftArrowIcon />
-                </button>
+          {engagementModules.length > 0 && (
+            <ModuleCarousel modules={engagementModules} title={t("Engagement Services")} />
+          )}
 
-                {/* NEW: Pagination Indicator */}
-                <span className="carousel-pagination-text" style={{ fontSize: "14px", fontWeight: "500", color: "#505A5F" }}>
-                  {currentPage} / {totalPages}
-                </span>
-
-                <button
-                  className="carousel-arrow right"
-                  onClick={() => scroll("right")}
-                  aria-label="Next"
-                  disabled={!showRightArrow}
-                >
-                  <RightArrowIcon />
-                </button>
-              </div>
-            </div>
-
-            <div className="module-carousel-wrapper">
-              <div className="carousel-track" ref={scrollContainerRef} onScroll={handleScroll}>
-                {modules.map(({ code }, index) => {
-                  const Card = Digit.ComponentRegistryService.getComponent(`${code}Card`);
-
-                  if (!Card) return null;
-
-                  return <Card key={index} />;
-                })}
-              </div>
-            </div>
-
-          </div>
         </div>
       </div>
     </div>
   );
 };
+
 export const AppHome = ({ userType, modules, getCitizenMenu, fetchedCitizen, isLoading }) => {
   if (userType === "citizen") {
     return <CitizenHome modules={modules} getCitizenMenu={getCitizenMenu} fetchedCitizen={fetchedCitizen} isLoading={isLoading} />;

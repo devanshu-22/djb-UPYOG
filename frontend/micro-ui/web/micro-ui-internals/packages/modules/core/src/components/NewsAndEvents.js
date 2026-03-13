@@ -1,146 +1,107 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-// Pure SVG Icons for News & Events
 const Icons = {
-    Megaphone: ({ size = 18 }) => (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m3 11 18-5v12L3 14v-3z" /><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" /></svg>
-    ),
-    CalendarEvent: ({ size = 18 }) => (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /><path d="M8 14h.01" /><path d="M12 14h.01" /><path d="M16 14h.01" /><path d="M8 18h.01" /><path d="M12 18h.01" /><path d="M16 18h.01" /></svg>
-    ),
-    AlertBell: ({ size = 18 }) => (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg>
-    ),
-    Info: ({ size = 18 }) => (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
-    ),
-    ArrowRight: ({ size = 14 }) => (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+    Calendar: ({ size = 16 }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
     ),
     XCircle: ({ size = 18 }) => (
         <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="m15 9-6 6" /><path d="m9 9 6 6" /></svg>
     )
-
 };
 
 const NewsAndEvents = () => {
     const { t } = useTranslation();
+    const [activeTab, setActiveTab] = useState("documents");
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const newsItems = [
-        {
-            id: 1, title: "System Maintenance Scheduled",
-            description: "The core PT application will undergo maintenance this Sunday.",
-            date: "Today",
-            bgHex: "#fff1f2", iconHex: "#e11d48", Icon: Icons.AlertBell
-        },
-        {
-            id: 2, title: "New Training Materials Available",
-            description: "Check the portal for updated guides on processing Trade Licenses.",
-            date: "Yesterday",
-            bgHex: "#eff6ff", iconHex: "#2563eb", Icon: Icons.Info
-        },
-        {
-            id: 3, title: "Monthly Townhall Meeting",
-            description: "Join the virtual meeting to discuss Q2 targets.",
-            date: "Oct 15, 2026",
-            bgHex: "#f0fdf4", iconHex: "#16a34a", Icon: Icons.CalendarEvent
-        },
-        {
-            id: 4, title: "Policy Update: Vendor Registration",
-            description: "New mandatory documents required for vendor onboarding.",
-            date: "Oct 12, 2026",
-            bgHex: "#fff7ed", iconHex: "#ea580c", Icon: Icons.Megaphone
-        }
-    ];
+    // Mock Data organized by tabs
+    const tabData = {
+        documents: [
+            { id: 1, title: "Review Vendor Applications", count: 2, rightText: "Today", color: "#3b82f6" },
+            { id: 2, title: "Finance Reports", rightText: "Due: 30 Apr", rightTextDanger: true, color: "#f59e0b" },
+            { id: 3, title: "Tax Assessment Forms", count: 12, rightText: "Pending", color: "#8b5cf6" },
+            { id: 4, title: "Building Plan Approvals", count: 4, rightText: "Overdue", rightTextDanger: true, color: "#ef4444" }
+        ],
+        events: [
+            { id: 1, title: "Monthly Townhall", rightText: "15 Oct", color: "#10b981" },
+            { id: 2, title: "System Maintenance", rightText: "Sunday", color: "#ef4444" },
+            { id: 3, title: "Vendor Onboarding Workshop", rightText: "22 Oct", color: "#3b82f6" },
+            { id: 4, title: "Q3 Planning Session", rightText: "28 Oct", color: "#8b5cf6" }
+        ],
+        surveys: [
+            { id: 1, title: "Survey Responses Pending", count: 5, rightText: "The West", color: "#0ea5e9" },
+            { id: 2, title: "Employee Satisfaction", count: 85, rightText: "Completed", color: "#10b981" },
+            { id: 3, title: "Infrastructure Feedback", count: 12, rightText: "Active", color: "#f59e0b" },
+            { id: 4, title: "Public Transport Survey", count: 0, rightText: "Draft", color: "#64748b" }
+        ]
+    };
+
+    const currentData = tabData[activeTab];
 
     return (
         <React.Fragment>
-            <div className="recent-activity-wrapper static-card">
-                <div className="ra-header">
-                    <div>
-                        <h3>{t("News & Events")}</h3>
-                        <p className="ra-subtitle">{t("Latest announcements and updates")}</p>
+            <div className="recent-activity-wrapper static-card" style={{ padding: "16px 0 0 0" }}>
+                <div className="ra-header" style={{ padding: "0 16px", borderBottom: "none", display:"flex", justifyContent:"space-between" }}>
+                    <div style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
+                        <div className="ra-header-square-icon" style={{ backgroundColor: "#0ea5e9" }}></div>
+                        <h3 style={{ fontSize: "16px", margin: 0, color: "#0f172a" }}>{t("Upcoming Events & Latest Updates")}</h3>
                     </div>
+                    <div className="ra-footer" style={{ padding: "12px 0" }}>
+                    <button className="ra-view-all" onClick={() => setIsModalOpen(true)} style={{ color: "#2563eb" }}>
+                        <Icons.Calendar size={16} /> <span style={{ marginLeft: "6px" }}>{t("View All")}</span>
+                    </button>   
+                </div>
                 </div>
 
-                <div style={{paddingTop:"10px"}} className="ra-timeline">
-                    {newsItems.slice(0, 3).map((item, index) => {
-                        const IconComponent = item.Icon;
-                        return (
-                            <div key={item.id} className="ra-item">
-                                <div className="ra-indicator">
-                                    <div
-                                        className="ra-icon-wrapper"
-                                        style={{ backgroundColor: item.bgHex, color: item.iconHex }}
-                                    >
-                                        <IconComponent size={18} />
-                                    </div>
-                                    {/* Center line */}
-                                    {index !== 2 && <div className="ra-line"></div>}
-                                </div>
-
-                                <div className="ra-details">
-                                    <p className="ra-text" style={{ fontWeight: 600 }}>
-                                        {item.title}
-                                    </p>
-                                    <p className="ra-text" style={{ color: "#64748b", fontSize: "13px", marginTop: "4px" }}>
-                                        {item.description}
-                                    </p>
-                                    <div className="ra-meta" style={{ marginTop: "4px" }}>
-                                        <span className="ra-time">{item.date}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-
-                <div className="ra-footer">
-                    <button className="ra-view-all" onClick={() => setIsModalOpen(true)}>
-                        {t("All News")} <Icons.ArrowRight size={14} />
+                <div className="custom-tabs-header">
+                    <button className={`custom-tab-btn ${activeTab === 'documents' ? 'active' : ''}`} onClick={() => setActiveTab('documents')}>
+                        {t("Documents")}
+                    </button>
+                    <button className={`custom-tab-btn ${activeTab === 'events' ? 'active' : ''}`} onClick={() => setActiveTab('events')}>
+                        {t("Events")}
+                    </button>
+                    <button className={`custom-tab-btn ${activeTab === 'surveys' ? 'active' : ''}`} onClick={() => setActiveTab('surveys')}>
+                        {t("Surveys")}
                     </button>
                 </div>
+
+                <div className="compact-list">
+                    {currentData.slice(0, 3).map((item) => (
+                        <div key={item.id} className="compact-list-item">
+                            <div className="dot-indicator" style={{ backgroundColor: item.color }}></div>
+                            <span className="compact-title">{item.title}</span>
+                            {item.count !== undefined && <span className="compact-badge">{item.count}</span>}
+                            <span className={`compact-right-text ${item.rightTextDanger ? 'danger' : ''}`}>
+                                {item.rightText}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+
+                
             </div>
 
             {isModalOpen && (
                 <div className="ra-modal-overlay" onClick={() => setIsModalOpen(false)}>
                     <div className="ra-modal-content" onClick={(e) => e.stopPropagation()}>
                         <div className="ra-modal-header">
-                            <h3>{t("All News & Events")}</h3>
+                            <h3>{t(`All ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}`)}</h3>
                             <button className="ra-modal-close" onClick={() => setIsModalOpen(false)}>
                                 <Icons.XCircle size={24} />
                             </button>
                         </div>
-                        <div className="ra-timeline ra-timeline-modal">
-                            {newsItems.map((item, index) => {
-                                const IconComponent = item.Icon;
-                                return (
-                                    <div key={item.id} className="ra-item">
-                                        <div className="ra-indicator">
-                                            <div
-                                                className="ra-icon-wrapper"
-                                                style={{ backgroundColor: item.bgHex, color: item.iconHex }}
-                                            >
-                                                <IconComponent size={18} />
-                                            </div>
-                                            {index !== newsItems.length - 1 && <div className="ra-line"></div>}
-                                        </div>
-                                        <div className="ra-details">
-                                            <p className="ra-text" style={{ fontWeight: 600 }}>
-                                                {item.title}
-                                            </p>
-                                            <p className="ra-text" style={{ color: "#64748b", fontSize: "13px", marginTop: "4px" }}>
-                                                {item.description}
-                                            </p>
-                                            <div className="ra-meta" style={{ marginTop: "4px" }}>
-                                                <span className="ra-time">{item.date}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })}
+                        <div className="custom-modal-body" style={{ padding: 0 }}>
+                            {currentData.map((item) => (
+                                <div key={item.id} className="compact-list-item" style={{ padding: "16px" }}>
+                                    <div className="dot-indicator" style={{ backgroundColor: item.color }}></div>
+                                    <span className="compact-title">{item.title}</span>
+                                    {item.count !== undefined && <span className="compact-badge">{item.count}</span>}
+                                    <span className={`compact-right-text ${item.rightTextDanger ? 'danger' : ''}`}>
+                                        {item.rightText}
+                                    </span>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>
