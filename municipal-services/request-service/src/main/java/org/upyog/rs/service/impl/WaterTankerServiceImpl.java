@@ -20,6 +20,7 @@ import org.upyog.rs.service.UserService;
 import org.upyog.rs.service.WaterTankerService;
 import org.upyog.rs.service.WorkflowService;
 import org.upyog.rs.web.models.ApplicantDetail;
+import org.upyog.rs.web.models.CriteriyaSearchDto;
 import org.upyog.rs.web.models.RequestDetailsByDriverId;
 import org.upyog.rs.web.models.waterTanker.WaterTankerBookingDetail;
 import org.upyog.rs.web.models.waterTanker.WaterTankerBookingRequest;
@@ -275,5 +276,37 @@ public class WaterTankerServiceImpl implements WaterTankerService {
 	@Override
 	public List<RequestDetailsByDriverId.RequestDetailsInfo> getBookingAndAssignmentDetails(String driverId) {
 		return requestServiceRepository.getFullBookingDetailsByDriver(driverId);
+	}
+
+	@Override
+	public List<WaterTankerBookingDetail> getDriverAssignedBookings(CriteriyaSearchDto criteriyaSearchDto) {
+		String driverUuid = criteriyaSearchDto.getCriteriyaSearch().getDriverId();
+		String tenantId = criteriyaSearchDto.getRequestInfo().getUserInfo().getTenantId();
+		WaterTankerBookingSearchCriteria criteria = WaterTankerBookingSearchCriteria.builder()
+				.tenantId(tenantId)
+				.driverId(driverUuid)
+				.build();
+
+		return getWaterTankerBookingDetails(criteriyaSearchDto.getRequestInfo(),criteria);
+	}
+
+	@Override
+	public WaterTankerBookingDetail updateBookingLifecycle(WaterTankerBookingRequest waterTankerRequest) {
+		String bookingNo = waterTankerRequest.getWaterTankerBookingDetail().getBookingNo();
+		log.info("Updating lifecycle for booking no: {}", bookingNo);
+
+		if (bookingNo == null) {
+			throw new CustomException("INVALID_BOOKING_CODE", "Booking number is required for update.");
+		}
+
+		if (waterTankerRequest.getWaterTankerBookingDetail().getWorkflow() != null) {
+			State state = workflowService.updateWorkflowStatus(null, waterTankerRequest);
+
+			enrichmentService.enrichWaterTankerBookingUponUpdate(state.getApplicationStatus(), waterTankerRequest);
+		}
+
+		requestServiceRepository.updateWaterTankerBooking(waterTankerRequest);
+
+		return waterTankerRequest.getWaterTankerBookingDetail();
 	}
 }

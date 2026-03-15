@@ -187,4 +187,40 @@ public class RequestServiceController {
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
+
+	@PostMapping("/water-tanker/v1/_driverSearch")
+	public ResponseEntity<WaterTankerBookingSearchResponse> searchDriverBookings(
+			@Valid @RequestBody CriteriyaSearchDto criteriyaSearchDto) {
+
+		// Pass the entire DTO to the service
+		List<WaterTankerBookingDetail> applications = waterTankerService.getDriverAssignedBookings(criteriyaSearchDto);
+
+		// Use the requestInfo from the DTO
+		ResponseInfo responseInfo = RequestServiceUtil.createReponseInfo(
+				criteriyaSearchDto.getRequestInfo(),
+				"Driver applications fetched successfully",
+				StatusEnum.SUCCESSFUL);
+
+		WaterTankerBookingSearchResponse response = WaterTankerBookingSearchResponse.builder()
+				.waterTankerBookingDetails(applications)
+				.responseInfo(responseInfo)
+				.count(applications.size()).build();
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PostMapping("/water-tanker/v1/_updatestatus")
+	public ResponseEntity<WaterTankerBookingResponse> updateLifecycle(
+			@RequestBody WaterTankerBookingRequest waterTankerRequest) {
+
+		WaterTankerBookingDetail waterTankerDetail = waterTankerService.updateBookingLifecycle(waterTankerRequest);
+
+		WaterTankerBookingResponse response = WaterTankerBookingResponse.builder()
+				.waterTankerBookingApplication(waterTankerDetail)
+				.responseInfo(RequestServiceUtil.createReponseInfo(waterTankerRequest.getRequestInfo(),
+						"Booking status updated successfully", StatusEnum.SUCCESSFUL))
+				.build();
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
 }

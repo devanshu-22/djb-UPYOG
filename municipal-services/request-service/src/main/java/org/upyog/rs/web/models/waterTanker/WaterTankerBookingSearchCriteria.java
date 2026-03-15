@@ -18,6 +18,9 @@ public class WaterTankerBookingSearchCriteria {
     @JsonProperty("status")
     private String status;
 
+    @JsonProperty("driverId")
+    private String driverId;
+
     @JsonProperty("bookingNo")
     private String bookingNo;
 
