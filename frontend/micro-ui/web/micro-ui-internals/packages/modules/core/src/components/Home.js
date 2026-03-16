@@ -283,6 +283,7 @@ const EmployeeHome = ({ modules }) => {
   const engagementModuleCodes = [
     "ENGAGEMENT",
     "Engagement",
+    "PGR",
     "Events",
     "Documents",
     "Public Message broadcast",
