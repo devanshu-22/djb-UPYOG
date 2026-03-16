@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FormStep, TextInput, CardLabel, RadioButtons, CheckBox, Dropdown, TextArea, UploadFile } from "@djb25/digit-ui-react-components";
+import { FormStep, TextInput, CardLabel, RadioButtons, CheckBox, Dropdown, TextArea } from "@djb25/digit-ui-react-components";
 
 /**
  * Major Page which is developed for Request/Booking detail page
@@ -11,7 +11,7 @@ const RequestDetails = ({ t, config, onSelect, userType, formData }) => {
   let validation = {};
 
   const [tankerType, settankerType] = useState(formData?.requestDetails?.tankerType || "");
-  const [tankerQuantity, settankerQuantity] = useState(formData?.requestDetails?.tankerQuantity || "");
+  const [tankerQuantity, settankerQuantity] = useState(formData?.requestDetails?.tankerQuantity || { i18nKey: "1", code: "1", value: "1" });
   const [waterQuantity, setwaterQuantity] = useState(formData?.requestDetails?.waterQuantity || "");
   const [waterType, setWaterType] = useState(formData?.requestDetails?.waterType || "");
   const [deliveryDate, setdeliveryDate] = useState(formData?.requestDetails?.deliveryDate || "");
@@ -308,7 +308,7 @@ const RequestDetails = ({ t, config, onSelect, userType, formData }) => {
           />
         </div>
         {error ? <div style={{ height: "20px", width: "100%", fontSize: "20px", color: "red", marginTop: "5px" }}>{error}</div> : ""}
-        <div style={{ disabled: "true", height: "20px", width: "100%" }}></div>
+        {/* <div style={{ disabled: "true", height: "20px", width: "100%" }}></div> */}
         <CheckBox label={t("WT_IMMEDIATE")} onChange={setextrachargeHandler} checked={extraCharge} />
       </FormStep>
     </React.Fragment>
