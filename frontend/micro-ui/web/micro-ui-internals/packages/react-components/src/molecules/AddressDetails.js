@@ -99,16 +99,18 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
     console.log(selectedAddress);
     if (selectedAddress && Object.keys(selectedAddress).length) {
       setPincode(selectedAddress.pinCode);
-      setCity(allCities?.find((ele) => ele.name === selectedAddress.city));
-      setLocality(fetchedLocalities?.find((ele) => ele.i18nkey === selectedAddress.locality));
+      setCity(selectedAddress.city);
+      setLocality(selectedAddress.locality);
       setHouseNo(selectedAddress.houseNumber);
       setstreetName(selectedAddress.streetName);
       setLandmark(selectedAddress.landmark);
       setAddressLine1(selectedAddress.address);
       setAddressLine2(selectedAddress.address2);
-      setAddressType(allOptions?.find((ele) => ele.code === selectedAddress.addressType));
+      setAddressType(allOptions.find((ele) => ele.code === selectedAddress.addressType));
     }
   }, [selectedAddress]);
+
+  console.log(city, locality);
 
   return (
     <React.Fragment>
