@@ -34,8 +34,8 @@ public class Constants {
 	public static final String MODULE_DRIVER_ROLE_MAPPING = "ModuleDriverRoleMapping";
 	public static final String VENDOR_MODULE="Vendor";
 	
-    //Driver role fetching dynamically
-//	public static final String DSO_DRIVER_ROLE_NAME = "DSO Driver role";
+    //Driver1 role fetching dynamically
+//	public static final String DSO_DRIVER_ROLE_NAME = "DSO Driver1 role";
 //	public static final String DSO_DRIVER = "FSM_DRIVER";
 
 	public static final String CITIZEN = "CITIZEN";

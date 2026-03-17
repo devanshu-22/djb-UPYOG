@@ -35,7 +35,7 @@ import { EkycModule } from "@djb25/digit-ui-module-ekyc";
 // import { initWSComponents } from "@upyog/digit-ui-module-ws";@nudmcdgnpm/upyog-ui-module-ads
 // import {initCustomisationComponents} from "./customisations";
 
-// import { PGRModule, PGRLinks } from "@djb25/digit-ui-module-pgr";
+import { PGRModule, PGRLinks } from "@djb25/digit-ui-module-pgr";
 // import { Body, TopBar } from "@djb25/digit-ui-react-components";
 import "@djb25/digit-ui-css/dist/index.css";
 
@@ -65,7 +65,7 @@ import { initKeycloak } from "@djb25/digit-ui-module-core/src/pages/employee/Log
 var Digit = window.Digit || {};
 
 const enabledModules = [
-  // "PGR",
+  "PGR",
   "FSM",
   "Payment",
   // "PT",
@@ -132,6 +132,8 @@ const initTokens = (stateCode) => {
 const initDigitUI = () => {
   window?.Digit.ComponentRegistryService.setupRegistry({
     ...pgrComponents,
+    PGRModule,
+    PGRLinks,
     PaymentModule,
     ...paymentConfigs,
     PaymentLinks,
@@ -233,8 +235,8 @@ initLibraries().then(async () => {
   const publicRoutes = [
     "/digit-ui/employee/user/language-selection",
     "/digit-ui/employee/user/login",
-    "/digit-ui/citizen/select-language",
-    "/digit-ui/citizen/select-location",
+    // "/digit-ui/citizen/select-language",
+    // "/digit-ui/citizen/select-location",
     "/digit-ui/citizen",
   ];
 
@@ -243,6 +245,14 @@ initLibraries().then(async () => {
 
     if (!isPublic) {
       window.location.href = "/digit-ui/employee/user/language-selection";
+      return;
+    }
+  }
+  if (path.startsWith("/digit-ui/citizen") && !kc.authenticated) {
+    const isPublic = publicRoutes.some((route) => path.startsWith(route));
+
+    if (!isPublic) {
+      window.location.href = "/digit-ui/citizen";
       return;
     }
   }

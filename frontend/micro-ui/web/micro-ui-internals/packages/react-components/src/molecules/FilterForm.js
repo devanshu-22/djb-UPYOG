@@ -17,6 +17,7 @@ const FilterForm = ({
   handleSubmit,
   onResetFilterForm = () => null,
   className = "",
+  showSubmit = true,
 }) => {
   const { t } = useTranslation();
   const isMobile = window.Digit.Utils.browser.isMobile();
@@ -63,7 +64,7 @@ const FilterForm = ({
         <form id={id} onSubmit={handleSubmit(onSubmit)}>
           {children}
         </form>
-        <SubmitBar className="w-fullwidth" label={t("ES_COMMON_APPLY")} submit form={id} />
+        {showSubmit && <SubmitBar className="w-fullwidth" label={t("ES_COMMON_APPLY")} submit form={id} />}
       </div>
     </div>
   );

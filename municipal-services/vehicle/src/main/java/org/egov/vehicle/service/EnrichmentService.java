@@ -7,11 +7,13 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.egov.common.contract.request.RequestInfo;
+import org.egov.tracer.model.CustomException;
 import org.egov.vehicle.util.VehicleUtil;
 import org.egov.vehicle.web.model.AuditDetails;
 import org.egov.vehicle.web.model.Vehicle;
 import org.egov.vehicle.web.model.VehicleRequest;
 import org.egov.vehicle.web.model.VehicleSearchCriteria;
+import org.egov.vehicle.web.model.driver.Driver;
 import org.egov.vehicle.web.model.user.User;
 import org.egov.vehicle.web.model.user.UserDetailResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +51,13 @@ public class EnrichmentService {
 		AuditDetails auditDetails = util.getAuditDetails(requestInfo.getUserInfo().getUuid(), false,
 				vehicleRequest.getVehicle().getAuditDetails());
 		vehicleRequest.getVehicle().setAuditDetails(auditDetails);
+
+		if (vehicleRequest.getVehicle().getDriver() != null) {
+			vehicleRequest.getVehicle().getDriver().setStatus(Driver.StatusEnum.ACTIVE);
+			if (vehicleRequest.getVehicle().getDriver().getId() == null) {
+				vehicleRequest.getVehicle().getDriver().setId(UUID.randomUUID().toString());
+			}
+		}
 		if (vehicleRequest.getVehicle().getOwner().getId() == null) {
 			vehicleRequest.getVehicle().getOwner().setId(Long.parseLong(UUID.randomUUID().toString()));
 		}

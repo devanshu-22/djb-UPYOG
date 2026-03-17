@@ -1,7 +1,6 @@
 package org.upyog.rs.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
@@ -9,6 +8,7 @@ import org.egov.common.contract.request.Role;
 import org.egov.common.contract.request.User;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.upyog.rs.config.RequestServiceConfiguration;
@@ -20,6 +20,8 @@ import org.upyog.rs.service.UserService;
 import org.upyog.rs.service.WaterTankerService;
 import org.upyog.rs.service.WorkflowService;
 import org.upyog.rs.web.models.ApplicantDetail;
+import org.upyog.rs.web.models.CriteriyaSearchDto;
+import org.upyog.rs.web.models.RequestDetailsByDriverId;
 import org.upyog.rs.web.models.waterTanker.WaterTankerBookingDetail;
 import org.upyog.rs.web.models.waterTanker.WaterTankerBookingRequest;
 import org.upyog.rs.web.models.waterTanker.WaterTankerBookingSearchCriteria;
@@ -270,4 +272,41 @@ public class WaterTankerServiceImpl implements WaterTankerService {
 		}
 	}
 
+
+	@Override
+	public List<RequestDetailsByDriverId.RequestDetailsInfo> getBookingAndAssignmentDetails(String driverId) {
+		return requestServiceRepository.getFullBookingDetailsByDriver(driverId);
+	}
+
+	@Override
+	public List<WaterTankerBookingDetail> getDriverAssignedBookings(CriteriyaSearchDto criteriyaSearchDto) {
+		String driverUuid = criteriyaSearchDto.getCriteriyaSearch().getDriverId();
+		String tenantId = criteriyaSearchDto.getRequestInfo().getUserInfo().getTenantId();
+		WaterTankerBookingSearchCriteria criteria = WaterTankerBookingSearchCriteria.builder()
+				.tenantId(tenantId)
+				.driverId(driverUuid)
+				.build();
+
+		return getWaterTankerBookingDetails(criteriyaSearchDto.getRequestInfo(),criteria);
+	}
+
+	@Override
+	public WaterTankerBookingDetail updateBookingLifecycle(WaterTankerBookingRequest waterTankerRequest) {
+		String bookingNo = waterTankerRequest.getWaterTankerBookingDetail().getBookingNo();
+		log.info("Updating lifecycle for booking no: {}", bookingNo);
+
+		if (bookingNo == null) {
+			throw new CustomException("INVALID_BOOKING_CODE", "Booking number is required for update.");
+		}
+
+		if (waterTankerRequest.getWaterTankerBookingDetail().getWorkflow() != null) {
+			State state = workflowService.updateWorkflowStatus(null, waterTankerRequest);
+
+			enrichmentService.enrichWaterTankerBookingUponUpdate(state.getApplicationStatus(), waterTankerRequest);
+		}
+
+		requestServiceRepository.updateWaterTankerBooking(waterTankerRequest);
+
+		return waterTankerRequest.getWaterTankerBookingDetail();
+	}
 }

@@ -3,6 +3,7 @@ package org.egov.vehicle.web.model;
 import javax.validation.Valid;
 import javax.validation.constraints.Size;
 
+import org.egov.vehicle.web.model.driver.Driver;
 import org.egov.vehicle.web.model.user.User;
 import org.springframework.validation.annotation.Validated;
 
@@ -93,7 +94,11 @@ public class Vehicle {
 
     @SafeHtml
     @JsonProperty("ownerId")
-    private String ownerId = null; 
+    private String ownerId = null;
+
+    @JsonProperty("driverData")
+    private Driver driver;
+
 
     public enum StatusEnum {
         ACTIVE("ACTIVE"),

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import DesktopInbox from "../../components/DesktopInbox";
 import MobileInbox from "../../components/MobileInbox";
+import Filter from "../../components/Filter";
 
 const MOCK_DATA_ITEMS = [
     { applicationNumber: "EKYC-2024-001", citizenName: "Rahul Sharma", mobileNumber: "9876543210", status: "COMPLETED" },
@@ -123,6 +124,7 @@ const Inbox = ({
                         sortParams={sortParams}
                         totalRecords={filteredStaticData.length}
                         countData={staticCountData}
+                        filterComponent="EKYC_INBOX_FILTER"
                     />
                 )}
             </div>

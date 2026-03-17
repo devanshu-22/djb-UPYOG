@@ -17,7 +17,7 @@ const InboxLinks = ({ logoIcon, headerText, links }) => {
       <div className="complaint-links-container">
         {GetLogo()}
         <div className="body">
-          {links.map(({ link, text, hyperlink = false, accessTo = [] }, index) => {
+          {links?.map(({ link, text, hyperlink = false, accessTo = [] }, index) => {
             return (
               <span className="link" key={index}>
                 {hyperlink ? <a href={link}>{t(text)}</a> : <Link to={link}>{t(text)}</Link>}

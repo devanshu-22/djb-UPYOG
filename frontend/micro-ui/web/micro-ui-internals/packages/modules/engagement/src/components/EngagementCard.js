@@ -10,7 +10,7 @@ import {
   PropertyHouse,
 } from "@djb25/digit-ui-react-components";
 
-const EngagementCard = () => {
+const ENGAGEMENTCard = () => {
   const userRoles = Digit.SessionStorage.get("User")?.info?.roles;
   const isEmployee = userRoles.find((role) => role.code === "EMPLOYEE");
 
@@ -46,18 +46,18 @@ const EngagementCard = () => {
     }
   );
 
-  const ServiceDefinitionCriteria =  {
-    "tenantId": tenantId,
-    "code": [],
-    "module": ["engagement"],
-  }
+  const ServiceDefinitionCriteria = {
+    tenantId: tenantId,
+    code: [],
+    module: ["Engagement"],
+  };
 
   const { data: surveysCount, isLoading: isLoadingSurveys } = Digit.Hooks.survey.useCfdefinitionsearch({ServiceDefinitionCriteria});
 
   const totalDocsCount = useMemo(() => (isLoadingDocs ? "-" : documentsCount), [isLoadingDocs, documentsCount]);
   const totalEventsCount = useMemo(() => (isLoadingEvents ? "-" : totalEvents), [isLoadingEvents, totalEvents]);
   const totalMessagesCount = useMemo(() => (isLoadingMessages ? "-" : MessagesCount), [isLoadingMessages, MessagesCount]);
-  const totalSurveysCount = useMemo(() => (isLoadingSurveys ? "-" : /*surveysCount.TotalCount*/"-"), [isLoadingSurveys, surveysCount]);
+  const totalSurveysCount = useMemo(() => (isLoadingSurveys ? "-" : surveysCount?.TotalCount || 0), [isLoadingSurveys, surveysCount]);
 
   const { t } = useTranslation();
   let result = null;
@@ -158,14 +158,14 @@ const EngagementCard = () => {
 
   if (isEmployee)
     result = (
-      <>
-        {engagementSubModulesProps.map((propsForModuleCard, index) => (
-          <EmployeeModuleCard key={index} longModuleName={true} {...propsForModuleCard} />
-        ))}
-      </>
-    );
+    <>
+      {engagementSubModulesProps.map((propsForModuleCard, index) => (
+        <EmployeeModuleCard key={index} longModuleName={true} {...propsForModuleCard} />
+      ))}
+    </>
+  );
 
   return result;
 };
 
-export default EngagementCard;
+export default ENGAGEMENTCard;

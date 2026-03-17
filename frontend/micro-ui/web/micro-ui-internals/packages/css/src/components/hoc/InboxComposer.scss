@@ -20,10 +20,16 @@
   }
 }
 
+@media (max-width: 768px) {
+  .search-form-wns-inbox {
+    grid-template-columns: 1fr;
+  }
+}
+
 @screen dt {
   .InboxComposerWrapper {
     grid-template-columns: calc(25% - 32px) 75%;
-    @apply grid gap-x-8 gap-y-6;
+    @apply grid gap-x-4 gap-y-4;
   }
 
   .wns-inbox-composer {
@@ -68,6 +74,10 @@
   }
 
   .search-form-wns-inbox {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+
     .clear-search-container {
       grid-column: 2/3;
       text-align: right;
@@ -113,6 +123,23 @@
     .submit {
       margin-top: 0;
       right: 0;
+    }
+  }
+}
+
+.side-panel-item {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: scroll;
+
+  @media (min-width: 768px) {
+    width: 240px;
+  }
+
+  .inboxLinks {
+    @media (max-width: 768px) {
+      display: none;
     }
   }
 }

@@ -62,7 +62,8 @@ import { CMServices } from "./services/elements/CM";
 import { WTService } from "./services/elements/WT";
 import { VendorService } from "./services/elements/EmpVendor";
 import { MTService } from "./services/elements/MT";
-   
+import { EkycService } from "./services/elements/Ekyc";
+
 
 
 const setupLibraries = (Library, props) => {
@@ -110,6 +111,7 @@ const initLibraries = () => {
   setupLibraries("StoreData", StoreData);
   setupLibraries("EventsServices", EventsServices);
   setupLibraries("WSService", WSService);
+  setupLibraries("EkycService", EkycService);
 
   setupLibraries("InboxGeneral", InboxGeneral);
   setupLibraries("ShareFiles", ShareFiles);

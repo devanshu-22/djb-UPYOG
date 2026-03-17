@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Header } from "@djb25/digit-ui-react-components";
+// import { Header } from "@djb25/digit-ui-react-components";
 //import RegisryInbox from "../../../components/RegistryInbox";
 import VendorInbox from "../../../components/VendorInbox";
 
@@ -20,51 +20,51 @@ const SearchVendor = () => {
 
   let paginationParms = { limit: pageSize, offset: pageOffset, sortBy: sortParams?.[0]?.id, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" };
 
-    const { data: dsoData, isLoading: isLoading, isSuccess: isDsoSuccess, error: dsoError, refetch } =
-      tab === "VEHICLE"
-        ? Digit.Hooks.fsm.useVehiclesSearch({    //
-            tenantId,
-            filters: {
-              ...paginationParms,
-              registrationNumber: searchParams?.registrationNumber,
-              status: "ACTIVE,DISABLED",
-            },
-            config: { enabled: false },
-          })
-        : tab === "DRIVER"
+  const { data: dsoData, isLoading: isLoading, isSuccess: isDsoSuccess, error: dsoError, refetch } =
+    tab === "VEHICLE"
+      ? Digit.Hooks.fsm.useVehiclesSearch({    //
+        tenantId,
+        filters: {
+          ...paginationParms,
+          registrationNumber: searchParams?.registrationNumber,
+          status: "ACTIVE,DISABLED",
+        },
+        config: { enabled: false },
+      })
+      : tab === "DRIVER"
         ? Digit.Hooks.fsm.useDriverSearch({
-            tenantId,
-            filters: {
-              ...paginationParms,
-              name: searchParams?.name,
-              status: "ACTIVE,DISABLED",
-            },
-            config: { enabled: false },
-          })
+          tenantId,
+          filters: {
+            ...paginationParms,
+            name: searchParams?.name,
+            status: "ACTIVE,DISABLED",
+          },
+          config: { enabled: false },
+        })
         : Digit.Hooks.fsm.useVendorSearch({
-            tenantId,
-            filters: {
-              ...paginationParms,
-              name: searchParams?.name,
-              status: "ACTIVE,DISABLED",
-            },
-            config: { enabled: false },
-          });
+          tenantId,
+          filters: {
+            ...paginationParms,
+            name: searchParams?.name,
+            status: "ACTIVE,DISABLED",
+          },
+          config: { enabled: false },
+        });
 
   //this is for specially vendor search
   //const { data: dsoData, isLoading, isSuccess: isDsoSuccess, error: dsoError, refetch } =
-    // console.log("ddaaddaatttaaaa", data);
-    // console.log("issucceesssss", isSuccess);
+  // console.log("ddaaddaatttaaaa", data);
+  // console.log("issucceesssss", isSuccess);
 
-    Digit.Hooks.fsm.useVendorSearch({
-      tenantId,
-      filters: {
-        ...paginationParms,
-        name: searchParams?.name,
-        status: "ACTIVE,DISABLED",
-      },
-      config: { enabled: false },
-    });
+  Digit.Hooks.fsm.useVendorSearch({
+    tenantId,
+    filters: {
+      ...paginationParms,
+      name: searchParams?.name,
+      status: "ACTIVE,DISABLED",
+    },
+    config: { enabled: false },
+  });
 
   const {
     data: vendorData,
@@ -84,7 +84,7 @@ const SearchVendor = () => {
 
 
 
-  
+
   const inboxTotalCount = dsoData?.totalCount || 50;
 
   useEffect(() => {
@@ -186,31 +186,31 @@ const SearchVendor = () => {
     setPageSize(Number(e.target.value));
   };
 
-  const handleFilterChange = () => {};
+  const handleFilterChange = () => { };
 
-    const searchFields =
-      tab === "VEHICLE"
+  const searchFields =
+    tab === "VEHICLE"
+      ? [
+        {
+          label: t("ES_VEHICLE_SEARCH_VEHICLE_NUMBER"),
+          name: "registrationNumber",
+          pattern: `[A-Z]{2}\\s{1}[0-9]{2}\\s{0,1}[A-Z]{1,2}\\s{1}[0-9]{4}`,
+          title: t("ES_FSM_VEHICLE_FORMAT_TIP"),
+        },
+      ]
+      : tab === "DRIVER"
         ? [
-            {
-              label: t("ES_VEHICLE_SEARCH_VEHICLE_NUMBER"),
-              name: "registrationNumber",
-              pattern: `[A-Z]{2}\\s{1}[0-9]{2}\\s{0,1}[A-Z]{1,2}\\s{1}[0-9]{4}`,
-              title: t("ES_FSM_VEHICLE_FORMAT_TIP"),
-            },
-          ]
-        : tab === "DRIVER"
-        ? [
-            {
-              label: t("ES_DRIVER_SEARCH_DRIVER_NAME"),
-              name: "name",
-            },
-          ]
+          {
+            label: t("ES_DRIVER_SEARCH_DRIVER_NAME"),
+            name: "name",
+          },
+        ]
         : [
-            {
-              label: t("ES_VENDOR_SEARCH_VENDOR_NAME"),
-              name: "name",
-            },
-          ];
+          {
+            label: t("ES_VENDOR_SEARCH_VENDOR_NAME"),
+            name: "name",
+          },
+        ];
 
   // const searchFields = [
   //   {
@@ -242,30 +242,31 @@ const SearchVendor = () => {
   }, []);
 
   return (
-    <div>
-      <Header>{t("VENDOR_SEARCH")}</Header>
-      <VendorInbox
-        data={{ table: tableData }}
-        isLoading={isLoading || isVendorLoading}
-        onSort={handleSort}
-        disableSort={false}
-        sortParams={sortParams}
-        userRole={"FSM_ADMIN"}
-        onFilterChange={handleFilterChange}
-        searchFields={searchFields}
-        onSearch={onSearch}
-        onNextPage={fetchNextPage}
-        onPrevPage={fetchPrevPage}
-        currentPage={Math.floor(pageOffset / pageSize)}
-        pageSizeLimit={pageSize}
-        onPageSizeChange={handlePageSizeChange}
-        totalRecords={inboxTotalCount || 0}
-        onTabChange={onTabChange}
-        selectedTab={tab}
-        refetchData={refetchData}
-        refetchVendor={refetchVendorData}
-      />
-    </div>
+    <React.Fragment>
+      {/* <Header>{t("VENDOR_SEARCH")}</Header> */}
+      <div className="employee-form-content">
+        <VendorInbox
+          data={{ table: tableData }}
+          isLoading={isLoading || isVendorLoading}
+          onSort={handleSort}
+          disableSort={false}
+          sortParams={sortParams}
+          userRole={"FSM_ADMIN"}
+          onFilterChange={handleFilterChange}
+          searchFields={searchFields}
+          onSearch={onSearch}
+          onNextPage={fetchNextPage}
+          onPrevPage={fetchPrevPage}
+          currentPage={Math.floor(pageOffset / pageSize)}
+          pageSizeLimit={pageSize}
+          onPageSizeChange={handlePageSizeChange}
+          totalRecords={inboxTotalCount || 0}
+          onTabChange={onTabChange}
+          selectedTab={tab}
+          refetchData={refetchData}
+          refetchVendor={refetchVendorData}
+        /></div>
+    </React.Fragment>
   );
 };
 

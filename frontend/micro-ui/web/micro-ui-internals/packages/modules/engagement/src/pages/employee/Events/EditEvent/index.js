@@ -39,7 +39,7 @@ const EditEvents = () => {
           tenantId: formData?.tenantId?.code,
           description: formData?.description,
           name: formData?.name,
-          eventcategory: formData?.eventCategory?.code,
+          eventCategory: formData?.eventCategory?.code,
           eventDetails: {
             ...data?.eventDetails,
             fromDate: new Date(`${fromDate} ${fromTime}`).getTime(),

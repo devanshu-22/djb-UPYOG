@@ -2,6 +2,7 @@ package org.upyog.rs.web.controllers;
 
 
 import java.util.List;
+import java.util.Map;
 
 import javax.validation.Valid;
 
@@ -12,11 +13,15 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.upyog.rs.constant.RequestServiceConstants;
 import org.upyog.rs.service.MobileToiletService;
 import org.upyog.rs.service.WaterTankerService;
 import org.upyog.rs.util.RequestServiceUtil;
+import org.upyog.rs.util.ResponseInfoFactory;
 import org.upyog.rs.validator.ValidatorService;
+import org.upyog.rs.web.models.CriteriyaSearchDto;
+import org.upyog.rs.web.models.RequestDetailsByDriverId;
 import org.upyog.rs.web.models.ResponseInfo;
 import org.upyog.rs.web.models.mobileToilet.MobileToiletBookingDetail;
 import org.upyog.rs.web.models.mobileToilet.MobileToiletBookingRequest;
@@ -45,6 +50,9 @@ public class RequestServiceController {
 
 	@Autowired
 	private MobileToiletService mobileToiletService;
+
+	@Autowired
+	private ResponseInfoFactory responseInfoFactory;
 
 	@Autowired
 	private ValidatorService validatorService;
@@ -163,5 +171,56 @@ public class RequestServiceController {
 						RequestServiceConstants.APPLICATION_UPDATED, StatusEnum.SUCCESSFUL))
 				.build();
 		return new ResponseEntity<MobileToiletBookingResponse>(response, HttpStatus.OK);
+	}
+
+	@PostMapping("/water-tanker/v1/_driver_assignments")
+	public ResponseEntity<RequestDetailsByDriverId> getDriverAssignments(
+			@RequestBody @Valid CriteriyaSearchDto searchDto) {
+
+		List<RequestDetailsByDriverId.RequestDetailsInfo> details =
+				waterTankerService.getBookingAndAssignmentDetails(searchDto.getCriteriyaSearch().getDriverId());
+
+		RequestDetailsByDriverId response = RequestDetailsByDriverId.builder()
+				.requestDetailsInfo(details)
+				.responseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(searchDto.getRequestInfo(), true))
+				.build();
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PostMapping("/water-tanker/v1/_driverSearch")
+	public ResponseEntity<WaterTankerBookingSearchResponse> searchDriverBookings(
+			@Valid @RequestBody CriteriyaSearchDto criteriyaSearchDto) {
+
+		// Pass the entire DTO to the service
+		List<WaterTankerBookingDetail> applications = waterTankerService.getDriverAssignedBookings(criteriyaSearchDto);
+
+		// Use the requestInfo from the DTO
+		ResponseInfo responseInfo = RequestServiceUtil.createReponseInfo(
+				criteriyaSearchDto.getRequestInfo(),
+				"Driver applications fetched successfully",
+				StatusEnum.SUCCESSFUL);
+
+		WaterTankerBookingSearchResponse response = WaterTankerBookingSearchResponse.builder()
+				.waterTankerBookingDetails(applications)
+				.responseInfo(responseInfo)
+				.count(applications.size()).build();
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PostMapping("/water-tanker/v1/_updatestatus")
+	public ResponseEntity<WaterTankerBookingResponse> updateLifecycle(
+			@RequestBody WaterTankerBookingRequest waterTankerRequest) {
+
+		WaterTankerBookingDetail waterTankerDetail = waterTankerService.updateBookingLifecycle(waterTankerRequest);
+
+		WaterTankerBookingResponse response = WaterTankerBookingResponse.builder()
+				.waterTankerBookingApplication(waterTankerDetail)
+				.responseInfo(RequestServiceUtil.createReponseInfo(waterTankerRequest.getRequestInfo(),
+						"Booking status updated successfully", StatusEnum.SUCCESSFUL))
+				.build();
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 }

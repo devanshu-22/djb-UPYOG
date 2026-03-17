@@ -1,13 +1,15 @@
 package org.upyog.rs.service;
 
 import org.egov.common.contract.request.RequestInfo;
+import org.upyog.rs.web.models.CriteriyaSearchDto;
+import org.upyog.rs.web.models.RequestDetailsByDriverId;
 import org.upyog.rs.web.models.waterTanker.WaterTankerBookingDetail;
 import org.upyog.rs.web.models.waterTanker.WaterTankerBookingRequest;
 import org.upyog.rs.web.models.waterTanker.WaterTankerBookingSearchCriteria;
 
 import digit.models.coremodels.PaymentRequest;
 
-import java.util.List;
+import java.util.*;
 
 public interface WaterTankerService {
 	
@@ -20,6 +22,8 @@ public interface WaterTankerService {
 	public void updateWaterTankerBooking(PaymentRequest paymentRequest, String applicationStatus);
 
 	public WaterTankerBookingDetail updateWaterTankerBooking(WaterTankerBookingRequest waterTankerRequest, String applicationStatus);
+	List<RequestDetailsByDriverId.RequestDetailsInfo> getBookingAndAssignmentDetails(String driverId);
 
-
+	List<WaterTankerBookingDetail> getDriverAssignedBookings(CriteriyaSearchDto criteriyaSearchDto);
+	WaterTankerBookingDetail updateBookingLifecycle(WaterTankerBookingRequest request);
 }

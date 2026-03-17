@@ -6,7 +6,6 @@ import CardLabel from "../atoms/CardLabel";
 import CardLabelError from "../atoms/CardLabelError";
 import TextInput from "../atoms/TextInput";
 import InputCard from "./InputCard";
-import DatePicker from "../atoms/DatePicker";
 const FormStep = ({
   t,
   children,
@@ -25,6 +24,7 @@ const FormStep = ({
   showErrorBelowChildren = false,
   childrenAtTheBottom = true,
   textInputStyle,
+  className,
 }) => {
   const { register, watch, errors, handleSubmit } = useForm({
     defaultValues: _defaultValues,
@@ -107,6 +107,7 @@ const FormStep = ({
         submit
         {...{ onSkip: onSkip, onAdd: onAdd }}
         t={t}
+        className={className || ""}
       >
         {!childrenAtTheBottom && children}
         {inputs}

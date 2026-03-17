@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { useGlobalFilter, usePagination, useRowSelect, useSortBy, useTable } from "react-table";
 import { ArrowBack, ArrowForward, ArrowToFirst, ArrowToLast, SortDown, SortUp } from "./svgindex";
 
-const noop = () => {};
+const noop = () => { };
 
 const Table = ({
   className = "table",
@@ -151,18 +151,20 @@ const Table = ({
       {isPaginationRequired && (
         <div className="pagination dss-white-pre">
           {`${t("CS_COMMON_ROWS_PER_PAGE")} :`}
-          <select
-            className="cp"
-            value={pageSize}
-            style={{ marginRight: "15px" }}
-            onChange={manualPagination ? onPageSizeChange : (e) => setPageSize(Number(e.target.value))}
-          >
-            {[10, 20, 30, 40, 50].map((pageSize) => (
-              <option key={pageSize} value={pageSize}>
-                {pageSize}
-              </option>
-            ))}
-          </select>
+          <div>
+            <select
+              className="cp"
+              value={pageSize}
+              style={{ marginRight: "15px" }}
+              onChange={manualPagination ? onPageSizeChange : (e) => setPageSize(Number(e.target.value))}
+            >
+              {[10, 20, 30, 40, 50].map((pageSize) => (
+                <option key={pageSize} value={pageSize}>
+                  {pageSize}
+                </option>
+              ))}
+            </select>
+          </div>
           <span>
             <span>
               {pageIndex * pageSize + 1}

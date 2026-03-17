@@ -1,8 +1,9 @@
 package org.upyog.rs.repository.impl;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,7 @@ import org.upyog.rs.repository.RequestServiceRepository;
 import org.upyog.rs.repository.querybuilder.RequestServiceQueryBuilder;
 import org.upyog.rs.repository.rowMapper.GenericRowMapper;
 import org.upyog.rs.web.models.PersisterWrapper;
+import org.upyog.rs.web.models.RequestDetailsByDriverId;
 import org.upyog.rs.web.models.mobileToilet.MobileToiletBookingDetail;
 import org.upyog.rs.web.models.mobileToilet.MobileToiletBookingRequest;
 import org.upyog.rs.web.models.mobileToilet.MobileToiletBookingSearchCriteria;
@@ -160,7 +162,23 @@ public class RequestServieRepositoryImpl implements RequestServiceRepository {
 
 	}
 
+	private static final String BOOKING_BY_DRIVER_QUERY =
+			"SELECT ursbd.*, urad.name as applicant_name, uraddr.latitude, uraddr.longitude, " +
+					"uraddr.city, uraddr.pincode, ev.registrationnumber as registrationNumber, " +
+					"ev.model as vehicle_model " +
+					"FROM upyog_rs_water_tanker_booking_details ursbd " +
+					"INNER JOIN upyog_rs_water_tanker_applicant_details urad ON ursbd.booking_id = urad.booking_id " +
+					"INNER JOIN upyog_rs_water_tanker_address_details uraddr ON urad.applicant_id = uraddr.applicant_id " +
+					"LEFT JOIN eg_vehicle ev ON ursbd.vehicle_id = ev.id " +
+					"WHERE ursbd.driver_id = ?";
 
+	@Override
+	public List<RequestDetailsByDriverId.RequestDetailsInfo> getFullBookingDetailsByDriver(String driverId) {
+		log.info("Fetching details for driverId: {}", driverId);
+		return jdbcTemplate.query(BOOKING_BY_DRIVER_QUERY,
+				new Object[]{driverId},
+				new BeanPropertyRowMapper<>(RequestDetailsByDriverId.RequestDetailsInfo.class));
+	}
 
 
 

@@ -160,7 +160,7 @@ const EmployeeApp = ({
                 <a style={{ cursor: "pointer", fontSize: "16px", fontWeight: "400"}} href={pdfUrl} target='_blank'>UPYOG License</a>
               </div>
             </div> */}
-            <div style={{ width: "100%", height: "25px", position: "fixed", bottom: 0, backgroundColor: "white", textAlign: "center" }}>
+            <div style={{ width: "100%", height: "30px", position: "fixed", bottom: 0, backgroundColor: "#FFF", display:"flex", alignItems:'center', justifyContent:'center', zIndex:'100000' }}>
               <div style={{ display: "flex", justifyContent: "center", color: "black" }}>
                 {/* <span style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile()?"12px":"14px", fontWeight: "400"}} onClick={() => { window.open('https://www.digit.org/', '_blank').focus();}} >Powered by DIGIT</span> */}
                 {/* <span style={{ margin: "0 10px" ,fontSize: window.Digit.Utils.browser.isMobile()?"12px":"14px"}}>|</span> */}

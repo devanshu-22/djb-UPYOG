@@ -4,6 +4,7 @@ import EKYCCard from "./components/EKYCCard";
 import Inbox from "./pages/employee/Inbox";
 import DesktopInbox from "./components/DesktopInbox";
 import MobileInbox from "./components/MobileInbox";
+import Filter from "./components/Filter";
 import EmployeeApp from "./pages/employee";
 
 export const EkycModule = ({ stateCode, userType, tenants }) => {
@@ -27,6 +28,7 @@ const componentsToRegister = {
     EKYCInbox: Inbox,
     EKYCDesktopInbox: DesktopInbox,
     EKYCMobileInbox: MobileInbox,
+    EKYC_INBOX_FILTER: (props) => <Filter {...props} />,
 };
 
 export const initEkycComponents = () => {

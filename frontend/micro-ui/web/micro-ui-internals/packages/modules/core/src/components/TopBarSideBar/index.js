@@ -38,7 +38,8 @@ const TopBarSideBar = ({
 
         if (kc) {
           await kc.logout({
-            redirectUri: window.location.origin + "/digit-ui/employee/user/language-selection",
+            // redirectUri: window.location.origin + "/digit-ui",
+            idTokenHint: kc.idToken
           });
         }
       } catch (e) {

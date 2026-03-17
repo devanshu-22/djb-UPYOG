@@ -27,7 +27,7 @@ const ExpandedViewPage = ({ modules = [] }) => {
       const found = modules.find(
         (m) =>
           m.code === moduleName ||
-          t(`ACTION_TEST_${m.code}`) === moduleName ||
+          t(`ACTION_TEST_${m.code}`).toUpperCase() === moduleName ||
           m.name === moduleName
       );
 
@@ -51,10 +51,10 @@ const ExpandedViewPage = ({ modules = [] }) => {
     const foundModule = modules.find((m) => m.code === activeModuleCode);
 
     if (foundModule) {
-      return t(`ACTION_TEST_${foundModule.code}`);
+      return t(`ACTION_TEST_${foundModule.code}`).toUpperCase();
     }
 
-    return moduleName || activeModuleCode;
+    return (moduleName || activeModuleCode).toUpperCase();
   }, [activeModuleCode, modules, moduleName, t]);
 
   const breadcrumbs = [
@@ -81,15 +81,20 @@ const ExpandedViewPage = ({ modules = [] }) => {
 
     if (
       (activeModuleCode === moduleName ||
-        t(`ACTION_TEST_${activeModuleCode}`) === moduleName) &&
+        t(`ACTION_TEST_${activeModuleCode}`).toUpperCase() === moduleName) &&
       links.length > 0
     ) {
-      return <ModuleLinksView links={links} moduleName={moduleName} />;
+      return (
+        <ModuleLinksView
+          links={links}
+          moduleName={(moduleName || "").toUpperCase()}
+        />
+      );
     }
 
     return (
       <div className="no-links-msg">
-        Module content not found for {activeModuleCode}.
+        MODULE CONTENT NOT FOUND FOR {activeModuleCode?.toUpperCase()}.
       </div>
     );
   };
@@ -103,7 +108,7 @@ const ExpandedViewPage = ({ modules = [] }) => {
           leftContent={
             <>
               <ArrowLeft className="icon" />
-              Back
+              BACK
             </>
           }
           onLeftClick={() => window.history.back()}
@@ -114,12 +119,12 @@ const ExpandedViewPage = ({ modules = [] }) => {
           {/* 🔹 LEFT SIDEBAR */}
           <div className="expanded-sidebar">
             <div className="sidebar-header">
-              <span className="sidebar-title">All Modules</span>
+              <span className="sidebar-title">ALL MODULES</span>
             </div>
 
             <div className="sidebar-menu">
               {sidebarList.map((mod, idx) => {
-                const displayName = t(`ACTION_TEST_${mod.code}`);
+                const displayName = t(`ACTION_TEST_${mod.code}`).toUpperCase();
                 const isActive = mod.code === activeModuleCode;
 
                 return (
@@ -141,6 +146,7 @@ const ExpandedViewPage = ({ modules = [] }) => {
                         <path d="M20 6.5l-8 4.5-8-4.5" />
                       </svg>
                     </div>
+
                     <span className="sidebar-text">{displayName}</span>
                   </div>
                 );

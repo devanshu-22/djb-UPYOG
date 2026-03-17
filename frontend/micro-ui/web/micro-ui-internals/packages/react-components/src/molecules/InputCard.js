@@ -7,7 +7,6 @@ import CardText from "../atoms/CardText";
 import SubmitBar from "../atoms/SubmitBar";
 import LinkButton from "../atoms/LinkButton";
 import CardCaption from "../atoms/CardCaption";
-import TextInput from "../atoms/TextInput";
 
 const InputCard = ({
   t,
@@ -22,15 +21,16 @@ const InputCard = ({
   onAdd,
   isMultipleAllow = false,
   cardStyle = {},
+  className,
 }) => {
   const isMobile = window.Digit.Utils.browser.isMobile();
   // TODO: inputs handle
   return (
-    <Card style={cardStyle}>
+    <Card className={className || ""} style={cardStyle}>
       {texts.headerCaption && <CardCaption>{t(texts.headerCaption)}</CardCaption>}
       {texts?.header && <CardHeader>{t(texts.header)}</CardHeader>}
       {texts?.cardText && <CardText>{t(texts.cardText)}</CardText>}
-      {children}
+      <div className="formcomposer-section-grid">{children}</div>
       {texts.submitBarLabel ? <SubmitBar disabled={isDisable} submit={submit} label={t(texts.submitBarLabel)} onSubmit={onNext} /> : null}
       {texts.skipLabel ? <CardText style={{ marginTop: "10px", textAlign: isMobile ? "center" : "left" }}> {t(texts.skipLabel)} </CardText> : null}
       {texts.skipText ? <LinkButton label={t(texts.skipText)} onClick={onSkip} /> : null}

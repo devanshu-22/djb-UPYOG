@@ -85,7 +85,7 @@ export const VendorData = (data) => {
       //vendorAdditionalDetailsId: crypto.randomUUID(), // Generate unique ID
       tenantId: Digit.ULBService.getCurrentTenantId(),
       code: "VENDOR12345454",
-      name: "kunal",
+      name: data?.vendordet?.userName || "N/A",
       vendorCompany: data?.vendordet?.Company,
       //vendorCategory: "Category 1",
       vendorPhone: data?.vendordet?.PhoneNo,
@@ -110,6 +110,8 @@ export const VendorData = (data) => {
       documents: data?.documents?.documents,
       active: null,
       vendorAdditionalDetailsId: null,
+      vendorGroup: data?.vendordet?.vendorGroup || "N/A",
+      vendorType: data?.vendordet?.vendorType || "N/A",
     },
   };
 

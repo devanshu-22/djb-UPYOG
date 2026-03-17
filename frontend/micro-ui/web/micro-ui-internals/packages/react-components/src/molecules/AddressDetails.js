@@ -7,36 +7,6 @@ import Dropdown from "../atoms/Dropdown";
 import FormStep from "./FormStep";
 import { useLocation } from "react-router-dom";
 
-/**
- * Common Address Details component so that developer can use it just by importing it accross the UPYOG.
- * all cities data is fetching from common Tenants hook and locality data is fetched in the same way.
- * 
- * Steps to Use it in your Module/Application  :-
- *    1. Import it in your Module.js file of your Application/Module from  @djb25/digit-ui-react-components library.
- *    2. Insert it inside your componet registry Function in the same Module.js file.
- *    3. Then simply In your Config.js file which is present in your comfig folder inside src, add the component name "AddressDetails" in components and key should be "address"
- * 
- *     example :- 
- *              {
-                "route": "add url route here",
-                "component": "AddressDetails",
-                "withoutLabel": true,
-                "key": "address",
-                "type": "component",
-                "nextStep": "add your next to be url route here",
-                "isMandatory": true,
-                "texts": {
-                    "submitBarLabel": "COMMON_SAVE_NEXT",
-                    "header": "ADDRESS_DETAILS",
-                }
-            },
-
-      4. Test it, it will work.
-      
-
-      TODO: Need to check how to use Timeline functioality 
- */
-
 const AddressDetails = ({ t, config, onSelect, formData, isEdit }) => {
   const { data: allCities, isLoading } = Digit.Hooks.useTenants();
   let validation = {};
@@ -147,6 +117,8 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit }) => {
             style={{ width: "100%" }}
             placeholder={"Select Address Type"}
           />
+        </div>
+        <div>
           <CardLabel>
             {`${t("HOUSE_NO")}`} <span className="check-page-link-button">*</span>
           </CardLabel>
@@ -170,7 +142,8 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit }) => {
               title: t("HOUSE_NO_ERROR_MESSAGE"),
             }}
           />
-
+        </div>
+        <div>
           <CardLabel>
             {`${t("STREET_NAME")}`} <span className="check-page-link-button">*</span>
           </CardLabel>
@@ -193,7 +166,8 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit }) => {
               title: t("STREET_NAME_ERROR_MESSAGE"),
             }}
           />
-
+        </div>
+        <div>
           <CardLabel>
             {`${t("ADDRESS_LINE1")}`} <span className="check-page-link-button">*</span>
           </CardLabel>
@@ -217,7 +191,8 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit }) => {
               title: t("ADDRESS_ERROR_MESSAGE"),
             })}
           />
-
+        </div>
+        <div>
           <CardLabel>
             {`${t("ADDRESS_LINE2")}`} <span className="check-page-link-button">*</span>
           </CardLabel>
@@ -241,7 +216,8 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit }) => {
               title: t("ADDRESS_ERROR_MESSAGE"),
             })}
           />
-
+        </div>
+        <div>
           <CardLabel>{`${t("LANDMARK")}`}</CardLabel>
           <TextInput
             t={t}
@@ -263,7 +239,8 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit }) => {
               title: t("LANDMARK_ERROR_MESSAGE"),
             }}
           />
-
+        </div>
+        <div>
           <CardLabel>
             {`${t("CITY")}`} <span className="check-page-link-button">*</span>
           </CardLabel>
@@ -286,7 +263,8 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit }) => {
               />
             )}
           />
-
+        </div>
+        <div>
           <CardLabel>
             {`${t("LOCALITY")}`} <span className="check-page-link-button">*</span>
           </CardLabel>
@@ -309,7 +287,8 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit }) => {
               />
             )}
           />
-
+        </div>
+        <div style={{paddingBottom:"10px"}}>
           <CardLabel>
             {`${t("PINCODE")}`} <span className="check-page-link-button">*</span>
           </CardLabel>

@@ -108,6 +108,13 @@ public class WaterTankerBookingDetail {
 
 	private String localityCode;
 
+	private String latitude;
+
+	private String longitude;
+
+	@JsonProperty("WTfileStoreId")
+	private String WTfileStoreId;
+
 	@Valid
 	@NotNull
 	private ApplicantDetail applicantDetail;

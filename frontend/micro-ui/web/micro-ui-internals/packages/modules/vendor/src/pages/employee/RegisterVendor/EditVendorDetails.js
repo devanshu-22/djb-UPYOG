@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -11,7 +11,6 @@ import {
   ActionBar,
   Menu,
   Toast,
-  Header,
   EditIcon,
   DeleteIcon,
   Modal,
@@ -20,13 +19,13 @@ import {
 } from "@djb25/digit-ui-react-components";
 
 import { useQueryClient } from "react-query";
-
 import { useHistory, useParams } from "react-router-dom";
 import ConfirmationBox from "../../../components/Confirmation";
 
 const Heading = (props) => {
   return <h1 className="heading-m">{props.label}</h1>;
 };
+
 const Close = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF">
     <path d="M0 0h24v24H0V0z" fill="none" />
@@ -42,6 +41,12 @@ const CloseBtn = (props) => {
   );
 };
 
+// Helper function to convert camelCase to Title Case for UI labels
+const formatLabel = (key) => {
+  const result = key.replace(/([A-Z])/g, " $1");
+  return result.charAt(0).toUpperCase() + result.slice(1);
+};
+
 const EditVendorDetails = (props) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const state = Digit.ULBService.getStateId();
@@ -51,31 +56,19 @@ const EditVendorDetails = (props) => {
   let { id: dsoId } = useParams();
   const [displayMenu, setDisplayMenu] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
-  const [config, setCurrentConfig] = useState({});
   const [showModal, setShowModal] = useState(false);
   const [showToast, setShowToast] = useState(null);
   const [vehicles, setVehicles] = useState([]);
   const [drivers, setDrivers] = useState([]);
   const [selectedOption, setSelectedOption] = useState({});
 
-  const { data: dsoData, isLoading: isLoading, isSuccess: isDsoSuccess, error: dsoError, refetch: refetchDso } = Digit.Hooks.fsm.useDsoSearch(
+  const { data: dsoData, isLoading: isLoading, refetch: refetchDso } = Digit.Hooks.fsm.useDsoSearch(
     tenantId,
     { ids: dsoId },
     { staleTime: Infinity }
   );
 
-  console.log("id in dso :: ", dsoId);
-  console.log("dsoData", dsoData);
-
-  //const filteredDsoApplication = dsoData?.filter(item => item.id === dsoId);
-
-  const {
-    data: vehicleData,
-    isLoading: isVehicleDataLoading,
-    isSuccess: isVehicleSuccess,
-    error: vehicleError,
-    refetch: refetchVehicle,
-  } = Digit.Hooks.fsm.useVehiclesSearch({
+  const { data: vehicleData, refetch: refetchVehicle } = Digit.Hooks.fsm.useVehiclesSearch({
     tenantId,
     filters: {
       status: "ACTIVE",
@@ -85,13 +78,7 @@ const EditVendorDetails = (props) => {
     },
   });
 
-  const {
-    data: driverData,
-    isLoading: isDriverDataLoading,
-    isSuccess: isDriverSuccess,
-    error: driverError,
-    refetch: refetchDriver,
-  } = Digit.Hooks.fsm.useDriverSearch({
+  const { data: driverData, refetch: refetchDriver } = Digit.Hooks.fsm.useDriverSearch({
     tenantId,
     filters: {
       sortBy: "name",
@@ -101,13 +88,12 @@ const EditVendorDetails = (props) => {
     },
   });
 
-  const {
-    isLoading: isUpdateLoading,
-    isError: vendorCreateError,
-    data: updateResponse,
-    error: updateError,
-    mutate,
-  } = Digit.Hooks.fsm.useVendorUpdate(tenantId);
+  const { data: vendorAdditionalData, isLoading: isVendorAdditionalLoading } = Digit.Hooks.vendor.useEmpvendorCommonSearch(
+    { tenantId, filters: { vendorId: dsoId } },
+    { enabled: !!dsoId }
+  );
+
+  const { mutate } = Digit.Hooks.fsm.useVendorUpdate(tenantId);
 
   function onActionSelect(action) {
     setDisplayMenu(false);
@@ -143,7 +129,7 @@ const EditVendorDetails = (props) => {
 
   const closeModal = () => {
     setSelectedAction(null);
-    setSelectedOption({})
+    setSelectedOption({});
     setShowModal(false);
   };
 
@@ -268,7 +254,7 @@ const EditVendorDetails = (props) => {
     }
     if (selectedAction === "ADD_VEHICLE") {
       return (
-        <>
+        <React.Fragment>
           <CardText>{t(`ES_FSM_REGISTRY_SELECT_VEHICLE`)}</CardText>
           <Dropdown
             t={t}
@@ -278,92 +264,180 @@ const EditVendorDetails = (props) => {
             select={setSelectedOption}
             optionKey={"registrationNumber"}
           />
-        </>
+        </React.Fragment>
       );
     }
     if (selectedAction === "ADD_DRIVER") {
       return (
-        <>
+        <React.Fragment>
           <CardText>{t(`ES_FSM_REGISTRY_SELECT_DRIVER`)}</CardText>
           <Dropdown t={t} option={drivers} value={selectedOption} selected={selectedOption} select={setSelectedOption} optionKey={"name"} />
-        </>
+        </React.Fragment>
       );
     }
   };
+
   const isMobile = window.Digit.Utils.browser.isMobile();
 
   if (isLoading) {
     return <Loader />;
   }
 
+  // Fields to exclude from the Additional Details UI rendering
+  const excludedKeys = [
+    "vendorAdditionalDetailsId",
+    "vendorId", // Hiding this as it's an internal ID
+    "tenantId",
+    "code",
+    "lastModifiedTime",
+    "createdTime",
+    "lastModifiedBy",
+    "createdBy",
+    "active",
+    "status",
+    "vendorType",
+    "vendorGroup",
+    "narration",
+    "documents", // Complex array handled separately if needed
+  ];
+
   return (
-    <React.Fragment>
+    <div className="employee-form-content">
       {!isLoading ? (
         <React.Fragment>
-          <Header style={{ marginBottom: "16px" }}>{t("ES_FSM_REGISTRY_VENDOR_DETAILS")}</Header>
-          <div style={!isMobile ? { marginLeft: "-15px" } : {}}>
-            <Card style={{ position: "relative" }}>
-              {dsoData?.[0]?.employeeResponse?.map((detail, index) => (
-                <React.Fragment key={index}>
-                  {index > 0 && <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t(detail.title)}</CardSectionHeader>}
-                  <div style={!isMobile ? { marginLeft: "-15px" } : {}}>
-                    <StatusTable>
-                      {detail?.values?.map((value, index) => {
+          <Card style={{ position: "relative", paddingLeft: "30px" }}>
+            {dsoData?.[0]?.employeeResponse?.map((detail, index) => (
+              <React.Fragment key={index}>
+                {index > 0 && <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t(detail.title)}</CardSectionHeader>}
+                <div style={!isMobile ? { marginLeft: "-15px" } : {}}>
+                  <StatusTable>
+                    {detail?.values?.map((value, index) => {
+                      // ADDITIONAL DETAILS LOGIC
+                      if (value.title === "ES_FSM_REGISTRY_DETAILS_ADDITIONAL_DETAILS") {
+                        const additionalDetails = vendorAdditionalData?.VendorDetails?.[0]?.vendorAdditionalDetails;
+
+                        const entries = Object.entries(additionalDetails || {}).filter(([key]) => !excludedKeys.includes(key));
+
                         return (
-                          <Row
-                            key={t(value.title)}
-                            label={t(value.title)}
-                            text={t(value.value) || "N/A"}
-                            last={index === detail?.values?.length - 1}
-                            caption={value.caption}
-                            className={`border-none ${!isMobile ? "vendor-details-row" : ""}`}
-                          />
-                        );
-                      })}
-                      {detail?.child?.map((data, index) => {
-                        return (
-                          <Card className="card-with-background">
-                            <div className="card-head">
-                              <h2>
-                                {t(detail.type)} {index + 1}
-                              </h2>
-                              <div style={{ display: "flex" }}>
-                                <span onClick={() => onEdit(data, detail.type, data.id)}>
-                                  <EditIcon style={{ cursor: "pointer", marginRight: "20px" }} className="edit" fill="#a82227" />
-                                </span>
-                                <span onClick={() => onDelete(data, detail.type, data.id)}>
-                                  <DeleteIcon style={{ cursor: "pointer" }} className="delete" fill="#a82227" />
-                                </span>
+                          <React.Fragment key={value.title}>
+                            {/* Additional Details Title */}
+                            <Row label={t(value.title)} text="" className="border-none" />
+
+                            {/* Additional Details Card */}
+                            {isVendorAdditionalLoading ? (
+                              <Loader />
+                            ) : additionalDetails ? (
+                              <Card
+                                className="card-with-background"
+                                style={{
+                                  margin: "10px 16px",
+                                  padding: "20px",
+                                }}
+                              >
+                                <div className="additional-grid">
+                                  {entries.map(([key, val]) => {
+                                    if (typeof val === "object" && val !== null) return null;
+
+                                    const safeKey = String(key);
+                                    let safeVal = val !== null && val !== undefined && val !== "" ? String(val) : "N/A";
+
+                                    if (key === "name" && (!val || val === "")) {
+                                      safeVal = dsoData?.[0]?.dsoDetails?.name || "N/A";
+                                    }
+                                    return (
+                                      <React.Fragment key={safeKey}>
+                                        <div className="additional-label">{t(formatLabel(safeKey))}</div>
+
+                                        <div className="additional-value">{safeVal}</div>
+                                      </React.Fragment>
+                                    );
+                                  })}
+                                </div>
+
+                                <div
+                                  style={{
+                                    marginTop: "16px",
+                                    color: "#a82227",
+                                    cursor: "pointer",
+                                    textDecoration: "underline",
+                                  }}
+                                  onClick={() => history.push(`/digit-ui/employee/vendor/registry/additionaldetails/info?vendorId=${dsoId}`)}
+                                >
+                                  {t("Edit Details")}
+                                </div>
+                              </Card>
+                            ) : (
+                              <div
+                                style={{
+                                  marginLeft: "16px",
+                                  color: "#a82227",
+                                  cursor: "pointer",
+                                  textDecoration: "underline",
+                                }}
+                                onClick={() => history.push(`/digit-ui/employee/vendor/registry/additionaldetails/vendor-details?vendorId=${dsoId}`)}
+                              >
+                                {t("Add Additional Details")}
                               </div>
-                            </div>
-                            {data?.values?.map((value, index) => (
-                              <Row
-                                key={t(value.title)}
-                                label={t(value.title)}
-                                text={t(value.value) || "N/A"}
-                                last={index === detail?.values?.length - 1}
-                                caption={value.caption}
-                                className="border-none"
-                                textStyle={value.value === "ACTIVE" ? { color: "green" } : {}}
-                              />
-                            ))}
-                          </Card>
+                            )}
+                          </React.Fragment>
                         );
-                      })}
-                      {detail.type && (
-                        <div
-                          style={{ color: "#a82227", cursor: "pointer", marginLeft: "16px" }}
-                          onClick={() => onActionSelect(detail.type === "ES_FSM_REGISTRY_DETAILS_TYPE_DRIVER" ? "ADD_DRIVER" : "ADD_VEHICLE")}
-                        >
-                          {t(`${detail.type}_ADD`)}
-                        </div>
-                      )}
-                    </StatusTable>
-                  </div>
-                </React.Fragment>
-              ))}
-            </Card>
-          </div>
+                      }
+
+                      // DEFAULT ROW LOGIC
+                      return (
+                        <Row
+                          key={t(String(value.title))}
+                          label={t(String(value.title))}
+                          text={value.value ? t(String(value.value)) : "N/A"}
+                          last={index === detail?.values?.length - 1}
+                          caption={value.caption}
+                          className={`border-none ${!isMobile ? "vendor-details-row" : ""}`}
+                        />
+                      );
+                    })}
+                    {detail?.child?.map((data, index) => {
+                      return (
+                        <Card className="card-with-background" key={data.id || index}>
+                          <div className="card-head">
+                            <h2>
+                              {t(detail.type)} {index + 1}
+                            </h2>
+                            <div style={{ display: "flex" }}>
+                              <span onClick={() => onEdit(data, detail.type, data.id)}>
+                                <EditIcon style={{ cursor: "pointer", marginRight: "20px" }} className="edit" fill="#a82227" />
+                              </span>
+                              <span onClick={() => onDelete(data, detail.type, data.id)}>
+                                <DeleteIcon style={{ cursor: "pointer" }} className="delete" fill="#a82227" />
+                              </span>
+                            </div>
+                          </div>
+                          {data?.values?.map((value, index) => (
+                            <Row
+                              key={t(String(value.title))}
+                              label={t(String(value.title))}
+                              text={value.value ? t(String(value.value)) : "N/A"}
+                              last={index === detail?.values?.length - 1}
+                              caption={value.caption}
+                              className="border-none"
+                              textStyle={value.value === "ACTIVE" ? { color: "green" } : {}}
+                            />
+                          ))}
+                        </Card>
+                      );
+                    })}
+                    {detail.type && (
+                      <div
+                        style={{ color: "#a82227", cursor: "pointer", marginLeft: "16px" }}
+                        onClick={() => onActionSelect(detail.type === "ES_FSM_REGISTRY_DETAILS_TYPE_DRIVER" ? "ADD_DRIVER" : "ADD_VEHICLE")}
+                      >
+                        {t(`${detail.type}_ADD`)}
+                      </div>
+                    )}
+                  </StatusTable>
+                </div>
+              </React.Fragment>
+            ))}
+          </Card>
 
           {showModal && (
             <Modal
@@ -404,7 +478,7 @@ const EditVendorDetails = (props) => {
       ) : (
         <Loader />
       )}
-    </React.Fragment>
+    </div>
   );
 };
 

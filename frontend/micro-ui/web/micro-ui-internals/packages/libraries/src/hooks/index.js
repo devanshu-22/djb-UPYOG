@@ -339,6 +339,7 @@ import useWTApplicationAction from "./wt/useWTApplicationAction";
 import useWTApplicationDetail from "./wt/useWTApplicationDetail";
 import useMTApplicationDetail from "./wt/useMTApplicationDetail";
 import useMTApplicationAction from "./wt/useMTApplicationAction";
+import useWTMDMS from "./wt/useMDMS";
 import useTenantsVENDOR from "./vendor/useTenants";
 import useEmpvendorCreate from "./vendor/useEmpvendorCreate";
 import useEmpvendorSearch from "./vendor/useEmpvendorSearch";
@@ -346,6 +347,7 @@ import useSelectedMDMS from "./useSelectedMDMS";
 import useVendorAdditionaldetailsAPI from "./vendor/useVendorAdditionaldetailsAPI";
 import useCreateDemand from "./sv/useCreateDemand";
 import useEmpvendorCommonSearch from "./vendor/useEmpvendorCommonSearch";
+import { useGetConnection, useValidateUser, useGetConnectionTypeV2, useGetUserType, useGetFloorCount, useGetPropertyType } from "./ekyc/useEkyc";
 
 const wt={
   useTankerCreateAPI,
@@ -355,7 +357,8 @@ const wt={
   useMobileToiletCreateAPI,
   useMobileToiletSearchAPI,
   useMTApplicationDetail,
-  useMTApplicationAction
+  useMTApplicationAction,
+  useWTMDMS
 };
 
 const pgr = {
@@ -414,7 +417,7 @@ const fsm = {
   useDriverDetails,
   useVehicleTripCreate,
   useVendorSearch,
-  useAdvanceBalanceCalulation,
+  useAdvanceBalanceCalulation
 };
 const ptr = {
   usePetMDMS,
@@ -430,7 +433,7 @@ const ptr = {
   usePetDocumentSearch,
   useMyPetPayments,
   useTenants: useTenantsPTR
- 
+
 };
 
 const pt = {
@@ -481,6 +484,15 @@ const mcollect = {
   useMCollectCategoryTypes,
   useMCollectTaxHeads,
   useMcollectFormConfig,
+};
+
+const ekyc = {
+  useGetConnection,
+  useValidateUser,
+  useGetPropertyType,
+  useGetConnectionTypeV2,
+  useGetUserType,
+  useGetFloorCount
 };
 
 const hrms = {
@@ -691,7 +703,7 @@ const ads={
   useADSSlotSearch,
   useADSSearch,
   useADSDemandEstimation,
-  useADSApplicationDetail  
+  useADSApplicationDetail
 }
 
 const cm = {
@@ -777,6 +789,7 @@ const Hooks = {
   useCustomBackNavigation,
   wt,
   vendor,
+  ekyc,
   useRouteSubscription
 };
 

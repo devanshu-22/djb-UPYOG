@@ -83,16 +83,26 @@ const EmployeeApp = ({ path, url, userType }) => {
             onLeftClick={() => window.history.back()}
             breadcrumbs={getDynamicBreadcrumbs()} // Use the dynamic function here
           />
-          <PrivateRoute
-            path={`${path}/inbox`}
-            component={() => (
-              <Inbox parentRoute={path} businessService="hrms" filterComponent="HRMS_INBOX_FILTER" initialStates={inboxInitialState} isInbox={true} />
-            )}
-          />
-          <PrivateRoute path={`${path}/create`} component={() => <CreateEmployee />} />
-          <PrivateRoute path={`${path}/response`} component={(props) => <HRMSResponse {...props} parentRoute={path} />} />
-          <PrivateRoute path={`${path}/details/:tenantId/:id`} component={() => <HRMSDetails />} />
-          <PrivateRoute path={`${path}/edit/:tenantId/:id`} component={() => <EditEmpolyee />} />
+          <div className="employee-form">
+            <div className="employee-form-content">
+              <PrivateRoute
+                path={`${path}/inbox`}
+                component={() => (
+                  <Inbox
+                    parentRoute={path}
+                    businessService="hrms"
+                    filterComponent="HRMS_INBOX_FILTER"
+                    initialStates={inboxInitialState}
+                    isInbox={true}
+                  />
+                )}
+              />
+              <PrivateRoute path={`${path}/create`} component={() => <CreateEmployee />} />
+              <PrivateRoute path={`${path}/response`} component={(props) => <HRMSResponse {...props} parentRoute={path} />} />
+              <PrivateRoute path={`${path}/details/:tenantId/:id`} component={() => <HRMSDetails />} />
+              <PrivateRoute path={`${path}/edit/:tenantId/:id`} component={() => <EditEmpolyee />} />
+            </div>
+          </div>
         </div>
       </AppContainer>
     </Switch>

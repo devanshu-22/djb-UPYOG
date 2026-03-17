@@ -208,9 +208,9 @@ const EditForm = ({ tenantId, data }) => {
 
   const config = mdmsData?.config ? mdmsData.config : newConfig;
   return (
-    <div>
+    <React.Fragment>
       <FormComposer
-        heading={t("HR_COMMON_EDIT_EMPLOYEE_HEADER")}
+        // heading={t("HR_COMMON_EDIT_EMPLOYEE_HEADER")}
         isDisabled={!canSubmit}
         label={t("HR_COMMON_BUTTON_SUBMIT")}
         config={config.map((config) => {
@@ -233,7 +233,7 @@ const EditForm = ({ tenantId, data }) => {
           }}
         />
       )}
-    </div>
+    </React.Fragment>
   );
 };
 export default EditForm;

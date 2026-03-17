@@ -93,7 +93,7 @@ const EmployeeApp = ({ path }) => {
   return (
     <Switch>
       <AppContainer>
-        <div className="form-container">
+        <div className="ground-container employee-app-container form-container">
           {/* -------------------------- MODULE HEADER -------------------------- */}
           <ModuleHeader
             leftContent={
@@ -106,62 +106,66 @@ const EmployeeApp = ({ path }) => {
             breadcrumbs={getDynamicBreadcrumbs()}
           />
           {/* ----------------------------- ROUTES ----------------------------- */}
-          {/* WT Inbox */}
-          <PrivateRoute
-            path={`${path}/inbox`}
-            component={() => (
-              <Inbox
-                useNewInboxAPI={true}
-                parentRoute={path}
-                businessService="watertanker"
-                moduleCode="WT"
-                filterComponent="WT_INBOX_FILTER"
-                initialStates={inboxInitialState}
-                isInbox={true}
+          <div className="employee-form">
+            <div className="employee-form-content">
+              {/* WT Inbox */}
+              <PrivateRoute
+                path={`${path}/inbox`}
+                component={() => (
+                  <Inbox
+                    useNewInboxAPI={true}
+                    parentRoute={path}
+                    businessService="watertanker"
+                    moduleCode="WT"
+                    filterComponent="WT_INBOX_FILTER"
+                    initialStates={inboxInitialState}
+                    isInbox={true}
+                  />
+                )}
               />
-            )}
-          />
-          {/* MT Inbox */}
-          <PrivateRoute
-            path={`${path}/mt/inbox`}
-            component={() => (
-              <Inbox
-                useNewInboxAPI={true}
-                parentRoute={path}
-                moduleCode="MT"
-                businessService="mobileToilet"
-                filterComponent="WT_INBOX_FILTER"
-                initialStates={inboxInitialStateMt}
-                isInbox={true}
+              {/* MT Inbox */}
+              <PrivateRoute
+                path={`${path}/mt/inbox`}
+                component={() => (
+                  <Inbox
+                    useNewInboxAPI={true}
+                    parentRoute={path}
+                    moduleCode="MT"
+                    businessService="mobileToilet"
+                    filterComponent="WT_INBOX_FILTER"
+                    initialStates={inboxInitialStateMt}
+                    isInbox={true}
+                  />
+                )}
               />
-            )}
-          />
-          {/* TP Inbox */}
-          <PrivateRoute
-            path={`${path}/tp/inbox`}
-            component={() => (
-              <Inbox
-                useNewInboxAPI={true}
-                parentRoute={path}
-                moduleCode="TP"
-                businessService="treePruning"
-                filterComponent="WT_INBOX_FILTER"
-                initialStates={inboxInitialStateTp}
-                isInbox={true}
+              {/* TP Inbox */}
+              <PrivateRoute
+                path={`${path}/tp/inbox`}
+                component={() => (
+                  <Inbox
+                    useNewInboxAPI={true}
+                    parentRoute={path}
+                    moduleCode="TP"
+                    businessService="treePruning"
+                    filterComponent="WT_INBOX_FILTER"
+                    initialStates={inboxInitialStateTp}
+                    isInbox={true}
+                  />
+                )}
               />
-            )}
-          />
-          {/* Request Service */}
-          <PrivateRoute path={`${path}/request-service`} component={WTCreate} />
-          <PrivateRoute path={`${path}/mt/request-service`} component={WTCreate} />
-          <PrivateRoute path={`${path}/tp/request-service`} component={WTCreate} />
-          {/* Booking Details */}
-          <PrivateRoute path={`${path}/booking-details/:id`} component={() => <ApplicationDetails parentRoute={path} />} />
-          <PrivateRoute path={`${path}/bookingsearch/booking-details/:id`} component={() => <ApplicationDetails parentRoute={path} />} />
-          {/* My Bookings */}
-          <PrivateRoute path={`${path}/my-bookings`} component={(props) => <SearchApp {...props} parentRoute={path} moduleCode="WT" />} />
-          <PrivateRoute path={`${path}/mt/my-bookings`} component={(props) => <SearchApp {...props} parentRoute={path} moduleCode="MT" />} />
-          <PrivateRoute path={`${path}/tp/my-bookings`} component={(props) => <SearchApp {...props} parentRoute={path} moduleCode="TP" />} />
+              {/* Request Service */}
+              <PrivateRoute path={`${path}/request-service`} component={WTCreate} />
+              <PrivateRoute path={`${path}/mt/request-service`} component={WTCreate} />
+              <PrivateRoute path={`${path}/tp/request-service`} component={WTCreate} />
+              {/* Booking Details */}
+              <PrivateRoute path={`${path}/booking-details/:id`} component={() => <ApplicationDetails parentRoute={path} />} />
+              <PrivateRoute path={`${path}/bookingsearch/booking-details/:id`} component={() => <ApplicationDetails parentRoute={path} />} />
+              {/* My Bookings */}
+              <PrivateRoute path={`${path}/my-bookings`} component={(props) => <SearchApp {...props} parentRoute={path} moduleCode="WT" />} />
+              <PrivateRoute path={`${path}/mt/my-bookings`} component={(props) => <SearchApp {...props} parentRoute={path} moduleCode="MT" />} />
+              <PrivateRoute path={`${path}/tp/my-bookings`} component={(props) => <SearchApp {...props} parentRoute={path} moduleCode="TP" />} />
+            </div>
+          </div>
         </div>
       </AppContainer>
     </Switch>

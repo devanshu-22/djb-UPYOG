@@ -88,6 +88,11 @@ public class GenericRowMapper<T> implements ResultSetExtractor<List<T>> {
                 if (instance instanceof WaterTankerBookingDetail) {
                     WaterTankerBookingDetail bookingDetail = (WaterTankerBookingDetail) instance;
 
+                    try {
+                        bookingDetail.setWTfileStoreId(rs.getString("wt_file_store_id"));
+                    } catch (SQLException e) {
+                        log.warn("wt_file_store_id column not found in result set");
+                    }
                     // Audit Details
                     AuditDetails auditDetails = extractAuditDetails(rs);
                     bookingDetail.setAuditDetails(auditDetails);
@@ -232,6 +237,8 @@ public class GenericRowMapper<T> implements ResultSetExtractor<List<T>> {
             address.setCityCode(rs.getString("city_code"));
             address.setLocality(rs.getString("locality"));
             address.setLocalityCode(rs.getString("locality_code"));
+            address.setLatitude(rs.getString("latitude"));
+            address.setLongitude(rs.getString("longitude"));
             address.setPincode(rs.getString("pincode"));
             return address;
         } catch (SQLException e) {

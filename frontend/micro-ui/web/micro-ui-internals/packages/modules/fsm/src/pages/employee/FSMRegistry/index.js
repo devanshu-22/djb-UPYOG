@@ -241,7 +241,7 @@ const FSMRegistry = () => {
         onSort={handleSort}
         disableSort={false}
         sortParams={sortParams}
-        userRole={"FSM_ADMIN"}
+        userRole={"VEHICLE_ADMIN"}
         onFilterChange={handleFilterChange}
         searchFields={searchFields}
         onSearch={onSearch}

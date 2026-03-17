@@ -1,10 +1,9 @@
-import React, { use } from "react";
+import React from "react";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "react-query";
 import { Redirect, Route, Switch, useHistory, useLocation, useRouteMatch } from "react-router-dom";
 import { commonConfig } from "../../../config/config";
 import VerticalTimeline from "../../../components/VerticalTimeline"; // Import the new component
-
 
 const WTCreate = () => {
   const queryClient = useQueryClient();
@@ -21,33 +20,34 @@ const WTCreate = () => {
     if (pathname.includes("mt")) {
       console.log("MT Create");
       setParams({
-        "serviceType": {
-          "serviceType": {
-            "code": "MobileToilet",
-            "i18nKey": "Mobile Toilet",
-            "value": "Mobile Toilet"
-          }
-        }
-      })
+        serviceType: {
+          serviceType: {
+            code: "MobileToilet",
+            i18nKey: "Mobile Toilet",
+            value: "Mobile Toilet",
+          },
+        },
+      });
     } else if (pathname.includes("tp")) {
       setParams({
-        "serviceType": {
-          "serviceType": {
-            "code": "TREE_PRUNING",
-            "i18nKey": "Tree Pruning",
-            "value": "Tree Pruning"
-          }
-        }
-      })
-    }
-    else {
+        serviceType: {
+          serviceType: {
+            code: "TREE_PRUNING",
+            i18nKey: "Tree Pruning",
+            value: "Tree Pruning",
+          },
+        },
+      });
+    } else {
       setParams({
-        "serviceType": {
-          "serviceType": {
-            "code": "WT", "i18nKey": "Water Tanker", "value": "Water Tanker"
-          }
-        }
-      })
+        serviceType: {
+          serviceType: {
+            code: "WT",
+            i18nKey: "Water Tanker",
+            value: "Water Tanker",
+          },
+        },
+      });
     }
   }
 
@@ -95,23 +95,24 @@ const WTCreate = () => {
     }
     if (!isNaN(nextStep.split("/").pop())) {
       nextPage = `${match.path}/${nextStep}`;
-    }
-    else {
+    } else {
       nextPage = isMultiple && nextStep !== "map" ? `${match.path}/${nextStep}/${index}` : `${match.path}/${nextStep}`;
     }
 
     redirectWithHistory(nextPage);
   };
 
-
-
-  if (params && Object.keys(params).length > 0 && window.location.href.includes("/service-type") && sessionStorage.getItem("docReqScreenByBack") !== "true") {
+  if (
+    params &&
+    Object.keys(params).length > 0 &&
+    window.location.href.includes("/service-type") &&
+    sessionStorage.getItem("docReqScreenByBack") !== "true"
+  ) {
     clearParams();
     queryClient.invalidateQueries("WT_Create");
   }
 
   const wt_create = async () => {
-
     if (params?.serviceType?.serviceType?.code === "WT") {
       history.push(`${match.path}/wt-acknowledgement`);
     }
@@ -157,9 +158,6 @@ const WTCreate = () => {
   const WTAcknowledgement = Digit?.ComponentRegistryService?.getComponent("WTAcknowledgement");
   const MTAcknowledgement = Digit?.ComponentRegistryService?.getComponent("MTAcknowledgement");
   const TPAcknowledgement = Digit?.ComponentRegistryService?.getComponent("TPAcknowledgement");
-
-
-
 
   return (
     <React.Fragment>

@@ -72,12 +72,12 @@ public class ModuleRoleConfig {
 
         if (mdmsResponse.getMdmsRes().get(Constants.VENDOR_MODULE) == null) {
             throw new CustomException("DRIVER_MASTER_DATA_NOT_AVAILABLE",
-                    "Driver master data is missing in the response.");
+                    "Driver1 master data is missing in the response.");
         }
 
         List<ModuleRoleMapping> moduleRoleMappings = new ArrayList<>();
 
-        // Load Driver Role Mappings
+        // Load Driver1 Role Mappings
         loadRoleMappings(mdmsResponse, Constants.MODULE_DRIVER_ROLE_MAPPING, moduleRoleMappings, "MODULE_DRIVER_ROLE_MAPPING", ModuleRoleMapping.MappingType.DRIVER);
 
         // Handle potential duplicate keys using a merge function

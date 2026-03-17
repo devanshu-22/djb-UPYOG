@@ -14,25 +14,25 @@ const MobileNumber = (props) => {
 
   return (
     <React.Fragment>
-      <div className="field-container">
+      <div className="phone-input-wrapper">
         {!props.hideSpan ? (
-          <span style={{ maxWidth: "50px", marginTop: "unset", ...props.labelStyle }} className="citizen-card-input citizen-card-input--front">
+          <span style={{ ...props.labelStyle }} className="employee-card-input employee-card-input--front phone-country-code">
             +91
           </span>
         ) : null}
-        <div className={`text-input ${user_type === "employee" ? "" : "text-mobile-input-width"} ${props.className}`}>
+        <div className={`text-input field desktop-w-full ${user_type === "employee" ? "" : "text-mobile-input-width"} ${props.className}`}>
           <input
             type={"text"}
             name={props.name}
-            id={props.id}
-            className={`${user_type ? "employee-card-input" : "citizen-card-input"} ${props.disable && "disabled"} focus-visible ${
-              props.errorStyle && "employee-card-input-error"
-            }`}
+            id={props.id || "Mobile"}
+            className={`${user_type ? "employee-card-input" : "citizen-card-input"} ${props.disable && "disabled"} focus-visible ${props.errorStyle && "employee-card-input-error"
+              }`}
+
             placeholder={props.placeholder}
             onChange={onChange}
             ref={props.inputRef}
             value={props.value}
-            style={{ ...props.style }}
+            style={{ ...props.style, borderRadius: "0 6px 6px 0" }}
             // defaultValue={props.defaultValue || ""}
             minLength={props.minlength}
             maxLength={props.maxlength}

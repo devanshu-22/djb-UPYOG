@@ -120,5 +120,10 @@ public class RequestServiceConstants {
 	
 	public static final String WF_ACTION_REJECTED_BY_VENDOR= "REJECT";
 
+	public static final String ACTION_START_TRIP = "START_TRIP";
+	public static final String ACTION_END_TRIP = "END_TRIP";
+
+	public static final String KAFKA_SAVE_DRIVER_TRIP_TOPIC   = "save-driver-trip";
+	public static final String KAFKA_UPDATE_DRIVER_TRIP_TOPIC = "update-driver-trip";
 
 }

@@ -2,6 +2,7 @@ package org.upyog.rs.web.models;
 
 import javax.validation.constraints.NotBlank;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.validation.annotation.Validated;
 import org.upyog.rs.enums.AddressType;
 import org.upyog.rs.validator.CreateApplicationGroup;
@@ -58,6 +59,10 @@ public class Address {
 
 	@NotBlank
 	private String localityCode;
+
+	private String latitude;
+
+	private String longitude;
 
 	@NotBlank
 	private String pincode;

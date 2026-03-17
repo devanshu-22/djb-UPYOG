@@ -19,7 +19,7 @@
  *        2. What inCase of Edit, Renew & Draft, how to pass data here using Props.  
  */
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import FormStep from "./FormStep";
 import TextInput from "../atoms/TextInput";
 import CardLabel from "../atoms/CardLabel";
@@ -29,7 +29,7 @@ import Dropdown from "../atoms/Dropdown";
 
 const ApplicantDetails = ({ t, config, onSelect, formData }) => {
   const user = Digit.UserService.getUser().info;
-  const inputStyles = { width: user.type === "EMPLOYEE" ? "50%" : "86%" };
+  const inputStyles = { width: user.type === "EMPLOYEE" ? "100%" : "86%" };
   let validation = {};
   const [applicantName, setName] = useState(
     (user.type === "EMPLOYEE" ? "" : user?.name) ||
@@ -115,30 +115,33 @@ const ApplicantDetails = ({ t, config, onSelect, formData }) => {
             ? !gender
             : null
         }
+        className={"search-form-wrapper"}
       >
-        <div>
-          <CardLabel>
-            {`${t("COMMON_APPLICANT_NAME")}`} <span className="astericColor">*</span>
-          </CardLabel>
-          <TextInput
-            t={t}
-            type={"text"}
-            isMandatory={false}
-            optionKey="i18nKey"
-            name="applicantName"
-            value={applicantName}
-            style={inputStyles}
-            onChange={setOwnerName}
-            ValidationRequired={true}
-            {...(validation = {
-              isRequired: true,
-              pattern: "^[a-zA-Z ]+$",
-              type: "tel",
-              title: t("PT_NAME_ERROR_MESSAGE"),
-            })}
-          />
+        <React.Fragment>
+          <div className="form-field wns-search-field">
+            <CardLabel>
+              {`${t("COMMON_APPLICANT_NAME")}`} <span className="astericColor">*</span>
+            </CardLabel>
+            <TextInput
+              t={t}
+              type={"text"}
+              isMandatory={false}
+              optionKey="i18nKey"
+              name="applicantName"
+              value={applicantName}
+              style={inputStyles}
+              onChange={setOwnerName}
+              ValidationRequired={true}
+              {...(validation = {
+                isRequired: true,
+                pattern: "^[a-zA-Z ]+$",
+                type: "tel",
+                title: t("PT_NAME_ERROR_MESSAGE"),
+              })}
+            />
+          </div>
           {config?.additionaFields?.gender ? (
-            <React.Fragment>
+            <div className="form-field wns-search-field">
               <CardLabel>
                 {`${t("COMMON_GENDER")}`} <span className="astericColor">*</span>
               </CardLabel>
@@ -155,30 +158,31 @@ const ApplicantDetails = ({ t, config, onSelect, formData }) => {
                 labelKey="i18nKey"
                 isPTFlow={true}
               />
-            </React.Fragment>
+            </div>
           ) : null}
 
-          <CardLabel>
-            {`${t("COMMON_MOBILE_NUMBER")}`} <span className="astericColor">*</span>
-          </CardLabel>
-          <MobileNumber
-            value={mobileNumber}
-            name="mobileNumber"
-            onChange={(value) => setMobileNo({ target: { value } })}
-            style={{ width: user.type === "EMPLOYEE" ? "49%" : "86%" }}
-            {...{ required: true, pattern: "[6-9]{1}[0-9]{9}", type: "tel", title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID") }}
-          />
-
-          <CardLabel>{`${t("COMMON_ALT_MOBILE_NUMBER")}`}</CardLabel>
-          <MobileNumber
-            value={alternateNumber}
-            name="alternateNumber"
-            onChange={(value) => setAltMobileNo({ target: { value } })}
-            style={{ width: user.type === "EMPLOYEE" ? "49%" : "86%" }}
-            {...{ required: false, pattern: "[6-9]{1}[0-9]{9}", type: "tel", title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID") }}
-          />
+          <div className="form-field wns-search-field">
+            <CardLabel>
+              {`${t("COMMON_MOBILE_NUMBER")}`} <span className="astericColor">*</span>
+            </CardLabel>
+            <MobileNumber
+              value={mobileNumber}
+              name="mobileNumber"
+              onChange={(value) => setMobileNo({ target: { value } })}
+              {...{ required: true, pattern: "[6-9]{1}[0-9]{9}", type: "tel", title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID") }}
+            />
+          </div>
+          <div className="form-field wns-search-field">
+            <CardLabel>{`${t("COMMON_ALT_MOBILE_NUMBER")}`}</CardLabel>
+            <MobileNumber
+              value={alternateNumber}
+              name="alternateNumber"
+              onChange={(value) => setAltMobileNo({ target: { value } })}
+              {...{ required: false, pattern: "[6-9]{1}[0-9]{9}", type: "tel", title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID") }}
+            />
+          </div>
           {config?.additionaFields?.dateofBirth ? (
-            <React.Fragment>
+            <div className="form-field wns-search-field">
               <CardLabel>
                 {`${t("COMMON_BIRTH_DATE")}`} <span className="astericColor">*</span>
               </CardLabel>
@@ -197,11 +201,11 @@ const ApplicantDetails = ({ t, config, onSelect, formData }) => {
                   validDate: (val) => (/^\d{4}-\d{2}-\d{2}$/.test(val) ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")),
                 }}
               />
-            </React.Fragment>
+            </div>
           ) : null}
 
           {config?.additionaFields?.guardianName ? (
-            <React.Fragment>
+            <div className="form-field wns-search-field">
               <CardLabel>
                 {`${t("COMMON_GUARDIAN")}`} <span className="astericColor">*</span>
               </CardLabel>
@@ -222,11 +226,11 @@ const ApplicantDetails = ({ t, config, onSelect, formData }) => {
                   title: t("PT_NAME_ERROR_MESSAGE"),
                 })}
               />
-            </React.Fragment>
+            </div>
           ) : null}
 
           {config?.additionaFields?.guardianName ? (
-            <React.Fragment>
+            <div className="form-field wns-search-field">
               <CardLabel>
                 {`${t("COMMON_RELATIONTYPE")}`} <span className="astericColor">*</span>
               </CardLabel>
@@ -240,30 +244,31 @@ const ApplicantDetails = ({ t, config, onSelect, formData }) => {
                 name="relationShipType"
                 placeholder={"Select"}
               />
-            </React.Fragment>
+            </div>
           ) : null}
-
-          <CardLabel>
-            {`${t("COMMON_EMAIL_ID")}`} <span className="astericColor">*</span>
-          </CardLabel>
-          <TextInput
-            t={t}
-            type={"email"}
-            isMandatory={true}
-            optionKey="i18nKey"
-            name="emailId"
-            value={emailId}
-            style={inputStyles}
-            onChange={setOwnerEmail}
-            ValidationRequired={true}
-            {...(validation = {
-              isRequired: true,
-              pattern: "^[a-zA-Z0-9._%+-]+@[a-zA-Z]+\\.[a-zA-Z]{3,4}$",
-              type: "email",
-              title: t("PT_NAME_ERROR_MESSAGE"),
-            })}
-          />
-        </div>
+          <div className="form-field wns-search-field">
+            <CardLabel>
+              {`${t("COMMON_EMAIL_ID")}`} <span className="astericColor">*</span>
+            </CardLabel>
+            <TextInput
+              t={t}
+              type={"email"}
+              isMandatory={false}
+              optionKey="i18nKey"
+              name="emailId"
+              value={emailId}
+              style={inputStyles}
+              onChange={setOwnerEmail}
+              ValidationRequired={true}
+              {...(validation = {
+                isRequired: true,
+                pattern: "^[a-zA-Z0-9._%+-]+@[a-zA-Z]+\\.[a-zA-Z]{3,4}$",
+                type: "email",
+                title: t("PT_NAME_ERROR_MESSAGE"),
+              })}
+            />
+          </div>
+        </React.Fragment>
       </FormStep>
     </React.Fragment>
   );

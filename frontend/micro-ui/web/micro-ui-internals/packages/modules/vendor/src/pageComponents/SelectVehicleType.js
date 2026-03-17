@@ -6,7 +6,13 @@ const SelectVehicleType = ({ t, config, onSelect, formData, setValue }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
   // Fetch Vehicle Data
-  const { data: vehicleData, isLoading: vehicleLoading } = Digit.Hooks.fsm.useMDMS(stateId, "Vehicle", "VehicleMakeModel");
+  const { data: vehicleData, isLoading: vehicleLoading } = Digit.Hooks.wt.useWTMDMS(stateId, "Vehicle", "VehicleMakeModel");
+
+
+  console.log("vehicleData", vehicleData);
+
+
+  // const { data: vehicleData, isLoading: vehicleLoading } = Digit.Hooks.useCustomMDMS(tenantId, "tenant", "VehicleMakeModel");
 
   // Fetch Service Type Data
   const { data: serviceTypeData, isLoading: serviceLoading } = Digit.Hooks.useCustomMDMS(tenantId, "tenant", [{ name: "citymodule" }], {
@@ -21,24 +27,38 @@ const SelectVehicleType = ({ t, config, onSelect, formData, setValue }) => {
   const [selectedCapacity, setSelectedCapacity] = useState("");
 
   // Get selected service type from formData
-  const selectedServiceType = formData?.additionalDetails?.code;
-
+  const selectedServiceType = formData?.serviceType?.code || formData?.serviceType;
   // Memoize the service type filters
   const memoizedServiceTypeFilters = useMemo(() => {
     if (!serviceTypeData || !vehicleData) return {};
-    
+
     const filters = {};
+
     serviceTypeData.forEach(service => {
+
       if (service.code === "WT") {
-        filters[service.code] = ["TANKER"];
-      }
-      else if (service.code === "FSM" || service.code === "CND") {
+
         filters[service.code] = vehicleData
-          .filter(vehicle => ["MAHINDRA", "TATA", "TRACTOR", "TAFE", "SONALIKA"].includes(vehicle.code))
+          .filter(vehicle =>
+            ["MAHINDRA", "TATA", "TRACTOR", "TAFE", "SONALIKA"].includes(vehicle.code)
+          )
           .map(vehicle => vehicle.code);
+
       }
+      else if (service.code === "CND") {
+
+        filters[service.code] = vehicleData
+          .filter(vehicle =>
+            ["MAHINDRA", "TATA"].includes(vehicle.code)
+          )
+          .map(vehicle => vehicle.code);
+
+      }
+
     });
+
     return filters;
+
   }, [serviceTypeData, vehicleData]);
 
   // Update service type filters
@@ -49,10 +69,13 @@ const SelectVehicleType = ({ t, config, onSelect, formData, setValue }) => {
   // Update the Model dropdown based on selected Service Type
   useEffect(() => {
     if (!vehicleData) return;
-    
-    const allowedModels = serviceTypeFilters[selectedServiceType] || [];
-    const filteredModals = vehicleData.filter(vehicle => allowedModels.includes(vehicle.code));
-    
+
+    const allowedModels = serviceTypeFilters[selectedServiceType];
+
+    const filteredModals = allowedModels
+      ? vehicleData.filter(vehicle => allowedModels.includes(vehicle.code))
+      : vehicleData;
+
     setModals(filteredModals);
     setSelectedModal({});
     setTypes([]);
@@ -63,7 +86,7 @@ const SelectVehicleType = ({ t, config, onSelect, formData, setValue }) => {
   // Update the Vehicle Type dropdown based on selected Model
   useEffect(() => {
     if (!vehicleData || !selectedModal?.code) return;
-    
+
     const filteredTypes = vehicleData.filter(vehicle => vehicle.make === selectedModal.code);
     setTypes(filteredTypes);
     setSelectedType({});
@@ -113,7 +136,7 @@ const SelectVehicleType = ({ t, config, onSelect, formData, setValue }) => {
           t={t}
         />
       </LabelFieldPair>
-{/* Vehicle Type Dropdown (Filtered based on Model) */}
+      {/* Vehicle Type Dropdown (Filtered based on Model) */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
           {t("ES_FSM_REGISTRY_VEHICLE_TYPE")}
@@ -127,7 +150,7 @@ const SelectVehicleType = ({ t, config, onSelect, formData, setValue }) => {
           t={t}
         />
       </LabelFieldPair>
-{/* Vehicle Capacity Input (Set Automatically Based on Type) */}
+      {/* Vehicle Capacity Input (Set Automatically Based on Type) */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
           {t("ES_FSM_REGISTRY_VEHICLE_CAPACITY")}

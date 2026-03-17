@@ -67,7 +67,6 @@ const Inbox = ({ tenants, parentRoute }) => {
   }
 
   const globalSearch = (rows, columnIds) => {
-    // return rows;
     return rows?.filter(row =>
       (searchParams?.eventStatus?.length > 0 ? searchParams?.eventStatus?.includes(row.original?.status) : true) &&
       (searchParams?.eventName ? row.original?.name?.toUpperCase().startsWith(searchParams?.eventName.toUpperCase()) : true) &&
@@ -128,7 +127,6 @@ const Inbox = ({ tenants, parentRoute }) => {
         totalRecords={data?.totalCount}
         title={"EVENTS_EVENTS_HEADER"}
         iconName={"calender"}
-        links={links}
         currentPage={parseInt(pageOffset / pageSize)}
         onNextPage={fetchNextPage}
         onPrevPage={fetchPrevPage}

@@ -233,48 +233,50 @@ const InboxComposer = ({
 
   if (isEnabledWSCommonModules) {
     return (
-      <div className={`InboxComposerWrapper ${className || ""}`}>
-        <InboxLinks {...PropsForInboxLinks} />
-        <SearchForm onSubmit={onSearchFormSubmit} handleSubmit={handleSearchFormSubmit} id="search-form" className="search-complaint-container">
-          <div className={`complaint-input-container ${className || ""}`}>
-            <SearchFormFields registerRef={registerSearchFormField} searchFormState={searchFormState} {...{ controlSearchForm }} />
-            <SearchField className="clear-search-container">
-              <div className="clear-search">
+      <div className="inbox-container">
+        <div className="side-panel-item">
+          <InboxLinks {...PropsForInboxLinks} />
+          <FilterForm onSubmit={onFilterFormSubmit} handleSubmit={handleFilterFormSubmit} id="filter-form" onResetFilterForm={onResetFilterForm}>
+            <FilterFormFields
+              registerRef={registerFilterFormField}
+              {...{ controlFilterForm, handleFilterFormSubmit, setFilterFormValue, getFilterFormValue }}
+            />
+          </FilterForm>
+        </div>
+        <div className="employee-form-content">
+          <SearchForm onSubmit={onSearchFormSubmit} handleSubmit={handleSearchFormSubmit} id="search-form" className="search-complaint-container">
+            <div className="formcomposer-section-grid">
+              <SearchFormFields registerRef={registerSearchFormField} searchFormState={searchFormState} {...{ controlSearchForm }} />
+            </div>
+            <div className="formcomposer-section-button">
+              <div className="generic-button clear-search">
                 <p onClick={onResetSearchForm}>{t(`ES_COMMON_CLEAR_SEARCH`)}</p>
               </div>
-            </SearchField>
-            <SearchField className="submit">
-              <SubmitBar label={t("ES_COMMON_SEARCH")} submit form="search-form" />
-            </SearchField>
-          </div>
-        </SearchForm>
-        <FilterForm onSubmit={onFilterFormSubmit} handleSubmit={handleFilterFormSubmit} id="filter-form" onResetFilterForm={onResetFilterForm}>
-          <FilterFormFields
-            registerRef={registerFilterFormField}
-            {...{ controlFilterForm, handleFilterFormSubmit, setFilterFormValue, getFilterFormValue }}
-          />
-        </FilterForm>
-        {isInboxLoading ? (
-          <Loader />
-        ) : (
-          <div className="result">
-            <div style={{ background: "#fff", height: "inherit" }}>
-              {propsForInboxTable?.data?.length < 1 ? (
-                <Card className="margin-unset text-align-center inboxLinks">
-                  {propsForInboxTable.noResultsMessage ? t(propsForInboxTable.noResultsMessage) : t("CS_MYAPPLICATIONS_NO_APPLICATION")}
-                </Card>
-              ) : (
-                <Table t={t} {...propsForInboxTable} />
-              )}
+              <SubmitBar className="generic-button" label={t("ES_COMMON_SEARCH")} submit form="search-form" />
             </div>
-          </div>
-        )}
+          </SearchForm>
+
+          {isInboxLoading ? (
+            <Loader />
+          ) : (
+            <div className="result">
+              <div style={{ background: "#fff", height: "inherit" }}>
+                {propsForInboxTable?.data?.length < 1 ? (
+                  <Card className="margin-unset text-align-center inboxLinks">
+                    {propsForInboxTable.noResultsMessage ? t(propsForInboxTable.noResultsMessage) : t("CS_MYAPPLICATIONS_NO_APPLICATION")}
+                  </Card>
+                ) : (
+                  <Table t={t} {...propsForInboxTable} />
+                )}
+              </div>
+            </div>
+          )}</div>
       </div>
     );
   }
 
   return (
-    <div className="InboxComposerWrapper">
+    <div className="inbox-container">
       <InboxLinks {...PropsForInboxLinks} />
       <SearchForm onSubmit={onSearchFormSubmit} handleSubmit={handleSearchFormSubmit} id="search-form" className="rm-mb form-field-flex-one">
         <SearchFormFields registerRef={registerSearchFormField} searchFormState={searchFormState} {...{ controlSearchForm }} />

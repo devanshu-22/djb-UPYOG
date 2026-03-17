@@ -278,7 +278,6 @@ const ApplicationDetails = () => {
   });
 
   workflowDetails?.data?.actionState?.nextActions?.forEach((action) => {
-    console.log("workflowDetails", workflowDetails);
     if (action?.action === "PAY") {
       if (workflowDetails?.data?.processInstances?.[0]?.businessService == "WSReconnection") {
         action.redirectionUrll = {
@@ -473,7 +472,7 @@ const ApplicationDetails = () => {
             warning={showWaringToast?.isWarning}
             error={showWaringToast?.isWarning ? false : true}
             label={t(showWaringToast?.message)}
-            onClose={()=>setShowWaringToast(null)}
+            onClose={() => setShowWaringToast(null)}
             isDleteBtn={true}
           />
         )}
