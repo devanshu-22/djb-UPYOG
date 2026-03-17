@@ -189,13 +189,9 @@ public class RequestDetailsByDriverId {
 
         private String addressLine1;
 
-
-
         @JsonProperty("street_name")
 
         private String streetName;
-
-
 
         private String landmark;
 
@@ -204,6 +200,9 @@ public class RequestDetailsByDriverId {
         private String pincode;
 
         private String latitude;
+
+        @JsonProperty("address")
+        private Address address;
 
         private String longitude;
         @JsonProperty("registrationnumber")

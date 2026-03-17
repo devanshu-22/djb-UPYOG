@@ -25,4 +25,5 @@ public class DriverTrip {
     private BigDecimal endLongitude;
     private String endFileStoreId;
     private AuditDetails auditDetails;
+    private String remark;
 }

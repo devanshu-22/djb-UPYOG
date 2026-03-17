@@ -35,6 +35,7 @@ public class DriverRowMapper implements RowMapper<DriverTrip> {
                 .endLatitude(rs.getBigDecimal("end_latitude"))
                 .endLongitude(rs.getBigDecimal("end_longitude"))
                 .endFileStoreId(rs.getString("end_file_store_id"))
+                .remark(rs.getString("remark"))
                 .auditDetails(auditDetails)
                 .build();
     }
