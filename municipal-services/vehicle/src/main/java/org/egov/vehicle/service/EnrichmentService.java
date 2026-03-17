@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.tracer.model.CustomException;
+import org.egov.vehicle.repository.VehicleRepository;
 import org.egov.vehicle.util.VehicleUtil;
 import org.egov.vehicle.web.model.AuditDetails;
 import org.egov.vehicle.web.model.Vehicle;
@@ -30,6 +31,9 @@ public class EnrichmentService {
 
 	@Autowired
 	UserService userService;
+
+	@Autowired
+	private VehicleRepository vehicleRepository;
 
 	public void enrichVehicleCreateRequest(VehicleRequest vehicleRequest) {
 		RequestInfo requestInfo = vehicleRequest.getRequestInfo();
@@ -70,8 +74,33 @@ public class EnrichmentService {
 		VehicleSearchCriteria searchcriteria = VehicleSearchCriteria.builder().ownerId(accountIds).build();
 		UserDetailResponse userDetailResponse = userService.getOwner(searchcriteria, requestInfo);
 		encrichOwner(userDetailResponse, vehicleList);
+		enrichDriverData(vehicleList);
 	}
+	private void enrichDriverData(List<Vehicle> vehicles) {
 
+		List<String> vehicleIds = vehicles.stream()
+				.map(Vehicle::getId)
+				.collect(Collectors.toList());
+
+		// NOW returns Map<vehicleId, Driver> with full driver data
+		Map<String, Driver> driverMappings =
+				vehicleRepository.fetchDriverMappings(vehicleIds);
+
+		vehicles.forEach(vehicle -> {
+			Driver driver = driverMappings.get(vehicle.getId());
+
+			if (driver != null) {
+				// Set full driver object on vehicle
+				vehicle.setDriver(driver);
+				log.info("Driver mapped for vehicle {}: {} ({})",
+						vehicle.getId(), driver.getId(), driver.getName());
+			} else {
+				// No active driver mapped — null, shown as-is
+				vehicle.setDriver(null);
+				log.info("No driver mapped for vehicle {}", vehicle.getId());
+			}
+		});
+	}
 	/**
 	 * enrich the applicant information in FSM
 	 * 

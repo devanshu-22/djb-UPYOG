@@ -42,7 +42,7 @@ public class DriverTripRepository {
         public void update(DriverTrip trip) {
             String sql = "UPDATE eg_driver_trip " +
                     "SET current_status = ?, end_latitude = ?, end_longitude = ?, end_file_store_id = ?, " +
-                    "last_modified_by = ?, last_modified_time = ? " +
+                    "last_modified_by = ?, last_modified_time = ? , remark = ? " +
                     "WHERE booking_no = ?";
 
             jdbcTemplate.update(sql,
@@ -52,6 +52,7 @@ public class DriverTripRepository {
                     trip.getEndFileStoreId(),
                     trip.getAuditDetails().getLastModifiedBy(),
                     trip.getAuditDetails().getLastModifiedTime(),
+                    trip.getRemark(),
                     trip.getBookingNo());
         }
 

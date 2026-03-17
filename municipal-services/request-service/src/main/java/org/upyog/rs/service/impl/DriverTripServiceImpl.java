@@ -43,6 +43,7 @@ public class DriverTripServiceImpl implements DriverTripService {
         existingTrip.setEndLatitude(updateReq.getEndLatitude());
         existingTrip.setEndLongitude(updateReq.getEndLongitude());
         existingTrip.setEndFileStoreId(updateReq.getEndFileStoreId());
+        existingTrip.setRemark(updateReq.getRemark());
         existingTrip.setAuditDetails(RequestServiceUtil.getAuditDetails(userUuid, false));
 
         request.setDriverTrip(existingTrip);

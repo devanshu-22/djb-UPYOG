@@ -10,7 +10,9 @@ import org.springframework.stereotype.Service;
 import org.upyog.rs.config.RequestServiceConfiguration;
 import org.upyog.rs.kafka.Producer;
 import org.upyog.rs.repository.RequestServiceRepository;
+import org.upyog.rs.repository.querybuilder.DriverDetailsQueryBuilder;
 import org.upyog.rs.repository.querybuilder.RequestServiceQueryBuilder;
+import org.upyog.rs.repository.rowMapper.DriverDetailsRowMapper;
 import org.upyog.rs.repository.rowMapper.GenericRowMapper;
 import org.upyog.rs.web.models.PersisterWrapper;
 import org.upyog.rs.web.models.RequestDetailsByDriverId;
@@ -162,24 +164,14 @@ public class RequestServieRepositoryImpl implements RequestServiceRepository {
 
 	}
 
-	private static final String BOOKING_BY_DRIVER_QUERY =
-			"SELECT ursbd.*, urad.name as applicant_name, uraddr.latitude, uraddr.longitude, " +
-					"uraddr.city, uraddr.pincode, ev.registrationnumber as registrationNumber, " +
-					"ev.model as vehicle_model " +
-					"FROM upyog_rs_water_tanker_booking_details ursbd " +
-					"INNER JOIN upyog_rs_water_tanker_applicant_details urad ON ursbd.booking_id = urad.booking_id " +
-					"INNER JOIN upyog_rs_water_tanker_address_details uraddr ON urad.applicant_id = uraddr.applicant_id " +
-					"LEFT JOIN eg_vehicle ev ON ursbd.vehicle_id = ev.id " +
-					"WHERE ursbd.driver_id = ?";
 
-	@Override
 	public List<RequestDetailsByDriverId.RequestDetailsInfo> getFullBookingDetailsByDriver(String driverId) {
 		log.info("Fetching details for driverId: {}", driverId);
-		return jdbcTemplate.query(BOOKING_BY_DRIVER_QUERY,
-				new Object[]{driverId},
-				new BeanPropertyRowMapper<>(RequestDetailsByDriverId.RequestDetailsInfo.class));
-	}
 
+		return jdbcTemplate.query(DriverDetailsQueryBuilder.DRIVER_QUERY,
+				new Object[]{driverId},
+				new DriverDetailsRowMapper());
+	}
 
 
 }

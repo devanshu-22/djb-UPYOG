@@ -21,6 +21,9 @@ public class VehicleSearchCriteria {
 	@JsonProperty("offset")
 	private Integer offset;
 
+	@JsonProperty("driverId")
+	private String driverId;
+
 	@JsonProperty("limit")
 	private Integer limit;
 

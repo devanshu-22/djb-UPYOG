@@ -1,8 +1,10 @@
 package org.egov.vehicle.repository;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -15,10 +17,8 @@ import org.egov.vehicle.trip.repository.rowmapper.TripDetailRowMapper;
 import org.egov.vehicle.trip.web.model.VehicleTripDetail;
 import org.egov.vehicle.trip.web.model.VehicleTripSearchCriteria;
 import org.egov.vehicle.util.ErrorConstants;
-import org.egov.vehicle.web.model.Vehicle;
-import org.egov.vehicle.web.model.VehicleRequest;
-import org.egov.vehicle.web.model.VehicleResponse;
-import org.egov.vehicle.web.model.VehicleSearchCriteria;
+import org.egov.vehicle.web.model.*;
+import org.egov.vehicle.web.model.driver.Driver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
@@ -189,5 +189,62 @@ public class VehicleRepository {
 		else {
 			queryString.append(" AND");
 		}
+	}
+
+	private static final String QUERY_DRIVER_MAPPING =
+			"SELECT vdm.vehicle_id, vdm.driver_id, " +
+					" d.name, d.tenantid, d.additionaldetails, d.owner_id, " +
+					" d.description, d.status, d.licensenumber, " +
+					" d.createdby, d.lastmodifiedby, d.createdtime, d.lastmodifiedtime " +
+					" FROM eg_vehicle_driver_mapping vdm " +
+					" INNER JOIN eg_driver d ON vdm.driver_id = d.id " +
+					" WHERE vdm.vehicle_id IN (%s) AND vdm.status = 'ACTIVE' ";
+	// REPLACE old fetchDriverMappings() with this
+	public Map<String, Driver> fetchDriverMappings(List<String> vehicleIds) {
+		Map<String, Driver> vehicleDriverMap = new HashMap<>();
+
+		if (CollectionUtils.isEmpty(vehicleIds)) {
+			return vehicleDriverMap;
+		}
+
+		String inClause = vehicleIds.stream()
+				.map(id -> "?")
+				.collect(Collectors.joining(", "));
+
+		String query = String.format(QUERY_DRIVER_MAPPING, inClause);
+
+		try {
+			jdbcTemplate.query(query, vehicleIds.toArray(), rs -> {
+				String vehicleId = rs.getString("vehicle_id");
+
+				// Build AuditDetails for driver
+				AuditDetails auditDetails = AuditDetails.builder()
+						.createdBy(rs.getString("createdby"))
+						.lastModifiedBy(rs.getString("lastmodifiedby"))
+						.createdTime(rs.getLong("createdtime"))
+						.lastModifiedTime(rs.getLong("lastmodifiedtime"))
+						.build();
+
+				// Build full Driver object
+				Driver driver = Driver.builder()
+						.id(rs.getString("driver_id"))
+						.name(rs.getString("name"))
+						.tenantId(rs.getString("tenantid"))
+						.ownerId(rs.getString("owner_id"))
+						.description(rs.getString("description"))
+						.licenseNumber(rs.getString("licensenumber"))
+						.status(Driver.StatusEnum.fromValue(rs.getString("status")))
+						.auditDetails(auditDetails)
+						.build();
+
+				// If vehicle has multiple drivers, last row wins
+				// You can change this logic to keep first if needed
+				vehicleDriverMap.put(vehicleId, driver);
+			});
+		} catch (Exception e) {
+			log.error("Exception while fetching driver mappings: ", e);
+		}
+
+		return vehicleDriverMap;
 	}
 }
