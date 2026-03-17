@@ -112,7 +112,7 @@ public class WaterTankerBookingDetail {
 
 	private String longitude;
 
-	@JsonProperty("wt_file_store_id")
+	@JsonProperty("WTfileStoreId")
 	private String WTfileStoreId;
 
 	@Valid

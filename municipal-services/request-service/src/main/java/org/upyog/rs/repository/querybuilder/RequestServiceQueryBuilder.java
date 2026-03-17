@@ -31,11 +31,11 @@ public class RequestServiceQueryBuilder {
             "SELECT ursbd.booking_id, ursbd.booking_no, ursbd.applicant_uuid, ursbd.mobile_number, ursbd.locality_code, ursbd.tanker_type, ursbd.water_type, ursbd.tanker_quantity, ursbd.water_quantity, ursbd.description, " +
                     "ursbd.delivery_date, ursbd.delivery_time, ursbd.extra_charge, ursbd.vendor_id, ursbd.vehicle_id, ursbd.driver_id, ursbd.vehicle_type, ursbd.payment_receipt_filestore_id, " +
                     "ursbd.vehicle_capacity, ursbd.address_detail_id, ursbd.booking_status, ursbd.createdby, ursbd.lastModifiedby, ursbd.createdtime, " +
-                    "ursbd.lastmodifiedtime, ursbd.tenant_id, " +
+                    "ursbd.lastmodifiedtime, ursbd.tenant_id, ursbd.wt_file_store_id," +
                     "urad.applicant_id, urad.name, urad.mobile_number as applicant_mobile, urad.email_id, urad.alternate_number, " +
                     "uraddr.address_id, uraddr.house_no, uraddr.address_line_1, uraddr.address_line_2, uraddr.street_name, " +
                     "uraddr.landmark, uraddr.city, uraddr.city_code, uraddr.locality, uraddr.locality_code as addr_locality_code, uraddr.pincode, " +
-                    "uraddr.latitude, uraddr.longitude ,uraddr.wt_file_store_id"+
+                    "uraddr.latitude, uraddr.longitude"+
                     "FROM public.upyog_rs_water_tanker_booking_details ursbd " +
                     "INNER JOIN public.upyog_rs_water_tanker_applicant_details urad ON ursbd.booking_id = urad.booking_id " +
                     "INNER JOIN public.upyog_rs_water_tanker_address_details uraddr ON urad.applicant_id = uraddr.applicant_id"

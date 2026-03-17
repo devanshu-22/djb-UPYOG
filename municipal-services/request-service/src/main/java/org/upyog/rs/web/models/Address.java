@@ -64,9 +64,6 @@ public class Address {
 
 	private String longitude;
 
-	@JsonProperty("wt_file_store_id")
-	private String WTfileStoreId;
-
 	@NotBlank
 	private String pincode;
 
