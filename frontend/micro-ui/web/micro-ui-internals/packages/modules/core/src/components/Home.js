@@ -272,6 +272,7 @@ const ModuleCarousel = ({ modules, title }) => {
 };
 
 const EmployeeHome = ({ modules }) => {
+  console.log("modulessssss", modules);
   const { t } = useTranslation();
   const userInfo = JSON.parse(localStorage.getItem("Employee.user-info"));
   const name = userInfo?.name;
@@ -298,6 +299,14 @@ const EmployeeHome = ({ modules }) => {
       const formattedData = data?.["common-masters"]?.["CommonConfig"];
       const cityDashboardObject = formattedData?.find((item) => item?.name === "cityDashboardEnabled");
       return cityDashboardObject?.isActive;
+    },
+  });
+
+  const { data: dashboardUrl } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(), "tenant", [{ name: "citymodule" }], {
+    select: (data) => {
+      const citymodules = data?.tenant?.citymodule || [];
+      const dashboardModule = citymodules.find((item) => item?.dashboards);
+      return dashboardModule?.dashboards;
     },
   });
 
@@ -345,16 +354,26 @@ const EmployeeHome = ({ modules }) => {
             <p className="greeting-date">{getFormattedDate()}</p>
           </div>
           <div className="header-right-area">
-            <div className="header-icon-area">
-              <PresentationIcon />
-            </div>
-            <div className="header-actions-area">
-              <button onClick={() => setShowToast({ label: t("Coming Soon...!") })} className="view-dashboard-btn">
+            <button
+                onClick={() => {
+                  if (dashboardUrl) {
+                    window.open(dashboardUrl, "_blank");
+                  } else {
+                    setShowToast({ label: t("Dashboard URL not found") });
+                  }
+                }}
+                className="view-dashboard-btn"
+              >
                 <span className="btn-text">{t("View Analytics")}</span>
                 <div className="btn-icon-bg">
                   <FinanceChartIcon className="finance-chart-icon" />
                 </div>
               </button>
+            <div className="header-icon-area">
+              <PresentationIcon />
+            </div>
+            <div className="header-actions-area">
+              
             </div>
           </div>
         </div>

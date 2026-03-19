@@ -447,7 +447,7 @@ const VendorDetails = ({ t, config, onSelect, userType, formData, ownerIndex }) 
                 })}
               />
             </div>
-            <div>
+           {/* <div>
               <CardLabel>{`${t("COMPANY_NAME")}`}</CardLabel>
               <TextInput
                 t={t}
@@ -466,7 +466,7 @@ const VendorDetails = ({ t, config, onSelect, userType, formData, ownerIndex }) 
                   title: t("INVALID_ACCOUNT_NO_ERROR_MESSAGE"),
                 })}
               />
-            </div>
+            </div> */}
             <div>
               <CardLabel>{`${t("PAN_NO")}`}</CardLabel>
               <TextInput
