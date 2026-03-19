@@ -308,6 +308,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
         altContactNumber: altMobileNumber,
         photo: profilePic,
         correspondenceAddress: city,
+        active: true,
       };
 
       if (!new RegExp(/^([a-zA-Z ])*$/).test(name) || name === "" || name.length > 50 || name.length < 1) {
