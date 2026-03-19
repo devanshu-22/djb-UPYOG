@@ -351,6 +351,7 @@ public class UserService {
      */
     public User createUser(User user, RequestInfo requestInfo) {
         user.setUuid(UUID.randomUUID().toString());
+        log.info("validateNewUser before user object created: {}", user);
         user.validateNewUser(createUserValidateName);
         conditionallyValidateOtp(user);
         /* encrypt here */
