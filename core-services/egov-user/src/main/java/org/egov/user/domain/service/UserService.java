@@ -64,6 +64,9 @@ public class UserService {
     @Value("${user.default.password.pattern}")
     private String defaultPasswordPattern;
 
+    @Value("${citizen.registration.default.active:true}")
+    private boolean defaultCitizenActive;
+
     private UserRepository userRepository;
     private OtpRepository otpRepository;
     private PasswordEncoder passwordEncoder;
@@ -410,6 +413,7 @@ public class UserService {
      * @return
      */
     public User createCitizen(User user, RequestInfo requestInfo) {
+        user.setActive(defaultCitizenActive);
         validateAndEnrichCitizen(user);
         return createUser(user, requestInfo);
     }
