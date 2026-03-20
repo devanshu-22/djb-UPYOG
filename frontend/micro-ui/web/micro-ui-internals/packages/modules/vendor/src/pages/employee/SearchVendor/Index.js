@@ -149,7 +149,11 @@ const SearchVendor = () => {
           let vendor = vendorData.find((ele) => ele.dsoDetails?.vehicles?.find((vehicle) => vehicle.id === data.id));
           if (vendor) {
             data.vendor = vendor.dsoDetails;
-            data.driverData = vendor.dsoDetails?.vehicles?.find((vehicle) => vehicle.id === data.id)?.driverData;
+            const vehicleInVendor = vendor.dsoDetails?.vehicles?.find((vehicle) => vehicle.id === data.id);
+            if (vehicleInVendor) {
+              /* Ensure we don't overwrite existing driverData with undefined if it's missing in the vendor response */
+              data.driverData = vehicleInVendor.driverData || vehicleInVendor.driver || data.driverData;
+            }
           }
           return data;
         });

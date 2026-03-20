@@ -40,7 +40,6 @@ const VendorInbox = (props) => {
       sortBy: "name",
       sortOrder: "ASC",
       status: "ACTIVE",
-      driverWithNoVendor: true,
     },
   });
 
@@ -219,6 +218,7 @@ const VendorInbox = (props) => {
       onSuccess: (data, variables) => {
         setShowToast({ key: "success", action: "VENDOR" });
         queryClient.invalidateQueries("DSO_SEARCH");
+        props.refetchVendor();
         props.refetchData();
         setTimeout(closeToast, 3000);
       },
@@ -244,11 +244,14 @@ const VendorInbox = (props) => {
       onSuccess: (data, variables) => {
         setShowToast({ key: "success", action: "VEHICLE" });
         queryClient.invalidateQueries("FSM_VEICLES_SEARCH");
+        /* Mandatory: Invalidate DSO_SEARCH to ensure vendorData in the parent component is refetched with the new driver assignment */
+        queryClient.invalidateQueries("DSO_SEARCH");
         props.refetchData();
+        props.refetchVendor();
         setTimeout(closeToast, 3000);
       },
     });
-  };
+  }; 6
 
   const onCellClick = (row, column, length) => {
     setTableData((old) =>
@@ -699,12 +702,14 @@ const VendorInbox = (props) => {
             Cell: ({ row }) => {
               return (
                 <Dropdown
-                  // className="fsm-registry-dropdown"
-                  selected={row.original.driverData || row.original.driver}
+                  className="fsm-registry-dropdown"
+                  /* Use ID matching to ensure the selection is shown even if object references differ between API calls */
+                  selected={drivers?.find((driver) => (row.original.driverData?.id || row.original.driver?.id) === driver.id) || row.original.driverData || row.original.driver}
                   option={drivers}
                   select={(value) => onDriverSelect(row, value)}
                   optionKey="name"
                   t={t}
+                  style={{ textAlign: "left" }}
                 />
               );
             },
@@ -785,9 +790,11 @@ const VendorInbox = (props) => {
               return (
                 <Dropdown
                   className="fsm-registry-dropdown"
-                  selected={row.original.vendor}
+                  selected={vendors?.find((vendor) => (row.original.vendorData?.id || row.original.vendor?.id) === vendor.id) || row.original.vendorData || row.original.vendor}
+                  // selected={row.original.vendor}
                   option={vendors}
                   select={(value) => onVendorSelect(row, value)}
+                  style={{ textAlign: "left" }}
                   optionKey="name"
                   t={t}
                 />
