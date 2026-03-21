@@ -250,7 +250,6 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
         <TextInput
           value={latitude}
           onChange={(e) => setLatitude(e.target.value)}
-          placeholder="28.6139"
         />
       </div>
 
@@ -260,7 +259,6 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
         <TextInput
           value={longitude}
           onChange={(e) => setLongitude(e.target.value)}
-          placeholder="77.2090"
         />
       </div>
 

@@ -91,7 +91,7 @@ const AddFixPointAddress = () => {
 
   return (
     <div style={{ display: "flex", gap: "24px" }}>
-      <Timeline steps={["data"]} currentStep={1} />
+      <Timeline steps={["WT_FIXED_POINT"]} currentStep={1} />
 
       <div style={{ flex: 1 }}>
         <AddFillingPointMetaData
@@ -102,7 +102,9 @@ const AddFixPointAddress = () => {
           visibleFields={["name", "mobileNumber", "alternateNumber", "emailId"]}
         />
         <AddFixFillAddress t={t} config={addressConfig} onSelect={handleSelect} formData={formData} />
-        <SubmitBar label={editId ? t("ES_COMMON_UPDATE") : t("ES_COMMON_SAVE")} onSubmit={handleSubmit} />
+        <div style={{ display: "flex", marginBottom: "24px", justifyContent: "flex-end" }}>
+          <SubmitBar label={editId ? t("ES_COMMON_UPDATE") : t("ES_COMMON_SAVE")} onSubmit={handleSubmit} />
+        </div>
       </div>
       {showToast && <Toast error={showToast.isError} label={showToast.label} onClose={() => setShowToast(null)} />}
     </div>

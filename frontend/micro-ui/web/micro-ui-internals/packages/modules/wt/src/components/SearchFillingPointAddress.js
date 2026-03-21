@@ -198,12 +198,14 @@ const SearchFillingPointAddress = () => {
               <Dropdown option={statusOptions} optionKey="i18nKey" selected={status} select={setStatus} t={t} />
             </div>
           )}
+        <div style={{ display: "flex", marginTop: "32px", justifyContent: "flex-end", gap: "16px" }}>
 
           <SubmitBar label={t("ES_COMMON_SEARCH")} onSubmit={onSearch} />
 
           <span className="clear-search" onClick={clearSearch}>
             {t("ES_COMMON_CLEAR_SEARCH")}
           </span>
+          </div>
         </div>
       </Card>
 

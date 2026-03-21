@@ -185,6 +185,7 @@ export const fillingPointPayload = (data) => {
         eeName: data?.owner?.eeName,
         eeMobileNumber: data?.owner?.eeMobileNumber,
         eeEmailId: data?.owner?.eeEmailId,
+        type: "FILLING-POINT",
       },
       address: {
         addressType: data?.address?.addressType?.code || data?.address?.addressType || "",
@@ -219,6 +220,7 @@ export const fixedPointPayload = (data) => {
         mobileNumber: data?.owner?.mobileNumber || "",
         alternateNumber: data?.owner?.alternateNumber || "",
         emailId: data?.owner?.emailId || "",
+        type: "FIXED-POINT",
       },
 
       address: {

@@ -1,4 +1,4 @@
-import React, { useState , useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { AddressDetails, SubmitBar, Toast, Loader } from "@djb25/digit-ui-react-components";
 import { fillingPointPayload } from "../utils";
@@ -58,10 +58,12 @@ const AddFillingPointAddress = () => {
     setFormData((prev) => ({ ...prev, [key]: data }));
   };
 
-  const steps = ["data"];
+  const steps = ["WT_FILLING_POINT"];
 
-  const { mutate: createFillingPoint } = Digit.Hooks.wt.useCreateFillPoint(tenantId);
+  // const { mutate: createFillingPoint } = Digit.Hooks.wt.useCreateFillPoint(tenantId);
   // const { mutate: updateFillingPoint } = Digit.Hooks.wt.useUpdateFillPoint(tenantId);
+
+  const createFillingPoint = [];
 
   const handleSubmit = (e) => {
     if (e && e.preventDefault) e.preventDefault();
