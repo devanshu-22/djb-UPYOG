@@ -124,12 +124,12 @@ const CitizenHome = ({ modules, getCitizenMenu, fetchedCitizen, isLoading }) => 
                     Info={
                       code === "OBPS"
                         ? () => (
-                          <CitizenInfoLabel
-                            style={{ margin: "0px", padding: "10px" }}
-                            info={t("CS_FILE_APPLICATION_INFO_LABEL")}
-                            text={t(`BPA_CITIZEN_HOME_STAKEHOLDER_INCLUDES_INFO_LABEL`)}
-                          />
-                        )
+                            <CitizenInfoLabel
+                              style={{ margin: "0px", padding: "10px" }}
+                              info={t("CS_FILE_APPLICATION_INFO_LABEL")}
+                              text={t(`BPA_CITIZEN_HOME_STAKEHOLDER_INCLUDES_INFO_LABEL`)}
+                            />
+                          )
                         : null
                     }
                     isInfo={code === "OBPS" ? true : false}
@@ -272,7 +272,6 @@ const ModuleCarousel = ({ modules, title }) => {
 };
 
 const EmployeeHome = ({ modules }) => {
-  console.log("modulessssss", modules);
   const { t } = useTranslation();
   const userInfo = JSON.parse(localStorage.getItem("Employee.user-info"));
   const name = userInfo?.name;
@@ -355,26 +354,24 @@ const EmployeeHome = ({ modules }) => {
           </div>
           <div className="header-right-area">
             <button
-                onClick={() => {
-                  if (dashboardUrl) {
-                    window.open(dashboardUrl, "_blank");
-                  } else {
-                    setShowToast({ label: t("Dashboard URL not found") });
-                  }
-                }}
-                className="view-dashboard-btn"
-              >
-                <span className="btn-text">{t("View Analytics")}</span>
-                <div className="btn-icon-bg">
-                  <FinanceChartIcon className="finance-chart-icon" />
-                </div>
-              </button>
+              onClick={() => {
+                if (dashboardUrl) {
+                  window.open(dashboardUrl, "_blank");
+                } else {
+                  setShowToast({ label: t("Dashboard URL not found") });
+                }
+              }}
+              className="view-dashboard-btn"
+            >
+              <span className="btn-text">{t("View Analytics")}</span>
+              <div className="btn-icon-bg">
+                <FinanceChartIcon className="finance-chart-icon" />
+              </div>
+            </button>
             <div className="header-icon-area">
               <PresentationIcon />
             </div>
-            <div className="header-actions-area">
-              
-            </div>
+            <div className="header-actions-area"></div>
           </div>
         </div>
       </div>
@@ -401,7 +398,7 @@ const EmployeeHome = ({ modules }) => {
             display: "flex",
             alignItems: "center",
             transform: "translateY(0)",
-            animation: "toastSlideUp 0.3s ease-out forwards"
+            animation: "toastSlideUp 0.3s ease-out forwards",
           }}
         />
       )}
