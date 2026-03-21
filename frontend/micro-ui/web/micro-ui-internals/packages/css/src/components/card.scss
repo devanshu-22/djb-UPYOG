@@ -36,7 +36,7 @@
   }
 
   .card-label-error {
-    @apply block text-body-s text-error mb-md;
+    @apply block text-body-s text-error;
   }
 
   .card-label-desc {
@@ -111,7 +111,7 @@
   }
 
   .card-label-error {
-    @apply block text-body-s text-error mb-md;
+    @apply block text-body-s text-error;
   }
 
   .card-label-desc {
@@ -131,6 +131,15 @@
   }
 }
 
+.vehicle-details-card {
+  width: 100%;
+  height: fit-content;
+}
+
+.no-shadow {
+  box-shadow: none !important;
+}
+
 .header-wrap {
   @apply flex mb-md;
 
@@ -145,6 +154,11 @@
   .header-end {
     margin-left: auto;
   }
+}
+
+.header-content {
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .card-emp {
@@ -186,7 +200,6 @@
 }
 
 @screen dt {
-
   .submit-bar,
   .submit-bar-disabled {
     width: 240px;
@@ -348,7 +361,7 @@
     }
 
     /* Remove any default margins that might interfere */
-    .label-field-pair>* {
+    .label-field-pair > * {
       margin: 0;
       width: 100%;
     }
@@ -379,8 +392,6 @@
     .header-start {
       margin-right: auto;
     }
-
-    .header-content {}
 
     .header-end {
       margin-left: auto;
@@ -430,7 +441,7 @@
 }
 
 .card-label-error {
-  @apply block text-body-s text-error mb-md;
+  @apply block text-body-s text-error;
 }
 
 .employeeCard-override {
@@ -491,7 +502,7 @@
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
 }
 
-.new-employee-card>* {
+.new-employee-card > * {
   position: relative;
   z-index: 1;
 }
@@ -915,7 +926,7 @@
   cursor: pointer;
   font-weight: 600;
   color: #1a365d;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 .hamburger-icon {
   width: 22px;
@@ -950,7 +961,7 @@
   position: fixed;
   top: 0;
   left: -100%;
-  width: 80%; 
+  width: 80%;
   max-width: 320px;
   height: 100vh;
   background-color: #ffffff;
@@ -1344,7 +1355,6 @@
   color: #ffffff;
 }
 
-
 .collapsed .brand-name,
 .collapsed .nav-text {
   opacity: 0;
@@ -1395,6 +1405,6 @@
     border-right: 1px solid #e5e7eb;
     border-radius: 8px;
     padding: 20px;
-    transition: none; 
+    transition: none;
   }
 }

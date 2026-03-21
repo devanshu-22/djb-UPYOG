@@ -129,7 +129,6 @@ const getCitizenStyles = (value) => {
 };
 
 const UploadFile = (props) => {
-  console.log(props);
   const { t } = useTranslation();
   const inpRef = useRef();
   const [hasFile, setHasFile] = useState(false);
