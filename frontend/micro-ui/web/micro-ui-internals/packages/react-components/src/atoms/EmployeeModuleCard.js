@@ -491,7 +491,7 @@ const EmployeeModuleCard = ({ Icon, moduleName, kpis = [], links = [], className
         <div className="card-footer-row">
           <div className="footer-links">
             <span className="pill-link" style={{ cursor: "pointer" }}>
-             {t('View Reports')}
+              {t('View Reports')}
               <svg
                 width="12"
                 height="12"
