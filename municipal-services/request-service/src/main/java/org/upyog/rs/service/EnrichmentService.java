@@ -18,6 +18,8 @@ import org.upyog.rs.util.UserUtil;
 import org.upyog.rs.web.models.Address;
 import org.upyog.rs.web.models.ApplicantDetail;
 import org.upyog.rs.web.models.AuditDetails;
+import org.upyog.rs.web.models.fillingpoint.FillingPoint;
+import org.upyog.rs.web.models.fillingpoint.FillingPointRequest;
 import org.upyog.rs.web.models.mobileToilet.MobileToiletBookingDetail;
 import org.upyog.rs.web.models.mobileToilet.MobileToiletBookingRequest;
 import org.upyog.rs.web.models.user.AddressV2;
@@ -459,7 +461,41 @@ public class EnrichmentService {
 
 	}
 
-	
 
+	public void enrichCreateFillingPointRequest(FillingPointRequest request) {
 
+		String userId = request.getRequestInfo().getUserInfo().getUuid();
+		Long now = System.currentTimeMillis();
+
+		for (FillingPoint fp : request.getFillingPoints()) {
+
+			// 1️⃣ Generate filling point ID
+			fp.setId(RequestServiceUtil.getRandonUUID());
+
+			// 2️⃣ Audit
+			fp.setCreatedBy(userId);
+			fp.setLastModifiedBy(userId);
+			fp.setCreatedTime(now);
+			fp.setLastModifiedTime(now);
+
+			// 3️⃣ Address enrichment
+			if (fp.getAddress() != null) {
+				fp.getAddress().setAddressId(RequestServiceUtil.getRandonUUID());
+
+				// 🔥 CRITICAL FIX
+				fp.getAddress().setFillingPointId(fp.getId());
+			}
+		}
+	}
+
+	public void enrichUpdateFillingPointRequest(FillingPointRequest request) {
+
+		String userId = request.getRequestInfo().getUserInfo().getUuid();
+		Long now = System.currentTimeMillis();
+
+		for (FillingPoint fp : request.getFillingPoints()) {
+			fp.setLastModifiedBy(userId);
+			fp.setLastModifiedTime(now);
+		}
+	}
 }
