@@ -64,8 +64,19 @@ export const WTService = {
       userService: auth === false ? auth : true,
       params: { tenantId, ...filters },
     }),
+  CreateFixedPointSchedule: (details, tenantId) =>
+    Request({
+      url: Urls.wt.createfixedpointschedule,
+      data: details,
+      useCache: false,
+      setTimeParam: false,
+      userService: true,
+      method: "POST",
+      params: { tenantId },
+      auth: true,
+    }),
 
-  createFillPoint: (details, tenantId) =>
+  CreateFillPoint: (details, tenantId) =>
     Request({
       url: Urls.wt.createfillpoint,
       data: details,
@@ -76,13 +87,13 @@ export const WTService = {
       params: {},
       auth: true,
     }),
-  searchFillPoint: ({ tenantId, filters, auth }) =>
+  SearchFillPoint: ({ tenantId, filters, auth }) =>
     Request({
       url: Urls.wt.searchfillpoint,
       useCache: false,
       method: "POST",
       auth: auth === false ? auth : true,
       userService: auth === false ? auth : true,
-      params: { tenantId, ...filters },
+      data: { criteria: { tenantId, ...filters } },
     }),
 };
