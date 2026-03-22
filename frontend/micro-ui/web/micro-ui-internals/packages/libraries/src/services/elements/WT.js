@@ -44,6 +44,17 @@ export const WTService = {
       params: {},
       auth: true,
     }),
+  UpdateFixedPoint: (details, tenantId) =>
+    Request({
+      url: Urls.wt.updatefixedpoint,
+      data: details,
+      useCache: false,
+      setTimeParam: false,
+      userService: true,
+      method: "POST",
+      params: {},
+      auth: true,
+    }),
   SearchFixedPoint: ({ tenantId, filters, auth }) =>
     Request({
       url: Urls.wt.searchfixedpoint,
