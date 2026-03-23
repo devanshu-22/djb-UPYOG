@@ -42,6 +42,8 @@ public class FixedPointDetails {
     @JsonProperty("vehicle_id")
     private String vehicleId;
 
+    @JsonProperty("tenant_id")
+    private String tenantId;
     @JsonProperty("audit_details")
     private AuditDetails auditDetails;
 
