@@ -35,6 +35,7 @@ import AddFillingPointAddress from "./components/AddFillingPointAddress";
 import AddFixPointAddress from "./components/AddFixPointAddress";
 import AddFillingPointMetaData from "./components/AddFillingPointMetaData";
 import WTSearchPointAddress from "./components/SearchFillingPointAddress";
+import VendorAssign from "./components/VendorAssign";
 
 // Parent component of module
 export const WTModule = ({ stateCode, userType, tenants }) => {
@@ -123,6 +124,7 @@ const componentsToRegister = {
   AddFixPointAddress,
   AddFillingPointMetaData,
   WTSearchPointAddress,
+  VendorAssign,
 };
 
 export const initWTComponents = () => {

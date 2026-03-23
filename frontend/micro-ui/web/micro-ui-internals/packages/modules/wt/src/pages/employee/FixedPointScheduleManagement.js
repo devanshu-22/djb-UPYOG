@@ -1,11 +1,14 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Card, Header, Table, Dropdown, TextInput, DatePicker, SubmitBar, FormStep } from "@djb25/digit-ui-react-components";
+import { Card, Header, Table, Dropdown, TextInput, DatePicker, SubmitBar, FormStep, Toast } from "@djb25/digit-ui-react-components";
+
 import AddTripModal from "../../components/AddTripModal";
 
 const FixedPointScheduleManagement = () => {
   const { t } = useTranslation();
+  const tenantId = Digit.ULBService.getCurrentTenantId();
   const [showModal, setShowModal] = useState(false);
+  const [toast, setToast] = useState(null);
   const [selectedDay, setSelectedDay] = useState("Mon");
   const [year, setYear] = useState({ label: "Year 2026", value: "2026" });
   const [fixedPoint, setFixedPoint] = useState({ label: "FP01", value: "FP01" });
@@ -13,6 +16,13 @@ const FixedPointScheduleManagement = () => {
   const [status, setStatus] = useState({ label: "All Status", value: "all" });
   const [vehicle, setVehicle] = useState({ label: "DL1LAG7729", value: "DL1LAG7729" });
   const [editingRowIndex, setEditingRowIndex] = useState(null);
+
+  const { mutate: createSchedule } = Digit.Hooks.wt.useCreateFixedPointSchedule(tenantId);
+
+  const closeToast = () => {
+    setToast(null);
+  };
+
 
   const handleDelete = (index) => {
     const updatedData = data.filter((_, i) => i !== index);
@@ -352,7 +362,8 @@ const FixedPointScheduleManagement = () => {
               ? {
                   scheduleId: data[editingRowIndex].scheduleId,
                   fixedPointCode: data[editingRowIndex].fixedPoint,
-                  day: { label: t(data[editingRowIndex].day.toUpperCase()), value: data[editingRowIndex].day },
+                  day: { label: t(data[editingRowIndex].day), value: data[editingRowIndex].day },
+
                   frequencyNo: data[editingRowIndex].freq,
                   arrivalTimeFpl: data[editingRowIndex].arrToFpl,
                   departureTimeFpl: data[editingRowIndex].depFromFpl,
@@ -369,34 +380,45 @@ const FixedPointScheduleManagement = () => {
               : null
           }
           onSubmit={(formData) => {
-            const rowData = {
-              scheduleId: formData.scheduleId || `SASID-000${data.length + 1}`,
-              fixedPoint: formData.fixedPointCode || "FP01",
-              day: formData.day?.value || "Mon",
-              freq: formData.frequencyNo || "1",
-              arrToFpl: formData.arrivalTimeFpl || "--:--",
-              depFromFpl: formData.departureTimeFpl || "--:--",
-              arrAtFixedPoint: formData.arrivalFixedPoint || "--:--",
-              depAtFixedPoint: formData.departureFixedPoint || "--:--",
-              returnToFpl: formData.returnFpl || "--:--",
-              volume: formData.volume || "0 KL",
-              vehicle: formData.vehicleId || "NA",
-              active: formData.active?.value === "Yes" ? "Y" : "N",
+            const payload = {
+              fixedPointDetails: {
+                system_assigned_schedule_id: formData.scheduleId,
+                fixed_point_code: formData.fixedPointCode,
+                day: formData.day?.value?.toUpperCase(),
+                trip_no: formData.frequencyNo,
+                arrival_time_to_fpl: formData.arrivalTimeFpl,
+                departure_time_from_fpl: formData.departureTimeFpl,
+                arrival_time_delivery_point: formData.arrivalFixedPoint,
+                departure_time_delivery_point: formData.departureFixedPoint,
+                time_of_arriving_back_fpl_after_delivery: formData.returnFpl,
+                volume_water_tobe_delivery: formData.volume,
+                active: formData.active?.value === "Yes",
+                is_enable: formData.active?.value === "Yes",
+                remarks: formData.remarks,
+                vehicle_id: formData.vehicleId,
+              },
             };
 
-            if (editingRowIndex !== null) {
-              const updatedData = [...data];
-              updatedData[editingRowIndex] = rowData;
-              setData(updatedData);
-            } else {
-              setData([...data, rowData]);
-            }
-            setShowModal(false);
-            setEditingRowIndex(null);
+            createSchedule(payload, {
+              onError: (error, variables) => {
+                setToast({ key: "error", label: error?.response?.data?.Errors?.[0]?.message || "ERROR_WHILE_CREATING_SCHEDULE" });
+                setTimeout(closeToast, 5000);
+              },
+              onSuccess: (data, variables) => {
+                setToast({ label: t("WT_SCHEDULE_CREATE_SUCCESS") });
+                setTimeout(closeToast, 5000);
+                setShowModal(false);
+                setEditingRowIndex(null);
+                // In a real app, we might want to re-fetch the data here
+              },
+            });
           }}
+
         />
       )}
+      {toast && <Toast error={toast.key === "error"} label={toast.label} onClose={closeToast} />}
     </div>
+
   );
 };
 

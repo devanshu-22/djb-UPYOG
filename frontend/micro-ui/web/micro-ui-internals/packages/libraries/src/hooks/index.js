@@ -349,9 +349,11 @@ import useCreateDemand from "./sv/useCreateDemand";
 import useEmpvendorCommonSearch from "./vendor/useEmpvendorCommonSearch";
 import { useGetConnection, useValidateUser, useGetConnectionTypeV2, useGetUserType, useGetFloorCount, useGetPropertyType } from "./ekyc/useEkyc";
 import {useCreateFixedPoint} from "./wt/createFixedPoint";
+import {useCreateFixedPointSchedule} from "./wt/useCreateFixedPointSchedule";
 import {useUpdateFixedPoint} from "./wt/updateFixedPoint";
 import useFixedPointSearchAPI from "./wt/useFixedPointSearchAPI";
 import useFillPointSearch from "./wt/useFillPointSearch";
+import {useCreateFillPoint} from "./wt/createFillPoint"
 
 const wt={
   useTankerCreateAPI,
@@ -364,9 +366,11 @@ const wt={
   useMTApplicationAction,
   useWTMDMS,
   useCreateFixedPoint,
+  useCreateFixedPointSchedule,
   useUpdateFixedPoint,
   useFixedPointSearchAPI,
   useFillPointSearch,
+  useCreateFillPoint,
 };
 
 const pgr = {

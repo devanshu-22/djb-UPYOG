@@ -255,9 +255,11 @@ const Urls = {
     update: "/request-service/water-tanker/v1/_update",
     search: "/request-service/water-tanker/v1/_search",
     createfixedpoint: "/request-service/water-tanker/fixed-point/v1/_create",
+    updatefixedpoint: "/request-service/water-tanker/fixed-point/v1/_update",
     searchfixedpoint: "/request-service/water-tanker/fixed-point/v1/_search",
-    createfillpoint: "/request-service/water-tanker/fill-point/v1/_create",
-    searchfillpoint: "/request-service/water-tanker/fill-point/v1/_search",
+    createfixedpointschedule: "/request-service/water-tanked/fixed/time/v1/_create",
+    createfillpoint: "/request-service/wt/filling-point/_create",
+    searchfillpoint: "/request-service/wt/filling-point/_search",
   },
   mt: {
     create: "/request-service/mobile-toilet/v1/_create",

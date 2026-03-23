@@ -6,6 +6,7 @@ import Timeline from "../../../vendor/src/components/VENDORTimeline";
 import { useLocation } from "react-router-dom";
 
 import AddFillingPointMetaData from "./AddFillingPointMetaData";
+import AddFixFillAddress from "./AddFixFillAddress";
 
 const AddFillingPointAddress = () => {
   const { t } = useTranslation();
@@ -16,6 +17,7 @@ const AddFillingPointAddress = () => {
   const [formData, setFormData] = useState({});
   const [showToast, setShowToast] = useState(null);
   const tenantId = Digit.ULBService.getCurrentTenantId();
+  const addressConfig = { key: "address" };
 
   // ✅ Fetch data if editing
   const { isLoading: isEditLoading, data: editData } = Digit.Hooks.wt.useTankerSearchAPI(
@@ -23,10 +25,17 @@ const AddFillingPointAddress = () => {
     { enabled: !!editId }
   );
 
-  useEffect(() => {
-    console.log("Edit ID:", editId);
-    console.log("Search Result:", editData);
+  const handleSelect = (key, data) => {
+    setFormData((prev) => ({
+      ...prev,
+      [key]: {
+        ...(prev[key] || {}),
+        ...data,
+      },
+    }));
+  };
 
+  useEffect(() => {
     if (editId && editData?.waterTankerBookingDetail) {
       // Find the specific record that matches the ID from the URL
       const data = editData.waterTankerBookingDetail.find((item) => item.bookingId === editId);
@@ -34,15 +43,17 @@ const AddFillingPointAddress = () => {
       if (data) {
         setFormData({
           owner: {
-            name: data.fillingpointmetadata?.name,
-            mobileNumber: data.fillingpointmetadata?.mobileNumber,
-            emailId: data.fillingpointmetadata?.emailId,
+            fillingPointName: data.fillingpointmetadata?.fillingPointName || data.fillingpointmetadata?.name,
+            emergencyName: data.fillingpointmetadata?.emergencyName,
+            aeName: data.fillingpointmetadata?.aeName,
+            aeMobile: data.fillingpointmetadata?.aeMobile || data.fillingpointmetadata?.mobileNumber,
+            aeEmail: data.fillingpointmetadata?.aeEmail || data.fillingpointmetadata?.emailId,
             jeName: data.fillingpointmetadata?.jeName,
-            jeMobileNumber: data.fillingpointmetadata?.jeMobileNumber,
-            jeEmailId: data.fillingpointmetadata?.jeEmailId,
+            jeMobile: data.fillingpointmetadata?.jeMobile || data.fillingpointmetadata?.jeMobileNumber,
+            jeEmail: data.fillingpointmetadata?.jeEmail || data.fillingpointmetadata?.jeEmailId,
             eeName: data.fillingpointmetadata?.eeName,
-            eeMobileNumber: data.fillingpointmetadata?.eeMobileNumber,
-            eeEmailId: data.fillingpointmetadata?.eeEmailId,
+            eeMobile: data.fillingpointmetadata?.eeMobile || data.fillingpointmetadata?.eeMobileNumber,
+            eeEmail: data.fillingpointmetadata?.eeEmail || data.fillingpointmetadata?.eeEmailId,
           },
           address: {
             ...data.address,
@@ -60,10 +71,7 @@ const AddFillingPointAddress = () => {
 
   const steps = ["WT_FILLING_POINT"];
 
-  // const { mutate: createFillingPoint } = Digit.Hooks.wt.useCreateFillPoint(tenantId);
-  // const { mutate: updateFillingPoint } = Digit.Hooks.wt.useUpdateFillPoint(tenantId);
-
-  const createFillingPoint = [];
+  const { mutate: createFillingPoint } = Digit.Hooks.wt.useCreateFillPoint(tenantId);
 
   const handleSubmit = (e) => {
     if (e && e.preventDefault) e.preventDefault();
@@ -72,7 +80,6 @@ const AddFillingPointAddress = () => {
       tenantId,
     });
 
-    // const mutation = editId ? updateFillingPoint : createFillingPoint;
     const mutation = createFillingPoint;
 
     mutation(payload, {
@@ -90,20 +97,41 @@ const AddFillingPointAddress = () => {
     });
   };
 
+  const isMobile = window.Digit.Utils.browser.isMobile();
+
   if (isEditLoading) return <Loader />;
 
   return (
-    <div style={{ display: "flex", gap: "24px" }}>
+    <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row" }}>
       <Timeline steps={steps} currentStep={1} />
 
-      <div style={{ flex: 1 }}>
-        <form onSubmit={handleSubmit}>
-          <AddFillingPointMetaData t={t} config={{ key: "owner" }} onSelect={onSelect} formData={formData} />
+      <div style={{ flex: 1, marginLeft: isMobile ? "0px" : "24px" }}>
+        <div>
+          <AddFillingPointMetaData
+            t={t}
+            config={{ key: "owner" }}
+            onSelect={onSelect}
+            formData={formData}
+            visibleFields={[
+              "fillingPointName",
+              "emergencyName",
+              "aeName",
+              "aeMobile",
+              "aeEmail",
+              "jeName",
+              "jeMobile",
+              "jeEmail",
+              "eeName",
+              "eeMobile",
+              "eeEmail",
+            ]}
+          />
 
-          <AddressDetails t={t} onSelect={(key, data) => setFormData((prev) => ({ ...prev, [key]: data }))} formData={formData} />
-
-          <SubmitBar label={editId ? t("ES_COMMON_UPDATE") : t("ES_COMMON_SAVE_NEXT")} onSubmit={handleSubmit} />
-        </form>
+          <AddFixFillAddress t={t} config={addressConfig} onSelect={handleSelect} formData={formData} />
+          <div style={{ display: "flex", marginBottom: "24px", justifyContent: isMobile ? "center" : "flex-end" }}>
+            <SubmitBar label={editId ? t("ES_COMMON_UPDATE") : t("ES_COMMON_SAVE_NEXT")} onSubmit={handleSubmit} />
+          </div>
+        </div>
 
         {showToast && <Toast error={showToast.isError} label={showToast.label} onClose={() => setShowToast(null)} />}
       </div>

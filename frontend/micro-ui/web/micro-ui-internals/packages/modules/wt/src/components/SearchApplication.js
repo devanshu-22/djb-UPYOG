@@ -150,7 +150,7 @@ const WTSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, se
             <form onSubmit={handleSubmit(onSubmit)}>
               {/* --- SMART SEARCH --- */}
               {activeTab === t("WT_SMART_SEARCH") && (
-                <div className="wt-search-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
+                <div className="wt-search-grid" style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: "24px" }}>
                   <div className="search-field-wrapper">
                     <label>{t("WT_MOBILE_NUMBER")}</label>
                     <MobileNumber
@@ -240,7 +240,7 @@ const WTSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, se
               )}
 
               {/* ACTIONS */}
-              <div className="wt-search-actions" style={{ display: "flex", justifyContent: "flex-end", gap: "24px", marginTop: "16px" }}>
+              <div className="wt-search-actions" style={{ display: "flex", justifyContent: isMobile ? "center" : "flex-end", flexDirection: isMobile ? "column-reverse" : "row", gap: "24px", marginTop: "16px" }}>
                 <span
                   className="clear-search-link"
                   onClick={handleClearSearch}
@@ -248,7 +248,7 @@ const WTSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, se
                 >
                   {t("ES_COMMON_CLEAR_ALL")}
                 </span>
-                <div style={{ minWidth: "160px" }}>
+                <div style={{ minWidth: isMobile ? "100%" : "160px" }}>
                   <SubmitBar label={t("ES_COMMON_SEARCH")} submit />
                 </div>
               </div>

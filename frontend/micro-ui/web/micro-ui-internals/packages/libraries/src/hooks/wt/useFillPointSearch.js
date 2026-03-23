@@ -10,8 +10,8 @@ const useFillPointSearch = ({ tenantId, filters, auth }, config = {}) => {
   };
 
   const { isLoading, error, data, isSuccess, refetch } = useQuery(
-    ["wtFixedPointSearchList", tenantId, filters, auth, config],
-    () => Digit.WTService.SearchFixedPoint(args),
+    ["wtFillPointSearchList", tenantId, filters, auth, config],
+    () => Digit.WTService.SearchFillPoint(args),
     {
       select: defaultSelect,
       ...config,
@@ -24,7 +24,7 @@ const useFillPointSearch = ({ tenantId, filters, auth }, config = {}) => {
     data,
     isSuccess,
     refetch,
-    revalidate: () => client.invalidateQueries(["wtFixedPointSearchList", tenantId, filters, auth]),
+    revalidate: () => client.invalidateQueries(["wtFillPointSearchList", tenantId, filters, auth]),
   };
 };
 

@@ -23,7 +23,7 @@ const SearchFillingPointAddress = () => {
     { enabled: selectedTab === "FIXED_POINT" }
   );
 
-  const { isLoading: isFillingLoading, data: fillingPointData, refetch: refetchFilling } = Digit.Hooks.wt.useTankerSearchAPI(
+  const { isLoading: isFillingLoading, data: fillingPointData, refetch: refetchFilling } = Digit.Hooks.wt.useFillPointSearch(
     {
       tenantId,
       filters: searchParams,
@@ -33,7 +33,7 @@ const SearchFillingPointAddress = () => {
 
   const isLoading = selectedTab === "FIXED_POINT" ? isFixedLoading : isFillingLoading;
   const tableData =
-    (selectedTab === "FIXED_POINT" ? fixedPointData?.waterTankerBookingDetail : fillingPointData?.waterTankerBookingDetail) || [];
+    (selectedTab === "FIXED_POINT" ? fixedPointData?.waterTankerBookingDetail : fillingPointData?.fillingPoints) || [];
 
   // ✅ Dynamic config
   const searchConfig = {
@@ -68,6 +68,8 @@ const SearchFillingPointAddress = () => {
   const onTabChange = (tab) => {
     setSelectedTab(tab);
     clearSearch();
+    // Re-trigger search with empty filters for the new tab
+    setSearchParams({});
   };
 
   const onAddClick = () => {
@@ -84,11 +86,12 @@ const SearchFillingPointAddress = () => {
   };
 
   const onSearch = () => {
-    setSearchParams({
+    const filters = {
       name: searchValue,
-      mobileNumber: mobileNumber,
+      ...(selectedTab === "FILLING_POINT" ? { mobileNo: mobileNumber } : { mobileNumber: mobileNumber }),
       status: status?.code,
-    });
+    };
+    setSearchParams(filters);
   };
 
   const columns = React.useMemo(() => {
@@ -121,19 +124,19 @@ const SearchFillingPointAddress = () => {
       return [
         {
           Header: t("WT_FILLING_POINT_NAME"),
-          accessor: (row) => row?.fillingpointmetadata?.name || "NA",
+          accessor: (row) => row?.fillingPointName || "NA",
           id: "fillingPointName",
           Cell: ({ row }) => (
             <span className="link">
-              <Link to={`/digit-ui/employee/wt/add-filling-point-address?id=${row.original.bookingId}`}>
-                {row.original.fillingpointmetadata?.name || "NA"}
+              <Link to={`/digit-ui/employee/wt/add-filling-point-address?id=${row.original.id}`}>
+                {row.original.fillingPointName || "NA"}
               </Link>
             </span>
           ),
         },
         {
           Header: t("WT_JE_NAME"),
-          accessor: (row) => row?.fillingpointmetadata?.jeName || "NA",
+          accessor: (row) => row?.jeName || "NA",
           id: "jeName",
         },
         {
@@ -145,15 +148,18 @@ const SearchFillingPointAddress = () => {
     }
   }, [selectedTab, t]);
 
+  const isMobile = window.Digit.Utils.browser.isMobile();
+
   return (
     <React.Fragment>
       <Card>
         {/* 🔹 Tabs + Add */}
-        <div className="search-tabs-container">
+        <div className="search-tabs-container" style={{ flexDirection: isMobile ? "column" : "row", gap: isMobile ? "16px" : "0" }}>
           <div>
             <button
               className={selectedTab === "FIXED_POINT" ? "search-tab-head-selected" : "search-tab-head"}
               onClick={() => onTabChange("FIXED_POINT")}
+              style={{ width: isMobile ? "50%" : "auto" }}
             >
               {t("WT_FIXED_POINT")}
             </button>
@@ -161,12 +167,13 @@ const SearchFillingPointAddress = () => {
             <button
               className={selectedTab === "FILLING_POINT" ? "search-tab-head-selected" : "search-tab-head"}
               onClick={() => onTabChange("FILLING_POINT")}
+              style={{ width: isMobile ? "50%" : "auto" }}
             >
               {t("WT_FILLING_POINT")}
             </button>
           </div>
 
-          <div className="action-bar-wrap-registry">
+          <div className="action-bar-wrap-registry" style={{ alignSelf: isMobile ? "flex-end" : "auto" }}>
             <div className="search-add" onClick={onAddClick}>
               {t("ES_VENDOR_REGISTRY_INBOX_HEADER_ADD")}
               <div className="search-add-icon">
@@ -198,13 +205,11 @@ const SearchFillingPointAddress = () => {
               <Dropdown option={statusOptions} optionKey="i18nKey" selected={status} select={setStatus} t={t} />
             </div>
           )}
-        <div style={{ display: "flex", marginTop: "32px", justifyContent: "flex-end", gap: "16px" }}>
-
-          <SubmitBar label={t("ES_COMMON_SEARCH")} onSubmit={onSearch} />
-
-          <span className="clear-search" onClick={clearSearch}>
-            {t("ES_COMMON_CLEAR_SEARCH")}
-          </span>
+          <div style={{ display: "flex", marginTop: "32px", justifyContent: isMobile ? "center" : "flex-end", flexDirection: isMobile ? "column-reverse" : "row", gap: "16px" }}>
+            <span className="clear-search" onClick={clearSearch} style={{ alignSelf: "center" }}>
+              {t("ES_COMMON_CLEAR_SEARCH")}
+            </span>
+            <SubmitBar label={t("ES_COMMON_SEARCH")} onSubmit={onSearch} />
           </div>
         </div>
       </Card>

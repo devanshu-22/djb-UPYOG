@@ -11,21 +11,29 @@ const AddFillingPointMetaData = ({
   const sectionKey = config?.key || "metaData";
   // ✅ ALL FIELDS CONFIG
   const inputs = [
+    // {
+    //   label: "WT_FILLING_POINT_NAME",
+    //   name: "fillingPointName",
+    //   isMandatory: true,
+    // },
+    // {
+    //   label: "WT_EMERGENCY_NAME",
+    //   name: "emergencyName",
+    // },
+
+    // AE
     {
       label: "WT_AE_NAME",
-      name: "name",
-      isMandatory: true,
+      name: "aeName",
       validation: {
         pattern: "^[a-zA-Z]+( [a-zA-Z]+)*$",
-        title: t("CORE_COMMON_APPLICANT_NAME_INVALID"),
       },
     },
     {
       label: "WT_AE_MOBILE_NUMBER",
-      name: "mobileNumber",
-      isMandatory: true,
+      name: "aeMobile",
       componentInFront: <div className="employee-card-input employee-card-input--front">+91</div>,
-       validation: {
+      validation: {
         pattern: "[6-9]{1}[0-9]{9}",
         type: "tel",
         maxLength: 10,
@@ -33,10 +41,9 @@ const AddFillingPointMetaData = ({
     },
     {
       label: "WT_AE_EMAIL_ID",
-      name: "emailId",
+      name: "aeEmail",
       validation: {
         pattern: "^[a-zA-Z0-9._%+-]+@[a-z.-]+\\.(com|org|in)$",
-        title: t("CORE_COMMON_EMAIL_ID_INVALID"),
       },
     },
 
@@ -50,9 +57,9 @@ const AddFillingPointMetaData = ({
     },
     {
       label: "WT_JE_MOBILE_NUMBER",
-      name: "jeMobileNumber",
+      name: "jeMobile",
       componentInFront: <div className="employee-card-input employee-card-input--front">+91</div>,
-       validation: {
+      validation: {
         pattern: "[6-9]{1}[0-9]{9}",
         type: "tel",
         maxLength: 10,
@@ -60,7 +67,7 @@ const AddFillingPointMetaData = ({
     },
     {
       label: "WT_JE_EMAIL_ID",
-      name: "jeEmailId",
+      name: "jeEmail",
       validation: {
         pattern: "^[a-zA-Z0-9._%+-]+@[a-z.-]+\\.(com|org|in)$",
       },
@@ -76,17 +83,7 @@ const AddFillingPointMetaData = ({
     },
     {
       label: "WT_EE_MOBILE_NUMBER",
-      name: "eeMobileNumber",
-      componentInFront: <div className="employee-card-input employee-card-input--front">+91</div>,
-      validation: {
-        pattern: "[6-9]{1}[0-9]{9}",
-        type: "tel",
-        maxLength: 10,
-      },
-    },
-    {
-      label: "WT_EE_ALT_MOBILE_NUMBER",
-      name: "alternateNumber",
+      name: "eeMobile",
       componentInFront: <div className="employee-card-input employee-card-input--front">+91</div>,
       validation: {
         pattern: "[6-9]{1}[0-9]{9}",
@@ -96,7 +93,7 @@ const AddFillingPointMetaData = ({
     },
     {
       label: "WT_EE_EMAIL_ID",
-      name: "eeEmailId",
+      name: "eeEmail",
       validation: {
         pattern: "^[a-zA-Z0-9._%+-]+@[a-z.-]+\\.(com|org|in)$",
       },
@@ -110,18 +107,25 @@ const AddFillingPointMetaData = ({
   const handleChange = (value, name) => {
     if (!onSelect) return;
 
+    let newValue = value;
+    if (["aeMobile", "jeMobile", "eeMobile", "alternateNumber"].includes(name)) {
+      newValue = value.slice(0, 10).replace(/[^0-9]/g, "");
+    }
+
     onSelect(sectionKey, {
       ...formData?.[sectionKey],
-      [name]: value,
+      [name]: newValue,
     });
   };
+
+  const isMobile = window.Digit.Utils.browser.isMobile();
 
   return (
     <Card>
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "1fr 1fr",
+          gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
           gap: "16px",
         }}
       >
@@ -139,6 +143,7 @@ const AddFillingPointMetaData = ({
                 <TextInput
                   value={formData?.[sectionKey]?.[input.name] || ""}
                   onChange={(e) => handleChange(e.target.value, input.name)}
+                  maxLength={input.validation?.maxLength}
                   {...input.validation}
                 />
               </div>
