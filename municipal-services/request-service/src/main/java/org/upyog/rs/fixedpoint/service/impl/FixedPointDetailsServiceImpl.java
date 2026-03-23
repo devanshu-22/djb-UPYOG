@@ -5,13 +5,11 @@ import org.egov.common.contract.request.RequestInfo;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.upyog.rs.fixedpoint.repository.FixedPointDetailsRepository;
-import org.upyog.rs.fixedpoint.repository.querybuilder.FixedPointTimeTable;
+import org.upyog.rs.fixedpoint.repository.querybuilder.FixedPointTimeTableQueryBuilder;
 import org.upyog.rs.fixedpoint.service.FixedPointDetailsService;
-import org.upyog.rs.fixedpoint.web.model.FixedPointDetails;
-import org.upyog.rs.fixedpoint.web.model.FixedPointDetailsRequest;
-import org.upyog.rs.fixedpoint.web.model.FixedPointDetailsResponse;
-import org.upyog.rs.util.ResponseInfoFactory;
+import org.upyog.rs.fixedpoint.web.model.*;
 import org.upyog.rs.web.models.AuditDetails;
 
 import java.util.ArrayList;
@@ -31,7 +29,7 @@ public class FixedPointDetailsServiceImpl implements FixedPointDetailsService {
     private FixedPointDetailsRepository fixedPointDetailsRepository;
 
     @Autowired
-    private FixedPointTimeTable existsByFixedPointCode;
+    private FixedPointTimeTableQueryBuilder existsByFixedPointCode;
 
     @Override
     public FixedPointDetailsResponse saveFixedPointDetails(FixedPointDetailsRequest fixedPointDetailsRequest) {
@@ -80,6 +78,7 @@ public class FixedPointDetailsServiceImpl implements FixedPointDetailsService {
                     .remarks(inputDetail.getRemarks())
                     .active(true)
                     .isEnable(day.equals(requestedDay))
+                    .tenantId("dl.djb")
                     .auditDetails(auditDetails)
                     .build();
 
@@ -110,5 +109,20 @@ public class FixedPointDetailsServiceImpl implements FixedPointDetailsService {
                 .createdTime(currentTime)
                 .lastModifiedTime(currentTime)
                 .build();
+    }
+
+    @Override
+    public List<FixedPointTimeTableDetail> getFixedPointDetails(RequestInfo requestInfo, FixedPointSearchCriteria criteria) {
+        List<FixedPointTimeTableDetail> details = fixedPointDetailsRepository.getDetails(criteria);
+        if (CollectionUtils.isEmpty(details)) {
+            return new ArrayList<>();
+        }
+        return details;
+    }
+
+    @Override
+    public Integer getApplicationsCount(FixedPointSearchCriteria criteria, RequestInfo requestInfo) {
+        criteria.setCountCall(true);
+        return fixedPointDetailsRepository.getCount(criteria);
     }
 }

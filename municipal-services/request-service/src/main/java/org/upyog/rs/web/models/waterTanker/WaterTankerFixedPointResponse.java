@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import org.springframework.validation.annotation.Validated;
 import org.upyog.rs.web.models.ResponseInfo;
+import org.upyog.rs.web.models.fillingpoint.FillingPoint;
 
 import javax.validation.Valid;
 
@@ -23,4 +24,6 @@ public class WaterTankerFixedPointResponse {
     @Valid
     private WaterTankerFixedPointDetail waterTankerFixedPointDetail;
 
+    @JsonProperty("fillingPoint")
+    private FillingPoint fillingPoint;
 }
