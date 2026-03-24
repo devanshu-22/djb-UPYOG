@@ -19,6 +19,8 @@ import org.egov.vendor.repository.VendorAdditionalDetailsRepository;
 import org.egov.vendor.web.models.VendorAdditionalDetailsRequest;
 import org.egov.vendor.web.models.vendorcontract.location.Address;
 import org.egov.vendor.web.models.vendorcontract.vendor.Vendor;
+import org.egov.vendor.web.models.vendorcontract.workorder.VendorWorkOrder;
+import org.egov.vendor.web.models.vendorcontract.workorder.VendorWorkOrderRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
@@ -153,5 +155,27 @@ public class VendorService {
         return vendorDetailsDTOList;
     }
 
+    public VendorWorkOrder create(VendorWorkOrderRequest request) {
 
+        enrichmentService.enrichCreateRequest(request);
+
+        producer.push(config.getSaveVendorWorkOrderTopic(), request);
+
+        log.info("VendorWorkOrder pushed to Kafka. id={}",
+                request.getVendorWorkOrder().getId());
+
+        return request.getVendorWorkOrder();
+    }
+
+    public VendorWorkOrder updateVendorWorkOrder(VendorWorkOrderRequest request) {
+
+        enrichmentService.enrichUpdateWorkOrderRequest(request);
+
+        producer.push(config.getGetUpdateVendorWorkOrderTopic(), request);
+
+        log.info("VendorWorkOrder pushed to Kafka. id={}",
+                request.getVendorWorkOrder().getId());
+
+        return request.getVendorWorkOrder();
+    }
 }

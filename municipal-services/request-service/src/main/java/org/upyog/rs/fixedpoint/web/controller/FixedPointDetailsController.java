@@ -69,7 +69,7 @@ public class FixedPointDetailsController {
     }
 
 
-    @PostMapping("/request-service/water-tanked/fixed/time/v1/_update")
+    @PostMapping("/water-tanked/fixed/time/v1/_update")
     public ResponseEntity<FixedPointDetailsResponse> updateFixedPointDetails(
             @Valid @RequestBody FixedPointDetailsRequest fixedPointDetailsRequest) {
 

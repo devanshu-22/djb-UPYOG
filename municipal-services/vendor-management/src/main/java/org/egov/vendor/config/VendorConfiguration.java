@@ -75,6 +75,11 @@ public class VendorConfiguration {
     @Value("${egov.user.username.prefix}")
     private String usernamePrefix;
 
+    @Value("${egov.vendorworkorder.save.topic}")
+    private String saveVendorWorkOrderTopic;
+
+    @Value("${egov.vendorworkorder.update.topic}")
+    private String getUpdateVendorWorkOrderTopic;
 
     // Idgen Config
     @Value("${egov.idgen.host}")

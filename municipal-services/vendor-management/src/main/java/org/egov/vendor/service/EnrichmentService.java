@@ -12,6 +12,7 @@ import org.egov.vendor.utils.VendorUtil;
 import org.egov.vendor.web.models.AuditDetails;
 import org.egov.vendor.web.models.VendorAdditionalDetails;
 import org.egov.vendor.web.models.VendorAdditionalDetailsRequest;
+import org.egov.vendor.web.models.vendorcontract.workorder.VendorWorkOrderRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -148,5 +149,37 @@ public class EnrichmentService {
         return assetUtil.getAuditDetails(requestInfo.getUserInfo().getUuid(), true);
     }
 
+    public void enrichCreateRequest(VendorWorkOrderRequest request) {
+        RequestInfo requestInfo = request.getRequestInfo();
+        String userId = requestInfo.getUserInfo().getUuid();
+        long currentTime = System.currentTimeMillis();
 
+        request.getVendorWorkOrder().setId(UUID.randomUUID().toString());
+
+        AuditDetails auditDetails = AuditDetails.builder()
+                .createdBy(userId)
+                .lastModifiedBy(userId)
+                .createdTime(currentTime)
+                .lastModifiedTime(currentTime)
+                .build();
+
+        request.getVendorWorkOrder().setAuditDetails(auditDetails);
+    }
+
+    public void enrichUpdateWorkOrderRequest(VendorWorkOrderRequest request) {
+        RequestInfo requestInfo = request.getRequestInfo();
+        String userId = requestInfo.getUserInfo().getUuid();
+        long currentTime = System.currentTimeMillis();
+
+        AuditDetails existingAudit = request.getVendorWorkOrder().getAuditDetails();
+
+        AuditDetails auditDetails = AuditDetails.builder()
+                .createdBy(existingAudit.getCreatedBy())
+                .createdTime(existingAudit.getCreatedTime())
+                .lastModifiedBy(userId)
+                .lastModifiedTime(currentTime)
+                .build();
+
+        request.getVendorWorkOrder().setAuditDetails(auditDetails);
+    }
 }
