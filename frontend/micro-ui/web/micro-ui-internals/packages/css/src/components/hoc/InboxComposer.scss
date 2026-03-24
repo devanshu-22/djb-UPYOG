@@ -26,6 +26,11 @@
   }
 }
 
+.formcomposer-section-button {
+  .clear-search {
+    min-width: 200px;
+  }
+}
 @screen dt {
   .InboxComposerWrapper {
     grid-template-columns: calc(25% - 32px) 75%;

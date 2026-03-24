@@ -76,79 +76,75 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmitInput)}>
+    <form onSubmit={handleSubmit(onSubmitInput)} className="search-form-wrapper search-complaint-container">
       <React.Fragment>
-        <div className="search-container" style={{ width: "auto", marginBottom: "16px", marginLeft: isInboxPage ? "" : "revert" }}>
-          <div className="search-complaint-container" style={{ width: "100%" }}>
-            {(type === "mobile" || mobileView) && (
-              <div className="complaint-header">
-                <h2>{t("ES_COMMON_SEARCH_BY")}</h2>
-                <span onClick={onClose}>
-                  <CloseSvg />
-                </span>
-              </div>
-            )}
-            <div className={"complaint-input-container for-pt " + (!isInboxPage ? "for-search" : "")} style={{ width: "100%", display: "grid" }}>
-              {searchFields
-                ?.filter((e) => true)
-                ?.map((input, index) => (
-                  <div key={input.name} className="input-fields">
-                    {/* <span className={index === 0 ? "complaint-input" : "mobile-input"}> */}
-                    <span className={"mobile-input"}>
-                      <Label>{t(input.label) + ` ${input.isMendatory ? "*" : ""}`}</Label>
-                      {!input.type ? (
-                        <Controller
-                          render={(props) => {
-                            return <TextInput onChange={props.onChange} value={props.value} />;
-                          }}
-                          name={input.name}
-                          control={control}
-                          defaultValue={""}
-                        />
-                      ) : (
-                        <Controller
-                          render={(props) => {
-                            const Comp = fieldComponents?.[input.type];
-                            return <Comp formValue={form} setValue={setValue} onChange={props.onChange} value={props.value} />;
-                          }}
-                          name={input.name}
-                          control={control}
-                          defaultValue={""}
-                        />
-                      )}
-                    </span>
-                    {formState?.dirtyFields?.[input.name] ? (
-                      <span
-                        style={{ fontWeight: "700", color: "rgba(212, 53, 28)", paddingLeft: "8px", marginTop: "-20px", fontSize: "12px" }}
-                        className="inbox-search-form-error"
-                      >
-                        {formState?.errors?.[input.name]?.message}
-                      </span>
-                    ) : null}
-                  </div>
-                ))}
-
-              {isInboxPage && (
-                <div style={{ gridColumn: "2/3", textAlign: "right", paddingTop: "10px", padding: "10px" }} className="input-fields">
-                  <div>{clearAll()}</div>
-                </div>
-              )}
-
-              {type === "desktop" && !mobileView && (
-                <div style={{ maxWidth: "unset", marginLeft: "unset" }} className="search-submit-wrapper">
-                  <SubmitBar
-                    className="submit-bar-search"
-                    label={t("ES_COMMON_SEARCH")}
-                    disabled={!!Object.keys(formState.errors).length || formValueEmpty()}
-                    submit
-                  />
-                  {/* style={{ paddingTop: "16px", textAlign: "center" }} className="clear-search" */}
-                  {!isInboxPage && <div>{clearAll()}</div>}
-                </div>
-              )}
-            </div>
+        {(type === "mobile" || mobileView) && (
+          <div className="complaint-header">
+            <h2>{t("ES_COMMON_SEARCH_BY")}</h2>
+            <span onClick={onClose}>
+              <CloseSvg />
+            </span>
           </div>
+        )}
+        <div className="formcomposer-section-grid">
+          {searchFields
+            ?.filter((e) => true)
+            ?.map((input, index) => (
+              <div key={input.name} className="input-fields">
+                {/* <span className={index === 0 ? "complaint-input" : "mobile-input"}> */}
+                <span className={"mobile-input"}>
+                  <Label>{t(input.label) + ` ${input.isMendatory ? "*" : ""}`}</Label>
+                  {!input.type ? (
+                    <Controller
+                      render={(props) => {
+                        return <TextInput onChange={props.onChange} value={props.value} />;
+                      }}
+                      name={input.name}
+                      control={control}
+                      defaultValue={""}
+                    />
+                  ) : (
+                    <Controller
+                      render={(props) => {
+                        const Comp = fieldComponents?.[input.type];
+                        return <Comp formValue={form} setValue={setValue} onChange={props.onChange} value={props.value} />;
+                      }}
+                      name={input.name}
+                      control={control}
+                      defaultValue={""}
+                    />
+                  )}
+                </span>
+                {formState?.dirtyFields?.[input.name] && formState?.errors?.[input.name]?.message ? (
+                  <span
+                    style={{ fontWeight: "700", color: "rgba(212, 53, 28)", paddingLeft: "8px", marginTop: "-20px", fontSize: "12px" }}
+                    className="inbox-search-form-error"
+                  >
+                    {formState?.errors?.[input.name]?.message}
+                  </span>
+                ) : null}
+              </div>
+            ))}
         </div>
+        <div className="formcomposer-section-button">
+          {isInboxPage ? (
+            <div className="generic-button clear-search">
+              <p onClick={clearSearch}>{t("ES_COMMON_CLEAR_SEARCH")}</p>
+            </div>
+          ) : (
+            <div>{clearAll()}</div>
+          )}
+          {type === "desktop" && !mobileView && (
+            <SubmitBar
+              className="generic-button"
+              disabled={!!Object.keys(formState.errors).length || formValueEmpty()}
+              label={t("ES_COMMON_SEARCH")}
+              submit
+              form="search-form"
+            />
+          )}
+        </div>
+
         {(type === "mobile" || mobileView) && (
           <ActionBar className="clear-search-container">
             <button className="clear-search" style={{ flex: 1 }}>

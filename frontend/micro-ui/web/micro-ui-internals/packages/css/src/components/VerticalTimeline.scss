@@ -1,106 +1,182 @@
 .vertical-timeline-container {
-    display: flex;
-    flex-direction: column;
-    padding: 16px;
-    /* Reduced padding slightly to fit better if needed, or keep 24 */
-    height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  background-color: #fff;
+  border-radius: 12px;
+  /* Reduced padding slightly to fit better if needed, or keep 24 */
+  height: 100%;
 }
 
 .vertical-timeline-step {
-    display: flex;
-    position: relative;
-    padding-bottom: 20px;
+  display: flex;
+  position: relative;
+  @media (min-width: 768px) {
     min-height: 80px;
+    padding-bottom: 20px;
+  }
 }
 
 .vertical-timeline-step:last-child {
-    padding-bottom: 0;
-    min-height: auto;
+  padding-bottom: 0;
+  min-height: auto;
 }
 
 .vertical-timeline-connector {
-    position: absolute;
-    top: 36px;
-    left: 17px;
-    width: 3px;
-    height: calc(100% - 10px);
-    /* Adjust based on padding/spacing */
-    background-color: #e0e0e0;
-    z-index: 0;
+  position: absolute;
+  top: 36px;
+  left: 17px;
+  width: 3px;
+  height: calc(100% - 10px);
+  /* Adjust based on padding/spacing */
+  background-color: #e0e0e0;
+  z-index: 0;
 }
 
 .vertical-timeline-step:last-child .vertical-timeline-connector {
-    display: none;
+  display: none;
 }
 
 .vertical-timeline-connector.completed {
-    background-color: #667eea;
+  background-color: #667eea;
 }
 
 .vertical-timeline-pill {
-    width: 38px;
-    /* Larger pill */
-    height: 38px;
-    border-radius: 50%;
-    background-color: #fff;
-    border: 3px solid #D1D5DB;
-    /* Thicker border */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 16px;
-    /* Larger text */
-    color: #6B7280;
-    z-index: 1;
-    margin-right: 16px;
-    flex-shrink: 0;
-    transition: all 0.3s ease;
+  width: 38px;
+  /* Larger pill */
+  height: 38px;
+  border-radius: 50%;
+  background-color: #fff;
+  border: 3px solid #d1d5db;
+  /* Thicker border */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 16px;
+  /* Larger text */
+  color: #6b7280;
+  z-index: 1;
+  margin-right: 16px;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
 }
 
 .vertical-timeline-step.active .vertical-timeline-pill {
-    background-color: #667eea;
-    border-color: #667eea;
-    color: #fff;
-    box-shadow: 0 0 0 5px rgba(244, 119, 56, 0.2);
-    /* Enhanced glow */
-    transform: scale(1.1);
-    /* Slight pulse effect */
+  background-color: #667eea;
+  border-color: #667eea;
+  color: #fff;
+  box-shadow: 0 0 0 5px rgba(244, 119, 56, 0.2);
+  /* Enhanced glow */
+  transform: scale(1.1);
+  /* Slight pulse effect */
 }
 
 .vertical-timeline-step.completed .vertical-timeline-pill {
-    background-color: #667eea;
-    border-color: #667eea;
-    color: #fff;
+  background-color: #667eea;
+  border-color: #667eea;
+  color: #fff;
 }
 
 .vertical-timeline-content {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
+  @media (min-width: 768px) {
     min-height: 38px;
     margin-top: 10px;
+  }
 }
 
 .vertical-timeline-label {
-    font-size: 16px;
-    color: #4B5563;
-    font-weight: 500;
-    line-height: normal;
-    /* Reset line height */
+  font-size: 16px;
+  color: #4b5563;
+  font-weight: 500;
+  line-height: normal;
+  /* Reset line height */
+  @media (min-width: 768px) {
+    text-wrap: nowrap;
+  }
 }
 
 .vertical-timeline-step.active .vertical-timeline-label {
-    color: #667eea;
-    font-weight: 700;
+  color: #121416;
+  font-weight: 700;
 }
 
 .vertical-timeline-step.completed .vertical-timeline-label {
-    color: #111827;
+  color: #111827;
 }
 
-/* Responsive: Hide on small screens or move to top */
 @media (max-width: 768px) {
-    .vertical-timeline-container {
-        display: none;
+  .vertical-timeline-container {
+    flex-direction: row;
+    gap: 12px;
+    padding: 12px;
+    height: fit-content;
+  }
+
+  .vertical-timeline-wrapper {
+    display: flex;
+    border-radius: 99999px;
+    padding: 0.25rem;
+    background-color: #667eea36;
+    overflow-x: scroll;
+    max-width: 100%;
+  }
+
+  .active {
+    background-color: #fff;
+    border-radius: 99999px;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-inline: 1rem;
+  }
+
+  .vertical-timeline-step {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    height: 2rem;
+    padding-inline: 24px;
+    @media (min-width: 768px) {
+      min-width: 120px;
     }
+  }
+
+  /* 🔥 pill becomes tab */
+  .vertical-timeline-pill {
+    display: none;
+  }
+
+  /* label below */
+  .vertical-timeline-content {
+    align-items: center;
+  }
+
+  .vertical-timeline-label {
+    font-size: 12px;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .vertical-timeline-connector {
+    display: none;
+  }
+
+  /* active tab */
+  .vertical-timeline-step.active .vertical-timeline-pill {
+    background-color: #667eea;
+    color: #fff;
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* completed tab */
+  .vertical-timeline-step.completed .vertical-timeline-pill {
+    background-color: #667eea;
+    color: #fff;
+  }
 }
