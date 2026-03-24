@@ -2,9 +2,7 @@ const driverService = require("../services/driver.service");
 const { log, error } = require("../utils/logger");
 
 function registerTrackingSocket(io) {
-  const driverTrack = io.of("/water-driver-track");
-
-  driverTrack.on("connection", (socket) => {
+  io.on("connection", (socket) => {
     log(`Socket connected: ${socket.id}`);
 
     socket.on("admin-join", () => {
@@ -28,7 +26,7 @@ function registerTrackingSocket(io) {
 
         const updatedDriver = driverService.markDriverOnline(driverId, socket.id);
 
-        driverTrack.to("admins").emit("driver-status", updatedDriver);
+        io.to("admins").emit("driver-status", updatedDriver);
         log(`Driver online: ${driverId}`);
       } catch (err) {
         error("driver-online error:", err.message);
@@ -39,7 +37,7 @@ function registerTrackingSocket(io) {
     socket.on("driver-location", (data = {}) => {
       try {
         const updatedDriver = driverService.updateDriverLocation(socket.id, data);
-        driverTrack.to("admins").emit("driver-location-update", updatedDriver);
+        io.to("admins").emit("driver-location-update", updatedDriver);
       } catch (err) {
         error("driver-location error:", err.message);
         socket.emit("tracking-error", { message: err.message });
@@ -60,7 +58,7 @@ function registerTrackingSocket(io) {
         );
 
         if (updatedDriver) {
-          driverTrack.to("admins").emit("driver-status", updatedDriver);
+          io.to("admins").emit("driver-status", updatedDriver);
           log(`Driver offline: ${driverId}`);
         }
       } catch (err) {
@@ -73,7 +71,7 @@ function registerTrackingSocket(io) {
         const updatedDriver = driverService.handleSocketDisconnect(socket.id);
 
         if (updatedDriver) {
-          driverTrack.to("admins").emit("driver-status", updatedDriver);
+          io.to("admins").emit("driver-status", updatedDriver);
           log(`Driver disconnected: ${updatedDriver.driverId}`);
         } else {
           log(`Socket disconnected: ${socket.id}`);

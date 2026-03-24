@@ -13,9 +13,10 @@ const io = new Server(server, {
     methods: ["GET", "POST"],
   },
 });
+const waterTankerNamespace = io.of("/driver-tanker-tracker-service/driver-track");
 
-registerTrackingSocket(io);
+registerTrackingSocket(waterTankerNamespace);
 
 server.listen(PORT, "0.0.0.0", () => {
-  log(`Server running on http://0.0.0.0:${PORT}`);
+  log(`Server running on`);
 });
