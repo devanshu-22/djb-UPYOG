@@ -232,6 +232,10 @@
     }
   }
 
+  .label-field-pair {
+    align-items: center;
+  }
+
   .employeeCard {
     /*  TODO need to revisit that we need mx-md NABEEL/ANIL
      @apply mb-md mx-md !important;
@@ -1541,7 +1545,6 @@
 }
 
 @media (min-width: 768px) {
-
   .mobile-sidebar-toggle,
   .mobile-close-btn,
   .sidebar-backdrop {
