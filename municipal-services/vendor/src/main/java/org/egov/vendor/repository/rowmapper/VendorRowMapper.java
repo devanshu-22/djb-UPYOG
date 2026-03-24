@@ -12,6 +12,7 @@ import org.egov.tracer.model.CustomException;
 import org.egov.vendor.web.model.AuditDetails;
 import org.egov.vendor.web.model.Vendor;
 import org.egov.vendor.web.model.Vendor.StatusEnum;
+import org.egov.vendor.web.model.VendorWorkOrder;
 import org.egov.vendor.web.model.location.Address;
 import org.egov.vendor.web.model.location.Boundary;
 import org.postgresql.util.PGobject;
@@ -60,7 +61,7 @@ public class VendorRowMapper implements ResultSetExtractor<List<Vendor>> {
 			String paymentpreference = rs.getString("paymentpreference");
 			this.setFullCount(rs.getInt("full_count"));
 
-			
+
 			if (currentvendor == null) {
 				if (status == null) {
 					status = "ACTIVE";
@@ -68,11 +69,13 @@ public class VendorRowMapper implements ResultSetExtractor<List<Vendor>> {
 				currentvendor = Vendor.builder().id(id).vendorIdGen(vendorId).name(name).tenantId(tenantId).agencyType(agencytype)
 						.paymentPreference(paymentpreference).additionalDetails(additionalDetail)
 						.description(description).source(source).status(StatusEnum.valueOf(status)).ownerId(ownerId)
+						.vendorWorkOrder(new ArrayList<>())
 						.build();
 
 				vendorMap.put(id, currentvendor);
 			}
 			addChildrenToProperty(rs, currentvendor);
+			addWorkOrderToVendor(rs, currentvendor);
 		}
 
 		return new ArrayList<>(vendorMap.values());
@@ -112,4 +115,27 @@ public class VendorRowMapper implements ResultSetExtractor<List<Vendor>> {
 		return additionalDetail;
 	}
 
-}
+
+	private void addWorkOrderToVendor(ResultSet rs, Vendor vendor) throws SQLException {
+		String vwoId = rs.getString("vwo_id");
+
+		if (vwoId != null) {
+			VendorWorkOrder workOrder = VendorWorkOrder.builder()
+					.id(vwoId)
+					.name(rs.getString("vwo_name"))
+					.tenantId(rs.getString("vwo_tenantid"))
+					.vendorId(rs.getString("vwo_vendor_id"))
+					.validFrom(rs.getLong("vwo_valid_from"))
+					.validTo(rs.getLong("vwo_valid_to"))
+					.mobileNumber(rs.getString("vwo_mobileNumber"))
+					.alternateNumber(rs.getString("vwo_alternateNumber"))
+					.emailId(rs.getString("vwo_emailId"))
+					.serviceType(rs.getString("vwo_servicetype"))
+					.build();
+
+			if (vendor.getVendorWorkOrder().stream().noneMatch(wo -> wo.getId().equals(vwoId))) {
+				vendor.getVendorWorkOrder().add(workOrder);
+			}
+		}
+	}
+	}

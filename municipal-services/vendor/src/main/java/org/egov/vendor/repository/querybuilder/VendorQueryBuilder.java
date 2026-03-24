@@ -16,15 +16,28 @@ public class VendorQueryBuilder {
 	@Autowired
 	private VendorConfiguration config;
 
-	private static final String QUERY = "SELECT count(*) OVER() AS full_count, vendor.*,vendor_address.*,vendor_driver.*,vendor_vehicle.*, vendor.id as vendor_id,"
-			+ "  vendor.createdby as vendor_createdby,vendor.lastmodifiedby as vendor_lastmodifiedby,"
-			+ "  vendor.createdtime as vendor_createdtime," + "  vendor.lastmodifiedtime as vendor_lastmodifiedtime,vendor.vendor_idgen as vendor_idgen,"
-			+ "  vendor.additionaldetails as vendor_additionaldetails,"
-			+ "  vendor_address.id as vendor_address_id FROM eg_vendor vendor"
-			+ "  INNER JOIN eg_vendor_address vendor_address on  vendor_address.vendor_id=vendor.id"
-			+ "  LEFT OUTER JOIN eg_vendor_driver vendor_driver on  vendor_driver.vendor_id=vendor_address.id"
-			+ "  LEFT OUTER JOIN eg_vendor_vehicle vendor_vehicle on "
-			+ "  vendor_vehicle.vendor_id=vendor_driver.vendor_id";
+//	private static final String QUERY = "SELECT count(*) OVER() AS full_count, vendor.*,vendor_address.*,vendor_driver.*,vendor_vehicle.*, vendor.id as vendor_id,"
+//			+ "  vendor.createdby as vendor_createdby,vendor.lastmodifiedby as vendor_lastmodifiedby,"
+//			+ "  vendor.createdtime as vendor_createdtime," + "  vendor.lastmodifiedtime as vendor_lastmodifiedtime,vendor.vendor_idgen as vendor_idgen,"
+//			+ "  vendor.additionaldetails as vendor_additionaldetails,"
+//			+ "  vendor_address.id as vendor_address_id FROM eg_vendor vendor"
+//			+ "  INNER JOIN eg_vendor_address vendor_address on  vendor_address.vendor_id=vendor.id"
+//			+ "  LEFT OUTER JOIN eg_vendor_driver vendor_driver on  vendor_driver.vendor_id=vendor_address.id"
+//			+ "  LEFT OUTER JOIN eg_vendor_vehicle vendor_vehicle on "
+//			+ "  vendor_vehicle.vendor_id=vendor_driver.vendor_id";
+
+	private static final String QUERY = "SELECT count(*) OVER() AS full_count, vendor.*, vendor_address.*, vendor_driver.*, vendor_vehicle.*, "
+			+ " vwo.id as vwo_id, vwo.name as vwo_name, vwo.vendor_id as vwo_vendor_id, vwo.tenant_id as vwo_tenantid, "
+			+ " vwo.valid_from as vwo_valid_from, vwo.valid_to as vwo_valid_to, vwo.mobileNumber as vwo_mobileNumber, "
+			+ " vwo.alternateNumber as vwo_alternateNumber, vwo.emailId as vwo_emailId, vwo.servicetype as vwo_servicetype, "
+			+ " vendor.id as vendor_id, vendor.createdby as vendor_createdby, vendor.lastmodifiedby as vendor_lastmodifiedby, "
+			+ " vendor.createdtime as vendor_createdtime, vendor.lastmodifiedtime as vendor_lastmodifiedtime, "
+			+ " vendor.vendor_idgen as vendor_idgen, vendor.additionaldetails as vendor_additionaldetails, "
+			+ " vendor_address.id as vendor_address_id FROM eg_vendor vendor "
+			+ " INNER JOIN eg_vendor_address vendor_address on  vendor_address.vendor_id=vendor.id "
+			+ " LEFT OUTER JOIN eg_vendor_driver vendor_driver on  vendor_driver.vendor_id=vendor_address.id "
+			+ " LEFT OUTER JOIN eg_vendor_vehicle vendor_vehicle on vendor_vehicle.vendor_id=vendor_driver.vendor_id "
+			+ " LEFT OUTER JOIN eg_vendor_work_order vwo ON vwo.vendor_id = vendor.id";
 
 	private static final String PAGINATION_WRAPPER = "SELECT * FROM "
 			+ "(SELECT *, DENSE_RANK() OVER (ORDER BY SORT_BY SORT_ORDER) offset_ FROM " + "({})"

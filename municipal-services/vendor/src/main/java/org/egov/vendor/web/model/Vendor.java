@@ -66,6 +66,9 @@ public class Vendor {
 	@Valid
 	private List<Vehicle> vehicles = new ArrayList<Vehicle>();
 
+	@JsonProperty("vendorWorkOrder")
+	@Valid
+	private List<VendorWorkOrder> vendorWorkOrder = null;
 	@JsonProperty("drivers")
 	@Valid
 	private List<Driver> drivers = null;
