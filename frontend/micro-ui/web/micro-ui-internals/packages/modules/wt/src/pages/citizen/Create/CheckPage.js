@@ -84,7 +84,7 @@ const WTCheckPage = ({ onSubmit, value = {} }) => {
 
   return (
     <React.Fragment>
-      <Card>
+      <Card className="overflow-y-scroll">
         <CardHeader>{t("WT_SUMMARY_PAGE")}</CardHeader>
         <div>
           <CardSubHeader>{t("ES_TITILE_OWNER_DETAILS")}</CardSubHeader>

@@ -40,6 +40,13 @@
   padding-right: 24px;
   text-align: right;
 }
+
+@media (max-width: 768px) {
+  .action-bar-wrap {
+    margin-bottom: 30px;
+  }
+}
+
 @screen dt {
   .action-bar-wrap {
     box-shadow: rgba(0, 0, 0, 0.16) 0 -2px 8px;

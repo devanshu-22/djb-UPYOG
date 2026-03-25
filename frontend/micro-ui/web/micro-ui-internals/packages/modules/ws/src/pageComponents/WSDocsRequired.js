@@ -76,7 +76,7 @@ const WSDocsRequired = ({ onSelect, userType, onSkip, config }) => {
 
   return (
     <div className="employee-form-content-with-action-bar">
-      <Card>
+      <Card className="overflow-y-scroll">
         {wsDocsLoading ? (
           <Loader />
         ) : (
@@ -115,7 +115,6 @@ const WSDocsRequired = ({ onSelect, userType, onSkip, config }) => {
               onSubmit={() => {
                 history.push(match.path.replace("create-application", "new-application"));
               }}
-              style={{ margin: "10px 10px 0px 0px" }}
               disabled={wsDocsLoading ? true : false}
             />
           }

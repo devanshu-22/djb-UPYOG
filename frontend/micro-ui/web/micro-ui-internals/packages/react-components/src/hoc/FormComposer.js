@@ -145,25 +145,22 @@ export const FormComposer = (props) => {
         return (
           <Controller
             render={(props) => (
-              console.log(props),
-              (
-                <Component
-                  userType={"employee"}
-                  t={t}
-                  setValue={setValue}
-                  onSelect={setValue}
-                  config={config}
-                  data={formData}
-                  formData={formData}
-                  register={register}
-                  errors={errors}
-                  props={props}
-                  setError={setError}
-                  clearErrors={clearErrors}
-                  formState={formState}
-                  onBlur={props.onBlur}
-                />
-              )
+              <Component
+                userType={"employee"}
+                t={t}
+                setValue={setValue}
+                onSelect={setValue}
+                config={config}
+                data={formData}
+                formData={formData}
+                register={register}
+                errors={errors}
+                props={props}
+                setError={setError}
+                clearErrors={clearErrors}
+                formState={formState}
+                onBlur={props.onBlur}
+              />
             )}
             name={config.key}
             control={control}
@@ -417,7 +414,7 @@ export const FormComposer = (props) => {
 
   return (
     <form
-      style={{ minHeight: "100%", height: "100%" }}
+      style={{ minHeight: "100%", height: "100%", overflowY: "scroll" }}
       onSubmit={handleSubmit(onSubmit)}
       onKeyDown={(e) => checkKeyDown(e)}
       id={props.formId}

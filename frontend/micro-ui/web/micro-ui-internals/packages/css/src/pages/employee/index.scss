@@ -102,10 +102,17 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  @media (max-width: 768px) {
+    padding-bottom: 12px;
+  }
 }
 
 .employee-form-content-with-action-bar {
-  margin-bottom: 62px;
+  padding-bottom: 48px;
+  height: 100%;
+  @media (max-width: 768px) {
+    padding-bottom: 68px;
+  }
 }
 
 .employee-form-section-wrapper {

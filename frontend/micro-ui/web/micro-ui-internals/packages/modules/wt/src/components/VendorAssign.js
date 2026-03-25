@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { CardLabel, TextInput, MobileNumber, DatePicker, SubmitBar, Toast, Card, Dropdown } from "@djb25/digit-ui-react-components";
+import { CardLabel, DatePicker, SubmitBar, Toast, Card, Dropdown } from "@djb25/digit-ui-react-components";
 import Timeline from "../../../vendor/src/components/VENDORTimeline";
+import VerticalTimeline from "./VerticalTimeline";
 
 const VendorAssign = ({ parentUrl, heading }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -56,16 +57,15 @@ const VendorAssign = ({ parentUrl, heading }) => {
   };
 
   const isMobile = window.Digit.Utils.browser.isMobile();
-  const inputStyles = { width: isMobile ? "100%" : "50%" };
 
   return (
-    <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row" }}>
-      <Timeline steps={["Vendor Assign"]} currentStep={1} />
+    <div className="employee-form-section-wrapper">
+      {/* <Timeline steps={["Vendor Assign"]} currentStep={1} /> */}
+      <VerticalTimeline config={[{ timeLine: [{ actions: "Vendor Assign", currentStep: 1 }] }]} showFinalStep={false} />
 
-      <div style={{ flex: 1, marginLeft: isMobile ? "0px" : "24px" }}>
-        <Card>
-          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", columnGap: "32px", rowGap: "8px" }}>
-            {/* <div style={{ display: "flex", flexDirection: "column" }}>
+      <div style={{ flex: 1 }}>
+        <Card className="formcomposer-section-grid">
+          {/* <div style={{ display: "flex", flexDirection: "column" }}>
               <CardLabel>
                 {`${t("WT_WORK_ORDER_ID")}`} <span className="astericColor">*</span>
               </CardLabel>
@@ -79,13 +79,13 @@ const VendorAssign = ({ parentUrl, heading }) => {
                 onChange={(e) => setWorkOrderId(e.target.value)}
               />
             </div> */}
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              <CardLabel>
-                {`${t("WT_VENDOR_NAME")}`} <span className="astericColor">*</span>
-              </CardLabel>
-              <Dropdown t={t} option={vendorOptions} optionKey="name" select={setVendor} selected={vendor} placeholder={t("WT_SELECT_VENDOR")} />
-            </div>
-            {/* <div style={{ display: "flex", flexDirection: "column" }}>
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <CardLabel>
+              {`${t("WT_VENDOR_NAME")}`} <span className="astericColor">*</span>
+            </CardLabel>
+            <Dropdown t={t} option={vendorOptions} optionKey="name" select={setVendor} selected={vendor} placeholder={t("WT_SELECT_VENDOR")} />
+          </div>
+          {/* <div style={{ display: "flex", flexDirection: "column" }}>
               <CardLabel>
                 {`${t("COMMON_APPLICANT_NAME")}`} <span className="astericColor">*</span>
               </CardLabel>
@@ -99,7 +99,7 @@ const VendorAssign = ({ parentUrl, heading }) => {
                 onChange={(e) => setApplicantName(e.target.value)}
               />
             </div> */}
-            {/* <div style={{ display: "flex", flexDirection: "column" }}>
+          {/* <div style={{ display: "flex", flexDirection: "column" }}>
               <CardLabel>
                 {`${t("CORE_COMMON_APPLICANT_MOBILE_NUMBER")}`} <span className="astericColor">*</span>
               </CardLabel>
@@ -114,7 +114,7 @@ const VendorAssign = ({ parentUrl, heading }) => {
                 style={{ width: "100%" }}
               />
             </div> */}
-            {/* <div style={{ display: "flex", flexDirection: "column" }}>
+          {/* <div style={{ display: "flex", flexDirection: "column" }}>
               <CardLabel>
                 {`${t("CORE_COMMON_APPLICANT_EMAIL_ID")}`} <span className="astericColor">*</span>
               </CardLabel>
@@ -129,18 +129,17 @@ const VendorAssign = ({ parentUrl, heading }) => {
               />
             </div> */}
 
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              <CardLabel>
-                {`${t("COMMON_VALID_FROM_DATE")}`} <span className="astericColor">*</span>
-              </CardLabel>
-              <DatePicker date={validFrom} onChange={(date) => setValidFrom(date)} style={{ width: "100%" }} />
-            </div>
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              <CardLabel>
-                {`${t("COMMON_VALID_TO_DATE")}`} <span className="astericColor">*</span>
-              </CardLabel>
-              <DatePicker date={validTo} onChange={(date) => setValidTo(date)} style={{ width: "100%" }} />
-            </div>
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <CardLabel>
+              {`${t("COMMON_VALID_FROM_DATE")}`} <span className="astericColor">*</span>
+            </CardLabel>
+            <DatePicker date={validFrom} onChange={(date) => setValidFrom(date)} style={{ width: "100%" }} />
+          </div>
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <CardLabel>
+              {`${t("COMMON_VALID_TO_DATE")}`} <span className="astericColor">*</span>
+            </CardLabel>
+            <DatePicker date={validTo} onChange={(date) => setValidTo(date)} style={{ width: "100%" }} />
           </div>
         </Card>
 

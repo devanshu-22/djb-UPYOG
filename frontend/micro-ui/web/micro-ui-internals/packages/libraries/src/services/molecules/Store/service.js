@@ -13,27 +13,29 @@ const getImgUrl = (url, fallbackUrl) => {
   }
   return url;
 };
-const addLogo = (id, url, fallbackUrl = "") => {
-  const containerDivId = "logo-img-container";
-  let containerDiv = document.getElementById(containerDivId);
-  if (!containerDiv) {
-    containerDiv = document.createElement("div");
-    containerDiv.id = containerDivId;
-    containerDiv.style = "position: absolute; top: 0; left: -9999px;";
-    document.body.appendChild(containerDiv);
-  }
-  const img = document.createElement("img");
-  img.src = getImgUrl(url, fallbackUrl);
-  img.id = `logo-${id}`;
-  containerDiv.appendChild(img);
-};
 
-const renderTenantLogos = (stateInfo, tenants) => {
-  addLogo(stateInfo.code, stateInfo.logoUrl);
-  tenants.forEach((tenant) => {
-    addLogo(tenant.code, tenant.logoId, stateInfo.logoUrl);
-  });
-};
+// const addLogo = (id, url, fallbackUrl = "") => {
+//   const containerDivId = "logo-img-container";
+//   let containerDiv = document.getElementById(containerDivId);
+//   if (!containerDiv) {
+//     containerDiv = document.createElement("div");
+//     containerDiv.id = containerDivId;
+//     containerDiv.style = "position: absolute; top: 0; left: -9999px;";
+//     document.body.appendChild(containerDiv);
+//   }
+//   const img = document.createElement("img");
+//   img.src = getImgUrl(url, fallbackUrl);
+//   img.id = `logo-${id}`;
+//   containerDiv.appendChild(img);
+// };
+
+// To use this function first uncomment addLogo
+// const renderTenantLogos = (stateInfo, tenants) => {
+//   addLogo(stateInfo.code, stateInfo.logoUrl);
+//   tenants.forEach((tenant) => {
+//     addLogo(tenant.code, tenant.logoId, stateInfo.logoUrl);
+//   });
+// };
 
 export const StoreService = {
   getInitData: () => {
@@ -109,9 +111,11 @@ export const StoreService = {
     Storage.set("initData", initData);
     initData.revenue_localities = revenue_localities;
     initData.localities = localities;
-    setTimeout(() => {
-      renderTenantLogos(stateInfo, initData.tenants);
-    }, 0);
+
+    // Commenting these codes as they rendering unnecessary logos in the dom and positioned absolute which take extra height and responsible for unexpected scroll. We can use this function to render logos when we have the requirement to show logos in the dom. For next part search for "renderTenantLogos" function and uncomment that first to use this code.
+    // setTimeout(() => {
+    //   renderTenantLogos(stateInfo, initData.tenants);
+    // }, 0);
     return initData;
   },
   defaultData: async (stateCode, moduleCode, language) => {

@@ -1,6 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Card, CardSubHeader } from "@djb25/digit-ui-react-components";
+import { Card, CardSubHeader, Hamburger } from "@djb25/digit-ui-react-components";
 
 // Icons
 const CheckIcon = () => (
@@ -16,10 +16,10 @@ const ClockIcon = () => (
   </svg>
 );
 
-const WorkflowTimeline = ({ workflowDetails }) => {
+const WorkflowTimeline = ({ workflowDetails, hideTimeline, setHideTimeline }) => {
   const { t } = useTranslation();
 
-const timeline = workflowDetails?.data?.processInstances;
+  const timeline = workflowDetails?.data?.processInstances;
   if (!timeline || timeline.length === 0) {
     return null;
   }
@@ -48,46 +48,57 @@ const timeline = workflowDetails?.data?.processInstances;
   return (
     <Card
       className="workflow-timeline-card2 digit-form-composer"
-      style={{ background: "#fafafa", padding: "16px" }}
+      style={{ background: "#fafafa", padding: "16px", height: hideTimeline ? "100%" : "" }}
     >
-      <CardSubHeader
-        style={{
-          marginBottom: "16px",
-          fontSize: "16px",
-          fontWeight: "700",
-          color: "#374151",
-        }}
-      >
-        {t("WORKFLOW_TIMELINE")}
-      </CardSubHeader>
+      <div className={`timeline-header-wrapper ${hideTimeline ? "collapsed" : ""}`}>
+        {/* <Hamburger color="#000" handleClick={() => setHideTimeline(!hideTimeline)} /> */}
+        <CardSubHeader
+          style={{
+            marginBottom: "0",
+            fontSize: "16px",
+            fontWeight: "700",
+            color: "#374151",
+          }}
+          className={hideTimeline ? "hidden-content" : ""}
+        >
+          {t("WORKFLOW_TIMELINE")}
+        </CardSubHeader>
+        <button onClick={() => setHideTimeline(!hideTimeline)}>
+          <svg
+            className={`timeline-arrow ${hideTimeline ? "collapsed" : ""}`}
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M11 17l-5-5 5-5M18 17l-5-5 5-5" />
+          </svg>
+        </button>
+      </div>
 
-      <div className="timeline-container2">
+      <div className={hideTimeline ? "hidden-content" : "timeline-container2"}>
         {timeline.map((checkpoint, index) => {
           const statusClass = getStatusClass(index);
           const showLine = index !== timeline.length - 1 && timeline.length > 1;
 
-          const epochTime =
-            checkpoint?.auditDetails?.lastModifiedTime ||
-            checkpoint?.auditDetails?.createdTime;
+          const epochTime = checkpoint?.auditDetails?.lastModifiedTime || checkpoint?.auditDetails?.createdTime;
 
           return (
             <div key={index} className={`timeline-item2 ${statusClass}`}>
               <div className="timeline-marker2">
-                <div className="timeline-circle2">
-                  {statusClass === "completed2" ? <CheckIcon /> : <ClockIcon />}
-                </div>
+                <div className="timeline-circle2">{statusClass === "completed2" ? <CheckIcon /> : <ClockIcon />}</div>
                 {showLine && <div className="timeline-line2"></div>}
               </div>
 
               <div className="timeline-content2">
                 <div className="timeline-header2">
-                  <div className="timeline-title2">
-                    {t(`WF_${checkpoint?.state?.state}`)}
-                  </div>
+                  <div className="timeline-title2">{t(`WF_${checkpoint?.state?.state}`)}</div>
 
-                  <span className="timeline-date2">
-                    {convertEpochToDateTime(epochTime)}
-                  </span>
+                  <span className="timeline-date2">{convertEpochToDateTime(epochTime)}</span>
                 </div>
 
                 <div className="timeline-body2">
@@ -95,18 +106,13 @@ const timeline = workflowDetails?.data?.processInstances;
                     {t(checkpoint?.state?.applicationStatus || checkpoint?.state?.state)}
                   </div>
 
-                  {checkpoint?.comment && (
-                    <div className="timeline-comment2">
-                      {checkpoint.comment}
-                    </div>
-                  )}
+                  {checkpoint?.comment && <div className="timeline-comment2">{checkpoint.comment}</div>}
                 </div>
 
                 {checkpoint?.assigner?.name && (
                   <div className="timeline-footer2">
                     <span>
-                      {t("ES_COMMON_ASSIGNED_TO")}:{" "}
-                      <strong>{checkpoint?.assigner?.name}</strong>
+                      {t("ES_COMMON_ASSIGNED_TO")}: <strong>{checkpoint?.assigner?.name}</strong>
                     </span>
                   </div>
                 )}

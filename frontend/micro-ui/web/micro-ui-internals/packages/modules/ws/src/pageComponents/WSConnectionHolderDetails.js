@@ -4,6 +4,7 @@ import {
   CheckBox,
   Dropdown,
   LabelFieldPair,
+  MobileNumber,
   TextInput,
   WrapUnMaskComponent,
 } from "@djb25/digit-ui-react-components";
@@ -27,7 +28,7 @@ const createConnectionHolderDetails = () => ({
   documentId: "",
   documentType: "",
   file: "",
-  emailId:""
+  emailId: "",
 });
 
 const WSConnectionHolderDetails = ({ config, onSelect, userType, formData, setError, formState, clearErrors }) => {
@@ -176,7 +177,7 @@ const WSConnectionHolderDetails = ({ config, onSelect, userType, formData, setEr
   return (
     <React.Fragment>
       {connectionHolderDetails.map((connectionHolderDetail, index) => (
-        <ConnectionDetails key={connectionHolderDetail.key||index} index={index} connectionHolderDetail={connectionHolderDetail} {...commonProps} />
+        <ConnectionDetails key={connectionHolderDetail.key || index} index={index} connectionHolderDetail={connectionHolderDetail} {...commonProps} />
       ))}
     </React.Fragment>
   );
@@ -226,7 +227,7 @@ const ConnectionDetails = (_props) => {
   const formValue = { name, gender, mobileNumber, guardian, relationship, ownerType, sameAsOwnerDetails, address, uuid, emailId };
   const { errors } = localFormState;
   const isMobile = window.Digit.Utils.browser.isMobile();
-  const isEmployee = window.location.href.includes("/employee")
+  const isEmployee = window.location.href.includes("/employee");
 
   const { isLoading, data: privacyData } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(), "DataSecurity", [{ name: "SecurityPolicy" }], {
     select: (data) => data?.DataSecurity?.SecurityPolicy?.find((elem) => elem?.model == "User") || {},
@@ -275,63 +276,58 @@ const ConnectionDetails = (_props) => {
     } else {
       trigger();
     }
-  }, [sameAsOwnerDetails])
-  
+  }, [sameAsOwnerDetails]);
+
   useEffect(() => {
     if (Object.keys(errors).length && !_.isEqual(formState.errors[config.key]?.type || {}, errors)) {
       setError(config.key, { type: errors });
     } else if (!Object.keys(errors).length && formState.errors[config.key] && isErrors) {
       clearErrors(config.key);
     }
-  }, [errors]); 
-  const validateEmail=(value)=>{
-    const emailPattern=/^[a-zA-Z0-9._%+-]+@[a-z.-]+\.(com|org|in)$/;
-    const errors=sessionStorage.getItem("FORMSTATE_ERRORS");
-    let formStateErros=typeof errors=== "string" ? JSON.parse(errors):{};
-    if(emailPattern.test(value)){
-      
+  }, [errors]);
+  const validateEmail = (value) => {
+    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-z.-]+\.(com|org|in)$/;
+    const errors = sessionStorage.getItem("FORMSTATE_ERRORS");
+    let formStateErros = typeof errors === "string" ? JSON.parse(errors) : {};
+    if (emailPattern.test(value)) {
       clearErrors("emailId");
-      
-      if(formStateErros["ConnectionHolderDetails"] && formStateErros["ConnectionHolderDetails"]?.type && formStateErros["ConnectionHolderDetails"]?.type?.emailId){
+
+      if (
+        formStateErros["ConnectionHolderDetails"] &&
+        formStateErros["ConnectionHolderDetails"]?.type &&
+        formStateErros["ConnectionHolderDetails"]?.type?.emailId
+      ) {
         delete formStateErros["ConnectionHolderDetails"].type.emailId;
       }
-        if(Object.keys(formStateErros["ConnectionHolderDetails"].type).length===0){
-          delete formStateErros["ConnectionHolderDetails"].type;
-        }
-        if(Object.keys(formStateErros["ConnectionHolderDetails"]).length===0){
-          delete formStateErros["ConnectionHolderDetails"];
-        }
-        sessionStorage.setItem("FORMSTATE_ERRORS", JSON.stringify(formStateErros));
-      
-      return true;
-      
-      
-    }
-    else{
-      
-      setError("emailId",{
-        type:"manual",
-        message:"email id error"
-        
-        
-      });
-      
-      if(!formStateErros["ConnectionHolderDetails"]){
-        formStateErros["ConnectionHolderDetails"]={type:{}};
+      if (Object.keys(formStateErros["ConnectionHolderDetails"].type).length === 0) {
+        delete formStateErros["ConnectionHolderDetails"].type;
       }
-        if(!formStateErros["ConnectionHolderDetails"].type){
-          formStateErros["ConnectionHolderDetails"].type={};
-        }
-        formStateErros["ConnectionHolderDetails"].type.emailId={
-          message:"please enter a valid emailId"
-        }
-        sessionStorage.setItem("FORMSTATE_ERRORS", JSON.stringify(formStateErros));
-      
-      return false;
+      if (Object.keys(formStateErros["ConnectionHolderDetails"]).length === 0) {
+        delete formStateErros["ConnectionHolderDetails"];
+      }
+      sessionStorage.setItem("FORMSTATE_ERRORS", JSON.stringify(formStateErros));
 
-      
+      return true;
+    } else {
+      setError("emailId", {
+        type: "manual",
+        message: "email id error",
+      });
+
+      if (!formStateErros["ConnectionHolderDetails"]) {
+        formStateErros["ConnectionHolderDetails"] = { type: {} };
+      }
+      if (!formStateErros["ConnectionHolderDetails"].type) {
+        formStateErros["ConnectionHolderDetails"].type = {};
+      }
+      formStateErros["ConnectionHolderDetails"].type.emailId = {
+        message: "please enter a valid emailId",
+      };
+      sessionStorage.setItem("FORMSTATE_ERRORS", JSON.stringify(formStateErros));
+
+      return false;
     }
-  }
+  };
 
   const checkifPrivacyValid = () => {
     if (window.location.href.includes("edit") || window.location.href.includes("modify")) return true;
@@ -358,7 +354,6 @@ const ConnectionDetails = (_props) => {
                 setFocusIndex({ index: connectionHolderDetail?.key, type: "sameAsOwnerDetails" });
               }}
               checked={sameAsOwnerDetails}
-              style={{ paddingBottom: "10px", paddingTop: "3px" }}
               onBlur={props.onBlur}
             />
           )}
@@ -366,10 +361,10 @@ const ConnectionDetails = (_props) => {
       </div>
 
       {!sameAsOwnerDetails ? (
-        <div>
-          <LabelFieldPair>
-            <CardLabel style={isMobile && isEmployee ? {fontWeight: "700", width:"100%"} : { marginTop: "-5px", fontWeight: "700" }} className="card-label-smaller">{`${t("WS_OWN_DETAIL_NAME")}*`}</CardLabel>
-            <div className="field">
+        <div className="formcomposer-section-grid">
+          <div>
+            <LabelFieldPair>
+              <CardLabel className="card-label-smaller">{`${t("WS_OWN_DETAIL_NAME")}*`}</CardLabel>
               <Controller
                 control={control}
                 name="name"
@@ -380,7 +375,7 @@ const ConnectionDetails = (_props) => {
                 }}
                 isMandatory={true}
                 render={(props) => (
-                  <div style={{ display: "flex", alignItems: "baseline", marginRight: isMobile && isEmployee ? "" :(checkifPrivacyValid() ? "-4%" : "-4%") }}>
+                  <div>
                     <TextInput
                       value={getValues("name")}
                       autoFocus={focusIndex.index === connectionHolderDetail?.key && focusIndex.type === "name"}
@@ -392,17 +387,9 @@ const ConnectionDetails = (_props) => {
                       }}
                       labelStyle={{ marginTop: "unset" }}
                       onBlur={props.onBlur}
-                      style={
-                        checkifPrivacyValid() && !getValues("name")?.includes("*")
-                          ? !Digit.Utils.checkPrivacy(privacyData, { uuid: connectionHolderDetail?.uuid, fieldName: "name", model: "User" }) &&
-                            !Digit.Utils.checkPrivacy(privacyData, { uuid: connectionHolderDetail?.uuid, fieldName: "mobileNumber", model: "User" })
-                            ? ((isMobile && isEmployee) ? {} :{ width: "96%" })
-                            : ((isMobile && isEmployee) ? {} :{ width: "96%" })
-                          : {}
-                      }
                     />
                     {checkifPrivacyValid() && (
-                      <div style={!(isMobile && isEmployee) ? { marginRight: "-10px", marginLeft: "10px" } : {}}>
+                      <div>
                         <WrapUnMaskComponent
                           unmaskField={(e) => {
                             setName(e);
@@ -432,513 +419,464 @@ const ConnectionDetails = (_props) => {
                   </div>
                 )}
               />
-            </div>
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.name ? errors?.name?.message : ""}</CardLabelError>
-          <LabelFieldPair>
-            <CardLabel style={isMobile && isEmployee ? {fontWeight: "700", width:"100%"} : { marginTop: "-5px", fontWeight: "700" }} className="card-label-smaller">{`${t(
-              "WS_CONN_HOLDER_OWN_DETAIL_GENDER_LABEL"
-            )}*`}</CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name={"gender"}
-                defaultValue={connectionHolderDetail?.gender}
-                rules={{ required: t("REQUIRED_FIELD") }}
-                isMandatory={true}
-                render={(props) => (
-                  <div
-                    style={{
-                      display: "flex",
-                      marginRight: checkifPrivacyValid() && !(isMobile && isEmployee) ? "-20px" : "unset",
-                      width: (isMobile && isEmployee) ? "" : checkifPrivacyValid() ? "197%" : "208%",
-                    }}
-                  >
-                    <Dropdown
-                      className="form-field"
-                     // style={checkifPrivacyValid() ? (sessionStorage.getItem("isPrivacyEnabled") !== "true" ? { width: "51.5%" } : {}) : {}}
-                      selected={getValues("gender")}
-                      disable={false}
-                      option={menu}
-                      errorStyle={localFormState.touched.gender && errors?.gender?.message ? true : false}
-                      select={(e) => {
-                        setGender(e);
-                        props.onChange(e);
-                      }}
-                      optionKey="i18nKey"
-                      onBlur={props.onBlur}
-                      t={t}
-                    />
-                    {checkifPrivacyValid() && (
-                      <div style={{ marginRight: "-10px", marginLeft: (isMobile && isEmployee) ? "" : "8px", marginTop: "15px" }}>
-                        <WrapUnMaskComponent
-                          unmaskField={(e) => {
-                            const r = { code: e, i18nKey: `COMMON_GENDER_${e}`, name: e };
-                            setGender(r);
-                            props.onChange(r);
-                          }}
-                          iseyevisible={gender["i18nKey"]?.includes("*") ? true : false}
-                          privacy={{
-                            uuid: connectionHolderDetail?.uuid,
-                            fieldName: "gender",
-                            model: "WnSConnectionOwner",
-                            loadData: {
-                              serviceName: formData?.ConnectionDetails?.[0]?.water ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
-                              requestBody: {},
-                              requestParam: {
-                                tenantId: formData?.cpt?.details?.tenantId,
-                                applicationNumber: formData?.ConnectionDetails?.[0]?.applicationNo,
-                              },
-                              jsonPath: formData?.ConnectionDetails?.[0]?.water
-                                ? "WaterConnection[0].connectionHolders[0].gender"
-                                : "SewerageConnections[0].connectionHolders[0].gender",
-                              isArray: false,
-                            },
-                          }}
-                        ></WrapUnMaskComponent>
-                      </div>
-                    )}
-                  </div>
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.gender ? errors?.gender?.message : ""}</CardLabelError>
-          <LabelFieldPair>
-            <CardLabel style={isMobile && isEmployee ? {fontWeight: "700", width:"100%"} : { marginTop: "-5px", fontWeight: "700"}} className="card-label-smaller">{`${t(
-              "CORE_COMMON_MOBILE_NUMBER"
-            )}*`}</CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="mobileNumber"
-                defaultValue={connectionHolderDetail?.mobileNumber}
-                rules={{
-                  validate: (e) =>
-                    (e && getPattern("MobileNoWithPrivacy").test(e)) || !e || e.includes("*") ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG"),
-                  required: t("REQUIRED_FIELD"),
-                }}
-                //type="number"
-                isMandatory={true}
-                render={(props) => (
-                  <div style={{ display: "flex", alignItems: "baseline", marginRight: isEmployee && isMobile ? "" : (getValues("mobileNumber")?.includes("*") && !(isMobile && isEmployee) ? "-20px" : "-4%") }}>
-                    <div className="employee-card-input employee-card-input--front" style={{ position: "relative", marginTop: "4px" }}>
-                      +91
-                    </div>
-                    <TextInput
-                      //type="number"
-                      //value={props.value}
-                      value={getValues("mobileNumber")}
-                      autoFocus={focusIndex.index === connectionHolderDetail?.key && focusIndex.type === "mobileNumber"}
-                      errorStyle={localFormState.touched.mobileNumber && errors?.mobileNumber?.message ? true : false}
-                      onChange={(e) => {
-                        setMobileNumber(e.target.value);
-                        props.onChange(e.target.value);
-                        setFocusIndex({ index: connectionHolderDetail?.key, type: "mobileNumber" });
-                      }}
-                      labelStyle={{ marginTop: "unset" }}
-                      onBlur={props.onBlur}
-                      style={
-                        checkifPrivacyValid() && !getValues("mobileNumber")?.includes("*")
-                          ? !Digit.Utils.checkPrivacy(privacyData, {
+            </LabelFieldPair>
+            {localFormState.touched.name && errors?.name?.message && <CardLabelError style={errorStyle}>{errors?.name?.message}</CardLabelError>}
+          </div>
+          <div>
+            <LabelFieldPair>
+              <CardLabel className="card-label-smaller">{`${t("WS_CONN_HOLDER_OWN_DETAIL_GENDER_LABEL")}*`}</CardLabel>
+              <div className="field">
+                <Controller
+                  control={control}
+                  name={"gender"}
+                  defaultValue={connectionHolderDetail?.gender}
+                  rules={{ required: t("REQUIRED_FIELD") }}
+                  isMandatory={true}
+                  render={(props) => (
+                    <div>
+                      <Dropdown
+                        className="form-field"
+                        selected={getValues("gender")}
+                        disable={false}
+                        option={menu}
+                        errorStyle={localFormState.touched.gender && errors?.gender?.message ? true : false}
+                        select={(e) => {
+                          setGender(e);
+                          props.onChange(e);
+                        }}
+                        optionKey="i18nKey"
+                        onBlur={props.onBlur}
+                        t={t}
+                      />
+                      {checkifPrivacyValid() && (
+                        <div>
+                          <WrapUnMaskComponent
+                            unmaskField={(e) => {
+                              const r = { code: e, i18nKey: `COMMON_GENDER_${e}`, name: e };
+                              setGender(r);
+                              props.onChange(r);
+                            }}
+                            iseyevisible={gender["i18nKey"]?.includes("*") ? true : false}
+                            privacy={{
                               uuid: connectionHolderDetail?.uuid,
-                              fieldName: "connectionHoldersMobileNumber",
+                              fieldName: "gender",
                               model: "WnSConnectionOwner",
-                            }) &&
-                            !Digit.Utils.checkPrivacy(privacyData, { uuid: connectionHolderDetail?.uuid, fieldName: "mobileNumber", model: "User" })
-                            ? ((isMobile && isEmployee) ? {} :{ width: "96%" })
-                            : ((isMobile && isEmployee) ? {} :{ width: "96%", background: "#FAFAFA" })
-                          : { background: "#FAFAFA" }
-                      }
-                    />
-                    {checkifPrivacyValid() && (
-                      <div style={!(isMobile && isEmployee) ? { marginRight: "-10px", marginLeft: "10px" } : {}}>
-                        <WrapUnMaskComponent
-                          unmaskField={(e) => {
-                            setMobileNumber(e);
-                            props.onChange(e);
-                          }}
-                          iseyevisible={getValues("mobileNumber")?.includes("*") ? true : false}
-                          privacy={{
-                            uuid: connectionHolderDetail?.uuid,
-                            fieldName: "connectionHoldersMobileNumber",
-                            model: "WnSConnectionOwner",
-                            loadData: {
-                              serviceName: formData?.ConnectionDetails?.[0]?.water ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
-                              requestBody: {},
-                              requestParam: {
-                                tenantId: formData?.cpt?.details?.tenantId,
-                                applicationNumber: formData?.ConnectionDetails?.[0]?.applicationNo,
+                              loadData: {
+                                serviceName: formData?.ConnectionDetails?.[0]?.water ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
+                                requestBody: {},
+                                requestParam: {
+                                  tenantId: formData?.cpt?.details?.tenantId,
+                                  applicationNumber: formData?.ConnectionDetails?.[0]?.applicationNo,
+                                },
+                                jsonPath: formData?.ConnectionDetails?.[0]?.water
+                                  ? "WaterConnection[0].connectionHolders[0].gender"
+                                  : "SewerageConnections[0].connectionHolders[0].gender",
+                                isArray: false,
                               },
-                              jsonPath: formData?.ConnectionDetails?.[0]?.water
-                                ? "WaterConnection[0].connectionHolders[0].mobileNumber"
-                                : "SewerageConnections[0].connectionHolders[0].mobileNumber",
-                              isArray: false,
-                            },
+                            }}
+                          ></WrapUnMaskComponent>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                />
+              </div>
+            </LabelFieldPair>
+            {localFormState.touched.gender && errors?.gender?.message && (
+              <CardLabelError style={errorStyle}>{errors?.gender?.message}</CardLabelError>
+            )}
+          </div>
+          <div>
+            <LabelFieldPair>
+              <CardLabel className="card-label-smaller">{`${t("CORE_COMMON_MOBILE_NUMBER")}*`}</CardLabel>
+              <div className="field">
+                <Controller
+                  control={control}
+                  name="mobileNumber"
+                  defaultValue={connectionHolderDetail?.mobileNumber}
+                  rules={{
+                    validate: (e) =>
+                      (e && getPattern("MobileNoWithPrivacy").test(e)) || !e || e.includes("*") ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG"),
+                    required: t("REQUIRED_FIELD"),
+                  }}
+                  //type="number"
+                  isMandatory={true}
+                  render={(props) => {
+                    const mobileValue = getValues("mobileNumber");
+
+                    return (
+                      <div>
+                        <MobileNumber
+                          name="mobileNumber"
+                          value={mobileValue}
+                          autoFocus={focusIndex.index === connectionHolderDetail?.key && focusIndex.type === "mobileNumber"}
+                          errorStyle={localFormState.touched.mobileNumber && errors?.mobileNumber?.message}
+                          onChange={(val) => {
+                            props.onChange(val);
+                            setFocusIndex({ index: connectionHolderDetail?.key, type: "mobileNumber" });
                           }}
-                        ></WrapUnMaskComponent>
+                          onBlur={props.onBlur}
+                          hideSpan={false}
+                        />
+
+                        {checkifPrivacyValid() && (
+                          <div>
+                            <WrapUnMaskComponent
+                              value={mobileValue} // ✅ FIXED
+                              unmaskField={(e) => {
+                                props.onChange(e);
+                              }}
+                              iseyevisible={mobileValue?.includes("*")}
+                              privacy={{
+                                uuid: connectionHolderDetail?.uuid,
+                                fieldName: "connectionHoldersMobileNumber",
+                                model: "WnSConnectionOwner",
+                                loadData: {
+                                  serviceName: formData?.ConnectionDetails?.[0]?.water ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
+                                  requestBody: {},
+                                  requestParam: {
+                                    tenantId: formData?.cpt?.details?.tenantId,
+                                    applicationNumber: formData?.ConnectionDetails?.[0]?.applicationNo,
+                                  },
+                                  jsonPath: formData?.ConnectionDetails?.[0]?.water
+                                    ? "WaterConnection[0].connectionHolders[0].mobileNumber"
+                                    : "SewerageConnections[0].connectionHolders[0].mobileNumber",
+                                  isArray: false,
+                                },
+                              }}
+                            />
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.mobileNumber ? errors?.mobileNumber?.message : ""}</CardLabelError>
-          <LabelFieldPair>
-            <CardLabel style={isMobile && isEmployee ? {fontWeight: "700", width:"100%"} : { marginTop: "-5px", fontWeight: "700" }} className="card-label-smaller">{`${t(
-              "WS_OWN_DETAIL_GUARDIAN_LABEL"
-            )}*`}</CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="guardian"
-                defaultValue={connectionHolderDetail?.guardian}
-                rules={{
-                  validate: (e) => ((e && getPattern("Name").test(e)) || !e || e.includes("*") ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")),
-                  required: t("REQUIRED_FIELD"),
-                }}
-                isMandatory={true}
-                render={(props) => (
-                  <div style={{ display: "flex", alignItems: "baseline", marginRight: isEmployee && isMobile ? "" :(getValues("guardian")?.includes("*") && !(isMobile && isEmployee) ? "-20px" : "-4%") }}>
-                    <TextInput
-                      value={getValues("guardian")}
-                      autoFocus={focusIndex.index === connectionHolderDetail?.key && focusIndex.type === "guardian"}
-                      errorStyle={localFormState.touched.guardian && errors?.guardian?.message ? true : false}
-                      onChange={(e) => {
-                        setGuardian(e.target.value);
-                        props.onChange(e.target.value);
-                        setFocusIndex({ index: connectionHolderDetail?.key, type: "guardian" });
-                      }}
-                      labelStyle={{ marginTop: "unset" }}
-                      onBlur={props.onBlur}
-                      style={
-                        checkifPrivacyValid() && !getValues("guardian")?.includes("*")
-                          ? !Digit.Utils.checkPrivacy(privacyData, {
+                    );
+                  }}
+                />
+              </div>
+            </LabelFieldPair>
+            {localFormState.touched.mobileNumber && errors?.mobileNumber?.message && (
+              <CardLabelError style={errorStyle}>{errors?.mobileNumber?.message}</CardLabelError>
+            )}
+          </div>
+          <div>
+            <LabelFieldPair>
+              <CardLabel className="card-label-smaller">{`${t("WS_OWN_DETAIL_GUARDIAN_LABEL")}*`}</CardLabel>
+              <div className="field">
+                <Controller
+                  control={control}
+                  name="guardian"
+                  defaultValue={connectionHolderDetail?.guardian}
+                  rules={{
+                    validate: (e) => ((e && getPattern("Name").test(e)) || !e || e.includes("*") ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")),
+                    required: t("REQUIRED_FIELD"),
+                  }}
+                  isMandatory={true}
+                  render={(props) => (
+                    <div>
+                      <TextInput
+                        value={getValues("guardian")}
+                        autoFocus={focusIndex.index === connectionHolderDetail?.key && focusIndex.type === "guardian"}
+                        errorStyle={localFormState.touched.guardian && errors?.guardian?.message ? true : false}
+                        onChange={(e) => {
+                          setGuardian(e.target.value);
+                          props.onChange(e.target.value);
+                          setFocusIndex({ index: connectionHolderDetail?.key, type: "guardian" });
+                        }}
+                        labelStyle={{ marginTop: "unset" }}
+                        onBlur={props.onBlur}
+                      />
+                      {checkifPrivacyValid() && (
+                        <div>
+                          <WrapUnMaskComponent
+                            unmaskField={(e) => {
+                              setGuardian(e);
+                              props.onChange(e);
+                            }}
+                            iseyevisible={getValues("guardian")?.includes("*") ? true : false}
+                            privacy={{
                               uuid: connectionHolderDetail?.uuid,
                               fieldName: "fatherOrHusbandName",
                               model: "WnSConnectionOwner",
-                            }) &&
-                            !Digit.Utils.checkPrivacy(privacyData, { uuid: connectionHolderDetail?.uuid, fieldName: "mobileNumber", model: "User" })
-                            ? ((isMobile && isEmployee) ? {} :{ width: "96%" })
-                            : ((isMobile && isEmployee) ? {} :{ width: "96.2%" })
-                          : {}
-                      }
-                    />
-                    {checkifPrivacyValid() && (
-                      <div style={!(isMobile && isEmployee) ? { marginRight: "-10px", marginLeft: "10px" } : {}}>
-                        <WrapUnMaskComponent
-                          unmaskField={(e) => {
-                            setGuardian(e);
-                            props.onChange(e);
-                          }}
-                          iseyevisible={getValues("guardian")?.includes("*") ? true : false}
-                          privacy={{
-                            uuid: connectionHolderDetail?.uuid,
-                            fieldName: "fatherOrHusbandName",
-                            model: "WnSConnectionOwner",
-                            loadData: {
-                              serviceName: formData?.ConnectionDetails?.[0]?.water ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
-                              requestBody: {},
-                              requestParam: {
-                                tenantId: formData?.cpt?.details?.tenantId,
-                                applicationNumber: formData?.ConnectionDetails?.[0]?.applicationNo,
+                              loadData: {
+                                serviceName: formData?.ConnectionDetails?.[0]?.water ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
+                                requestBody: {},
+                                requestParam: {
+                                  tenantId: formData?.cpt?.details?.tenantId,
+                                  applicationNumber: formData?.ConnectionDetails?.[0]?.applicationNo,
+                                },
+                                jsonPath: formData?.ConnectionDetails?.[0]?.water
+                                  ? "WaterConnection[0].connectionHolders[0].fatherOrHusbandName"
+                                  : "SewerageConnections[0].connectionHolders[0].fatherOrHusbandName",
+                                isArray: false,
                               },
-                              jsonPath: formData?.ConnectionDetails?.[0]?.water
-                                ? "WaterConnection[0].connectionHolders[0].fatherOrHusbandName"
-                                : "SewerageConnections[0].connectionHolders[0].fatherOrHusbandName",
-                              isArray: false,
-                            },
-                          }}
-                        ></WrapUnMaskComponent>
-                      </div>
-                    )}
-                  </div>
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.guardian ? errors?.guardian?.message : ""}</CardLabelError>
-          <LabelFieldPair>
-            <CardLabel style={isMobile && isEmployee ? {fontWeight: "700", width:"100%"} : { marginTop: "-5px", fontWeight: "700" }} className="card-label-smaller">{`${t(
-              "WS_CONN_HOLDER_OWN_DETAIL_RELATION_LABEL"
-            )}*`}</CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name={"relationship"}
-                defaultValue={connectionHolderDetail?.relationship}
-                rules={{ required: t("REQUIRED_FIELD") }}
-                isMandatory={true}
-                render={(props) => (
-                  <div
-                    style={{
-                      display: "flex",
-                      marginRight: checkifPrivacyValid() && !(isMobile && isEmployee) ? "-20px" : "unset",
-                      width: (isMobile && isEmployee) ? "" : checkifPrivacyValid() ? "197%" : "208%",
-                    }}
-                  >
-                    <Dropdown
-                      className="form-field"
-                     // style={checkifPrivacyValid() ? (sessionStorage.getItem("isPrivacyEnabled") !== "true" ? { width: "51.5%" } : {}) : {}}
-                      selected={getValues("relationship")}
-                      disable={false}
-                      option={GuardianOptions}
-                      errorStyle={localFormState.touched.relationship && errors?.relationship?.message ? true : false}
-                      select={(e) => {
-                        setRelationship(e);
-                        props.onChange(e);
-                      }}
-                      optionKey="i18nKey"
-                      onBlur={props.onBlur}
-                      t={t}
-                    />
-                    {checkifPrivacyValid() && (
-                      <div style={{ marginRight: "-10px", marginLeft: (isMobile && isEmployee) ? "" :"8px", marginTop: "15px" }}>
-                        <WrapUnMaskComponent
-                          unmaskField={(e) => {
-                            const r = { code: e, i18nKey: `COMMON_MASTERS_OWNERTYPE_${e}`, name: e };
-                            setRelationship(r);
-                            props.onChange(r);
-                          }}
-                          iseyevisible={relationship?.i18nKey?.includes("*") ? true : false}
-                          privacy={{
-                            uuid: connectionHolderDetail?.uuid,
-                            fieldName: "relationship",
-                            model: "WnSConnection",
-                            loadData: {
-                              serviceName: formData?.ConnectionDetails?.[0]?.water ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
-                              requestBody: {},
-                              requestParam: {
-                                tenantId: formData?.cpt?.details?.tenantId,
-                                applicationNumber: formData?.ConnectionDetails?.[0]?.applicationNo,
+                            }}
+                          ></WrapUnMaskComponent>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                />
+              </div>
+            </LabelFieldPair>
+            {localFormState.touched.guardian && errors?.guardian?.message && (
+              <CardLabelError style={errorStyle}>{errors?.guardian?.message}</CardLabelError>
+            )}
+          </div>
+          <div>
+            <LabelFieldPair>
+              <CardLabel className="card-label-smaller">{`${t("WS_CONN_HOLDER_OWN_DETAIL_RELATION_LABEL")}*`}</CardLabel>
+              <div className="field">
+                <Controller
+                  control={control}
+                  name={"relationship"}
+                  defaultValue={connectionHolderDetail?.relationship}
+                  rules={{ required: t("REQUIRED_FIELD") }}
+                  isMandatory={true}
+                  render={(props) => (
+                    <div>
+                      <Dropdown
+                        className="form-field"
+                        selected={getValues("relationship")}
+                        disable={false}
+                        option={GuardianOptions}
+                        errorStyle={localFormState.touched.relationship && errors?.relationship?.message ? true : false}
+                        select={(e) => {
+                          setRelationship(e);
+                          props.onChange(e);
+                        }}
+                        optionKey="i18nKey"
+                        onBlur={props.onBlur}
+                        t={t}
+                      />
+                      {checkifPrivacyValid() && (
+                        <div>
+                          <WrapUnMaskComponent
+                            unmaskField={(e) => {
+                              const r = { code: e, i18nKey: `COMMON_MASTERS_OWNERTYPE_${e}`, name: e };
+                              setRelationship(r);
+                              props.onChange(r);
+                            }}
+                            iseyevisible={relationship?.i18nKey?.includes("*") ? true : false}
+                            privacy={{
+                              uuid: connectionHolderDetail?.uuid,
+                              fieldName: "relationship",
+                              model: "WnSConnection",
+                              loadData: {
+                                serviceName: formData?.ConnectionDetails?.[0]?.water ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
+                                requestBody: {},
+                                requestParam: {
+                                  tenantId: formData?.cpt?.details?.tenantId,
+                                  applicationNumber: formData?.ConnectionDetails?.[0]?.applicationNo,
+                                },
+                                jsonPath: formData?.ConnectionDetails?.[0]?.water
+                                  ? "WaterConnection[0].connectionHolders[0].relationship"
+                                  : "SewerageConnections[0].connectionHolders[0].relationship",
+                                isArray: false,
                               },
-                              jsonPath: formData?.ConnectionDetails?.[0]?.water
-                                ? "WaterConnection[0].connectionHolders[0].relationship"
-                                : "SewerageConnections[0].connectionHolders[0].relationship",
-                              isArray: false,
-                            },
-                          }}
-                        ></WrapUnMaskComponent>
-                      </div>
-                    )}
-                  </div>
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.relationship ? errors?.relationship?.message : ""}</CardLabelError>
-          <LabelFieldPair>
-            <CardLabel style={isMobile && isEmployee ? {fontWeight: "700", width:"100%"} : { marginTop: "-5px", fontWeight: "700" }} className="card-label-smaller">{`${t(
-              "WS_CORRESPONDANCE_ADDRESS_LABEL"
-            )}*`}</CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="address"
-                defaultValue={connectionHolderDetail?.address}
-                rules={{
-                  validate: (e) => ((e && getPattern("Address").test(e)) || !e || e.includes("*") ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")),
-                  required: t("REQUIRED_FIELD"),
-                }}
-                isMandatory={true}
-                render={(props) => (
-                  <div style={{ display: "flex", alignItems: "baseline", marginRight: isEmployee && isMobile ? "" : (getValues("address")?.includes("*") && !(isMobile && isEmployee) ? "-20px" : "-4%") }}>
-                    <TextInput
-                      value={getValues("address")}
-                      autoFocus={focusIndex.index === connectionHolderDetail?.key && focusIndex.type === "address"}
-                      errorStyle={localFormState.touched.address && errors?.address?.message ? true : false}
-                      onChange={(e) => {
-                        setAddress(e.target.value);
-                        props.onChange(e.target.value);
-                        setFocusIndex({ index: connectionHolderDetail?.key, type: "address" });
-                      }}
-                      labelStyle={{ marginTop: "unset" }}
-                      onBlur={props.onBlur}
-                      style={
-                        checkifPrivacyValid() && !getValues("address")?.includes("*")
-                          ? !Digit.Utils.checkPrivacy(privacyData, {
+                            }}
+                          ></WrapUnMaskComponent>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                />
+              </div>
+            </LabelFieldPair>
+            {localFormState.touched.relationship && errors?.relationship?.message && (
+              <CardLabelError style={errorStyle}>{errors?.relationship?.message}</CardLabelError>
+            )}
+          </div>
+          <div>
+            <LabelFieldPair>
+              <CardLabel className="card-label-smaller">{`${t("WS_CORRESPONDANCE_ADDRESS_LABEL")}*`}</CardLabel>
+              <div className="field">
+                <Controller
+                  control={control}
+                  name="address"
+                  defaultValue={connectionHolderDetail?.address}
+                  rules={{
+                    validate: (e) => ((e && getPattern("Address").test(e)) || !e || e.includes("*") ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")),
+                    required: t("REQUIRED_FIELD"),
+                  }}
+                  isMandatory={true}
+                  render={(props) => (
+                    <div>
+                      <TextInput
+                        value={getValues("address")}
+                        autoFocus={focusIndex.index === connectionHolderDetail?.key && focusIndex.type === "address"}
+                        errorStyle={localFormState.touched.address && errors?.address?.message ? true : false}
+                        onChange={(e) => {
+                          setAddress(e.target.value);
+                          props.onChange(e.target.value);
+                          setFocusIndex({ index: connectionHolderDetail?.key, type: "address" });
+                        }}
+                        labelStyle={{ marginTop: "unset" }}
+                        onBlur={props.onBlur}
+                      />
+                      {checkifPrivacyValid() && (
+                        <div>
+                          <WrapUnMaskComponent
+                            unmaskField={(e) => {
+                              setAddress(e);
+                              props.onChange(e);
+                            }}
+                            iseyevisible={getValues("address")?.includes("*") ? true : false}
+                            privacy={{
                               uuid: connectionHolderDetail?.uuid,
                               fieldName: "correspondenceAddress",
                               model: "WnSConnectionOwner",
-                            }) &&
-                            !Digit.Utils.checkPrivacy(privacyData, { uuid: connectionHolderDetail?.uuid, fieldName: "mobileNumber", model: "User" })
-                            ? ((isMobile && isEmployee) ? {} :{ width: "96%" })
-                            : ((isMobile && isEmployee) ? {} :{ width: "96.2%" })
-                          : {}
-                      }
-                    />
-                    {checkifPrivacyValid() && (
-                      <div style={ !(isMobile && isEmployee) ? { marginRight: "-10px", marginLeft: "10px" } : {}}>
-                        <WrapUnMaskComponent
-                          unmaskField={(e) => {
-                            setAddress(e);
-                            props.onChange(e);
-                          }}
-                          iseyevisible={getValues("address")?.includes("*") ? true : false}
-                          privacy={{
-                            uuid: connectionHolderDetail?.uuid,
-                            fieldName: "correspondenceAddress",
-                            model: "WnSConnectionOwner",
-                            loadData: {
-                              serviceName: formData?.ConnectionDetails?.[0]?.water ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
-                              requestBody: {},
-                              requestParam: {
-                                tenantId: formData?.cpt?.details?.tenantId,
-                                applicationNumber: formData?.ConnectionDetails?.[0]?.applicationNo,
+                              loadData: {
+                                serviceName: formData?.ConnectionDetails?.[0]?.water ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
+                                requestBody: {},
+                                requestParam: {
+                                  tenantId: formData?.cpt?.details?.tenantId,
+                                  applicationNumber: formData?.ConnectionDetails?.[0]?.applicationNo,
+                                },
+                                jsonPath: formData?.ConnectionDetails?.[0]?.water
+                                  ? "WaterConnection[0].connectionHolders[0].correspondenceAddress"
+                                  : "SewerageConnections[0].connectionHolders[0].correspondenceAddress",
+                                isArray: false,
                               },
-                              jsonPath: formData?.ConnectionDetails?.[0]?.water
-                                ? "WaterConnection[0].connectionHolders[0].correspondenceAddress"
-                                : "SewerageConnections[0].connectionHolders[0].correspondenceAddress",
-                              isArray: false,
-                            },
-                          }}
-                        ></WrapUnMaskComponent>
-                      </div>
-                    )}
-                  </div>
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.address ? errors?.address?.message : ""}</CardLabelError>
-          <LabelFieldPair>
-            <CardLabel style={isMobile && isEmployee ? {fontWeight: "700", width:"100%"} : { marginTop: "-5px", fontWeight: "700" }} className="card-label-smaller">{`${t(
-              "WS_OWNER_SPECIAL_CATEGORY"
-            )}*`}</CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name={"ownerType"}
-                defaultValue={connectionHolderDetail?.ownerType}
-                rules={{ required: t("REQUIRED_FIELD") }}
-                //isMandatory={true}
-                render={(props) => (
-                  <div
-                    style={{
-                      display: "flex",
-                      marginRight: checkifPrivacyValid() && !(isMobile && isEmployee) ? "-20px" : "unset",
-                      width: (isMobile && isEmployee) ? "" : checkifPrivacyValid() ? "197%" : "208%",
-                    }}
-                  >
-                    <Dropdown
-                      className="form-field"
-                     // style={checkifPrivacyValid() ? (sessionStorage.getItem("isPrivacyEnabled") !== "true" ? { width: "51.5%" } : {}) : {}}
-                      selected={getValues("ownerType")}
-                      disable={false}
-                      option={Menu}
-                      errorStyle={localFormState.touched.ownerType && errors?.ownerType?.message ? true : false}
-                      select={(e) => {
-                        setOwnerType(e);
-                        props.onChange(e);
-                      }}
-                      optionKey="i18nKey"
-                      onBlur={props.onBlur}
-                      t={t}
-                    />
-                    {checkifPrivacyValid() && (
-                      <div style={{ marginRight: "-10px", marginLeft: (isMobile && isEmployee) ? "" :"8px", marginTop: "10px" }}>
-                        <WrapUnMaskComponent
-                          unmaskField={(e) => {
-                            const r = { code: e, i18nKey: `COMMON_MASTERS_OWNERTYPE_${e}`, name: e };
-                            setOwnerType(r);
-                            props.onChange(r);
-                          }}
-                          iseyevisible={ownerType?.i18nKey?.includes("*") ? true : false}
-                          privacy={{
-                            uuid: connectionHolderDetail?.uuid,
-                            fieldName: "ownerType",
-                            model: "WnSConnection",
-                            loadData: {
-                              serviceName: formData?.ConnectionDetails?.[0]?.water ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
-                              requestBody: {},
-                              requestParam: {
-                                tenantId: formData?.cpt?.details?.tenantId,
-                                applicationNumber: formData?.ConnectionDetails?.[0]?.applicationNo,
+                            }}
+                          ></WrapUnMaskComponent>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                />
+              </div>
+            </LabelFieldPair>
+            {localFormState.touched.address && errors?.address?.message && (
+              <CardLabelError style={errorStyle}>{errors?.address?.message}</CardLabelError>
+            )}
+          </div>
+          <div>
+            <LabelFieldPair>
+              <CardLabel className="card-label-smaller">{`${t("WS_OWNER_SPECIAL_CATEGORY")}*`}</CardLabel>
+              <div className="field">
+                <Controller
+                  control={control}
+                  name={"ownerType"}
+                  defaultValue={connectionHolderDetail?.ownerType}
+                  rules={{ required: t("REQUIRED_FIELD") }}
+                  //isMandatory={true}
+                  render={(props) => (
+                    <div>
+                      <Dropdown
+                        className="form-field"
+                        selected={getValues("ownerType")}
+                        disable={false}
+                        option={Menu}
+                        errorStyle={localFormState.touched.ownerType && errors?.ownerType?.message ? true : false}
+                        select={(e) => {
+                          setOwnerType(e);
+                          props.onChange(e);
+                        }}
+                        optionKey="i18nKey"
+                        onBlur={props.onBlur}
+                        t={t}
+                      />
+                      {checkifPrivacyValid() && (
+                        <div>
+                          <WrapUnMaskComponent
+                            unmaskField={(e) => {
+                              const r = { code: e, i18nKey: `COMMON_MASTERS_OWNERTYPE_${e}`, name: e };
+                              setOwnerType(r);
+                              props.onChange(r);
+                            }}
+                            iseyevisible={ownerType?.i18nKey?.includes("*") ? true : false}
+                            privacy={{
+                              uuid: connectionHolderDetail?.uuid,
+                              fieldName: "ownerType",
+                              model: "WnSConnection",
+                              loadData: {
+                                serviceName: formData?.ConnectionDetails?.[0]?.water ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
+                                requestBody: {},
+                                requestParam: {
+                                  tenantId: formData?.cpt?.details?.tenantId,
+                                  applicationNumber: formData?.ConnectionDetails?.[0]?.applicationNo,
+                                },
+                                jsonPath: formData?.ConnectionDetails?.[0]?.water
+                                  ? "WaterConnection[0].connectionHolders[0].ownerType"
+                                  : "SewerageConnections[0].connectionHolders[0].ownerType",
+                                isArray: false,
                               },
-                              jsonPath: formData?.ConnectionDetails?.[0]?.water
-                                ? "WaterConnection[0].connectionHolders[0].ownerType"
-                                : "SewerageConnections[0].connectionHolders[0].ownerType",
-                              isArray: false,
-                            },
-                          }}
-                        ></WrapUnMaskComponent>
-                      </div>
-                    )}
-                  </div>
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.ownerType ? errors?.ownerType?.message : ""}</CardLabelError>
-          <LabelFieldPair>
-            <CardLabel style={isMobile && isEmployee ? {fontWeight: "700", width:"100%"} : { marginTop: "-5px", fontWeight: "700" }} className="card-label-smaller">{`${t("WS_EMAIL_ID")}`}</CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="emailId"
-                defaultValue={connectionHolderDetail?.emailId}
-                rules={{
-                 validate: (e) => ((e && getPattern("Email").test(e)) || !e ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")),
-                }}
-                isMandatory={false}
-                render={(props) => (
-                  <div style={{ display: "flex", alignItems: "baseline", marginRight: isMobile && isEmployee ? "" :(checkifPrivacyValid() ? "-4%" : "-4%") }}>
-                    <TextInput
-                      value={getValues("emailId")}
-                      autoFocus={focusIndex.index === connectionHolderDetail?.key && focusIndex.type === "emailId"}
-                      errorStyle={localFormState.touched.emailId && errors?.emailId?.message ? true : false}
-                      onChange={(e) => {
-                        setEmailId(e.target.value);
-                        props.onChange(e.target.value);
-                        validateEmail(e.target.value);
-                        setFocusIndex({ index: connectionHolderDetail?.key, type: "emailId" });
-                      }}
-                      labelStyle={{ marginTop: "unset" }}
-                      onBlur={props.onBlur}
-                      style={
-                        checkifPrivacyValid() && !getValues("emailId")?.includes("*")
-                          ? !Digit.Utils.checkPrivacy(privacyData, { uuid: connectionHolderDetail?.uuid, fieldName: "name", model: "User" }) &&
-                            !Digit.Utils.checkPrivacy(privacyData, { uuid: connectionHolderDetail?.uuid, fieldName: "mobileNumber", model: "User" })
-                            ? ((isMobile && isEmployee) ? {} :{ width: "96%" })
-                            : ((isMobile && isEmployee) ? {} :{ width: "96%" })
-                          : {}
-                      }
-                    />
-                    {checkifPrivacyValid() && (
-                      <div style={!(isMobile && isEmployee) ? { marginRight: "-10px", marginLeft: "10px" } : {}}>
-                        <WrapUnMaskComponent
-                          unmaskField={(e) => {
-                            setEmailId(e);
-                            props.onChange(e);
-                          }}
-                          iseyevisible={getValues("emailId")?.includes("*") ? true : false}
-                          privacy={{
-                            uuid: connectionHolderDetail?.uuid,
-                            fieldName: "emailId",
-                            model: "WnSConnectionOwner",
-                            loadData: {
-                              serviceName: formData?.ConnectionDetails?.[0]?.water ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
-                              requestBody: {},
-                              requestParam: {
-                                tenantId: formData?.cpt?.details?.tenantId,
-                                applicationNumber: formData?.ConnectionDetails?.[0]?.applicationNo,
+                            }}
+                          ></WrapUnMaskComponent>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                />
+              </div>
+            </LabelFieldPair>
+            {localFormState.touched.ownerType && errors?.ownerType?.message && (
+              <CardLabelError style={errorStyle}>{errors?.ownerType?.message}</CardLabelError>
+            )}
+          </div>
+          <div>
+            <LabelFieldPair>
+              <CardLabel className="card-label-smaller">{`${t("WS_EMAIL_ID")}`}</CardLabel>
+              <div className="field">
+                <Controller
+                  control={control}
+                  name="emailId"
+                  defaultValue={connectionHolderDetail?.emailId}
+                  rules={{
+                    validate: (e) => ((e && getPattern("Email").test(e)) || !e ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")),
+                  }}
+                  isMandatory={false}
+                  render={(props) => (
+                    <div>
+                      <TextInput
+                        value={getValues("emailId")}
+                        autoFocus={focusIndex.index === connectionHolderDetail?.key && focusIndex.type === "emailId"}
+                        errorStyle={localFormState.touched.emailId && errors?.emailId?.message ? true : false}
+                        onChange={(e) => {
+                          setEmailId(e.target.value);
+                          props.onChange(e.target.value);
+                          validateEmail(e.target.value);
+                          setFocusIndex({ index: connectionHolderDetail?.key, type: "emailId" });
+                        }}
+                        labelStyle={{ marginTop: "unset" }}
+                        onBlur={props.onBlur}
+                      />
+                      {checkifPrivacyValid() && (
+                        <div>
+                          <WrapUnMaskComponent
+                            unmaskField={(e) => {
+                              setEmailId(e);
+                              props.onChange(e);
+                            }}
+                            iseyevisible={getValues("emailId")?.includes("*") ? true : false}
+                            privacy={{
+                              uuid: connectionHolderDetail?.uuid,
+                              fieldName: "emailId",
+                              model: "WnSConnectionOwner",
+                              loadData: {
+                                serviceName: formData?.ConnectionDetails?.[0]?.water ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
+                                requestBody: {},
+                                requestParam: {
+                                  tenantId: formData?.cpt?.details?.tenantId,
+                                  applicationNumber: formData?.ConnectionDetails?.[0]?.applicationNo,
+                                },
+                                jsonPath: formData?.ConnectionDetails?.[0]?.water
+                                  ? "WaterConnection[0].connectionHolders[0].emailId"
+                                  : "SewerageConnections[0].connectionHolders[0].emailId",
+                                isArray: false,
                               },
-                              jsonPath: formData?.ConnectionDetails?.[0]?.water
-                                ? "WaterConnection[0].connectionHolders[0].emailId"
-                                : "SewerageConnections[0].connectionHolders[0].emailId",
-                              isArray: false,
-                            },
-                          }}
-                        ></WrapUnMaskComponent>
-                      </div>
-                    )}
-                  </div>
-                )}
-              />
-            </div>
-          </LabelFieldPair> 
-          <CardLabelError style={errorStyle}>{localFormState.touched.emailId && errors?.emailId?.message ? errors?.emailId?.message:"" }</CardLabelError>       
+                            }}
+                          ></WrapUnMaskComponent>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                />
+              </div>
+            </LabelFieldPair>
+            {localFormState.touched.emailId && errors?.emailId?.message && (
+              <CardLabelError style={errorStyle}>{errors?.emailId?.message}</CardLabelError>
+            )}
+          </div>
         </div>
       ) : null}
     </div>

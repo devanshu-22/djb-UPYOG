@@ -216,6 +216,11 @@ h6 {
   margin-left: auto;
 }
 
+.overflow-y-scroll {
+  overflow-y: scroll;
+  height: 100%;
+}
+
 .application-details-link-button {
   @apply flex justify-between items-center;
 

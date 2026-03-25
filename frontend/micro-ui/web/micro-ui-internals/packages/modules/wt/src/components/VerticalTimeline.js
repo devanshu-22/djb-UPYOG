@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
 import { TickMark } from "@djb25/digit-ui-react-components";
 
-const VerticalTimeline = ({ config, onSelect, ...props }) => {
+const VerticalTimeline = ({ config, onSelect, showFinalStep, ...props }) => {
   const { t } = useTranslation();
   const location = useLocation();
   // const history = useHistory();
@@ -30,13 +30,14 @@ const VerticalTimeline = ({ config, onSelect, ...props }) => {
       return acc;
     }, [])
     .sort((a, b) => a.stepNumber - b.stepNumber);
-
-  steps.push({
-    key: "final-submit",
-    label: "Review & Submit",
-    routes: ["check", "wt-acknowledgement", "mt-acknowledgement", "tp-acknowledgement"],
-    stepNumber: steps.length + 1,
-  });
+  if (showFinalStep) {
+    steps.push({
+      key: "final-submit",
+      label: "Review & Submit",
+      routes: ["check", "wt-acknowledgement", "mt-acknowledgement", "tp-acknowledgement"],
+      stepNumber: steps.length + 1,
+    });
+  }
 
   const currentStepIndex = steps.findIndex((step) => step.routes.includes(currentRoute));
 
@@ -57,7 +58,7 @@ const VerticalTimeline = ({ config, onSelect, ...props }) => {
             return (
               <div
                 key={index}
-                className={`vertical-timeline-step ${isCompleted ? "completed" : ""} ${isActive ? "active" : ""}`}
+                className={`vertical-timeline-step ${isCompleted ? "completed" : ""} ${isActive ? "activeTimeline active" : ""}`}
                 onClick={() => handleStepClick(step.routes[0], index)}
               >
                 <div className={`vertical-timeline-connector ${index < activeStepIndex ? "completed" : ""}`}></div>

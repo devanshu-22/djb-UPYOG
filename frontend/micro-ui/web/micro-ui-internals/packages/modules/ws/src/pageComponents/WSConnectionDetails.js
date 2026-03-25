@@ -86,9 +86,12 @@ const WSConnectionDetails = ({ config, onSelect, userType, formData, setError, f
 
   return (
     <React.Fragment>
-      {connectionDetails.map((connectionDetail, index) => (
-        <ConnectionDetails key={connectionDetail.key || index} index={index} connectionDetail={connectionDetail} {...commonProps} />
-      ))}
+      {connectionDetails.map(
+        (connectionDetail, index) =>
+          connectionDetail && (
+            <ConnectionDetails key={connectionDetail?.key || index} index={index} connectionDetail={connectionDetail} {...commonProps} />
+          )
+      )}
     </React.Fragment>
   );
 };
@@ -154,9 +157,10 @@ const ConnectionDetails = (_props) => {
 
   useEffect(() => {
     let isClear = true;
-    Object.keys(connectionDetails?.[0])?.map((data) => {
-      if (!connectionDetails[0][data] && connectionDetails[0][data] != false && isClear) isClear = false;
-    });
+    connectionDetails &&
+      Object.keys(connectionDetails?.[0])?.map((data) => {
+        if (!connectionDetails[0][data] && connectionDetails[0][data] != false && isClear) isClear = false;
+      });
     if (isClear && Object.keys(connectionDetails?.[0])?.length > 1) {
       clearErrors("ConnectionDetails");
     }

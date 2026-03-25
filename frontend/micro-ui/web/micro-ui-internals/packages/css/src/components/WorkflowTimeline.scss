@@ -26,12 +26,22 @@
   box-sizing: border-box;
 }
 
+.hidden-content {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  .hidden-card {
+    display: none !important;
+  }
+}
+
 .timeline-container2 {
   display: flex;
   flex-direction: column;
   position: relative;
   padding: 10px 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 .timeline-item2 {
@@ -111,7 +121,7 @@
 
 /* Tiny triangle pointer pointing to the circle */
 .timeline-content2::before {
-  content: '';
+  content: "";
   position: absolute;
   left: -5px;
   top: calc(var(--tl-circle-size) / 2 - 5px);
@@ -183,6 +193,18 @@
   padding: 8px;
   border-radius: 6px;
   border-left: 2px solid #d1d5db;
+}
+
+.timeline-header-wrapper {
+  transition: transform 0.3s ease;
+  transform-origin: center;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.timeline-arrow.collapsed {
+  transform: rotate(180deg);
 }
 
 /* Footer section: Assignee */

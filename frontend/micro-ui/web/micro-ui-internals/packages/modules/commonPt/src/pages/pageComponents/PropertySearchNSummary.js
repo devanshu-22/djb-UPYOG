@@ -1,20 +1,5 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
-import {
-  CardLabel,
-  LabelFieldPair,
-  SearchAction,
-  Dropdown,
-  TextInput,
-  LinkButton,
-  CardLabelError,
-  MobileNumber,
-  DatePicker,
-  Loader,
-  Toast,
-  StatusTable,
-  Row,
-  Card,
-} from "@djb25/digit-ui-react-components";
+import React, { useState, useEffect } from "react";
+import { LabelFieldPair, TextInput, LinkButton, Toast, StatusTable, Row, Card, Label } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
 import { useLocation, Link, useHistory } from "react-router-dom";
@@ -121,8 +106,8 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
         : true) && (
         <React.Fragment>
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller" style={getInputStyles()}>{`${t(`PROPERTY_ID`)}`}</CardLabel>
-            <div className="field" style={{ marginTop: "20px", display: "flex" }}>
+            <Label style={getInputStyles()}>{`${t(`PROPERTY_ID`)}`}</Label>
+            <div style={{ display: "flex", gap: "12px" }}>
               <TextInput
                 key={config.key}
                 value={propertyId}
@@ -131,7 +116,7 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
                   setPropertyId(e.target.value);
                   onSelect(config.key, { id: e.target.value });
                 }}
-                style={{ width: "80%", float: "left", marginRight: "20px" }}
+                style={{ width: "80%", float: "left" }}
               />
               <button className="submit-bar" type="button" style={{ color: "white" }} onClick={searchProperty}>
                 {`${t("PT_SEARCH")}`}

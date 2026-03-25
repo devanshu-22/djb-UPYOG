@@ -17,13 +17,14 @@ import WorkflowTimeline from "../../components/WorkflowTimeline";
 
 const ApplicationDetails = () => {
   const { t } = useTranslation();
-  const { data: storeData } = Digit.Hooks.useStore.getInitData();
+  const [hideTimeline, setHideTimeline] = React.useState(true);
+  // const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const { tenants } = storeData || {};
+  // const { tenants } = storeData || {};
   const { id: bookingNo } = useParams();
   const [showToast, setShowToast] = useState(null);
   const [appDetailsToShow, setAppDetailsToShow] = useState({});
-  const [showOptions, setShowOptions] = useState(false);
+  // const [showOptions, setShowOptions] = useState(false);
   const [BusinessService, setBusinessService] = useState("watertanker"); // Default to water tanker service
   // Determine business service dynamically
   const isWaterTanker = bookingNo?.startsWith("WT"); // Water Tanker
@@ -80,10 +81,10 @@ const ApplicationDetails = () => {
     }
   }, [workflowDetails.data]);
 
-  const [showTimeline, setShowTimeline] = useState(true);
-  let dowloadOptions = [];
+  // const [showTimeline, setShowTimeline] = useState(true);
+  // let dowloadOptions = [];
   return (
-    <div className="employee-form-content-with-action-bar" style={{ padding: user?.type === "CITIZEN" ? "0 15px" : "" }}>
+    <div className="employee-form-content-with-action-bar" style={{ padding: user?.type === "CITIZEN" ? "0 15px" : "", height: "100%" }}>
       {/* <div className={"employee-application-details"} style={{ marginBottom: "15px" }}>
         <Header styles={{ marginLeft: "0px", paddingTop: "10px", fontSize: "32px" }}>{t("BOOKING_DETAILS")}</Header>
         <div style={{ zIndex: "10", display: "flex", flexDirection: "row-reverse", alignItems: "center", marginTop: "-25px" }}>
@@ -101,16 +102,14 @@ const ApplicationDetails = () => {
         </div>
       </div> */}
 
-      <div style={{ display: "flex", flexDirection: "row", gap: "20px" }}>
+      <div style={{ display: "flex", flexDirection: "row", gap: "20px", height: "100%" }}>
         {/* Left Column: Workflow Timeline */}
-        <div style={{ flex: "0 0 25%", minWidth: "250px" }}>
-          <div style={{}}>
-            <WorkflowTimeline workflowDetails={workflowDetails} />
-          </div>
+        <div style={{ flex: !hideTimeline ? "1" : "unset", overflowY: "scroll" }}>
+          <WorkflowTimeline hideTimeline={hideTimeline} setHideTimeline={setHideTimeline} workflowDetails={workflowDetails} />
         </div>
 
         {/* Right Column: Application Details */}
-        <div style={{ flex: "1" }}>
+        <div className={!hideTimeline ? "hidden-card " : ""} style={{ flex: "1", overflowY: "scroll" }}>
           <ApplicationDetailsTemplate
             applicationDetails={appDetailsToShow?.applicationData}
             isLoading={isLoading}

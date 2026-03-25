@@ -1,5 +1,6 @@
 import React from "react";
 import { Table } from "@djb25/digit-ui-react-components";
+import { over } from "lodash";
 
 const ApplicationTable = ({
   t,
@@ -33,6 +34,7 @@ const ApplicationTable = ({
       onSort={onSort}
       sortParams={sortParams}
       totalRecords={totalRecords}
+      inboxStyles={{ overflowX: "scroll" }}
     />
   );
 };

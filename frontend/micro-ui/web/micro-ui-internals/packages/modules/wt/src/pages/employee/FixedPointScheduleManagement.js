@@ -46,7 +46,10 @@ const FixedPointScheduleManagement = ({ ...props }) => {
     // Remove duplicates
     const uniquePoints = points.filter((v, i, a) => a.findIndex((t) => t.value === v.value) === i);
 
-    return [{ label: t("WT_ALL_FIXED_POINTS") !== "WT_ALL_FIXED_POINTS" ? t("WT_ALL_FIXED_POINTS") : "All Fixed Points", value: "all" }, ...uniquePoints];
+    return [
+      { label: t("WT_ALL_FIXED_POINTS") !== "WT_ALL_FIXED_POINTS" ? t("WT_ALL_FIXED_POINTS") : "All Fixed Points", value: "all" },
+      ...uniquePoints,
+    ];
   }, [fixedPointData, allSchedulesData, t]);
 
   const { mutate: createSchedule } = Digit.Hooks.wt.useCreateFixedPointSchedule(tenantId);
@@ -308,7 +311,7 @@ const FixedPointScheduleManagement = ({ ...props }) => {
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: "5px", marginBottom: "20px" }}>
+        <div style={{ display: "flex", gap: "5px", marginBottom: "20px", flexWrap: "wrap" }}>
           {days.map((dayItem) => (
             <button
               key={dayItem}

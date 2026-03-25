@@ -162,10 +162,15 @@ const WTCreate = () => {
   const MTAcknowledgement = Digit?.ComponentRegistryService?.getComponent("MTAcknowledgement");
   const TPAcknowledgement = Digit?.ComponentRegistryService?.getComponent("TPAcknowledgement");
 
+  console.log(config);
   return (
     <React.Fragment>
       <div className="employee-form-section-wrapper">
-        {!pathname.includes("/info") && <VerticalTimeline config={config} />}
+        {!pathname.includes("/info") && (
+          <div>
+            <VerticalTimeline config={config} />
+          </div>
+        )}
         <div className="employee-form-section">
           <Switch>
             {config.map((routeObj, index) => {

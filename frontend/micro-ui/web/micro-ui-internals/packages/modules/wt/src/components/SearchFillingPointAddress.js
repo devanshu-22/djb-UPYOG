@@ -334,6 +334,7 @@ const SearchFillingPointAddress = () => {
           isDownloadRequired={true}
           isFilterRequired={true}
           isSortRequired={true}
+          inboxStyles={{ overflowX: "scroll" }}
         />
       </Card>
       {toast && <Toast error={toast.error} label={toast.label} onClose={closeToast} />}
