@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.upyog.rs.config.RequestServiceConfiguration;
 import org.upyog.rs.constant.RequestServiceConstants;
+import org.upyog.rs.exception.DuplicateMobileNumberException;
 import org.upyog.rs.repository.RequestServiceRepository;
 import org.upyog.rs.service.DemandService;
 import org.upyog.rs.service.EnrichmentService;
@@ -97,6 +98,17 @@ public class WaterTankerServiceImpl implements WaterTankerService {
 
 		log.info("Create water tanker booking for user : " + waterTankerFixedPointRequest.getRequestInfo().getUserInfo().getUuid()
 				+ " for the request : " + waterTankerFixedPointRequest.getWaterTankerFixedPointDetail());
+
+		String mobileNumber = waterTankerFixedPointRequest
+				.getWaterTankerFixedPointDetail()
+				.getApplicantDetail()
+				.getMobileNumber();
+
+		if (requestServiceRepository.existsByMobileNumber(mobileNumber)) {
+			log.warn("Duplicate mobile number detected: {}. Blocking before ID generation.", mobileNumber);
+			throw new DuplicateMobileNumberException(mobileNumber);
+
+		}
 
 		enrichmentService.enrichCreateFixedPointWaterTankerRequest(waterTankerFixedPointRequest);
 

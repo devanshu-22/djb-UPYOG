@@ -104,6 +104,7 @@ public class WaterTankerFixedPointRowMapper
                 .emailId(rs.getString("email_id"))
                 .alternateNumber(rs.getString("alternate_number"))
                 .type(rs.getString("applicant_type"))
+                .fixedPointId(rs.getString("fixed_point_idgen"))
                 .auditDetails(auditDetails)
                 .build();
     }

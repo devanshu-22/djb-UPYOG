@@ -66,6 +66,7 @@ public class WaterTankerFixedPointQueryBuilder {
                         "fpa.pincode AS fp_pincode, " +
                         "fpa.latitude AS fp_addr_latitude, " +
                         "fpa.longitude AS fp_addr_longitude, " +
+                        "ad.fixed_point_id AS fixed_point_idgen, " +
                         "fpa.type AS fp_addr_type " +
                         "FROM public.upyog_rs_water_tanker_applicant_details ad " +
                         "LEFT JOIN public.upyog_rs_water_tanker_address_details addr " +

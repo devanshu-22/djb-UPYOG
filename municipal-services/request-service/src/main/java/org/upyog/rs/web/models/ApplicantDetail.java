@@ -56,6 +56,8 @@ public class ApplicantDetail   {
 	private String gender;
 
 	private AuditDetails auditDetails;
-	
+
+	@JsonProperty("fixedPointId")
+	private String fixedPointId;
 }
 

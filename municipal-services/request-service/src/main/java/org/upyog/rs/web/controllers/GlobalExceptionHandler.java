@@ -1,5 +1,6 @@
 package org.upyog.rs.web.controllers;
 
+import lombok.extern.slf4j.Slf4j;
 import org.egov.common.contract.response.Error;
 import org.egov.common.contract.response.ErrorResponse;
 import org.egov.common.contract.response.ResponseInfo;
@@ -14,15 +15,19 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
+import org.upyog.rs.exception.DuplicateMobileNumberException;
 
 import java.net.UnknownHostException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * GlobalExceptionHandler class for handling exceptions across the request-service application.
  * Provides consistent error responses for various exception scenarios.
  */
 @ControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     /**
@@ -174,4 +179,30 @@ public class GlobalExceptionHandler {
         response.setError(error);
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @ExceptionHandler(DuplicateMobileNumberException.class)
+    public ResponseEntity<Map<String, Object>> handleDuplicateMobileNumber(
+            DuplicateMobileNumberException ex) {
+
+        log.error("Duplicate mobile number error: {}", ex.getMessage());
+
+        Map<String, Object> response = new HashMap<>();
+
+        // responseInfo
+        Map<String, Object> responseInfo = new HashMap<>();
+        responseInfo.put("status", "FAILED");
+        responseInfo.put("resMsgId", "Mobile number already registered");
+
+        // error block
+        Map<String, Object> error = new HashMap<>();
+        error.put("code", "DUPLICATE_MOBILE_NUMBER");
+        error.put("message", ex.getMessage());
+        error.put("mobileNumber", ex.getMobileNumber());
+
+        response.put("responseInfo", responseInfo);
+        response.put("error", error);
+
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
 } 

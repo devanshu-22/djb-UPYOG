@@ -11,6 +11,8 @@ public class FillingPoint {
 
     private String id;
 
+    @JsonProperty("fillingPointId")
+    private String fillingPointId;
     @JsonProperty("tenantId")
     private String tenantId;
 

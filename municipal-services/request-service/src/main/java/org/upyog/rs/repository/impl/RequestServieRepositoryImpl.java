@@ -241,5 +241,12 @@ public class RequestServieRepositoryImpl implements RequestServiceRepository {
 		);
 	}
 
+	@Override
+	public boolean existsByMobileNumber(String mobileNumber) {
+		String query = "SELECT COUNT(1) FROM public.upyog_rs_water_tanker_applicant_details " +
+				"WHERE mobile_number = ?";
+		Integer count = jdbcTemplate.queryForObject(query, Integer.class, mobileNumber);
+		return count != null && count > 0;
+	}
 
 }

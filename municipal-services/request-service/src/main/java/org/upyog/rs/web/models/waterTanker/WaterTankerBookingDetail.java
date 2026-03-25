@@ -49,6 +49,7 @@ public class WaterTankerBookingDetail {
 	@JsonProperty("bookingId")
 	private String bookingId;
 
+
 	private String bookingNo;
 
 	@NotBlank

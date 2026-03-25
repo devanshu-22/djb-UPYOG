@@ -36,4 +36,6 @@ public interface RequestServiceRepository {
 	public List<RequestDetailsByDriverId.RequestDetailsInfo> getFullBookingDetailsByDriver(String driverId);
 
 	public void save(FixedFillingPointMapping mapping);
+
+	public boolean existsByMobileNumber(String mobileNumber);
 }
