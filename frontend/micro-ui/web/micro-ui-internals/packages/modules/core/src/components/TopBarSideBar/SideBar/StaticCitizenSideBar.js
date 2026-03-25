@@ -266,7 +266,7 @@ const StaticCitizenSideBar = ({ linkData, islinkDataLoading }) => {
 
   return (
     <React.Fragment>
-      <button
+      {/* <button
         id="citizen-mobile-toggle"
         className={`citizen-mobile-toggle ${isMobileOpen ? 'hidden' : ''}`}
         onClick={() => setIsMobileOpen(true)}
@@ -278,7 +278,7 @@ const StaticCitizenSideBar = ({ linkData, islinkDataLoading }) => {
           <rect x="3" y="14" width="7" height="7"></rect>
         </svg>
         <span className="toggle-label">Dash</span>
-      </button>
+      </button> */}
 
       <div
         className={`citizen-sidebar-backdrop ${isMobileOpen ? 'visible' : ''}`}
