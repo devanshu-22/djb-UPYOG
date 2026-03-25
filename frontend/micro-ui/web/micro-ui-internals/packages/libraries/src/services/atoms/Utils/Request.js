@@ -11,6 +11,14 @@ Axios.interceptors.request.use(
   async (config) => {
     const kc = window.keycloak;
 
+    //  If not authenticated → logout immediately
+    if (kc && !kc.authenticated) {
+      kc.logout({
+        idTokenHint: kc.idToken,
+      });
+      return Promise.reject("User not authenticated");
+    }
+
     if (kc && kc.authenticated && kc.token) {
       try {
         await kc.updateToken(5);

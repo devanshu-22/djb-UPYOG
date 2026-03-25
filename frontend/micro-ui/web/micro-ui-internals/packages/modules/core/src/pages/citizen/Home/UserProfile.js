@@ -970,7 +970,6 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
               margin: windowWidth < 768 ? "0 16px" : "",
               marginRight: windowWidth < 768 ? "16px" : "31px",
               color: "white",
-
               cursor: "pointer",
               zIndex: "999",
             }}

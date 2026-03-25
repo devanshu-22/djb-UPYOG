@@ -14,14 +14,10 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
-      padding: 20px 20px 0;
     }
 
     /* @apply flex flex-col; */
-  }
-
-  @media (min-width: 325px) and (max-width: 768px) {
-    .ground-container {
+    @media (min-width: 325px) and (max-width: 768px) {
       padding-top: 11px;
       padding-inline: 10px;
     }
@@ -101,9 +97,8 @@
 }
 
 .employee-form-content {
-  flex: 1 1 0%;
+  flex: 1;
   overflow-y: auto;
-  height: 100%;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -113,7 +108,34 @@
   margin-bottom: 62px;
 }
 
-.citizen {
+.employee-form-section-wrapper {
+  flex: 1 1 0%;
+  overflow-y: auto;
+  height: 100%;
+  display: flex;
+  gap: 16px;
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+}
+
+.employee-form-section {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  overflow-y: scroll;
+  @media (max-width: 768px) {
+    flex-direction: column;
+    flex: 1 1 0%;
+    overflow-y: auto;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+
+.employee-form .citizen {
   .main {
     padding-top: 82px;
     min-height: calc(100vh - 90px);

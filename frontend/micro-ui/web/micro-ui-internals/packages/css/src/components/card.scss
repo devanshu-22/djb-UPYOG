@@ -200,7 +200,6 @@
 }
 
 @screen dt {
-
   .submit-bar,
   .submit-bar-disabled {
     width: 240px;
@@ -366,7 +365,7 @@
     }
 
     /* Remove any default margins that might interfere */
-    .label-field-pair>* {
+    .label-field-pair > * {
       margin: 0;
       width: 100%;
     }
@@ -507,7 +506,7 @@
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
 }
 
-.new-employee-card>* {
+.new-employee-card > * {
   position: relative;
   z-index: 1;
 }
@@ -917,7 +916,8 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  padding-bottom: 40px;
+  padding-bottom: 16px;
+  overflow-y: scroll;
 }
 
 .mobile-sidebar-toggle {
@@ -970,6 +970,7 @@
   top: 0;
   left: -100%;
   width: 80%;
+  min-width: 250px;
   max-width: 320px;
   height: 100vh;
   background-color: #ffffff;
@@ -1414,10 +1415,38 @@
   display: none;
 }
 
-@media (max-width: 780px) {
+@media (max-width: 768px) {
+  /* Wrapper becomes a sticky top bar, not a flex column member */
+  .module-sidebar-wrapper {
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    width: 100%;
+    height: auto;
+    flex-shrink: 0;
+  }
 
-  /* Toggle Button */
-  .module-sidebar-toggle {
+  /* Hide desktop sidebar — zero dimensions so flex row is unaffected */
+  .premium-sidebar {
+    display: none !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Hide old toggle + backdrop */
+  .module-sidebar-toggle,
+  .module-sidebar-backdrop,
+  .collapse-toggle {
+    display: none !important;
+  }
+
+  /* Show the horizontal scrollable tab bar */
+  .mobile-tab-bar {
     display: flex;
     position: fixed;
     top: 68px;
@@ -1514,6 +1543,23 @@
     width: auto !important;
     margin-left: 16px !important;
   }
+
+  /* expanded page container stacks vertically */
+  .expanded-page-container {
+    flex-direction: column !important;
+    gap: 0 !important;
+    width: 100% !important;
+  }
+
+  /* expanded sidebar NOT hidden on mobile to allow hamburger menu */
+
+  /* expanded content full width */
+  .expanded-content {
+    width: 100% !important;
+    padding: 16px !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
 }
 
 @media (min-width: 768px) {
@@ -1525,7 +1571,7 @@
 
   .expanded-page-container {
     flex-direction: row;
-    gap: 24px;
+    gap: 16px;
   }
 
   .expanded-sidebar {
