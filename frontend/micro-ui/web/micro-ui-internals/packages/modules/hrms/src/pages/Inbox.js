@@ -12,7 +12,7 @@ const Inbox = ({ parentRoute, businessService = "HRMS", initialStates = {}, filt
   const [pageOffset, setPageOffset] = useState(initialStates.pageOffset || 0);
   const [pageSize, setPageSize] = useState(initialStates.pageSize || 10);
   const [sortParams, setSortParams] = useState(initialStates.sortParams || [{ id: "createdTime", desc: false }]);
-  const [totalRecords, setTotalReacords] = useState(undefined);
+  const [totalRecords, setTotalReacords] = useState(null);
   const [searchParams, setSearchParams] = useState(() => {
     return initialStates.searchParams || {};
   });
@@ -28,9 +28,12 @@ const Inbox = ({ parentRoute, businessService = "HRMS", initialStates = {}, filt
     paginationParams,
     isupdate
   );
+  console.log(data, 'hrms search data')
 
   useEffect(() => {
-    // setTotalReacords(res?.EmployeCount?.totalEmployee);
+    if (res) {
+      setTotalReacords(res?.EmployeCount?.totalEmployee || 0);
+    }
   }, [res]);
 
   useEffect(() => { }, [hookLoading, rest]);
