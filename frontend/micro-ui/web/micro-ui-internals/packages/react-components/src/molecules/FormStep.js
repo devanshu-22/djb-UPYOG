@@ -99,7 +99,7 @@ const FormStep = ({
   });
 
   return (
-    <form onSubmit={handleSubmit(goNext)}>
+    <form style={{ flex: "1" }} onSubmit={handleSubmit(goNext)}>
       <InputCard
         {...{ isDisable: isDisable, isMultipleAllow: isMultipleAllow }}
         {...config}
