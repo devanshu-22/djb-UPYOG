@@ -70,6 +70,11 @@ public class RequestServiceConfiguration {
 	@Value("${kafka.topics.update.fixed.point.time.table}")
 	private String updateFixedPointTimeTable;
 
+	@Value("${persister.save.filling.point.locality.topic}")
+	private String saveFillingPointLocality;
+
+	@Value("${persister.update.filling.point.locality.topic}")
+	private String updateFillingPointLocality;
 
 	@Value("${persister.create.fixed-point.water-tanker.topic}")
 	private String fixedPointWaterTankerApplicationSaveTopic;

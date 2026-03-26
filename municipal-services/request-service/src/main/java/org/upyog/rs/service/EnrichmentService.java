@@ -21,6 +21,7 @@ import org.upyog.rs.web.models.ApplicantDetail;
 import org.upyog.rs.web.models.AuditDetails;
 import org.upyog.rs.web.models.fillingpoint.FillingPoint;
 import org.upyog.rs.web.models.fillingpoint.FillingPointRequest;
+import org.upyog.rs.web.models.fillingpointlocality.FillingPointLocalityRequest;
 import org.upyog.rs.web.models.mobileToilet.MobileToiletBookingDetail;
 import org.upyog.rs.web.models.mobileToilet.MobileToiletBookingRequest;
 import org.upyog.rs.web.models.user.AddressV2;
@@ -515,5 +516,32 @@ public class EnrichmentService {
 				fp.getAddress().setType("FILLING-POINT");
 			}
 		}
+	}
+
+	public void enrichCreateRequest(FillingPointLocalityRequest request) {
+		RequestInfo requestInfo = request.getRequestInfo();
+		AuditDetails auditDetails = AuditDetails.builder()
+				.createdBy(requestInfo.getUserInfo().getUuid())
+				.lastModifiedBy(requestInfo.getUserInfo().getUuid())
+				.createdTime(System.currentTimeMillis())
+				.lastModifiedTime(System.currentTimeMillis())
+				.build();
+
+		request.getFillingPointLocality().forEach(mapping -> mapping.setAuditDetails(auditDetails));
+	}
+
+	public void enrichUpdateRequest(FillingPointLocalityRequest request) {
+		Long time = System.currentTimeMillis();
+		String uuid = request.getRequestInfo().getUserInfo().getUuid();
+
+		request.getFillingPointLocality().forEach(mapping -> {
+			AuditDetails audit = mapping.getAuditDetails();
+			if(audit == null) {
+				audit = new AuditDetails();
+			}
+			audit.setLastModifiedBy(uuid);
+			audit.setLastModifiedTime(time);
+			mapping.setAuditDetails(audit);
+		});
 	}
 }

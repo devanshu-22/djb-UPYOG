@@ -66,6 +66,22 @@ public class DriverDetailsRowMapper implements RowMapper<RequestDetailsByDriverI
         details.setRegistrationNumber(rs.getString("registrationNumber"));
         details.setVehicleModel(rs.getString("vehicle_model"));
 
+        if (rs.getString("fp_uuid") != null) {
+            org.upyog.rs.web.models.fillingpoint.FillingPoint fp = new org.upyog.rs.web.models.fillingpoint.FillingPoint();
+            fp.setId(rs.getString("fp_uuid"));
+            fp.setFillingPointId(rs.getString("fp_code"));
+            fp.setFillingPointName(rs.getString("filling_point_name"));
+            fp.setEmergencyName(rs.getString("fp_emergency"));
+            fp.setEeName(rs.getString("fp_ee_name"));
+            fp.setEeMobile(rs.getString("fp_ee_mobile"));
+            fp.setAeName(rs.getString("fp_ae_name"));
+            fp.setAeMobile(rs.getString("fp_ae_mobile"));
+            fp.setJeName(rs.getString("fp_je_name"));
+            fp.setJeMobile(rs.getString("fp_je_mobile"));
+            fp.setJeEmail(rs.getString("fp_je_email"));
+
+            details.setFillingPoint(fp);
+        }
 
         if (rs.getString("trip_booking_id") != null) {
 

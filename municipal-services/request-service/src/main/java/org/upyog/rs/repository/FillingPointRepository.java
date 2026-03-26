@@ -57,7 +57,7 @@ public class FillingPointRepository {
                         "ad.address_id, ad.house_no, ad.address_line_1, ad.address_line_2, " +
                         "ad.street_name, ad.landmark, ad.city, ad.city_code, " +
                         "ad.locality, ad.locality_code, ad.pincode, " +
-                        "ad.latitude, ad.longitude, ad.type AS addr_type " +
+                        "ad.latitude, ad.longitude, ad.type AS addr_type, fp.filling_point_id " +
                         "FROM upyog_rs_water_tanker_filling_point fp " +
                         "LEFT JOIN upyog_rs_water_tanker_address_details ad " +
                         "ON ad.applicant_id = fp.id " +  // ← FIXED: applicant_id not filling_point_id
@@ -131,6 +131,7 @@ public class FillingPointRepository {
                     fp.setLastModifiedBy(rs.getString("lastmodifiedby"));
                     fp.setCreatedTime(rs.getLong("createdtime"));
                     fp.setLastModifiedTime(rs.getLong("lastmodifiedtime"));
+                    fp.setFillingPointId(rs.getString("filling_point_id"));
 
                     // Address mapping
                     String addressId = rs.getString("address_id");
