@@ -276,4 +276,13 @@ public class RequestServiceConfiguration {
 	@Value("${egov.rs.avg.rating.comment.mandatory}")
 	private String averageRatingCommentMandatory;
 
+	@Value("${egov.vendor.host}")
+	private String vendorHost;
+
+	@Value("${egov.vendor.search.endpoint}")
+	private String vendorSearchEndpoint;
+
+	@Value("${kafka.topics.save.fillingpoint.vendor.mapping}")
+	private String saveFillingPointVendorMappingTopic;
+
 }

@@ -1,22 +1,29 @@
 package org.upyog.rs.service.impl;
 
+import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.upyog.rs.config.RequestServiceConfiguration;
 import org.upyog.rs.kafka.Producer;
 import org.upyog.rs.repository.FillingPointRepository;
+import org.upyog.rs.repository.FillingPointVendorMapRepository;
 import org.upyog.rs.service.EnrichmentService;
 import org.upyog.rs.service.FillingPointService;
+import org.upyog.rs.util.FillingPointVendorMapEnrichmentUtil;
+import org.upyog.rs.util.VendorUtil;
 import org.upyog.rs.web.models.Address;
 import org.upyog.rs.web.models.fillingpoint.FillingPoint;
 import org.upyog.rs.web.models.fillingpoint.FillingPointKafkaRequest;
 import org.upyog.rs.web.models.fillingpoint.FillingPointMetadata;
 import org.upyog.rs.web.models.fillingpoint.FillingPointRequest;
 import org.upyog.rs.web.models.fillingpoint.FillingPointSearchCriteria;
+import org.upyog.rs.web.models.fillingpoint.vendor.FillingPointVendorMap;
+import org.upyog.rs.web.models.fillingpoint.vendor.FillingPointVendorMapRequest;
 import org.upyog.rs.web.models.waterTanker.WaterTankerBookingDetail;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class FillingPointServiceImpl implements FillingPointService {
@@ -32,6 +39,15 @@ public class FillingPointServiceImpl implements FillingPointService {
 
     @Autowired
     private RequestServiceConfiguration config;
+
+    @Autowired
+    private VendorUtil vendorUtil;
+
+    @Autowired
+    private FillingPointVendorMapEnrichmentUtil enrichmentUtil;
+
+    @Autowired
+    private FillingPointVendorMapRepository vendorMapRepository;
 
 
     @Override
@@ -127,5 +143,20 @@ public class FillingPointServiceImpl implements FillingPointService {
         }
 
         return request.getFillingPoints();
+    }
+    public List<FillingPointVendorMap> mapVendor(FillingPointVendorMapRequest request) {
+
+        for (FillingPointVendorMap map : request.getMappings()) {
+
+            vendorUtil.validateVendor(map.getVendorId(), map.getTenantId());
+
+            if (vendorMapRepository.isVendorAlreadyMapped(map.getVendorId())) {
+                throw new CustomException("VENDOR_ALREADY_MAPPED",
+                        "Vendor is already mapped to a filling point");
+            }
+        }
+        enrichmentUtil.enrichCreate(request);
+        producer.push(config.getSaveFillingPointVendorMappingTopic(), request);
+        return request.getMappings();
     }
 }

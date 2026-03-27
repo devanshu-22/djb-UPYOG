@@ -1,5 +1,6 @@
 package org.upyog.rs.web.controllers;
 
+import lombok.extern.slf4j.Slf4j;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.response.ResponseInfo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,9 +12,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.upyog.rs.service.FillingPointService;
 import org.upyog.rs.util.ResponseInfoFactory;
 import org.upyog.rs.web.models.fillingpoint.*;
+import org.upyog.rs.web.models.fillingpoint.vendor.FillingPointVendorMap;
+import org.upyog.rs.web.models.fillingpoint.vendor.FillingPointVendorMapRequest;
+import org.upyog.rs.web.models.fillingpoint.vendor.FillingPointVendorMapResponse;
 
+import javax.validation.Valid;
 import java.util.List;
-
+@Slf4j
 @RestController
 @RequestMapping("/wt/filling-point")
 public class FillingPointController {
@@ -67,6 +72,26 @@ public class FillingPointController {
 
         return ResponseEntity.ok(
                 new FillingPointResponse(responseInfo, result)
+        );
+    }
+
+
+    @PostMapping("/vendor/_map")
+    public ResponseEntity<FillingPointVendorMapResponse> mapVendor(
+            @Valid @RequestBody FillingPointVendorMapRequest request) {
+
+        log.info("Received vendor mapping request with {} records", request.getMappings().size());
+
+        List<FillingPointVendorMap> result = service.mapVendor(request);
+
+        ResponseInfo responseInfo = responseInfoFactory
+                .createResponseInfoFromRequestInfo(request.getRequestInfo(), true);
+
+        return ResponseEntity.ok(
+                FillingPointVendorMapResponse.builder()
+                        .responseInfo(responseInfo)
+                        .mappings(result)
+                        .build()
         );
     }
 }

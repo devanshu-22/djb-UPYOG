@@ -15,13 +15,16 @@ public class FillingPointSearchCriteria {
     @JsonProperty("fillingPointName")
     private String fillingPointName;
 
-    @JsonProperty("designation")       // EE / AE / JE
+    @JsonProperty("designation")
     private String designation;
 
-    @JsonProperty("name")              // JE/AE/EE ka naam
+    @JsonProperty("name")
     private String name;
 
-    @JsonProperty("mobileNo")          // JE/AE/EE ka mobile
+    @JsonProperty("mobileNo")
     private String mobileNo;
+
+    @JsonProperty("vendorId")
+    private String vendorId;
 
 }
