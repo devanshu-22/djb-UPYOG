@@ -7,6 +7,7 @@ import { useLocation, useHistory } from "react-router-dom";
 
 import AddFillingPointMetaData from "./AddFillingPointMetaData";
 import AddFixFillAddress from "./AddFixFillAddress";
+import VerticalTimeline from "./VerticalTimeline";
 
 const AddFillingPointAddress = () => {
   const { t } = useTranslation();
@@ -107,39 +108,37 @@ const AddFillingPointAddress = () => {
   if (isEditLoading) return <Loader />;
 
   return (
-    <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row" }}>
-      <Timeline steps={steps} currentStep={1} />
+    <div className="employee-form-section-wrapper">
+      <VerticalTimeline config={[{ timeLine: [{ actions: "Add Filling Point", currentStep: 1 }] }]} showFinalStep={false} />
 
-      <div style={{ flex: 1, marginLeft: isMobile ? "0px" : "24px" }}>
-        <div>
-          <AddFillingPointMetaData
-            t={t}
-            config={{ key: "owner" }}
-            onSelect={onSelect}
-            formData={formData}
-            visibleFields={[
-              "fillingPointName",
-              "emergencyName",
-              "aeName",
-              "aeMobile",
-              "aeEmail",
-              "jeName",
-              "jeMobile",
-              "jeEmail",
-              "eeName",
-              "eeMobile",
-              "eeEmail",
-            ]}
-          />
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "16px" }}>
+        <AddFillingPointMetaData
+          t={t}
+          config={{ key: "owner" }}
+          onSelect={onSelect}
+          formData={formData}
+          visibleFields={[
+            "fillingPointName",
+            "emergencyName",
+            "aeName",
+            "aeMobile",
+            "aeEmail",
+            "jeName",
+            "jeMobile",
+            "jeEmail",
+            "eeName",
+            "eeMobile",
+            "eeEmail",
+          ]}
+        />
 
-          <AddFixFillAddress t={t} config={addressConfig} onSelect={handleSelect} formData={formData} isEdit={!!editId} />
-          <div style={{ display: "flex", marginBottom: "24px", justifyContent: isMobile ? "center" : "flex-end" }}>
-            <SubmitBar label={editId ? t("ES_COMMON_UPDATE") : t("ES_COMMON_SAVE_NEXT")} onSubmit={handleSubmit} />
-          </div>
+        <AddFixFillAddress t={t} config={addressConfig} onSelect={handleSelect} formData={formData} isEdit={!!editId} />
+        <div style={{ display: "flex", marginBottom: "24px", justifyContent: isMobile ? "center" : "flex-end" }}>
+          <SubmitBar label={editId ? t("ES_COMMON_UPDATE") : t("ES_COMMON_SAVE_NEXT")} onSubmit={handleSubmit} />
         </div>
-
-        {showToast && <Toast error={showToast.isError} label={showToast.label} onClose={() => setShowToast(null)} />}
       </div>
+
+      {showToast && <Toast error={showToast.isError} label={showToast.label} onClose={() => setShowToast(null)} />}
     </div>
   );
 };

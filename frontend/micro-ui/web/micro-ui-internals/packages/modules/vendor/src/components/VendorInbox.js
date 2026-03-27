@@ -24,7 +24,7 @@ const VendorInbox = (props) => {
   const [vendors, setVendors] = useState([]);
   const [drivers, setDrivers] = useState([]);
   const queryClient = useQueryClient();
-  const [address, setAddress] = useState();
+  const [toast, setToast] = useState(null);
 
   const {
     data: vendorData,
@@ -251,7 +251,8 @@ const VendorInbox = (props) => {
         setTimeout(closeToast, 3000);
       },
     });
-  }; 6
+  };
+  6;
 
   const onCellClick = (row, column, length) => {
     setTableData((old) =>
@@ -310,6 +311,44 @@ const VendorInbox = (props) => {
     },
     { enabled: vendorIds?.length > 0 }
   );
+
+  const { data: allFillingPointsData } = Digit.Hooks.wt.useFillPointSearch(
+    {
+      tenantId,
+      filters: { limit: 1000 },
+    },
+    { enabled: true }
+  );
+
+  const allFillingPoints = allFillingPointsData?.fillingPoints || [];
+
+  const { mutate: mapFixedFilling } = Digit.Hooks.wt.useVendorFillingMap(tenantId);
+
+  const onFillingPointSelect = (row, value) => {
+    const payload = {
+      mappings: [
+        {
+          tenantId: tenantId,
+          fillingPointId: value?.id || value?.bookingId || value?.fillingPointId,
+          vendorId: row.original.id,
+        },
+      ],
+    };
+
+    mapFixedFilling(payload, {
+      onSuccess: () => {
+        setToast({ label: t("WT_FIXED_FILLING_MAPPING_SUCCESS") });
+        setTimeout(closeToast, 5000);
+      },
+      onError: (err) => {
+        setToast({
+          label: err?.response?.data?.Errors?.[0]?.message || t("WT_FIXED_FILLING_MAPPING_FAIL"),
+          error: true,
+        });
+        setTimeout(closeToast, 5000);
+      },
+    });
+  };
 
   //used for columns in table
   const columns = React.useMemo(() => {
@@ -373,6 +412,35 @@ const VendorInbox = (props) => {
           //     );
           //   },
           // },
+          {
+            Header: t("WT_FILLING_POINT"),
+            accessor: (row) => row?.fillingPointId || row?.fillingpointmetadata?.fillingPointId || row?.filling_pt_name || row?.fillingPoint || "NA",
+            id: "fillingPoint",
+            Cell: ({ row }) => {
+              return (
+                <Dropdown
+                  className="fsm-registry-dropdown"
+                  selected={allFillingPoints?.find((fp) => {
+                    const fpId = String(fp.id || fp.bookingId || fp.fillingPointId || fp.uuid || fp.fillingpointmetadata?.fillingPointId);
+                    const rowFpId = String(
+                      row.original.fillingPointId ||
+                        row.original.fillingpointmetadata?.fillingPointId ||
+                        row.original.filling_pt_name ||
+                        row.original.fillingPoint ||
+                        row.original.fillingPointDetail?.id ||
+                        row.original.fillingPointDetail?.bookingId
+                    );
+                    return fpId === rowFpId && rowFpId !== "undefined" && rowFpId !== "null";
+                  })}
+                  option={allFillingPoints}
+                  select={(value) => onFillingPointSelect(row, value)}
+                  style={{ textAlign: "left" }}
+                  optionKey="fillingPointName"
+                  t={t}
+                />
+              );
+            },
+          },
 
           {
             Header: t("ES_VENDOR_INBOX_SERVICE_TYPE"),
@@ -728,7 +796,11 @@ const VendorInbox = (props) => {
                 <Dropdown
                   className="fsm-registry-dropdown"
                   /* Use ID matching to ensure the selection is shown even if object references differ between API calls */
-                  selected={drivers?.find((driver) => (row.original.driverData?.id || row.original.driver?.id) === driver.id) || row.original.driverData || row.original.driver}
+                  selected={
+                    drivers?.find((driver) => (row.original.driverData?.id || row.original.driver?.id) === driver.id) ||
+                    row.original.driverData ||
+                    row.original.driver
+                  }
                   option={drivers}
                   select={(value) => onDriverSelect(row, value)}
                   optionKey="name"
@@ -815,7 +887,11 @@ const VendorInbox = (props) => {
               return (
                 <Dropdown
                   className="fsm-registry-dropdown"
-                  selected={vendors?.find((vendor) => (row.original.vendorData?.id || row.original.vendor?.id) === vendor.id) || row.original.vendorData || row.original.vendor}
+                  selected={
+                    vendors?.find((vendor) => (row.original.vendorData?.id || row.original.vendor?.id) === vendor.id) ||
+                    row.original.vendorData ||
+                    row.original.vendor
+                  }
                   // selected={row.original.vendor}
                   option={vendors}
                   select={(value) => onVendorSelect(row, value)}

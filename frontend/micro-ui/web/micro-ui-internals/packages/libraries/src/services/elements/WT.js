@@ -75,6 +75,17 @@ export const WTService = {
       params: { tenantId },
       auth: true,
     }),
+  UpdateFixedPointSchedule: (details, tenantId) =>
+    Request({
+      url: Urls.wt.updatefixedpointschedule,
+      data: details,
+      useCache: false,
+      setTimeParam: false,
+      userService: true,
+      method: "POST",
+      params: { tenantId },
+      auth: true,
+    }),
   SearchFixedPointSchedule: ({ tenantId, filters, auth }) =>
     Request({
       url: Urls.wt.searchfixedpointschedule,
@@ -130,6 +141,39 @@ export const WTService = {
   createWorkOrder: (details, tenantId) =>
     Request({
       url: Urls.wt.workOrderCreate,
+      data: details,
+      useCache: false,
+      setTimeParam: false,
+      userService: true,
+      method: "POST",
+      params: { tenantId },
+      auth: true,
+    }),
+  CreateFillPointLocality: (details, tenantId) =>
+    Request({
+      url: Urls.wt.createfillpointlocality,
+      data: details,
+      useCache: false,
+      setTimeParam: false,
+      userService: true,
+      method: "POST",
+      params: { tenantId },
+      auth: true,
+    }),
+  UpdateFillPointLocality: (details, tenantId) =>
+    Request({
+      url: Urls.wt.updatefillpointlocality,
+      data: details,
+      useCache: false,
+      setTimeParam: false,
+      userService: true,
+      method: "POST",
+      params: { tenantId },
+      auth: true,
+    }),
+  VendorFillingMap: (details, tenantId) =>
+    Request({
+      url: Urls.wt.vendorMapping,
       data: details,
       useCache: false,
       setTimeParam: false,

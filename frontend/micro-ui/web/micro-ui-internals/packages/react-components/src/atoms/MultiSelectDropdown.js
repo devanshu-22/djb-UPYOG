@@ -53,7 +53,7 @@ const MultiSelectDropdown = ({ options, optionsKey, selected = [], onSelect, def
 
   function onSelectToAddToQueue(...props) {
     const isChecked = arguments[0].target.checked
-    isChecked ? dispatch({ type: "ADD_TO_SELECTED_EVENT_QUEUE", payload: arguments }) : dispatch({ type: "REMOVE_FROM_SELECTED_EVENT_QUEUE", payload: arguments })
+    isChecked ? dispatch({ type: "ADD_TO_SELECTED_EVENT_QUEUE", payload: [...arguments] }) : dispatch({ type: "REMOVE_FROM_SELECTED_EVENT_QUEUE", payload: [...arguments] })
   }
 
   /* Custom function to scroll and select in the dropdowns while using key up and down */

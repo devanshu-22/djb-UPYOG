@@ -348,16 +348,21 @@ import useVendorAdditionaldetailsAPI from "./vendor/useVendorAdditionaldetailsAP
 import useCreateDemand from "./sv/useCreateDemand";
 import useEmpvendorCommonSearch from "./vendor/useEmpvendorCommonSearch";
 import { useGetConnection, useValidateUser, useGetConnectionTypeV2, useGetUserType, useGetFloorCount, useGetPropertyType } from "./ekyc/useEkyc";
-import {useCreateFixedPoint} from "./wt/createFixedPoint";
-import {useCreateFixedPointSchedule} from "./wt/useCreateFixedPointSchedule";
-import {useUpdateFixedPoint} from "./wt/updateFixedPoint";
+import { useCreateFixedPoint } from "./wt/createFixedPoint";
+import { useCreateFixedPointSchedule } from "./wt/useCreateFixedPointSchedule";
+import { useUpdateFixedPoint } from "./wt/updateFixedPoint";
 import useFixedPointSearchAPI from "./wt/useFixedPointSearchAPI";
 import useFillPointSearch from "./wt/useFillPointSearch";
-import {useCreateFillPoint} from "./wt/createFillPoint"
+import { useCreateFillPoint } from "./wt/createFillPoint"
 import useFixedPointScheduleSearch from "./wt/useFixedPointScheduleSearch";
-import useFixedFillingMapping from "./wt/useFixedFillingMapping";
+import useVendorFillingMapping from "./wt/useVendorFillingMapping";
 import useUpdateFillPoint from "./wt/updateFillPoint";
 import useVendorWorkOrderCreate from "./wt/useVendorWorkOrderCreate";
+import useLinkFillingPointLocality from "./wt/useLinkFillingPointLocality";
+import useUpdateFillingPointLocality from "./wt/useUpdateFillingPointLocality";
+import { useUpdateFixedPointSchedule } from "./wt/useUpdateFixedPointSchedule";
+import useVendorFillingMap from "./wt/useVendorFillingMap";
+
 
 const wt = {
   useTankerCreateAPI,
@@ -377,8 +382,12 @@ const wt = {
   useCreateFillPoint,
   useUpdateFillPoint,
   useFixedPointScheduleSearch,
-  useFixedFillingMapping,
+  useVendorFillingMapping,
   useVendorWorkOrderCreate,
+  useLinkFillingPointLocality,
+  useUpdateFillingPointLocality,
+  useUpdateFixedPointSchedule,
+  useVendorFillingMap
 };
 
 const pgr = {
