@@ -39,21 +39,18 @@ const T = {
 };
 
 /* ─── Icons ──────────────────────────────────────────────────────────────────── */
-const IconSortNeutral = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.3 }}>
-    <path d="M7 16V4m0 0L3 8m4-4 4 4" /><path d="M17 8v12m0 0 4-4m-4 4-4-4" />
-  </svg>
-);
-const IconSortAsc = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 19V5m0 0-7 7m7-7 7 7" />
-  </svg>
-);
-const IconSortDesc = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 5v14m0 0 7-7m-7 7-7-7" />
-  </svg>
-);
+const SortIndicator = ({ isSorted, isSortedDesc }) => {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 1, alignItems: "center", justifyContent: "center" }}>
+      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke={isSorted && !isSortedDesc ? T.accent : "currentColor"} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: isSorted && !isSortedDesc ? 1 : 0.35, transition: "all 0.15s" }}>
+        <polyline points="18 15 12 9 6 15" />
+      </svg>
+      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke={isSorted && isSortedDesc ? T.accent : "currentColor"} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: isSorted && isSortedDesc ? 1 : 0.35, transition: "all 0.15s" }}>
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    </div>
+  );
+};
 
 const IconSearch = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -111,7 +108,7 @@ const Table = ({
   getCellProps,
   currentPage = 0,
   pageSizeLimit = 10,
-  disableSort = true,
+  disableSort = false,
   autoSort = true,
   initSortId = "",
   onSearch = false,
@@ -139,6 +136,11 @@ const Table = ({
   const [internalSearch, setInternalSearch] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
 
+  const sortableColumns = React.useMemo(
+    () => columns.map(col => ({ ...col, disableSortBy: false })),
+    [columns]
+  );
+
   const {
     getTableProps,
     getTableBodyProps,
@@ -158,7 +160,7 @@ const Table = ({
     state: { pageIndex, pageSize, sortBy, globalFilter },
   } = useTable(
     {
-      columns,
+      columns: sortableColumns,
       data,
       initialState: {
         pageIndex: currentPage,
@@ -169,7 +171,7 @@ const Table = ({
       pageCount: totalRecords > 0 ? Math.ceil(totalRecords / pageSizeLimit) : -1,
       manualPagination: manualPagination,
       disableMultiSort: false,
-      disableSortBy: disableSort,
+      disableSortBy: false, // Forces sorting globally despite props
       manualSortBy: autoSort ? false : true,
       autoResetPage: false,
       autoResetSortBy: false,
@@ -318,7 +320,7 @@ const Table = ({
               <tr {...headerGroup.getHeaderGroupProps()} style={{ background: T.surfaceAlt }}>
 
                 {showAutoSerialNo && (
-                  <th style={{ width: 48, padding: "12px 8px", textAlign: "center", borderBottom: `2px solid ${T.borderStrong}`, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: T.textSecondary, whiteSpace: "nowrap", verticalAlign: "top" }}>
+                  <th style={{ width: 48, padding: "8px 8px", textAlign: "center", borderBottom: `2px solid ${T.borderStrong}`, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: T.textSecondary, whiteSpace: "nowrap", verticalAlign: "top" }}>
                     {typeof showAutoSerialNo === "string" ? t(showAutoSerialNo) : t("TB_SNO")}
                   </th>
                 )}
@@ -329,7 +331,7 @@ const Table = ({
                   const mergedStyle = {
                     ...(headerProps.style || {}),
                     position: "relative",
-                    padding: "12px 14px",
+                    padding: "8px 12px",
                     verticalAlign: "top",
                     borderBottom: `2px solid ${T.borderStrong}`,
                     whiteSpace: "nowrap",
@@ -351,7 +353,7 @@ const Table = ({
                         </span>
                         {column.canSort && (
                           <span style={{ lineHeight: 0, color: isSorted ? T.accent : T.textMuted }}>
-                            {isSorted ? (column.isSortedDesc ? <IconSortDesc /> : <IconSortAsc />) : <IconSortNeutral />}
+                            <SortIndicator isSorted={isSorted} isSortedDesc={column.isSortedDesc} />
                           </span>
                         )}
                       </div>
@@ -393,7 +395,7 @@ const Table = ({
                     }}
                   >
                     {showAutoSerialNo && (
-                      <td style={{ padding: "13px 8px", textAlign: "center", verticalAlign: "middle" }}>
+                      <td style={{ padding: "8px 8px", textAlign: "center", verticalAlign: "middle" }}>
                         <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 22, height: 22, background: T.border, borderRadius: 4, fontSize: 10, fontWeight: 700, color: T.textMuted, fontFamily: T.fontMono }}>
                           {pageIndex * pageSize + i + 1}
                         </span>
@@ -405,7 +407,7 @@ const Table = ({
                         <td
                           {...cell.getCellProps([cellProps])}
                           style={{
-                            padding: "13px 14px", verticalAlign: "middle",
+                            padding: "8px 12px", verticalAlign: "middle", 
                             fontSize: 13.5, color: T.textPrimary, lineHeight: 1.45,
                             whiteSpace: "nowrap",
                             ...(cellProps && cellProps.style ? cellProps.style : {}),

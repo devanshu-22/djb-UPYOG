@@ -319,7 +319,7 @@ const VendorInbox = (props) => {
           //Vendor Name
           {
             Header: t("ES_VENDOR_INBOX_VENDOR_NAME"),
-            disableSortBy: true,
+            accessor: "name",
             Cell: ({ row }) => {
               return (
                 <div>
@@ -327,7 +327,6 @@ const VendorInbox = (props) => {
                     <Link to={"/digit-ui/employee/vendor/registry/vendor-details/" + row.original["id"]}>
                       <div>
                         {row.original.name}
-                        <br />
                       </div>
                     </Link>
                   </span>
@@ -377,7 +376,18 @@ const VendorInbox = (props) => {
 
           {
             Header: t("ES_VENDOR_INBOX_SERVICE_TYPE"),
-            disableSortBy: true,
+            id: "serviceType",
+            accessor: (row) => {
+              let additionalDetails = row.dsoDetails?.additionalDetails;
+              if (typeof additionalDetails === "string") {
+                try {
+                  additionalDetails = JSON.parse(additionalDetails);
+                } catch (error) {
+                  additionalDetails = {};
+                }
+              }
+              return additionalDetails?.serviceType || "N/A";
+            },
             Cell: ({ row }) => {
               let additionalDetails = row.original.dsoDetails?.additionalDetails;
               if (typeof additionalDetails === "string") {
@@ -565,7 +575,8 @@ const VendorInbox = (props) => {
           //enabled/disabled
           {
             Header: t("ES_VENDOR_REGISTRY_INBOX_ENABLED"),
-            disableSortBy: true,
+            id: "status",
+            accessor: (row) => row.dsoDetails?.status || "",
             Cell: ({ row }) => {
               return (
                 <ToggleSwitch
@@ -619,7 +630,7 @@ const VendorInbox = (props) => {
           //vehicle name/number
           {
             Header: t("ES_FSM_REGISTRY_INBOX_VEHICLE_NAME"),
-            disableSortBy: true,
+            accessor: "registrationNumber",
             Cell: ({ row }) => {
               return (
                 <div>
@@ -627,7 +638,6 @@ const VendorInbox = (props) => {
                     <Link to={"/digit-ui/employee/vendor/registry/vehicle-details/" + row.original["registrationNumber"]}>
                       <div>
                         {row.original.registrationNumber}
-                        <br />
                       </div>
                     </Link>
                   </span>
@@ -647,7 +657,8 @@ const VendorInbox = (props) => {
           //vendor name
           {
             Header: t("ES_FSM_REGISTRY_INBOX_VENDOR_NAME"),
-            disableSortBy: true,
+            id: "vendorName",
+            accessor: (row) => row.vendor?.name || "NA",
             Cell: ({ row }) => GetCell(row.original?.vendor?.name || "NA"),
           },
 
@@ -680,7 +691,18 @@ const VendorInbox = (props) => {
 
           {
             Header: t("ES_VENDOR_INBOX_SERVICE_TYPE"),
-            disableSortBy: true,
+            id: "serviceType",
+            accessor: (row) => {
+              let additionalDetail = row.additionalDetails;
+              if (typeof additionalDetail === "string") {
+                try {
+                  additionalDetail = JSON.parse(additionalDetail);
+                } catch (error) {
+                  additionalDetail = {};
+                }
+              }
+              return additionalDetail?.serviceType || "N/A";
+            },
             Cell: ({ row }) => {
               let additionalDetail = row.original.additionalDetails;
               if (typeof additionalDetail === "string") {
@@ -699,6 +721,8 @@ const VendorInbox = (props) => {
 
           {
             Header: t("ES_FSM_REGISTRY_SELECT_DRIVER"),
+            id: "driver",
+            accessor: (row) => (row.driverData?.name || row.driver?.name || "NA"),
             Cell: ({ row }) => {
               return (
                 <Dropdown
@@ -718,7 +742,8 @@ const VendorInbox = (props) => {
           //enabled
           {
             Header: t("ES_FSM_REGISTRY_INBOX_ENABLED"),
-            disableSortBy: true,
+            id: "status",
+            accessor: (row) => row.status || "",
             Cell: ({ row }) => {
               return (
                 <ToggleSwitch
@@ -738,7 +763,8 @@ const VendorInbox = (props) => {
           //Username
           {
             Header: t("ES_FSM_REGISTRY_INBOX_USERNAME"),
-            disableSortBy: true,
+            id: "userName",
+            accessor: (row) => row.owner?.userName || "NA",
             Cell: ({ row }) => {
               return (
                 <div>
@@ -746,7 +772,6 @@ const VendorInbox = (props) => {
                     <Link to={"/digit-ui/employee/vendor/registry/driver-details/" + row.original["id"]}>
                       <div>
                         {row.original.owner?.userName || "NA"}
-                        <br />
                       </div>
                     </Link>
                   </span>
@@ -757,8 +782,7 @@ const VendorInbox = (props) => {
           //driver name
           {
             Header: t("ES_FSM_REGISTRY_INBOX_DRIVER_NAME"),
-            disableSortBy: true,
-            accessor: "tripDetails",
+            accessor: "name",
             Cell: ({ row }) => {
               return (
                 <div>
@@ -766,7 +790,6 @@ const VendorInbox = (props) => {
                     <Link to={"/digit-ui/employee/vendor/registry/driver-details/" + row.original["id"]}>
                       <div>
                         {row.original.name}
-                        <br />
                       </div>
                     </Link>
                   </span>
@@ -786,6 +809,8 @@ const VendorInbox = (props) => {
           //vendor name
           {
             Header: t("ES_FSM_REGISTRY_INBOX_VENDOR_NAME"),
+            id: "vendorName",
+            accessor: (row) => (row.vendorData?.name || row.vendor?.name || "NA"),
             Cell: ({ row }) => {
               return (
                 <Dropdown
@@ -805,7 +830,8 @@ const VendorInbox = (props) => {
           //enabled
           {
             Header: t("ES_FSM_REGISTRY_INBOX_ENABLED"),
-            disableSortBy: true,
+            id: "status",
+            accessor: (row) => row.status || "",
             Cell: ({ row }) => {
               return (
                 <ToggleSwitch
@@ -860,9 +886,8 @@ const VendorInbox = (props) => {
         getCellProps={(cellInfo) => {
           return {
             style: {
-              minWidth: cellInfo.column.Header === t("ES_INBOX_APPLICATION_NO") ? "240px" : "",
-              padding: cellInfo.column.Header === t("ES_FSM_REGISTRY_INBOX_VENDOR_NAME") ? "10px 18px" : "20px 18px",
-              fontSize: "16px",
+              padding: "8px 12px",
+              fontSize: "13.5px",
             },
           };
         }}
