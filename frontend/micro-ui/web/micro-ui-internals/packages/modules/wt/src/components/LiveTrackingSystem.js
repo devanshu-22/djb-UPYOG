@@ -3,6 +3,9 @@ import { io } from "socket.io-client";
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { Dropdown, Loader } from "@djb25/digit-ui-react-components";
+import { useTranslation } from "react-i18next";
+import { reverseGeocode, getAreaName, calculateDistance as geoDistance } from "../utils/geocodingUtils";
 
 // Custom marker icons
 delete L.Icon.Default.prototype._getIconUrl;
@@ -41,7 +44,23 @@ const destinationIcon = new L.Icon({
   shadowSize: [41, 41],
 });
 
-const SOCKET_URL =  "http://localhost:3000";
+const Address = ({ lat, lng, fallback = "Resolving area..." }) => {
+  const [address, setAddress] = useState(fallback);
+
+  useEffect(() => {
+    const resolve = async () => {
+      if (lat != null && lng != null) {
+        const data = await reverseGeocode(lat, lng);
+        setAddress(getAreaName(data));
+      }
+    };
+    resolve();
+  }, [lat, lng]);
+
+  return <span title={`${lat?.toFixed(6)}, ${lng?.toFixed(6)}`}>{address}</span>;
+};
+
+const SOCKET_URL = "https://dev-djb.nitcon.in";
 
 // Component to handle map centering
 const MapController = ({ selectedDriver }) => {
@@ -418,6 +437,46 @@ const StatusBadge = ({ isOnline }) => (
 );
 
 const DriverCard = ({ driver, isSelected, onClick }) => {
+  const [currentAddress, setCurrentAddress] = useState("Resolving area...");
+  const [deliveryAddress, setDeliveryAddress] = useState("Resolving area...");
+  const lastResolvedPos = useRef({ lat: null, lng: null });
+  const lastResolvedDest = useRef({ lat: null, lng: null });
+
+  useEffect(() => {
+    const resolveCurrent = async () => {
+      if (driver.lat && driver.lng) {
+        // Only re-resolve if moved more than 200m
+        const dist = lastResolvedPos.current.lat
+          ? geoDistance(lastResolvedPos.current.lat, lastResolvedPos.current.lng, driver.lat, driver.lng)
+          : Infinity;
+
+        if (dist > 0.2) {
+          const data = await reverseGeocode(driver.lat, driver.lng);
+          setCurrentAddress(getAreaName(data));
+          lastResolvedPos.current = { lat: driver.lat, lng: driver.lng };
+        }
+      }
+    };
+    resolveCurrent();
+  }, [driver.lat, driver.lng]);
+
+  useEffect(() => {
+    const resolveDest = async () => {
+      if (driver.deliveryLat && driver.deliveryLng) {
+        const dist = lastResolvedDest.current.lat
+          ? geoDistance(lastResolvedDest.current.lat, lastResolvedDest.current.lng, driver.deliveryLat, driver.deliveryLng)
+          : Infinity;
+
+        if (dist > 0.2) {
+          const data = await reverseGeocode(driver.deliveryLat, driver.deliveryLng);
+          setDeliveryAddress(getAreaName(data));
+          lastResolvedDest.current = { lat: driver.deliveryLat, lng: driver.deliveryLng };
+        }
+      }
+    };
+    resolveDest();
+  }, [driver.deliveryLat, driver.deliveryLng]);
+
   const calculateETA = () => {
     if (!driver.lat || !driver.lng || !driver.deliveryLat || !driver.deliveryLng) return null;
 
@@ -497,16 +556,15 @@ const DriverCard = ({ driver, isSelected, onClick }) => {
           <div style={{ fontSize: "12px", color: "#666", marginBottom: "4px" }}>Current Location</div>
           <div
             style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "4px",
-              fontSize: "11px",
+              fontSize: "13px",
+              fontWeight: "500",
+              color: "#333",
+              display: "flex",
+              alignItems: "center",
+              gap: "4px"
             }}
           >
-            <span style={{ color: "#666" }}>Lat:</span>
-            <span style={{ fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis" }}>{driver.lat.toFixed(4)}</span>
-            <span style={{ color: "#666" }}>Lng:</span>
-            <span style={{ fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis" }}>{driver.lng.toFixed(4)}</span>
+            <span title={`${driver.lat.toFixed(6)}, ${driver.lng.toFixed(6)}`}>{currentAddress}</span>
           </div>
         </div>
       )}
@@ -516,16 +574,15 @@ const DriverCard = ({ driver, isSelected, onClick }) => {
           <div style={{ fontSize: "12px", color: "#666", marginBottom: "4px" }}>Delivery Destination</div>
           <div
             style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "4px",
-              fontSize: "11px",
+              fontSize: "13px",
+              fontWeight: "500",
+              color: "#333",
+              display: "flex",
+              alignItems: "center",
+              gap: "4px"
             }}
           >
-            <span style={{ color: "#666" }}>Lat:</span>
-            <span style={{ fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis" }}>{driver.deliveryLat.toFixed(4)}</span>
-            <span style={{ color: "#666" }}>Lng:</span>
-            <span style={{ fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis" }}>{driver.deliveryLng.toFixed(4)}</span>
+            <span title={`${driver.deliveryLat.toFixed(6)}, ${driver.deliveryLng.toFixed(6)}`}>{deliveryAddress}</span>
           </div>
         </div>
       )}
@@ -593,17 +650,12 @@ const DriverCard = ({ driver, isSelected, onClick }) => {
 };
 
 function calculateDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371;
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
+  return geoDistance(lat1, lon1, lat2, lon2);
 }
 
 export default function LiveTrackingSystem() {
+  const { t } = useTranslation();
+  const tenantId = Digit.ULBService.getCurrentTenantId();
   const [drivers, setDrivers] = useState({});
   const [isConnected, setIsConnected] = useState(false);
   const [selectedDriver, setSelectedDriver] = useState(null);
@@ -614,6 +666,30 @@ export default function LiveTrackingSystem() {
   const [mapZoom, setMapZoom] = useState(12);
   const [showSidebar, setShowSidebar] = useState(true);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  const [selectedFillingPoint, setSelectedFillingPoint] = useState(null);
+  const [selectedVendor, setSelectedVendor] = useState(null);
+
+  const { data: fillingPointData } = Digit.Hooks.wt.useFillPointSearch({
+    tenantId,
+    filters: { status: "ACTIVE" },
+  });
+
+  const fillingPointOptions = useMemo(() => {
+    return fillingPointData?.fillingPoints || [];
+  }, [fillingPointData]);
+
+  const { data: vendorOptions } = Digit.Hooks.fsm.useVendorSearch({
+    tenantId,
+    filters: { status: "ACTIVE" },
+    config: {
+      select: (data) => data?.vendor || [],
+    },
+  });
+
+  const handleFillingPointSelect = (value) => {
+    setSelectedFillingPoint(value);
+  };
 
   // Check for mobile on resize
   useEffect(() => {
@@ -634,6 +710,7 @@ export default function LiveTrackingSystem() {
 
   const socket = useMemo(() => {
     return io(SOCKET_URL, {
+      path: "/driver-tanker-tracker-service/socket.io",
       transports: ["websocket"],
       autoConnect: false,
     });
@@ -721,7 +798,9 @@ export default function LiveTrackingSystem() {
     const matchesSearch = driver.driverId.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus =
       filterOnline === "all" || (filterOnline === "online" && driver.isOnline) || (filterOnline === "offline" && !driver.isOnline);
-    return matchesSearch && matchesStatus;
+    const matchesFillingPoint = !selectedFillingPoint || driver.fillingPointId === selectedFillingPoint.id;
+    const matchesVendor = !selectedVendor || driver.vendorId === (selectedVendor.id || selectedVendor.code);
+    return matchesSearch && matchesStatus && matchesFillingPoint && matchesVendor;
   });
 
   const onlineCount = Object.values(drivers).filter((d) => d.isOnline).length;
@@ -790,10 +869,10 @@ export default function LiveTrackingSystem() {
           overflow: showSidebar ? "visible" : "hidden",
           ...(isMobile &&
             !showSidebar && {
-              width: "0",
-              opacity: 0,
-              pointerEvents: "none",
-            }),
+            width: "0",
+            opacity: 0,
+            pointerEvents: "none",
+          }),
         }}
       >
         {showSidebar && (
@@ -897,6 +976,28 @@ export default function LiveTrackingSystem() {
                 background: "#fafafa",
               }}
             >
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "12px" }}>
+                <Dropdown
+                  t={t}
+                  option={fillingPointOptions}
+                  optionKey="fillingPointName"
+                  select={handleFillingPointSelect}
+                  selected={selectedFillingPoint}
+                  placeholder={t("WT_SELECT_FILLING_POINT")}
+                  style={{ width: "100%", margin: 0, padding: 0 }}
+                />
+
+                <Dropdown
+                  t={t}
+                  option={vendorOptions}
+                  optionKey="name"
+                  select={setSelectedVendor}
+                  selected={selectedVendor}
+                  placeholder={t("WT_SELECT_VENDOR")}
+                  style={{ width: "100%", margin: 0, padding: 0 }}
+                />
+              </div>
+
               <input
                 type="text"
                 placeholder="Search by driver ID..."
@@ -1056,15 +1157,13 @@ export default function LiveTrackingSystem() {
                   <div style={{ fontSize: isMobile ? "12px" : "13px" }}>
                     <div style={{ marginBottom: "8px" }}>
                       <strong>📍 Current Location</strong>
-                      <div>Lat: {selectedDriver.lat?.toFixed(6)}</div>
-                      <div>Lng: {selectedDriver.lng?.toFixed(6)}</div>
+                      <div><Address lat={selectedDriver.lat} lng={selectedDriver.lng} /></div>
                     </div>
 
                     {selectedDriver.deliveryLat && selectedDriver.deliveryLng && (
                       <div style={{ marginBottom: "8px" }}>
                         <strong>🎯 Delivery Destination</strong>
-                        <div>Lat: {selectedDriver.deliveryLat.toFixed(6)}</div>
-                        <div>Lng: {selectedDriver.deliveryLng.toFixed(6)}</div>
+                        <div><Address lat={selectedDriver.deliveryLat} lng={selectedDriver.deliveryLng} /></div>
                       </div>
                     )}
 
@@ -1120,7 +1219,10 @@ export default function LiveTrackingSystem() {
               <Popup>
                 <div>
                   <strong>Delivery Destination</strong>
-                  <div>Driver: #{selectedDriver.driverId.substring(0, 8)}...</div>
+                  <div><Address lat={selectedDriver.deliveryLat} lng={selectedDriver.deliveryLng} /></div>
+                  <div style={{ fontSize: "11px", color: "#666", marginTop: "4px" }}>
+                    Driver: #{selectedDriver.driverId.substring(0, 8)}...
+                  </div>
                 </div>
               </Popup>
             </Marker>
@@ -1246,7 +1348,7 @@ export default function LiveTrackingSystem() {
                 <strong>ID:</strong> {selectedDriver.driverId.substring(0, 12)}...
               </div>
               <div>
-                <strong>Location:</strong> {selectedDriver.lat?.toFixed(4)}, {selectedDriver.lng?.toFixed(4)}
+                <strong>Location:</strong> <Address lat={selectedDriver.lat} lng={selectedDriver.lng} />
               </div>
               {selectedDriver.speed && (
                 <div>
