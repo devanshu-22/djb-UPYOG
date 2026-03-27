@@ -125,8 +125,8 @@ const iconSelector = (code) => {
     case "ADS":
       return <CHBIcon className="fill-path-primary-main" />;
     case "WT":
-    //   return <CHBIcon className="fill-path-primary-main" />;
-    // case "MT":
+      //   return <CHBIcon className="fill-path-primary-main" />;
+      // case "MT":
       return <CHBIcon className="fill-path-primary-main" />;
     default:
       return <PTIcon className="fill-path-primary-main" />;
@@ -134,71 +134,76 @@ const iconSelector = (code) => {
 };
 
 const CitizenHome = ({ modules, getCitizenMenu, fetchedCitizen, isLoading }) => {
-  const paymentModule = modules.filter(({ code }) => code === "Payment")[0];
-  const moduleArr = modules.filter(({ code }) => code !== "Payment");
-  const moduleArray = [paymentModule, ...moduleArr];
   const { t } = useTranslation();
+
   if (isLoading) {
     return <Loader />;
   }
+
+  const paymentModule = modules.find(({ code }) => code === "Payment");
+  const otherModules = modules.filter(({ code }) => code !== "Payment");
+  const moduleArray = paymentModule ? [paymentModule, ...otherModules] : otherModules;
+
+  const engagementModules = moduleArray.filter((mod) => engagementModuleCodes.includes(mod?.code));
+  const mainModules = moduleArray.filter((mod) => !engagementModuleCodes.includes(mod?.code));
+
+  const renderCitizenCard = (mod, index) => {
+    const { code } = mod;
+    const isAuthWT = code === "WT" && Digit.Utils.wtAccess();
+
+    const Card =
+      code === "WT" && !isAuthWT
+        ? null
+        : Digit.ComponentRegistryService.getComponent(
+            code === "WT" ? "WTCitizenCard" : code === "MT" ? "MTCitizenCard" : code === "TP" ? "TPCitizenCard" : `${code}Card`
+          );
+
+    if (Card) return <Card key={index} />;
+
+    let mdmsDataObj;
+    if (fetchedCitizen) mdmsDataObj = fetchedCitizen ? processLinkData(getCitizenMenu, code, t) : undefined;
+    if (mdmsDataObj?.links?.length > 0) {
+      return (
+        <CitizenHomeCard
+          key={index}
+          header={t(mdmsDataObj?.header)}
+          links={mdmsDataObj?.links?.filter((ele) => ele?.link)?.sort((x, y) => x?.orderNumber - y?.orderNumber)}
+          Icon={() => iconSelector(code)}
+          Info={
+            code === "OBPS"
+              ? () => (
+                  <CitizenInfoLabel
+                    style={{ margin: "0px", padding: "10px" }}
+                    info={t("CS_FILE_APPLICATION_INFO_LABEL")}
+                    text={t(`BPA_CITIZEN_HOME_STAKEHOLDER_INCLUDES_INFO_LABEL`)}
+                  />
+                )
+              : null
+          }
+          isInfo={code === "OBPS" ? true : false}
+        />
+      );
+    }
+    return null;
+  };
 
   return (
     <React.Fragment>
       <div className="citizen-all-services-wrapper">
         <BackButton />
-        <div className="citizenAllServiceGrid" style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          {moduleArray
-            .filter((mod) => mod)
-            .map(({ code }, index) => {
-              const isAuthWT = code === "WT" && Digit.Utils.wtAccess();
-              // const isAuthMT = code === "MT" && Digit.Utils.mtAccess();
-              // const isAuthTP = code === "TP" && Digit.Utils.tpAccess();
-              const Card =
-                (code === "WT" && !isAuthWT)
-                  ? null
-                  : Digit.ComponentRegistryService.getComponent(
-                      code === "WT" ? "WTCitizenCard" : code === "MT" ? "MTCitizenCard" : code === "TP" ? "TPCitizenCard" : `${code}Card`
-                    );
-              if (Card) return <Card key={index} />;
-
-              let mdmsDataObj;
-              if (fetchedCitizen) mdmsDataObj = fetchedCitizen ? processLinkData(getCitizenMenu, code, t) : undefined;
-              if (mdmsDataObj?.links?.length > 0) {
-                return (
-                  <CitizenHomeCard
-                    key={index}
-                    header={t(mdmsDataObj?.header)}
-                    links={mdmsDataObj?.links?.filter((ele) => ele?.link)?.sort((x, y) => x?.orderNumber - y?.orderNumber)}
-                    Icon={() => iconSelector(code)}
-                    Info={
-                      code === "OBPS"
-                        ? () => (
-                            <CitizenInfoLabel
-                              style={{ margin: "0px", padding: "10px" }}
-                              info={t("CS_FILE_APPLICATION_INFO_LABEL")}
-                              text={t(`BPA_CITIZEN_HOME_STAKEHOLDER_INCLUDES_INFO_LABEL`)}
-                            />
-                          )
-                        : null
-                    }
-                    isInfo={code === "OBPS" ? true : false}
-                  />
-                );
-              } else return <React.Fragment key={index} />;
-            })}
-        </div>
+        <div className="citizenAllServiceGrid">{moduleArray.filter((mod) => mod).map((mod, index) => renderCitizenCard(mod, index))}</div>
       </div>
     </React.Fragment>
   );
 };
 
-const LeftArrowIcon = () => (
+export const LeftArrowIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M15 18l-6-6 6-6" />
   </svg>
 );
 
-const RightArrowIcon = () => (
+export const RightArrowIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M9 18l6-6-6-6" />
   </svg>
@@ -229,7 +234,19 @@ const PresentationIcon = () => (
   </svg>
 );
 
-const ModuleCarousel = ({ modules, title }) => {
+export const engagementModuleCodes = [
+  "ENGAGEMENT",
+  "Engagement",
+  "PGR",
+  "Events",
+  "Documents",
+  "Public Message broadcast",
+  "MessageBroadcast",
+  "Broadcast",
+  "Surveys",
+];
+
+export const ModuleCarousel = ({ modules, title, renderCard }) => {
   const scrollContainerRef = React.useRef(null);
   const [showLeftArrow, setShowLeftArrow] = React.useState(false);
   const [showRightArrow, setShowRightArrow] = React.useState(true);
@@ -309,7 +326,9 @@ const ModuleCarousel = ({ modules, title }) => {
 
       <div className="module-carousel-wrapper">
         <div className="carousel-track" ref={scrollContainerRef} onScroll={handleScroll}>
-          {modules.map(({ code }, index) => {
+          {modules.map((mod, index) => {
+            if (renderCard) return renderCard(mod, index);
+            const { code } = mod;
             const Card = Digit.ComponentRegistryService.getComponent(`${code}Card`);
             if (!Card) return null;
             return <Card key={index} />;
@@ -375,17 +394,6 @@ const EmployeeHome = ({ modules }) => {
 
   const greeting = getGreeting();
 
-  const engagementModuleCodes = [
-    "ENGAGEMENT",
-    "Engagement",
-    "PGR",
-    "Events",
-    "Documents",
-    "Public Message broadcast",
-    "MessageBroadcast",
-    "Broadcast",
-    "Surveys",
-  ];
   const engagementModules = modules.filter((mod) => engagementModuleCodes.includes(mod?.code));
   const mainModules = modules.filter((mod) => !engagementModuleCodes.includes(mod?.code));
 

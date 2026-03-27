@@ -21,6 +21,7 @@ import { useHistory } from "react-router-dom";
 import { CitizenSideBar } from "../../../components/TopBarSideBar/SideBar/CitizenSideBar";
 import StaticCitizenSideBar from "../../../components/TopBarSideBar/SideBar/StaticCitizenSideBar";
 import ChatBot from "./ChatBot";
+import { ModuleCarousel, engagementModuleCodes } from "../../../components/Home";
 // const Home = () => {
 //   const { t } = useTranslation();
 //   const history = useHistory();
@@ -212,14 +213,13 @@ import ChatBot from "./ChatBot";
 const Home = () => {
   const history = useHistory();
 
-  //   useEffect(() => {
-  //   const kc = window.keycloak;
+  if (!Digit.SessionStorage.get("locale")) {
+    Digit.SessionStorage.set("locale", "en_IN");
+  }
+  if (!Digit.ULBService.getCitizenCurrentTenant(true)) {
+    Digit.SessionStorage.set("CITIZEN.COMMON.HOME.CITY", { code: "dl.djb" });
+  }
 
-  //   if (!kc?.authenticated) {
-  //     history.replace("/digit-ui/citizen/login");
-  //     return;
-  //   }
-  // }, []);
   const { t } = useTranslation();
   const tenantId = Digit.ULBService.getCitizenCurrentTenant(true);
   const [user, setUser] = useState(null);
@@ -315,10 +315,16 @@ const Home = () => {
     },
     options: [
       {
-        name: t(citizenServicesObj?.props?.[0]?.label),
-        description: t("File and track your grievances and complaints"),
-        Icon: <ComplaintIcon className="fill-path-primary-main" width="40" height="40" />,
-        onClick: () => history.push(citizenServicesObj?.props?.[0]?.navigationUrl),
+        name: t(infoAndUpdatesObj?.props?.[0]?.label),
+        description: t("Return to the main dashboard"),
+        Icon: <HomeIcon className="fill-path-primary-main" width="40" height="40" />,
+        onClick: () => history.push(infoAndUpdatesObj?.props?.[0]?.navigationUrl),
+      },
+      {
+        name: t("WT_MODULE_NAME"),
+        description: t("Request water tanker services"),
+        Icon: <CHBIcon className="fill-path-primary-main" />,
+        onClick: () => history.push("/digit-ui/citizen/wt-home"),
       },
       {
         name: t(citizenServicesObj?.props?.[1]?.label),
@@ -355,10 +361,10 @@ const Home = () => {
     },
     options: [
       {
-        name: t(infoAndUpdatesObj?.props?.[0]?.label),
-        description: t("Return to the main dashboard"),
-        Icon: <HomeIcon className="fill-path-primary-main" width="40" height="40" />,
-        onClick: () => history.push(infoAndUpdatesObj?.props?.[0]?.navigationUrl),
+        name: t(citizenServicesObj?.props?.[0]?.label),
+        description: t("File and track your grievances and complaints"),
+        Icon: <ComplaintIcon className="fill-path-primary-main" width="40" height="40" />,
+        onClick: () => history.push(citizenServicesObj?.props?.[0]?.navigationUrl),
       },
       {
         name: t(infoAndUpdatesObj?.props?.[1]?.label),
@@ -566,6 +572,14 @@ const Home = () => {
       </div> */}
       <div className="HomePageWrapper">
         <div className="citizen-app-container">
+          <style>
+            {`
+              .module-carousel-header h3::before,
+              .module-carousel-header::before {
+                display: none !important;
+              }
+            `}
+          </style>
           {/* Blue Header Bar */}
           <div className="citizen-module-header">
             <div className="citizen-header-top-section">
@@ -588,16 +602,28 @@ const Home = () => {
                 key={`svc-${idx}`}
                 onClick={opt.onClick}
                 onMouseEnter={(e) => {
-                  e.currentTarget.querySelector(".slide-label").style.transform = "translateY(-110%)";
-                  e.currentTarget.querySelector(".slide-label").style.opacity = "0";
-                  e.currentTarget.querySelector(".slide-desc").style.transform = "translateY(0)";
-                  e.currentTarget.querySelector(".slide-desc").style.opacity = "1";
+                  const label = e.currentTarget.querySelector(".slide-label");
+                  const desc = e.currentTarget.querySelector(".slide-desc");
+                  if (label) {
+                    label.style.transform = "translateY(-110%)";
+                    label.style.opacity = "0";
+                  }
+                  if (desc) {
+                    desc.style.transform = "translateY(0)";
+                    desc.style.opacity = "1";
+                  }
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.querySelector(".slide-label").style.transform = "translateY(0)";
-                  e.currentTarget.querySelector(".slide-label").style.opacity = "1";
-                  e.currentTarget.querySelector(".slide-desc").style.transform = "translateY(110%)";
-                  e.currentTarget.querySelector(".slide-desc").style.opacity = "0";
+                  const label = e.currentTarget.querySelector(".slide-label");
+                  const desc = e.currentTarget.querySelector(".slide-desc");
+                  if (label) {
+                    label.style.transform = "translateY(0)";
+                    label.style.opacity = "1";
+                  }
+                  if (desc) {
+                    desc.style.transform = "translateY(110%)";
+                    desc.style.opacity = "0";
+                  }
                 }}
               >
                 <div className="citizen-service-card__icon">{opt.Icon}</div>
@@ -657,16 +683,28 @@ const Home = () => {
                 key={`info-${idx}`}
                 onClick={opt.onClick}
                 onMouseEnter={(e) => {
-                  e.currentTarget.querySelector(".slide-label").style.transform = "translateY(-110%)";
-                  e.currentTarget.querySelector(".slide-label").style.opacity = "0";
-                  e.currentTarget.querySelector(".slide-desc").style.transform = "translateY(0)";
-                  e.currentTarget.querySelector(".slide-desc").style.opacity = "1";
+                  const label = e.currentTarget.querySelector(".slide-label");
+                  const desc = e.currentTarget.querySelector(".slide-desc");
+                  if (label) {
+                    label.style.transform = "translateY(-110%)";
+                    label.style.opacity = "0";
+                  }
+                  if (desc) {
+                    desc.style.transform = "translateY(0)";
+                    desc.style.opacity = "1";
+                  }
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.querySelector(".slide-label").style.transform = "translateY(0)";
-                  e.currentTarget.querySelector(".slide-label").style.opacity = "1";
-                  e.currentTarget.querySelector(".slide-desc").style.transform = "translateY(110%)";
-                  e.currentTarget.querySelector(".slide-desc").style.opacity = "0";
+                  const label = e.currentTarget.querySelector(".slide-label");
+                  const desc = e.currentTarget.querySelector(".slide-desc");
+                  if (label) {
+                    label.style.transform = "translateY(0)";
+                    label.style.opacity = "1";
+                  }
+                  if (desc) {
+                    desc.style.transform = "translateY(110%)";
+                    desc.style.opacity = "0";
+                  }
                 }}
               >
                 <div className="citizen-service-card__icon">{opt.Icon}</div>

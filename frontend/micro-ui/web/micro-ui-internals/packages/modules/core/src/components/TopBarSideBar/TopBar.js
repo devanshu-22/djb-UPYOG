@@ -1,5 +1,5 @@
 import React from "react";
-import { Hamburger } from "@djb25/digit-ui-react-components";
+import { Hamburger, Calender } from "@djb25/digit-ui-react-components";
 // import { useHistory, useLocation } from "react-router-dom";
 import ChangeCity from "../ChangeCity";
 import ChangeLanguage from "../ChangeLanguage";
@@ -24,6 +24,26 @@ const TopBar = ({
   showLanguageChange = true,
   setSideBarScrollTop,
 }) => {
+  const getFinancialYear = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth() + 1;
+    return month >= 4 ? `FY ${year}-${(year + 1).toString().slice(-2)}` : `FY ${year - 1}-${year.toString().slice(-2)}`;
+  };
+
+  const financialYearStyle = {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    padding: "8px 14px",
+    borderRadius: "8px",
+    border: "1px solid #E5E7EB",
+    backgroundColor: "#FFFFFF",
+    boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
+    fontSize: "14px",
+    fontWeight: "500",
+    color: "#1F2937",
+  };
   const [profilePic, setProfilePic] = React.useState(null);
   const [zoneName, setZoneName] = React.useState(Digit.SessionStorage.get("Employee.zone"));
   const [designationName, setDesignationName] = React.useState(Digit.SessionStorage.get("Employee.designation"));
@@ -107,19 +127,46 @@ const TopBar = ({
   if (CITIZEN) {
     const loggedIn = userDetails?.access_token ? true : false;
     return (
-      <div className="topbar">
+      <div className="topbar" style={CITIZEN ? { left: "0px", width: "100%", backgroundColor: "#FFFFFF" } : { backgroundColor: "#FFFFFF" }}>
         {mobileView ? <Hamburger handleClick={updateSidebar} color="#9E9E9E" /> : null}
         <span style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
-          <img
-            className="city"
-            src="https://objectstorage.ap-hyderabad-1.oraclecloud.com/n/axn3czn1s06y/b/djb-dev-asset-bucket/o/DJB_integrated_logo_without_bg_dark.png"
-            alt="DJB LOGO"
-          />
+          <div
+            className="brand"
+            style={{ display: "flex", alignItems: "center", gap: "12px", cursor: "pointer" }}
+            onClick={() => (window.location.href = "/digit-ui/citizen")}
+          >
+            <div
+              className="brand-mark"
+              style={{
+                width: "50px",
+                height: "50px",
+                borderRadius: "10px",
+                background: "#065297",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: "0 4px 14px rgba(12, 35, 64, 0.35)",
+                overflow: "hidden",
+              }}
+            >
+              <img src="https://objectstorage.ap-hyderabad-1.oraclecloud.com/n/axn3czn1s06y/b/djb-dev-asset-bucket/o/djb_logo.png" alt="DJB Logo" />
+            </div>
+            <div className="btx" style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
+              <h1 style={{ fontFamily: "'Crimson Pro', serif", fontSize: "17px", fontWeight: "700", color: "#003366", margin: 0 }}>
+                Delhi Jal Board
+              </h1>
+              <p style={{ fontSize: "10.5px", fontWeight: "500", color: "#0070B4", margin: 0 }}>Integrated Enterprise Management System</p>
+            </div>
+          </div>
 
           {!mobileView && (
             <div className="flex-right right w-80 column-gap-15">
+              <div style={financialYearStyle}>
+                <Calender width="20" height="20" />
+                <span>{getFinancialYear()}</span>
+              </div>
               <div className="left">{showLanguageChange && <ChangeLanguage dropdown={true} />}</div>
-              <div style={{ width: "2px", height: "28px", backgroundColor: "rgb(203, 213, 225" }}></div>
+              <div style={{ width: "2px", height: "28px", backgroundColor: "rgb(203, 213, 225)" }}></div>
 
               {loggedIn && (
                 <div className="left" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
@@ -149,14 +196,35 @@ const TopBar = ({
   const loggedin = window.keycloak?.token ? true : false;
 
   return (
-    <div className="topbar">
+    <div className="topbar" style={{ backgroundColor: "#FFFFFF" }}>
       {mobileView ? <Hamburger handleClick={toggleSidebar} color="#9E9E9E" /> : null}
       <span className="topbar-content">
-        <img
-          className="city"
-          src="https://objectstorage.ap-hyderabad-1.oraclecloud.com/n/axn3czn1s06y/b/djb-dev-asset-bucket/o/DJB_integrated_logo_without_bg_dark.png"
-          alt="DJB LOGO"
-        />
+        <div
+          className="brand"
+          style={{ display: "flex", alignItems: "center", gap: "12px", cursor: "pointer" }}
+          onClick={() => (window.location.href = "/digit-ui/employee")}
+        >
+          <div
+            className="brand-mark"
+            style={{
+              width: "50px",
+              height: "50px",
+              borderRadius: "10px",
+              background: "#065297",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "0 4px 14px rgba(12, 35, 64, 0.35)",
+              overflow: "hidden",
+            }}
+          >
+            <img src="https://objectstorage.ap-hyderabad-1.oraclecloud.com/n/axn3czn1s06y/b/djb-dev-asset-bucket/o/djb_logo.png" alt="DJB Logo" />
+          </div>
+          <div className="btx" style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
+            <h1 style={{ fontFamily: "'Crimson Pro', serif", fontSize: "17px", fontWeight: "700", color: "#003366", margin: 0 }}>Delhi Jal Board</h1>
+            <p style={{ fontSize: "10.5px", fontWeight: "500", color: "#0070B4", margin: 0 }}>Integrated Enterprise Management System</p>
+          </div>
+        </div>
 
         {!loggedin && (
           <p className="ulb" style={mobileView ? { fontSize: "14px", display: "inline-block" } : {}}>
@@ -170,9 +238,13 @@ const TopBar = ({
                 <ChangeCity dropdown={true} t={t} />
               )}
             </div>
-            <div style={{ width: "2px", height: "28px", backgroundColor: "rgb(203, 213, 225" }}></div>
+            <div style={financialYearStyle}>
+              <Calender width="20" height="20" />
+              <span>{getFinancialYear()}</span>
+            </div>
+            <div style={{ width: "2px", height: "28px", backgroundColor: "rgb(203, 213, 225)" }}></div>
             <div className="left">{showLanguageChange && <ChangeLanguage dropdown={true} />}</div>
-            <div style={{ width: "2px", height: "28px", backgroundColor: "rgb(203, 213, 225" }}></div>
+            <div style={{ width: "2px", height: "28px", backgroundColor: "rgb(203, 213, 225)" }}></div>
 
             {userDetails?.access_token && (
               <div className="left" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
