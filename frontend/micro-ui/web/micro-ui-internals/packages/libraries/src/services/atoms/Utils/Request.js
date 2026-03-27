@@ -11,8 +11,8 @@ Axios.interceptors.request.use(
   async (config) => {
     const kc = window.keycloak;
 
-    //  If not authenticated → logout immediately
-    if (kc && !kc.authenticated) {
+    //  If not authenticated → logout immediately (Exception for citizen routes)
+    if (kc && !kc.authenticated && !window.location.pathname.includes("/digit-ui/citizen")) {
       kc.logout({
         idTokenHint: kc.idToken,
       });

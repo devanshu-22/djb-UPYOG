@@ -18,8 +18,6 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
   const usedAddressTypes = location.state?.usedAddressTypes || [];
   const user = Digit.UserService.getUser().info;
 
-  const convertToObject = (val) => (val ? { i18nKey: val, code: val, value: val } : null);
-
   // ✅ STATES
   const [pincode, setPincode] = useState(formData?.address?.pincode || "");
   const [city, setCity] = useState(formData?.address?.city || null);
@@ -164,8 +162,7 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
   }, [pincode, city, locality, houseNo, landmark, addressLine1, addressLine2, streetName, addressType, latitude, longitude]);
 
   return (
-    <Card>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", columnGap: "32px", rowGap: "8px" }}>
+    <Card className="formcomposer-section-grid">
         {/* Existing Address */}
         {userDetails?.addresses?.length > 0 && (
           <div style={{ gridColumn: "span 2" }}>
@@ -261,7 +258,6 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
           <CardLabel>{t("PINCODE")}</CardLabel>
           <TextInput value={pincode} onChange={(e) => setPincode(e.target.value)} maxLength={6} />
         </div>
-      </div>
     </Card>
   );
 };

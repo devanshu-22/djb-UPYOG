@@ -21,7 +21,6 @@ const VehicleConfig = (t, disabled = false) => {
             },
             error: t("FSM_REGISTRY_INVALID_REGISTRATION_NUMBER"),
             defaultValue: "",
-            className: "payment-form-text-input-correction",
           },
         },
 
@@ -29,20 +28,22 @@ const VehicleConfig = (t, disabled = false) => {
           label: "ES_VENDOR_REGISTRY_SERVICE_TYPE",
           isMandatory: true,
           type: "component",
-          route: "select-service",
-          hideInEmployee: false,
-          key: "additionalDetails",
+          key: "serviceType",
           component: "SelectServiceType",
           disable: disabled,
+          populators: {
+            name: "serviceType",
+            defaultValue: {
+              code: "WT",
+              name: "WT",
+              i18nKey: "WT",
+            },
+          },
           texts: {
-            headerCaption: "",
-            header: "CS_COMMON_CHOOSE_SERVICE",
-            cardText: "CS_COMMON_SELECT_SERVICE",
+            header: "CS_COMMON_CHOOSE_SERVICE_TYPE",
             submitBarLabel: "CS_COMMON_NEXT",
-            skipText: "CORE_COMMON_SKIP_CONTINUE",
           },
         },
-
         {
           route: "vehicle",
           component: "SelectVehicleType",
@@ -116,7 +117,6 @@ const VehicleConfig = (t, disabled = false) => {
             },
             error: t("FSM_REGISTRY_INVALID_NAME"),
             defaultValue: "",
-            className: "payment-form-text-input-correction",
           },
         },
         {
@@ -133,8 +133,6 @@ const VehicleConfig = (t, disabled = false) => {
             },
             error: t("FSM_REGISTRY_INVALID_PHONE"),
             defaultValue: "",
-            className: "payment-form-text-input-correction",
-            labelStyle: { border: "1px solid black", borderRight: "none" },
           },
         },
         {
@@ -180,7 +178,6 @@ const VehicleConfig = (t, disabled = false) => {
             },
             error: t("FSM_REGISTRY_INVALID_EMAIL"),
             defaultValue: "",
-            className: "payment-form-text-input-correction",
           },
         },
       ],

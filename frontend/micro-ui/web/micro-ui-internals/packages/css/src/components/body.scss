@@ -306,17 +306,6 @@ body {
   margin: 0;
 }
 
-.module-carousel-header h3::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 4px;
-  height: 16px;
-  width: 4px;
-  background: #3b82f6;
-  border-radius: 4px;
-}
-
 .module-carousel-header {
   background: linear-gradient(135deg, #3585c4, #6fa0f0 40%, #80b3ff);
   padding: 12px 16px;

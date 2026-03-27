@@ -163,7 +163,7 @@ export const DigitApp = ({ stateCode, modules, appTenants, logoUrl, initData }) 
     if (!userDetails?.info) {
       // No user in session yet — Keycloak login pages will handle auth
       // Default to employee login as entry point
-      return "/digit-ui/employee";
+      return "/digit-ui/citizen";
     }
     return userType === "CITIZEN" ? "/digit-ui/citizen" : "/digit-ui/employee";
   };

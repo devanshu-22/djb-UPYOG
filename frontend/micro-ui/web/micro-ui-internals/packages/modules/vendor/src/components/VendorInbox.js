@@ -24,7 +24,7 @@ const VendorInbox = (props) => {
   const [vendors, setVendors] = useState([]);
   const [drivers, setDrivers] = useState([]);
   const queryClient = useQueryClient();
-  const [address, setAddress] = useState();
+  const [toast, setToast] = useState(null);
 
   const {
     data: vendorData,
@@ -251,7 +251,8 @@ const VendorInbox = (props) => {
         setTimeout(closeToast, 3000);
       },
     });
-  }; 6
+  };
+  6;
 
   const onCellClick = (row, column, length) => {
     setTableData((old) =>
@@ -311,6 +312,46 @@ const VendorInbox = (props) => {
     { enabled: vendorIds?.length > 0 }
   );
 
+  const { data: allFillingPointsData, isLoading: isAllFillingPointsLoading } = Digit.Hooks.wt.useFillPointSearch(
+    {
+      tenantId,
+      filters: { limit: 1000 },
+    },
+    { enabled: true }
+  );
+
+  const allFillingPoints = allFillingPointsData?.fillingPoints || [];
+
+  const { mutate: mapFixedFilling } = Digit.Hooks.wt.useVendorFillingMap(tenantId);
+
+  const onFillingPointSelect = (row, value) => {
+    const payload = {
+      mappings: [
+        {
+          tenantId: tenantId,
+          fillingPointId: value?.id || value?.bookingId || value?.fillingPointId,
+          vendorId: row.original.id,
+        },
+      ],
+    };
+
+    mapFixedFilling(payload, {
+      onSuccess: () => {
+        setToast({ label: t("WT_FIXED_FILLING_MAPPING_SUCCESS") });
+        props.refetchData();
+        props.refetchVendor && props.refetchVendor();
+        setTimeout(closeToast, 5000);
+      },
+      onError: (err) => {
+        setToast({
+          label: err?.response?.data?.Errors?.[0]?.message || t("WT_FIXED_FILLING_MAPPING_FAIL"),
+          error: true,
+        });
+        setTimeout(closeToast, 5000);
+      },
+    });
+  };
+
   //used for columns in table
   const columns = React.useMemo(() => {
     switch (props.selectedTab) {
@@ -319,7 +360,7 @@ const VendorInbox = (props) => {
           //Vendor Name
           {
             Header: t("ES_VENDOR_INBOX_VENDOR_NAME"),
-            disableSortBy: true,
+            accessor: "name",
             Cell: ({ row }) => {
               return (
                 <div>
@@ -327,7 +368,6 @@ const VendorInbox = (props) => {
                     <Link to={"/digit-ui/employee/vendor/registry/vendor-details/" + row.original["id"]}>
                       <div>
                         {row.original.name}
-                        <br />
                       </div>
                     </Link>
                   </span>
@@ -374,10 +414,53 @@ const VendorInbox = (props) => {
           //     );
           //   },
           // },
+          {
+            Header: t("WT_FILLING_POINT"),
+            accessor: (row) => row?.fillingPointId || row.dsoDetails?.fillingPointId || (row.dsoDetails?.fillingPoint && typeof row.dsoDetails.fillingPoint === "object" ? row.dsoDetails.fillingPoint?.fillingPointName : row.dsoDetails?.fillingPoint) || row?.fillingpointmetadata?.fillingPointId || row?.filling_pt_name || row?.fillingPoint || "NA",
+            id: "fillingPoint",
+            Cell: ({ row }) => {
+              return (
+                <Dropdown
+                  className="fsm-registry-dropdown"
+                  selected={allFillingPoints?.find((fp) => {
+                    const fpId = String(fp.id || fp.bookingId || fp.fillingPointId || fp.uuid || fp.fillingpointmetadata?.fillingPointId);
+                    const rowFpId = String(
+                      row.original.fillingPointId ||
+                        row.original.dsoDetails?.fillingPointId ||
+                        row.original.dsoDetails?.fillingPoint?.id ||
+                        row.original.fillingpointmetadata?.fillingPointId ||
+                        row.original.filling_pt_name ||
+                        (row.original.fillingPoint && typeof row.original.fillingPoint === "object" ? row.original.fillingPoint?.id : row.original.fillingPoint) ||
+                        row.original.fillingPointDetail?.id ||
+                        row.original.fillingPointDetail?.bookingId ||
+                        ""
+                    );
+                    return fpId === rowFpId && rowFpId !== "undefined" && rowFpId !== "null" && rowFpId !== "";
+                  })}
+                  option={allFillingPoints}
+                  select={(value) => onFillingPointSelect(row, value)}
+                  style={{ textAlign: "left" }}
+                  optionKey="fillingPointName"
+                  t={t}
+                />
+              );
+            },
+          },
 
           {
             Header: t("ES_VENDOR_INBOX_SERVICE_TYPE"),
-            disableSortBy: true,
+            id: "serviceType",
+            accessor: (row) => {
+              let additionalDetails = row.dsoDetails?.additionalDetails;
+              if (typeof additionalDetails === "string") {
+                try {
+                  additionalDetails = JSON.parse(additionalDetails);
+                } catch (error) {
+                  additionalDetails = {};
+                }
+              }
+              return additionalDetails?.serviceType || "N/A";
+            },
             Cell: ({ row }) => {
               let additionalDetails = row.original.dsoDetails?.additionalDetails;
               if (typeof additionalDetails === "string") {
@@ -565,7 +648,8 @@ const VendorInbox = (props) => {
           //enabled/disabled
           {
             Header: t("ES_VENDOR_REGISTRY_INBOX_ENABLED"),
-            disableSortBy: true,
+            id: "status",
+            accessor: (row) => row.dsoDetails?.status || "",
             Cell: ({ row }) => {
               return (
                 <ToggleSwitch
@@ -619,7 +703,7 @@ const VendorInbox = (props) => {
           //vehicle name/number
           {
             Header: t("ES_FSM_REGISTRY_INBOX_VEHICLE_NAME"),
-            disableSortBy: true,
+            accessor: "registrationNumber",
             Cell: ({ row }) => {
               return (
                 <div>
@@ -627,7 +711,6 @@ const VendorInbox = (props) => {
                     <Link to={"/digit-ui/employee/vendor/registry/vehicle-details/" + row.original["registrationNumber"]}>
                       <div>
                         {row.original.registrationNumber}
-                        <br />
                       </div>
                     </Link>
                   </span>
@@ -647,7 +730,8 @@ const VendorInbox = (props) => {
           //vendor name
           {
             Header: t("ES_FSM_REGISTRY_INBOX_VENDOR_NAME"),
-            disableSortBy: true,
+            id: "vendorName",
+            accessor: (row) => row.vendor?.name || "NA",
             Cell: ({ row }) => GetCell(row.original?.vendor?.name || "NA"),
           },
 
@@ -680,7 +764,18 @@ const VendorInbox = (props) => {
 
           {
             Header: t("ES_VENDOR_INBOX_SERVICE_TYPE"),
-            disableSortBy: true,
+            id: "serviceType",
+            accessor: (row) => {
+              let additionalDetail = row.additionalDetails;
+              if (typeof additionalDetail === "string") {
+                try {
+                  additionalDetail = JSON.parse(additionalDetail);
+                } catch (error) {
+                  additionalDetail = {};
+                }
+              }
+              return additionalDetail?.serviceType || "N/A";
+            },
             Cell: ({ row }) => {
               let additionalDetail = row.original.additionalDetails;
               if (typeof additionalDetail === "string") {
@@ -699,12 +794,18 @@ const VendorInbox = (props) => {
 
           {
             Header: t("ES_FSM_REGISTRY_SELECT_DRIVER"),
+            id: "driver",
+            accessor: (row) => (row.driverData?.name || row.driver?.name || "NA"),
             Cell: ({ row }) => {
               return (
                 <Dropdown
                   className="fsm-registry-dropdown"
                   /* Use ID matching to ensure the selection is shown even if object references differ between API calls */
-                  selected={drivers?.find((driver) => (row.original.driverData?.id || row.original.driver?.id) === driver.id) || row.original.driverData || row.original.driver}
+                  selected={
+                    drivers?.find((driver) => (row.original.driverData?.id || row.original.driver?.id) === driver.id) ||
+                    row.original.driverData ||
+                    row.original.driver
+                  }
                   option={drivers}
                   select={(value) => onDriverSelect(row, value)}
                   optionKey="name"
@@ -718,7 +819,8 @@ const VendorInbox = (props) => {
           //enabled
           {
             Header: t("ES_FSM_REGISTRY_INBOX_ENABLED"),
-            disableSortBy: true,
+            id: "status",
+            accessor: (row) => row.status || "",
             Cell: ({ row }) => {
               return (
                 <ToggleSwitch
@@ -738,7 +840,8 @@ const VendorInbox = (props) => {
           //Username
           {
             Header: t("ES_FSM_REGISTRY_INBOX_USERNAME"),
-            disableSortBy: true,
+            id: "userName",
+            accessor: (row) => row.owner?.userName || "NA",
             Cell: ({ row }) => {
               return (
                 <div>
@@ -746,7 +849,6 @@ const VendorInbox = (props) => {
                     <Link to={"/digit-ui/employee/vendor/registry/driver-details/" + row.original["id"]}>
                       <div>
                         {row.original.owner?.userName || "NA"}
-                        <br />
                       </div>
                     </Link>
                   </span>
@@ -757,8 +859,7 @@ const VendorInbox = (props) => {
           //driver name
           {
             Header: t("ES_FSM_REGISTRY_INBOX_DRIVER_NAME"),
-            disableSortBy: true,
-            accessor: "tripDetails",
+            accessor: "name",
             Cell: ({ row }) => {
               return (
                 <div>
@@ -766,7 +867,6 @@ const VendorInbox = (props) => {
                     <Link to={"/digit-ui/employee/vendor/registry/driver-details/" + row.original["id"]}>
                       <div>
                         {row.original.name}
-                        <br />
                       </div>
                     </Link>
                   </span>
@@ -786,11 +886,17 @@ const VendorInbox = (props) => {
           //vendor name
           {
             Header: t("ES_FSM_REGISTRY_INBOX_VENDOR_NAME"),
+            id: "vendorName",
+            accessor: (row) => (row.vendorData?.name || row.vendor?.name || "NA"),
             Cell: ({ row }) => {
               return (
                 <Dropdown
                   className="fsm-registry-dropdown"
-                  selected={vendors?.find((vendor) => (row.original.vendorData?.id || row.original.vendor?.id) === vendor.id) || row.original.vendorData || row.original.vendor}
+                  selected={
+                    vendors?.find((vendor) => (row.original.vendorData?.id || row.original.vendor?.id) === vendor.id) ||
+                    row.original.vendorData ||
+                    row.original.vendor
+                  }
                   // selected={row.original.vendor}
                   option={vendors}
                   select={(value) => onVendorSelect(row, value)}
@@ -805,7 +911,8 @@ const VendorInbox = (props) => {
           //enabled
           {
             Header: t("ES_FSM_REGISTRY_INBOX_ENABLED"),
-            disableSortBy: true,
+            id: "status",
+            accessor: (row) => row.status || "",
             Cell: ({ row }) => {
               return (
                 <ToggleSwitch
@@ -821,11 +928,11 @@ const VendorInbox = (props) => {
       default:
         return [];
     }
-  }, [props.selectedTab, vendors, drivers, tableData, additionalVendorData, t]);
+  }, [props.selectedTab, vendors, drivers, tableData, additionalVendorData, allFillingPoints, t]);
 
   // if it validate the user role then it starts working
   let result;
-  if (props.isLoading) {
+  if (props.isLoading || isAllFillingPointsLoading) {
     result = <Loader />;
   } else if (tableData.length === 0) {
     let emptyCardText = "";
@@ -860,9 +967,8 @@ const VendorInbox = (props) => {
         getCellProps={(cellInfo) => {
           return {
             style: {
-              minWidth: cellInfo.column.Header === t("ES_INBOX_APPLICATION_NO") ? "240px" : "",
-              padding: cellInfo.column.Header === t("ES_FSM_REGISTRY_INBOX_VENDOR_NAME") ? "10px 18px" : "20px 18px",
-              fontSize: "16px",
+              padding: "8px 12px",
+              fontSize: "13.5px",
             },
           };
         }}

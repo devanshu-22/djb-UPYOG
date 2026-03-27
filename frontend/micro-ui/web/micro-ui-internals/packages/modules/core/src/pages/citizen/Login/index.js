@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
+import axios from "axios";
 
 import { fetchUserDetails } from "../../../../../../libraries/src/services/elements/UserDetails";
 
@@ -48,7 +49,7 @@ const Login = () => {
 
         if (!kc?.authenticated) {
           kc.login({
-            redirectUri: window.location.origin + "/digit-ui/citizen",
+            redirectUri: window.location.origin + "/digit-ui/citizen/login",
           });
           return;
         }
@@ -57,11 +58,33 @@ const Login = () => {
         const userDetailsResponse = await fetchUserDetails(kc);
 
         // Extract user info from API response
-        const userInfo = userDetailsResponse?.user || userDetailsResponse?.UserRequest || userDetailsResponse || {};
+        const userInfoFromFirstCall = userDetailsResponse?.user || userDetailsResponse?.UserRequest || userDetailsResponse || {};
+
+        // 🔄 Second Call: Fetch full user object with roles and tenantId (similar to employee login)
+        const tenantId = userInfoFromFirstCall?.tenantId || Digit.ULBService.getStateId();
+        const response = await axios.post(
+          "/user/_search",
+          {
+            tenantId,
+            uuid: [userInfoFromFirstCall.uuid || kc.tokenParsed?.sub],
+            pageSize: "100",
+            RequestInfo: {
+              apiId: "Rainmaker",
+              authToken: kc.token,
+              userInfo: userInfoFromFirstCall,
+              msgId: `${Date.now()}|en_IN`,
+            },
+          },
+          {
+            headers: { Authorization: `Bearer ${kc.token}` },
+          }
+        );
+
+        const finalUser = response?.data?.user?.[0] || userInfoFromFirstCall;
 
         setUser({
           access_token: kc.token,
-          info: userInfo,
+          info: finalUser,
         });
       } catch (err) {
         console.error("User details fetch failed:", err);
@@ -78,7 +101,8 @@ const Login = () => {
 
     try {
       Digit.SessionStorage.set("User", user);
-      // Digit.UserService.setUser(user); // To be checked by Arsh commented by Avinash
+      Digit.UserService.setUser(user);
+      Digit.UserService.setType("CITIZEN");
 
       const tenantId = user.info.tenantId || Digit.ULBService.getCurrentTenantId();
 

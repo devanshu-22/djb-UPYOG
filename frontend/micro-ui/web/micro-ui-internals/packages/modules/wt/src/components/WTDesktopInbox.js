@@ -33,52 +33,58 @@ const WTDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
 
   let result;
   if (props.isLoading) {
-    result = <Loader />;
-  } else if (clearSearchCalled) {
-    result = null;
-  } else if (!data || data?.length === 0 || (useNewInboxAPI && data?.[0].dataEmpty)) {
-    result =
-      (EmptyInboxComp && <EmptyInboxComp data={data} />) ||
-      (data?.length === 0 || (useNewInboxAPI && data?.[0].dataEmpty) ? (
-        <Card style={{ marginTop: 20 }}>
-          {t("CS_MYAPPLICATIONS_NO_APPLICATION")
-            .split("\\n")
-            .map((text, index) => (
-              <p key={index} style={{ textAlign: "center" }}>
-                {text}
-              </p>
-            ))}
-        </Card>
-      ) : (
-        <Loader />
-      ));
-  } else if (data?.length > 0) {
+  result = <Loader />;
+} else if (clearSearchCalled) {
+  result = null;
+} else if (
+  !data ||
+  data?.length === 0 ||
+  (useNewInboxAPI && data?.[0]?.dataEmpty)
+) {
+  if (EmptyInboxComp) {
+    result = <EmptyInboxComp data={data} />;
+  } else if (
+    data?.length === 0 ||
+    (useNewInboxAPI && data?.[0]?.dataEmpty)
+  ) {
     result = (
-      <ApplicationTable
-        t={t}
-        data={data}
-        columns={columns}
-        getCellProps={(cellInfo) => {
-          return {
-            style: {
-              minWidth: cellInfo.column.Header === t("ES_INBOX_APPLICATION_NO") ? "240px" : "",
-              padding: "20px 18px",
-              fontSize: "16px",
-            },
-          };
-        }}
-        onPageSizeChange={props.onPageSizeChange}
-        currentPage={props.currentPage}
-        onNextPage={props.onNextPage}
-        onPrevPage={props.onPrevPage}
-        pageSizeLimit={props.pageSizeLimit}
-        onSort={props.onSort}
-        disableSort={props.disableSort}
-        sortParams={props.sortParams}
-        totalRecords={props.totalRecords}
-      />
+      <Card style={{ marginTop: 20 }}>
+        {t("CS_MYAPPLICATIONS_NO_APPLICATION")
+          .split("\n")
+          .map((text, index) => (
+            <p key={index} style={{ textAlign: "center" }}>
+              {text}
+            </p>
+          ))}
+      </Card>
     );
+  } else {
+    result = <Loader />;
   }
+} else if (data?.length > 0) {
+  result = (
+    <ApplicationTable
+      t={t}
+      data={data}
+      columns={columns}
+      getCellProps={(cellInfo) => ({
+        style: {
+          padding: "8px 12px",
+          fontSize: "13.5px",
+        },
+      })}
+      onPageSizeChange={props.onPageSizeChange}
+      currentPage={props.currentPage}
+      onNextPage={props.onNextPage}
+      onPrevPage={props.onPrevPage}
+      pageSizeLimit={props.pageSizeLimit}
+      onSort={props.onSort}
+      disableSort={props.disableSort}
+      sortParams={props.sortParams}
+      totalRecords={props.totalRecords}
+    />
+  );
+}
 
   return (
     <div className="inbox-container">

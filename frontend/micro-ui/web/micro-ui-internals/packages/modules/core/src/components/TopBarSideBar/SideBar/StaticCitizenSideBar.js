@@ -20,6 +20,7 @@ import {
   FirenocIcon,
   LoginIcon,
   CHBIcon,
+  LocationIcon,
 } from "@djb25/digit-ui-react-components";
 import { Link, useLocation } from "react-router-dom";
 import SideBarMenu from "../../../config/sidebar-menu";
@@ -106,6 +107,7 @@ const IconsObject = {
   Phone: <Phone className="icon" />,
   LoginIcon: <LoginIcon className="icon" />,
   AddressBookIcon: <AddressBookIcon className="icon" />,
+  LocationIcon: <LocationIcon className="icon" />,
 };
 const StaticCitizenSideBar = ({ linkData, islinkDataLoading }) => {
   const { t } = useTranslation();
@@ -251,6 +253,7 @@ const StaticCitizenSideBar = ({ linkData, islinkDataLoading }) => {
     ];
   }
   Object.keys(linkData)
+    ?.filter((key) => !linkData[key][0]?.sidebarURL?.includes("wt-home"))
     ?.sort((x, y) => y.localeCompare(x))
     ?.map((key) => {
       if (linkData[key][0]?.sidebar === "digit-ui-links") {
@@ -266,26 +269,31 @@ const StaticCitizenSideBar = ({ linkData, islinkDataLoading }) => {
 
   return (
     <React.Fragment>
-      {/* <button
-        id="citizen-mobile-toggle"
-        className={`citizen-mobile-toggle ${isMobileOpen ? 'hidden' : ''}`}
-        onClick={() => setIsMobileOpen(true)}
-      >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <button id="citizen-mobile-toggle" className={`citizen-mobile-toggle ${isMobileOpen ? "hidden" : ""}`} onClick={() => setIsMobileOpen(true)}>
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
           <rect x="3" y="3" width="7" height="7"></rect>
           <rect x="14" y="3" width="7" height="7"></rect>
           <rect x="14" y="14" width="7" height="7"></rect>
           <rect x="3" y="14" width="7" height="7"></rect>
         </svg>
         <span className="toggle-label">Dash</span>
-      </button> */}
+      </button>
+
+      <div className={`citizen-sidebar-backdrop ${isMobileOpen ? "visible" : ""}`} onClick={() => setIsMobileOpen(false)} />
 
       <div
-        className={`citizen-sidebar-backdrop ${isMobileOpen ? 'visible' : ''}`}
-        onClick={() => setIsMobileOpen(false)}
-      />
-
-      <div id="citizen-static-sidebar-id" className={`citizen-static-sidebar ${isCollapsed ? "collapsed" : "expanded"} ${isMobileOpen ? "mobile-open" : ""}`}>
+        id="citizen-static-sidebar-id"
+        className={`citizen-static-sidebar ${isCollapsed ? "collapsed" : "expanded"} ${isMobileOpen ? "mobile-open" : ""}`}
+      >
         <div className="citizen-sidebar-header">
           <div className="citizen-sidebar-brand">
             <span className="citizen-sidebar-brand-dot" aria-hidden="true"></span>

@@ -121,36 +121,28 @@ const AddFillingPointMetaData = ({
   const isMobile = window.Digit.Utils.browser.isMobile();
 
   return (
-    <Card>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-          gap: "16px",
-        }}
-      >
-        {filteredInputs.map((input) => (
-          <div key={input.name}>
-            <LabelFieldPair>
-              <CardLabel className="card-label-smaller">
-                {t(input.label)}
-                {input.isMandatory ? " *" : ""}
-              </CardLabel>
+    <Card className="formcomposer-section-grid">
+      {filteredInputs.map((input) => (
+        <div key={input.name}>
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">
+              {t(input.label)}
+              {input.isMandatory ? " *" : ""}
+            </CardLabel>
 
-              <div style={{ display: "flex" }}>
-                {input.componentInFront || null}
+            <div style={{ display: "flex" }}>
+              {input.componentInFront || null}
 
-                <TextInput
-                  value={formData?.[sectionKey]?.[input.name] || ""}
-                  onChange={(e) => handleChange(e.target.value, input.name)}
-                  maxLength={input.validation?.maxLength}
-                  {...input.validation}
-                />
-              </div>
-            </LabelFieldPair>
-          </div>
-        ))}
-      </div>
+              <TextInput
+                value={formData?.[sectionKey]?.[input.name] || ""}
+                onChange={(e) => handleChange(e.target.value, input.name)}
+                maxLength={input.validation?.maxLength}
+                {...input.validation}
+              />
+            </div>
+          </LabelFieldPair>
+        </div>
+      ))}
     </Card>
   );
 };
