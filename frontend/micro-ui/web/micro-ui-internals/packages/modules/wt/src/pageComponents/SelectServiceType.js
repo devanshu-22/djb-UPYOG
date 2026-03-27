@@ -25,7 +25,7 @@ const SelectServiceType = ({ config, onSelect, t, userType, formData }) => {
         const defaultWT = transformedData.find((item) => item.code === "WT");
         if (defaultWT) {
           setserviceTypes(defaultWT);
-          if (userType === "employee") {
+          if (userType?.toLowerCase() === "employee") {
             onSelect(config.key, defaultWT);
           }
         }
@@ -35,7 +35,7 @@ const SelectServiceType = ({ config, onSelect, t, userType, formData }) => {
 
   const selectServiceType = (value) => {
     setserviceTypes(value);
-    if (userType === "employee") {
+    if (userType?.toLowerCase() === "employee") {
       onSelect(config.key, value);
     }
   };
@@ -52,10 +52,10 @@ const SelectServiceType = ({ config, onSelect, t, userType, formData }) => {
     return <Loader />;
   }
 
-  if (userType === "employee") {
+  if (userType?.toLowerCase() === "employee") {
     return (
       <div>
-        <CardLabel>{t(config.label)}</CardLabel>
+        <CardLabel>{config.label}</CardLabel>
         <Dropdown
           className="payment-form-text-input-correction"
           isMandatory={config.isMandatory}
@@ -69,6 +69,7 @@ const SelectServiceType = ({ config, onSelect, t, userType, formData }) => {
       </div>
     );
   }
+  return null;
 };
 
 export default SelectServiceType;

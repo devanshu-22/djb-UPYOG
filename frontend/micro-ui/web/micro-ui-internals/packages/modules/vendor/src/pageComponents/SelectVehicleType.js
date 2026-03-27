@@ -104,18 +104,18 @@ const SelectVehicleType = ({ t, config, onSelect, formData, setValue }) => {
   return (
     <React.Fragment>
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{t("ES_FSM_REGISTRY_VEHICLE_MODEL")}</CardLabel>
+        <CardLabel>{t("ES_FSM_REGISTRY_VEHICLE_MODEL")}</CardLabel>
         <Dropdown className="form-field" selected={selectedModal} option={modals} select={selectModal} optionKey="name" t={t} />
       </LabelFieldPair>
       {/* Vehicle Type Dropdown (Filtered based on Model) */}
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{t("ES_FSM_REGISTRY_VEHICLE_TYPE")}</CardLabel>
+        <CardLabel>{t("ES_FSM_REGISTRY_VEHICLE_TYPE")}</CardLabel>
         <Dropdown className="form-field" selected={selectedType} option={types} select={selectType} optionKey="name" t={t} />
       </LabelFieldPair>
       {/* Vehicle Capacity Input (Set Automatically Based on Type) */}
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{t("ES_FSM_REGISTRY_VEHICLE_CAPACITY")}</CardLabel>
-        <TextInput className="" textInputStyle={{ width: "50%" }} value={selectedCapacity} disable={true} />
+        <CardLabel>{t("ES_FSM_REGISTRY_VEHICLE_CAPACITY")}</CardLabel>
+        <TextInput className="" textInputStyle={{ width: "100%" }} value={selectedCapacity} disable={true} />
       </LabelFieldPair>
     </React.Fragment>
   );

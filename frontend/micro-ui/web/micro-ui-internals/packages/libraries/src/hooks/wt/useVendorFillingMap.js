@@ -1,9 +1,9 @@
 import { useMutation, useQueryClient } from "react-query";
 import { WTService } from "../../services/elements/WT";
 
-const useFixedFillingMapping = (tenantId, config = {}) => {
+const useVendorFillingMap = (tenantId, config = {}) => {
   const queryClient = useQueryClient();
-  return useMutation((details) => WTService.fixedFillingMapping(details, tenantId), {
+  return useMutation((details) => WTService.VendorFillingMap(details, tenantId), {
     ...config,
     onSuccess: () => {
       queryClient.invalidateQueries(["FIXED_POINT_SEARCH", tenantId]);
@@ -11,4 +11,4 @@ const useFixedFillingMapping = (tenantId, config = {}) => {
   });
 };
 
-export default useFixedFillingMapping;
+export default useVendorFillingMap;

@@ -48,14 +48,18 @@ const AddVehicle = ({ parentUrl, heading }) => {
 
   const [canSubmit, setSubmitValve] = useState(false);
 
-  const defaultValues = {
+   const defaultValues = {
+    serviceType: {
+      code: "WT",
+      name: "WT",
+      i18nKey: "WT",
+    },
     tripData: {
       noOfTrips: 1,
       amountPerTrip: null,
       amount: null,
     },
   };
-
   const onFormValueChange = (setValue, formData) => {
     if (formData?.registrationNumber) {
       let updatedRegNo = formData.registrationNumber
@@ -98,7 +102,7 @@ const AddVehicle = ({ parentUrl, heading }) => {
     const fitnessValidity = new Date(`${data?.fitnessValidity}`).getTime();
     const ownerName = data?.ownerName;
     const phone = data?.phone;
-    const additionalDetails = data?.additionalDetails?.code;
+    const additionalDetails = data?.serviceType?.code;
     const gender = data?.selectGender?.code;
     const emailId = data?.emailId;
     const dob = new Date(`${data.dob}`).getTime() || new Date(`1/1/1970`).getTime();

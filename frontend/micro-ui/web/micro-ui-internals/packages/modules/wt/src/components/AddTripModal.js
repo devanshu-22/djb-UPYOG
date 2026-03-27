@@ -4,6 +4,26 @@ import { useForm, Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
 const AddTripModal = ({ t, closeModal, onSubmit, initialValues }) => {
+  const now = new Date();
+  const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+
+  const defaultValues = initialValues
+    ? {
+      ...initialValues,
+      arrivalTimeFpl: initialValues.arrivalTimeFpl || currentTime,
+      departureTimeFpl: initialValues.departureTimeFpl || currentTime,
+      arrivalFixedPoint: initialValues.arrivalFixedPoint || currentTime,
+      departureFixedPoint: initialValues.departureFixedPoint || currentTime,
+      returnFpl: initialValues.returnFpl || currentTime,
+    }
+    : {
+      arrivalTimeFpl: currentTime,
+      departureTimeFpl: currentTime,
+      arrivalFixedPoint: currentTime,
+      departureFixedPoint: currentTime,
+      returnFpl: currentTime,
+    };
+
   const {
     register,
     handleSubmit,
@@ -12,7 +32,7 @@ const AddTripModal = ({ t, closeModal, onSubmit, initialValues }) => {
     watch,
     setValue,
   } = useForm({
-    defaultValues: initialValues || {},
+    defaultValues,
   });
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -223,7 +243,10 @@ const AddTripModal = ({ t, closeModal, onSubmit, initialValues }) => {
                     options={dayOptions}
                     optionsKey="label"
                     selected={dayOptions.filter((opt) => (props.value || []).some((v) => v === opt.value || v?.value === opt.value))}
-                    onSelect={(val) => props.onChange(val.map((v) => (Array.isArray(v) ? v[1] : v?.value || v)))}
+                    onSelect={(val) => {
+                      const selectedData = (val || []).map((v) => (v?.[1] ? v[1] : v?.value || v));
+                      props.onChange(selectedData);
+                    }}
                     t={t}
                     defaultLabel={t("WT_SELECT_DAYS")}
                     defaultUnit={t("WT_DAYS")}
@@ -233,7 +256,12 @@ const AddTripModal = ({ t, closeModal, onSubmit, initialValues }) => {
             </div>
             <div className="field-group">
               <CardLabel style={{ marginBottom: "8px", fontWeight: "500" }}>{t("WT_FREQUENCY_NO")}</CardLabel>
-              <TextInput name="frequencyNo" inputRef={register()} />
+              <Controller
+                control={control}
+                name="frequencyNo"
+                defaultValue={defaultValues.frequencyNo}
+                render={(props) => <TextInput value={props.value} onChange={props.onChange} onBlur={props.onBlur} />}
+              />
             </div>
 
             {/* <div className="field-group">
@@ -242,28 +270,58 @@ const AddTripModal = ({ t, closeModal, onSubmit, initialValues }) => {
             </div> */}
             <div className="field-group">
               <CardLabel style={{ marginBottom: "8px", fontWeight: "500" }}>{t("WT_ARRIVAL_TIME_TO_FPL")}</CardLabel>
-              <TextInput name="arrivalTimeFpl" inputRef={register()} type="time" />
+              <Controller
+                control={control}
+                name="arrivalTimeFpl"
+                defaultValue={defaultValues.arrivalTimeFpl}
+                render={(props) => <TextInput type="time" value={props.value} onChange={props.onChange} onBlur={props.onBlur} />}
+              />
             </div>
             <div className="field-group">
               <CardLabel style={{ marginBottom: "8px", fontWeight: "500" }}>{t("WT_DEPARTURE_TIME_FROM_FPL")}</CardLabel>
-              <TextInput name="departureTimeFpl" inputRef={register()} type="time" />
+              <Controller
+                control={control}
+                name="departureTimeFpl"
+                defaultValue={defaultValues.departureTimeFpl}
+                render={(props) => <TextInput type="time" value={props.value} onChange={props.onChange} onBlur={props.onBlur} />}
+              />
             </div>
             <div className="field-group">
               <CardLabel style={{ marginBottom: "8px", fontWeight: "500" }}>{t("WT_ARRIVAL_AT_FIXED_POINT")}</CardLabel>
-              <TextInput name="arrivalFixedPoint" inputRef={register()} type="time" />
+              <Controller
+                control={control}
+                name="arrivalFixedPoint"
+                defaultValue={defaultValues.arrivalFixedPoint}
+                render={(props) => <TextInput type="time" value={props.value} onChange={props.onChange} onBlur={props.onBlur} />}
+              />
             </div>
 
             <div className="field-group">
               <CardLabel style={{ marginBottom: "8px", fontWeight: "500" }}>{t("WT_DEPARTURE_AT_FIXED_POINT")}</CardLabel>
-              <TextInput name="departureFixedPoint" inputRef={register()} type="time" />
+              <Controller
+                control={control}
+                name="departureFixedPoint"
+                defaultValue={defaultValues.departureFixedPoint}
+                render={(props) => <TextInput type="time" value={props.value} onChange={props.onChange} onBlur={props.onBlur} />}
+              />
             </div>
             <div className="field-group">
               <CardLabel style={{ marginBottom: "8px", fontWeight: "500" }}>{t("WT_RETURN_TO_FPL")}</CardLabel>
-              <TextInput name="returnFpl" inputRef={register()} type="time" />
+              <Controller
+                control={control}
+                name="returnFpl"
+                defaultValue={defaultValues.returnFpl}
+                render={(props) => <TextInput type="time" value={props.value} onChange={props.onChange} onBlur={props.onBlur} />}
+              />
             </div>
             <div className="field-group">
               <CardLabel style={{ marginBottom: "8px", fontWeight: "500" }}>{t("WT_VOLUME")}</CardLabel>
-              <TextInput name="volume" inputRef={register()} />
+              <Controller
+                control={control}
+                name="volume"
+                defaultValue={defaultValues.volume}
+                render={(props) => <TextInput value={props.value} onChange={props.onChange} onBlur={props.onBlur} />}
+              />
             </div>
             <div className="field-group">
               <CardLabel style={{ marginBottom: "8px", fontWeight: "500" }}>{t("WT_ACTIVE")}</CardLabel>
@@ -276,7 +334,12 @@ const AddTripModal = ({ t, closeModal, onSubmit, initialValues }) => {
 
             <div className="field-group remarks-field-group" style={{ gridColumn: "span 2" }}>
               <CardLabel style={{ marginBottom: "8px", fontWeight: "500" }}>{t("WT_REMARKS")}</CardLabel>
-              <TextInput name="remarks" inputRef={register()} />
+              <Controller
+                control={control}
+                name="remarks"
+                defaultValue={defaultValues.remarks}
+                render={(props) => <TextInput value={props.value} onChange={props.onChange} onBlur={props.onBlur} />}
+              />
             </div>
           </div>
         </div>

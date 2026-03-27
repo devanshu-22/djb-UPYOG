@@ -112,6 +112,10 @@ module.exports = function (app) {
     "/request-service/water-tanked/fixed/time/v1/_create",
     "/request-service/wt/filling-point/_update",
     "/request-service/water-tanker/fixed-filling/v1/_mapping",
+    "/request-service/filling-point/locality/v1/_create",
+    "/request-service/water-tanked/fixed/time/v1/_update",
+    "/request-service/wt/filling-point/vendor/_map",
+    "/request-service/filling-point/locality/v1/_update",
     "/vendor-management/api/v1/_create",
     "/vendor-management/api/v1/work-order/_create",
     "/sv-services/street-vending/_createdemand",
@@ -120,7 +124,7 @@ module.exports = function (app) {
     "/request-service/mobile-toilet/v1/_search",
     "/vendor-management/api/v1/vendorPlusAdditional/_search",
     "/user/_updateAddress",
-    "/ekyc-service"
+    "/ekyc-service",
   ].forEach((location) => app.use(location, createProxy));
   ["/pb-egov-assets"].forEach((location) => app.use(location, assetsProxy));
 };
