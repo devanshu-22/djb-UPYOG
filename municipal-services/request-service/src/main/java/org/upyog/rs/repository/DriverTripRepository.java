@@ -62,7 +62,9 @@ public class DriverTripRepository {
         public DriverTrip findByBookingNo(String bookingNo) {
             String sql = "SELECT * FROM eg_driver_trip WHERE booking_no = ?";
 
-            return jdbcTemplate.queryForObject(sql, new DriverRowMapper(), bookingNo);
+            //return jdbcTemplate.queryForObject(sql, new DriverRowMapper(), bookingNo);
+            List<DriverTrip> trips = jdbcTemplate.query(sql, new DriverRowMapper(), bookingNo);
+            return trips.isEmpty() ? null : trips.get(0);
         }
 
     public void saveTripHistory(DriverTrip trip) {
