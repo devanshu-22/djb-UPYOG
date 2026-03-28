@@ -1,5 +1,6 @@
 package org.upyog.rs.service.impl;
 
+import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.upyog.rs.constant.RequestServiceConstants;
@@ -24,6 +25,16 @@ public class DriverTripServiceImpl implements DriverTripService {
         DriverTrip trip = request.getDriverTrip();
         String userUuid = request.getRequestInfo().getUserInfo().getUuid();
 
+        DriverTrip existingTrip = repository.findByBookingNo(trip.getBookingNo());
+
+        if (existingTrip != null) {
+            if ("STARTED".equalsIgnoreCase(existingTrip.getCurrentStatus())) {
+                throw new CustomException("TRIP_ALREADY_STARTED",
+                        "Trip is already started for booking: " + trip.getBookingNo());
+            }
+            // COMPLETED status → allow new trip
+        }
+
         trip.setId(RequestServiceUtil.getRandonUUID());
         trip.setAuditDetails(RequestServiceUtil.getAuditDetails(userUuid, true));
         trip.setCurrentStatus("STARTED");
@@ -38,6 +49,17 @@ public class DriverTripServiceImpl implements DriverTripService {
         String userUuid = request.getRequestInfo().getUserInfo().getUuid();
 
         DriverTrip existingTrip = repository.findByBookingNo(updateReq.getBookingNo());
+
+        if (existingTrip == null) {
+            throw new CustomException("TRIP_NOT_FOUND",
+                    "No trip found for booking: " + updateReq.getBookingNo());
+        }
+
+        // Can only complete a STARTED trip
+        if (!"STARTED".equalsIgnoreCase(existingTrip.getCurrentStatus())) {
+            throw new CustomException("TRIP_NOT_STARTED",
+                    "Cannot complete trip. Current status: " + existingTrip.getCurrentStatus());
+        }
 
         existingTrip.setCurrentStatus("COMPLETED");
         existingTrip.setEndLatitude(updateReq.getEndLatitude());
