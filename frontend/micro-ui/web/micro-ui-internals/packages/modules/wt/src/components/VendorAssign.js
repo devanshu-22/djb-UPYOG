@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Label, DatePicker, SubmitBar, Toast, Card, Dropdown, UploadFile } from "@djb25/digit-ui-react-components";
+import { Label, DatePicker, SubmitBar, Toast, Card, Dropdown, UploadFile, CardSubHeader } from "@djb25/digit-ui-react-components";
 import VerticalTimeline from "./VerticalTimeline";
 import SelectServiceType from "../pageComponents/SelectServiceType";
 
@@ -73,8 +73,6 @@ const VendorAssign = ({ parentUrl, heading }) => {
         setShowToast({ isError: true, label: err?.response?.data?.Errors?.[0]?.message || t("ES_COMMON_ERROR_SAVING") });
       },
     });
-
-    console.log(payload, "iuyui");
   };
 
   const isMobile = window.Digit.Utils.browser.isMobile();
@@ -85,6 +83,8 @@ const VendorAssign = ({ parentUrl, heading }) => {
     setFile(e.target.files[0]);
   }
 
+  const isFormDisabled = !vendor || !validFrom || !validTo || !selectedServiceType;
+
   return (
     <div className="employee-form-section-wrapper">
       {/* <Timeline steps={["Vendor Assign"]} currentStep={1} /> */}
@@ -92,6 +92,7 @@ const VendorAssign = ({ parentUrl, heading }) => {
 
       <div style={{ flex: 1 }}>
         <Card className="formcomposer-section-grid">
+          <CardSubHeader style={{ marginBottom: "10px", gridColumn: "span 2" }}>{t("WT_VENDOR_ASSIGN")}</CardSubHeader>
           <div style={{ display: "flex", flexDirection: "column" }}>
             <Label>
               {`${t("WT_VENDOR_NAME")}`} <span className="astericColor">*</span>
@@ -134,7 +135,7 @@ const VendorAssign = ({ parentUrl, heading }) => {
         </Card>
 
         <div style={{ display: "flex", marginTop: "24px", justifyContent: isMobile ? "center" : "flex-end" }}>
-          <SubmitBar label={t("ES_COMMON_SAVE")} onSubmit={handleSubmit} />
+          <SubmitBar label={t("ES_COMMON_SAVE")} onSubmit={isFormDisabled ? null : handleSubmit} disabled={isFormDisabled} />
         </div>
       </div>
       {showToast && <Toast error={showToast.isError} label={showToast.label} onClose={() => setShowToast(null)} />}

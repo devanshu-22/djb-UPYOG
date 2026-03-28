@@ -60,7 +60,6 @@ const LocalityModal = ({ t, closeModal, onSubmit, initialValues, tenantId, modal
       setSelectedLocality(preSelected);
     }
   }, [structuredLocalities, initialValues, isView, isUpdate]);
-  console.log(mdmsData, "mdmsData");
 
   const onFormSubmit = () => {
     onSubmit({
@@ -68,8 +67,6 @@ const LocalityModal = ({ t, closeModal, onSubmit, initialValues, tenantId, modal
       locality: selectedLocality.map((l) => l[1]),
     });
   };
-
-  console.log(selectedLocality, "Re");
 
   if (isMdmsLoading) return <Loader />;
 

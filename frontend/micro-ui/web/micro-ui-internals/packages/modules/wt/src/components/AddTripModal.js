@@ -9,20 +9,20 @@ const AddTripModal = ({ t, closeModal, onSubmit, initialValues }) => {
 
   const defaultValues = initialValues
     ? {
-      ...initialValues,
-      arrivalTimeFpl: initialValues.arrivalTimeFpl || currentTime,
-      departureTimeFpl: initialValues.departureTimeFpl || currentTime,
-      arrivalFixedPoint: initialValues.arrivalFixedPoint || currentTime,
-      departureFixedPoint: initialValues.departureFixedPoint || currentTime,
-      returnFpl: initialValues.returnFpl || currentTime,
-    }
+        ...initialValues,
+        arrivalTimeFpl: initialValues.arrivalTimeFpl || currentTime,
+        departureTimeFpl: initialValues.departureTimeFpl || currentTime,
+        arrivalFixedPoint: initialValues.arrivalFixedPoint || currentTime,
+        departureFixedPoint: initialValues.departureFixedPoint || currentTime,
+        returnFpl: initialValues.returnFpl || currentTime,
+      }
     : {
-      arrivalTimeFpl: currentTime,
-      departureTimeFpl: currentTime,
-      arrivalFixedPoint: currentTime,
-      departureFixedPoint: currentTime,
-      returnFpl: currentTime,
-    };
+        arrivalTimeFpl: currentTime,
+        departureTimeFpl: currentTime,
+        arrivalFixedPoint: currentTime,
+        departureFixedPoint: currentTime,
+        returnFpl: currentTime,
+      };
 
   const {
     register,
@@ -78,7 +78,22 @@ const AddTripModal = ({ t, closeModal, onSubmit, initialValues }) => {
     { label: t("NO"), value: "No" },
   ];
 
+  const formData = watch();
+
+  const isFormDisabled =
+    !formData?.fixedPointCode ||
+    !formData?.day ||
+    formData?.day?.length === 0 ||
+    !formData?.arrivalTimeFpl ||
+    !formData?.departureTimeFpl ||
+    !formData?.arrivalFixedPoint ||
+    !formData?.departureFixedPoint ||
+    !formData?.returnFpl ||
+    !formData?.volume ||
+    !formData?.active;
+
   const onFormSubmit = (data) => {
+    if (isFormDisabled) return;
     onSubmit(data);
   };
 
@@ -254,7 +269,7 @@ const AddTripModal = ({ t, closeModal, onSubmit, initialValues }) => {
                 )}
               />
             </div>
-            <div className="field-group">
+            {/* <div className="field-group">
               <CardLabel style={{ marginBottom: "8px", fontWeight: "500" }}>{t("WT_FREQUENCY_NO")}</CardLabel>
               <Controller
                 control={control}
@@ -262,7 +277,7 @@ const AddTripModal = ({ t, closeModal, onSubmit, initialValues }) => {
                 defaultValue={defaultValues.frequencyNo}
                 render={(props) => <TextInput value={props.value} onChange={props.onChange} onBlur={props.onBlur} />}
               />
-            </div>
+            </div> */}
 
             {/* <div className="field-group">
               <CardLabel style={{ marginBottom: "8px", fontWeight: "500" }}>{t("WT_VEHICLE_ID")}</CardLabel>
@@ -370,14 +385,16 @@ const AddTripModal = ({ t, closeModal, onSubmit, initialValues }) => {
           </button>
           <button
             className="button-save"
+            disabled={isFormDisabled}
             onClick={handleSubmit(onFormSubmit)}
             style={{
               padding: "8px 20px",
-              background: "#1D4E7F",
+              background: isFormDisabled ? "#ccc" : "#1D4E7F",
               color: "#fff",
               border: "none",
               borderRadius: "4px",
-              cursor: "pointer",
+              cursor: isFormDisabled ? "not-allowed" : "pointer",
+              opacity: isFormDisabled ? 0.7 : 1,
             }}
           >
             {initialValues ? t("WT_UPDATE") : t("CS_COMMON_SAVE")}

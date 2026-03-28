@@ -28,7 +28,7 @@ const ExpandedViewPage = ({ modules = [] }) => {
       const found = modules.find(
         (m) =>
           m.code === moduleName ||
-          t(`ACTION_TEST_${m.code}`).toUpperCase() === moduleName ||
+          t(`ACTION_TEST_${m.code}`) === moduleName ||
           m.name === moduleName
       );
 
@@ -50,10 +50,10 @@ const ExpandedViewPage = ({ modules = [] }) => {
     const foundModule = modules.find((m) => m.code === activeModuleCode);
 
     if (foundModule) {
-      return t(`ACTION_TEST_${foundModule.code}`).toUpperCase();
+      return t(`ACTION_TEST_${foundModule.code}`);
     }
 
-    return (moduleName || activeModuleCode).toUpperCase();
+    return (moduleName || activeModuleCode);
   }, [activeModuleCode, modules, moduleName, t]);
 
   const breadcrumbs = [
@@ -79,20 +79,20 @@ const ExpandedViewPage = ({ modules = [] }) => {
 
     if (
       (activeModuleCode === moduleName ||
-        t(`ACTION_TEST_${activeModuleCode}`).toUpperCase() === moduleName) &&
+        t(`ACTION_TEST_${activeModuleCode}`) === moduleName) &&
       links.length > 0
     ) {
       return (
         <ModuleLinksView
           links={links}
-          moduleName={(moduleName || "").toUpperCase()}
+          moduleName={(moduleName || "")}
         />
       );
     }
 
     return (
       <div className="no-links-msg">
-        MODULE CONTENT NOT FOUND FOR {activeModuleCode?.toUpperCase()}.
+        MODULE CONTENT NOT FOUND FOR {activeModuleCode}.
       </div>
     );
   };
@@ -135,7 +135,7 @@ const ExpandedViewPage = ({ modules = [] }) => {
 
             <div className="sidebar-menu">
               {sidebarList.map((mod, idx) => {
-                const displayName = t(`ACTION_TEST_${mod.code}`).toUpperCase();
+                const displayName = t(`ACTION_TEST_${mod.code}`) || mod.name;
                 const isActive = mod.code === activeModuleCode;
 
                 return (

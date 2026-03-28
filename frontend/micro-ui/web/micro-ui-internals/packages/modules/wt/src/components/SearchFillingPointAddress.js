@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Card, Table, Menu, AddIcon, TextInput, Dropdown, Label, SubmitBar, Toast, CustomButton } from "@djb25/digit-ui-react-components";
+import { Card, Menu, AddIcon, TextInput, Dropdown, Label, SubmitBar, Toast } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useHistory, Link } from "react-router-dom";
 import LocalityModal from "./LocalityModal";
@@ -86,21 +86,19 @@ const SearchFillingPointAddress = () => {
   // ✅ Dynamic config
   const searchConfig = {
     FIXED_POINT: {
-      label: "WT_FIXED_POINT_NAME",
+      label: "WT_FIXING_POINT_APPLICANT_DETAILS",
       placeholder: "WT_ENTER_FIXED_POINT_NAME",
     },
     FILLING_POINT: {
-      label: "WT_FILLING_POINT_NAME",
+      label: "WT_FILLING_POINT_CODE",
       placeholder: "WT_ENTER_FILLING_POINT_NAME",
     },
   };
 
   const statusOptions = [
-    { i18nKey: "WT_BOOKING_CREATED", code: "BOOKING_CREATED" },
-    { i18nKey: "WT_BOOKING_APPROVED", code: "APPROVED" },
-    { i18nKey: "WT_TANKER_DELIVERED", code: "TANKER_DELIVERED" },
-    { i18nKey: "WT_ASSIGN_VENDOR", code: "ASSIGN_VENDOR" },
-    { i18nKey: "WT_BOOKING_REJECTED", code: "REJECT" },
+    { i18nKey: "WT_FILLING_POINT_DESIGNATION_AE", code: "DESIGNATION_AE" },
+    { i18nKey: "WT_FILLING_POINT_DESIGNATION_JE", code: "DESIGNATION_JE" },
+    { i18nKey: "WT_FILLING_POINT_DESIGNATION_EE", code: "DESIGNATION_EE" },
   ];
 
   const FixedPointStatus = [
@@ -218,7 +216,7 @@ const SearchFillingPointAddress = () => {
     if (selectedTab === "FIXED_POINT") {
       return [
         {
-          Header: t("WT_APPLICANT_NAME"),
+          Header: t("WT_FIXING_POINT_APPLICANT_DETAILS"),
           accessor: (row) => row?.applicantDetail?.name || "NA",
           id: "applicantName",
           Cell: ({ row }) => (
@@ -253,15 +251,15 @@ const SearchFillingPointAddress = () => {
           Cell: ({ row }) => {
             const rowFpId = String(
               row.original.fillingPointId ||
-              row.original.fillingpointmetadata?.fillingPointId ||
-              row.original.fillingPtName ||
-              row.original.filling_pt_name ||
-              (row.original.fillingPoint && typeof row.original.fillingPoint === "object"
-                ? row.original.fillingPoint?.id
-                : row.original.fillingPoint) ||
-              row.original.fillingPointDetail?.id ||
-              row.original.fillingPointDetail?.bookingId ||
-              ""
+                row.original.fillingpointmetadata?.fillingPointId ||
+                row.original.fillingPtName ||
+                row.original.filling_pt_name ||
+                (row.original.fillingPoint && typeof row.original.fillingPoint === "object"
+                  ? row.original.fillingPoint?.id
+                  : row.original.fillingPoint) ||
+                row.original.fillingPointDetail?.id ||
+                row.original.fillingPointDetail?.bookingId ||
+                ""
             );
 
             const selectedOption = allFillingPoints?.find((fp) => {
@@ -286,7 +284,7 @@ const SearchFillingPointAddress = () => {
     } else {
       return [
         {
-          Header: t("WT_FILLING_POINT_NAME"),
+          Header: t("WT_FILLING_POINT_CODE"),
           accessor: (row) => row?.fillingPointName || "NA",
           id: "fillingPointName",
           Cell: ({ row }) => (
@@ -314,35 +312,22 @@ const SearchFillingPointAddress = () => {
           Header: t("WT_LOCALITY"),
           // accessor: (row) => row?.address?.locality || "NA",
           Cell: ({ row }) => {
-            const localities = row.original?.fillingPointLocalityCodes?.length > 0
-              ? row.original.fillingPointLocalityCodes.join(", ")
-              : row.original?.address?.locality || "NA";
+            const localities =
+              row.original?.fillingPointLocalityCodes?.length > 0
+                ? row.original.fillingPointLocalityCodes.join(", ")
+                : row.original?.address?.locality || "NA";
             return (
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <span>{localities}</span>
-              {/* <div
-                onClick={() => handleLocalityAdd(row)}
-                style={{
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  background: "#f4f4f4",
-                  border: "1px solid #ddd",
-                  borderRadius: "4px",
-                  padding: "2px",
-                }}
-              >
-                <AddIcon styles={{ width: "16px", height: "16px" }} fill="#1D4E7F" />{t("CS_COMMON_ADD")}
-              </div> */}
-            </div>
-          );
-        },
+              </div>
+            );
+          },
         },
         {
           Header: t("WT_ADD_LOCALITY"),
           Cell: ({ row }) => {
-            const hasLocality = (row.original?.fillingPointLocalityCodes?.length > 0) || (row.original?.address?.locality && row.original?.address?.locality !== "NA");
+            const hasLocality =
+              row.original?.fillingPointLocalityCodes?.length > 0 || (row.original?.address?.locality && row.original?.address?.locality !== "NA");
             return (
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 {!hasLocality ? (
@@ -463,7 +448,14 @@ const SearchFillingPointAddress = () => {
 
           <div className="finance-mainlayout-col1">
             <Label>{t("WT_MOBILE_NUMBER")}</Label>
-            <TextInput value={mobileNumber} onChange={(e) => setMobileNumber(e.target.value)} placeholder={t("WT_ENTER_MOBILE_NUMBER")} />
+            <TextInput
+              value={mobileNumber}
+              onChange={(e) => setMobileNumber(e.target.value.replace(/\D/g, "").slice(0, 10))}
+              placeholder={t("WT_ENTER_MOBILE_NUMBER")}
+              validation={{
+                pattern: /^[6-9]\d{9}$/,
+              }}
+            />
           </div>
 
           {selectedTab === "FIXED_POINT" && (
@@ -475,7 +467,7 @@ const SearchFillingPointAddress = () => {
 
           {selectedTab === "FILLING_POINT" && (
             <div className="finance-mainlayout-col1">
-              <Label>{t("PT_COMMON_TABLE_COL_STATUS_LABEL")}</Label>
+              <Label>{t("WT_FILLING_POINT_DESIGNATION")}</Label>
               <Dropdown option={statusOptions} optionKey="i18nKey" selected={status} select={setStatus} t={t} />
             </div>
           )}

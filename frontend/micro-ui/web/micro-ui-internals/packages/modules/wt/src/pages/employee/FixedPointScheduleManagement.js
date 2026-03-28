@@ -178,10 +178,10 @@ const FixedPointScheduleManagement = ({ ...props }) => {
 
   const columns = React.useMemo(
     () => [
-      { Header: t("WT_SCHEDULE_ID"), accessor: "scheduleId" },
+      // { Header: t("WT_SCHEDULE_ID"), accessor: "scheduleId" },
       { Header: t("WT_FIXED_POINT"), accessor: "fixedPoint" },
       { Header: t("WT_DAY"), accessor: "day" },
-      { Header: t("WT_FREQ"), accessor: "freq" },
+      // { Header: t("WT_FREQ"), accessor: "freq" },
       { Header: t("WT_ARR_TO_FPL"), accessor: "arrToFpl" },
       { Header: t("WT_DEP_FROM_FPL"), accessor: "depFromFpl" },
       { Header: t("WT_ARR_AT_FIXED_POINT"), accessor: "arrAtFixedPoint" },

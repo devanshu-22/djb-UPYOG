@@ -1,9 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { SubmitBar, Toast, Loader, Card, CardLabel, TextInput, MobileNumber, DatePicker } from "@djb25/digit-ui-react-components";
+import {
+  SubmitBar,
+  Toast,
+  Loader,
+  Card,
+  CardLabel,
+  TextInput,
+  MobileNumber,
+  CardSubHeader,
+} from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useLocation, useHistory } from "react-router-dom";
 import { useQueryClient } from "react-query";
-import Timeline from "../../../vendor/src/components/VENDORTimeline";
 import AddFixFillAddress from "./AddFixFillAddress";
 import { fixedPointPayload } from "../utils";
 import VerticalTimeline from "./VerticalTimeline";
@@ -102,68 +110,83 @@ const AddFixPointAddress = () => {
 
   const isMobile = window.Digit.Utils.browser.isMobile();
 
+  const isFormDisabled =
+    !formData?.owner?.name ||
+    !formData?.owner?.mobileNumber ||
+    !formData?.owner?.emailId ||
+    !formData?.address?.houseNo ||
+    !formData?.address?.streetName ||
+    !formData?.address?.addressLine1 ||
+    !formData?.address?.addressLine2 ||
+    !formData?.address?.city ||
+    !formData?.address?.locality ||
+    !formData?.address?.latitude ||
+    !formData?.address?.longitude ||
+    !formData?.address?.pincode;
+
   if (isEditLoading) return <Loader />;
 
   return (
     <div className="employee-form-section-wrapper">
       <VerticalTimeline config={[{ timeLine: [{ actions: "Add Fixed Point", currentStep: 1 }] }]} showFinalStep={false} />
 
-      <div style={{ flex: 1 , display: "flex", flexDirection: "column", gap: "16px"}}>
-        <Card className="formcomposer-section-grid">
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <CardLabel>
-              {`${t("COMMON_APPLICANT_NAME")}`} <span className="astericColor">*</span>
-            </CardLabel>
-            <TextInput
-              t={t}
-              type={"text"}
-              isMandatory={true}
-              name="name"
-              value={formData?.owner?.name}
-              style={{ width: "100%" }}
-              onChange={(e) => handleSelect("owner", { name: e.target.value })}
-            />
-          </div>
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <CardLabel>
-              {`${t("COMMON_MOBILE_NUMBER")}`} <span className="astericColor">*</span>
-            </CardLabel>
-            <MobileNumber
-              value={formData?.owner?.mobileNumber}
-              name="mobileNumber"
-              onChange={(value) => handleSelect("owner", { mobileNumber: value })}
-              style={{ width: "100%" }}
-            />
-          </div>
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <CardLabel>
-              {`${t("COMMON_EMAIL_ID")}`} <span className="astericColor">*</span>
-            </CardLabel>
-            <TextInput
-              t={t}
-              type={"email"}
-              isMandatory={true}
-              name="emailId"
-              value={formData?.owner?.emailId}
-              style={{ width: "100%" }}
-              onChange={(e) => handleSelect("owner", { emailId: e.target.value })}
-            />
-          </div>
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <CardLabel>{`${t("COMMON_ALT_MOBILE_NUMBER")}`}</CardLabel>
-            <MobileNumber
-              value={formData?.owner?.alternateNumber}
-              name="alternateNumber"
-              onChange={(value) => handleSelect("owner", { alternateNumber: value })}
-              style={{ width: "100%" }}
-            />
-          </div>
-        </Card>
-        <div >
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "16px" }}>
+          <Card className="formcomposer-section-grid">
+            <CardSubHeader style={{ gridColumn: "span 2", marginBottom: isMobile ? "0px" : "10px" }}>{t("WT_FIXING_POINT_APPLICANT_DETAILS")}</CardSubHeader>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <CardLabel>
+                {`${t("WT_FIXING_POINT_APPLICANT_DETAILS")}`} <span className="astericColor">*</span>
+              </CardLabel>
+              <TextInput
+                t={t}
+                type={"text"}
+                // isMandatory={true}
+                name="name"
+                value={formData?.owner?.name}
+                style={{ width: "100%" }}
+                onChange={(e) => handleSelect("owner", { name: e.target.value })}
+              />
+            </div>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <CardLabel>
+                {`${t("COMMON_MOBILE_NUMBER")}`} <span className="astericColor">*</span>
+              </CardLabel>
+              <MobileNumber
+                value={formData?.owner?.mobileNumber}
+                name="mobileNumber"
+                onChange={(value) => handleSelect("owner", { mobileNumber: value })}
+                style={{ width: "100%" }}
+              />
+            </div>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <CardLabel>
+                {`${t("COMMON_EMAIL_ID")}`} <span className="astericColor">*</span>
+              </CardLabel>
+              <TextInput
+                t={t}
+                type={"email"}
+                // isMandatory={true}
+                name="emailId"
+                value={formData?.owner?.emailId}
+                style={{ width: "100%" }}
+                onChange={(e) => handleSelect("owner", { emailId: e.target.value })}
+              />
+            </div>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <CardLabel>{`${t("COMMON_ALT_MOBILE_NUMBER")}`}</CardLabel>
+              <MobileNumber
+                value={formData?.owner?.alternateNumber}
+                name="alternateNumber"
+                onChange={(value) => handleSelect("owner", { alternateNumber: value })}
+                style={{ width: "100%" }}
+              />
+            </div>
+          </Card>
+        <div>
           <AddFixFillAddress t={t} config={addressConfig} onSelect={handleSelect} formData={formData} isEdit={!!editId} />
         </div>
         <div style={{ display: "flex", justifyContent: isMobile ? "center" : "flex-end" }}>
-          <SubmitBar label={editId ? t("ES_COMMON_UPDATE") : t("ES_COMMON_SAVE")} onSubmit={handleSubmit} />
+          <SubmitBar label={editId ? t("ES_COMMON_UPDATE") : t("ES_COMMON_SAVE")} onSubmit={handleSubmit} disabled={isFormDisabled} />
         </div>
       </div>
       {showToast && <Toast error={showToast.isError} label={showToast.label} onClose={() => setShowToast(null)} />}

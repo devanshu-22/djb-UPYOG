@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { AddressDetails, SubmitBar, Toast, Loader } from "@djb25/digit-ui-react-components";
+import { SubmitBar, Toast, Loader } from "@djb25/digit-ui-react-components";
 import { fillingPointPayload } from "../utils";
-import Timeline from "../../../vendor/src/components/VENDORTimeline";
 import { useLocation, useHistory } from "react-router-dom";
-
 import AddFillingPointMetaData from "./AddFillingPointMetaData";
 import AddFixFillAddress from "./AddFixFillAddress";
 import VerticalTimeline from "./VerticalTimeline";
@@ -71,8 +69,6 @@ const AddFillingPointAddress = () => {
     setFormData((prev) => ({ ...prev, [key]: data }));
   };
 
-  const steps = ["WT_FILLING_POINT"];
-
   const { mutate: createFillingPoint } = Digit.Hooks.wt.useCreateFillPoint(tenantId);
   const { mutate: updateFillingPoint } = Digit.Hooks.wt.useUpdateFillPoint(tenantId);
 
@@ -105,6 +101,26 @@ const AddFillingPointAddress = () => {
 
   const isMobile = window.Digit.Utils.browser.isMobile();
 
+  const isFormDisabled =
+    !formData?.owner?.aeName ||
+    !formData?.owner?.aeMobile ||
+    !formData?.owner?.aeEmail ||
+    !formData?.owner?.jeName ||
+    !formData?.owner?.jeMobile ||
+    !formData?.owner?.jeEmail ||
+    !formData?.owner?.eeName ||
+    !formData?.owner?.eeMobile ||
+    !formData?.owner?.eeEmail ||
+    !formData?.address?.houseNo ||
+    !formData?.address?.streetName ||
+    !formData?.address?.addressLine1 ||
+    !formData?.address?.addressLine2 ||
+    !formData?.address?.city ||
+    !formData?.address?.locality ||
+    !formData?.address?.latitude ||
+    !formData?.address?.longitude ||
+    !formData?.address?.pincode;
+
   if (isEditLoading) return <Loader />;
 
   return (
@@ -134,7 +150,7 @@ const AddFillingPointAddress = () => {
 
         <AddFixFillAddress t={t} config={addressConfig} onSelect={handleSelect} formData={formData} isEdit={!!editId} />
         <div style={{ display: "flex", marginBottom: "24px", justifyContent: isMobile ? "center" : "flex-end" }}>
-          <SubmitBar label={editId ? t("ES_COMMON_UPDATE") : t("ES_COMMON_SAVE_NEXT")} onSubmit={handleSubmit} />
+          <SubmitBar label={editId ? t("ES_COMMON_UPDATE") : t("ES_COMMON_SAVE")} onSubmit={handleSubmit} disabled={isFormDisabled} />
         </div>
       </div>
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { LabelFieldPair, CardLabel, TextInput, Card } from "@djb25/digit-ui-react-components";
+import { LabelFieldPair, CardLabel, TextInput, Card, CardSubHeader } from "@djb25/digit-ui-react-components";
 
 const AddFillingPointMetaData = ({
   t,
@@ -11,20 +11,17 @@ const AddFillingPointMetaData = ({
   const sectionKey = config?.key || "metaData";
   // ✅ ALL FIELDS CONFIG
   const inputs = [
-    // {
-    //   label: "WT_FILLING_POINT_NAME",
-    //   name: "fillingPointName",
-    //   isMandatory: true,
-    // },
-    // {
-    //   label: "WT_EMERGENCY_NAME",
-    //   name: "emergencyName",
-    // },
+    {
+      label: "WT_FILLING_POINT_NAME",
+      name: "fillingPointName",
+      isMandatory: true,
+    },
 
     // AE
     {
       label: "WT_AE_NAME",
       name: "aeName",
+      isMandatory: true,
       validation: {
         pattern: "^[a-zA-Z]+( [a-zA-Z]+)*$",
       },
@@ -32,6 +29,7 @@ const AddFillingPointMetaData = ({
     {
       label: "WT_AE_MOBILE_NUMBER",
       name: "aeMobile",
+      isMandatory: true,
       componentInFront: <div className="employee-card-input employee-card-input--front">+91</div>,
       validation: {
         pattern: "[6-9]{1}[0-9]{9}",
@@ -42,6 +40,7 @@ const AddFillingPointMetaData = ({
     {
       label: "WT_AE_EMAIL_ID",
       name: "aeEmail",
+      isMandatory: true,
       validation: {
         pattern: "^[a-zA-Z0-9._%+-]+@[a-z.-]+\\.(com|org|in)$",
       },
@@ -51,6 +50,7 @@ const AddFillingPointMetaData = ({
     {
       label: "WT_JE_NAME",
       name: "jeName",
+      isMandatory: true,
       validation: {
         pattern: "^[a-zA-Z]+( [a-zA-Z]+)*$",
       },
@@ -58,6 +58,7 @@ const AddFillingPointMetaData = ({
     {
       label: "WT_JE_MOBILE_NUMBER",
       name: "jeMobile",
+      isMandatory: true,
       componentInFront: <div className="employee-card-input employee-card-input--front">+91</div>,
       validation: {
         pattern: "[6-9]{1}[0-9]{9}",
@@ -68,6 +69,7 @@ const AddFillingPointMetaData = ({
     {
       label: "WT_JE_EMAIL_ID",
       name: "jeEmail",
+      isMandatory: true,
       validation: {
         pattern: "^[a-zA-Z0-9._%+-]+@[a-z.-]+\\.(com|org|in)$",
       },
@@ -77,6 +79,7 @@ const AddFillingPointMetaData = ({
     {
       label: "WT_EE_NAME",
       name: "eeName",
+      isMandatory: true,
       validation: {
         pattern: "^[a-zA-Z]+( [a-zA-Z]+)*$",
       },
@@ -84,6 +87,7 @@ const AddFillingPointMetaData = ({
     {
       label: "WT_EE_MOBILE_NUMBER",
       name: "eeMobile",
+      isMandatory: true,
       componentInFront: <div className="employee-card-input employee-card-input--front">+91</div>,
       validation: {
         pattern: "[6-9]{1}[0-9]{9}",
@@ -94,6 +98,7 @@ const AddFillingPointMetaData = ({
     {
       label: "WT_EE_EMAIL_ID",
       name: "eeEmail",
+      isMandatory: true,
       validation: {
         pattern: "^[a-zA-Z0-9._%+-]+@[a-z.-]+\\.(com|org|in)$",
       },
@@ -122,6 +127,7 @@ const AddFillingPointMetaData = ({
 
   return (
     <Card className="formcomposer-section-grid">
+      <CardSubHeader style={{ gridColumn: "span 2" , marginBottom: isMobile ? "0px" : "10px"}}>{t("WT_FILLING_POINT_APPLICANT_DETAILS")}</CardSubHeader>
       {filteredInputs.map((input) => (
         <div key={input.name}>
           <LabelFieldPair>
