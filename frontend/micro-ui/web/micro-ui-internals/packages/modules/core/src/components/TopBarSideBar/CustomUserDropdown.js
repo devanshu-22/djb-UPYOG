@@ -7,16 +7,19 @@ const TextToImg = (props) => (
   </span>
 );
 
-const CustomUserDropdown = ({ userOptions, roleOptions = [], selectedRole, handleRoleChange, profilePic, userName, designation, userCode, t }) => {
+const CustomUserDropdown = ({
+  userOptions,
+  roleOptions = [],
+  selectedRole,
+  handleRoleChange,
+  profilePic,
+  userName,
+  designation,
+  userCode,
+  t,
+  compact = false,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= (768 || 480 || 320 || 1024));
-
-  React.useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= (768 || 480 || 320 || 1024));
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
 
   const toggleDropdown = () => setIsOpen(!isOpen);
 
@@ -25,12 +28,6 @@ const CustomUserDropdown = ({ userOptions, roleOptions = [], selectedRole, handl
       option.func();
       setIsOpen(false);
     }
-  };
-
-  const handleRoleSelect = (role) => {
-    handleRoleChange(role);
-    setIsRoleDropdownOpen(false);
-    setIsOpen(false);
   };
 
   return (
