@@ -436,7 +436,7 @@ const StatusBadge = ({ isOnline }) => (
   </span>
 );
 
-const DriverCard = ({ driver, isSelected, onClick }) => {
+const DriverCard = ({ driver, isSelected, onClick, vendorList }) => {
   const [currentAddress, setCurrentAddress] = useState("Resolving area...");
   const [deliveryAddress, setDeliveryAddress] = useState("Resolving area...");
   const lastResolvedPos = useRef({ lat: null, lng: null });
@@ -476,6 +476,27 @@ const DriverCard = ({ driver, isSelected, onClick }) => {
     };
     resolveDest();
   }, [driver.deliveryLat, driver.deliveryLng]);
+
+  const vehicleNumber = useMemo(() => {
+    if (!vendorList || !vendorList.length) return null;
+
+    for (const vendor of vendorList) {
+      if (!vendor.drivers || !vendor.drivers.length) continue;
+
+      const driverMatch = vendor.drivers.find((d) =>
+        d.owner?.mobileNumber === driver.driverId ||
+        d.owner?.uuid === driver.driverId ||
+        d.id === driver.driverId ||
+        String(d.owner?.mobileNumber) === String(driver.driverId) ||
+        String(d.owner?.uuid) === String(driver.driverId)
+      );
+
+      if (driverMatch && vendor.vehicles && vendor.vehicles.length > 0) {
+        return vendor.vehicles[0]?.registrationNumber || vendor.vehicles[0]?.vehicleNo || null;
+      }
+    }
+    return null;
+  }, [vendorList, driver.driverId]);
 
   const calculateETA = () => {
     if (!driver.lat || !driver.lng || !driver.deliveryLat || !driver.deliveryLng) return null;
@@ -626,6 +647,12 @@ const DriverCard = ({ driver, isSelected, onClick }) => {
           gap: "4px",
         }}
       >
+        {vehicleNumber && (
+          <React.Fragment>
+            <span style={{ color: "#555" }}>Vehicle</span>
+            <span style={{ fontWeight: "600", color: "#667eea" }}>{vehicleNumber}</span>
+          </React.Fragment>
+        )}
         {driver.accuracy && (
           <React.Fragment>
             <span>Accuracy</span>
@@ -687,8 +714,30 @@ export default function LiveTrackingSystem() {
     },
   });
 
+  const filteredVendorOptions = useMemo(() => {
+    if (!vendorOptions || !vendorOptions.length) return [];
+    if (!selectedFillingPoint) return vendorOptions;
+
+    return vendorOptions.filter(
+      (vendor) => vendor?.fillingPoint?.id === selectedFillingPoint?.id
+    );
+  }, [vendorOptions, selectedFillingPoint]);
+  useEffect(() => {
+    if (vendorOptions?.length && Object.keys(drivers).length) {
+      console.log("=== VENDOR DEBUG ===");
+      console.log("Vendor[0] vehicles:", vendorOptions[0]?.vehicles);
+      console.log("Vendor[0] drivers:", vendorOptions[0]?.drivers?.map(d => ({
+        id: d.id,
+        mobile: d.owner?.mobileNumber,
+        uuid: d.owner?.uuid,
+      })));
+      console.log("Socket driverId example:", Object.keys(drivers)[0]);
+    }
+  }, [vendorOptions, drivers]);
+
   const handleFillingPointSelect = (value) => {
     setSelectedFillingPoint(value);
+    setSelectedVendor(null);
   };
 
   // Check for mobile on resize
@@ -797,9 +846,40 @@ export default function LiveTrackingSystem() {
   const filteredDrivers = Object.values(drivers).filter((driver) => {
     const matchesSearch = driver.driverId.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus =
-      filterOnline === "all" || (filterOnline === "online" && driver.isOnline) || (filterOnline === "offline" && !driver.isOnline);
-    const matchesFillingPoint = !selectedFillingPoint || driver.fillingPointId === selectedFillingPoint.id;
-    const matchesVendor = !selectedVendor || driver.vendorId === (selectedVendor.id || selectedVendor.code);
+      filterOnline === "all" ||
+      (filterOnline === "online" && driver.isOnline) ||
+      (filterOnline === "offline" && !driver.isOnline);
+
+    // Filling point filter: selected vendor ke fillingPoint se match karo
+    // (vendor already fillingPoint se filter ho chuka hai dropdown mein)
+    const matchesFillingPoint = !selectedFillingPoint || (() => {
+      if (!vendorOptions || !vendorOptions.length) return false;
+      // Check karo ki driver kisi aisi vendor ka part hai jo is filling point se linked hai
+      return vendorOptions.some((vendor) => {
+        if (vendor?.fillingPoint?.id !== selectedFillingPoint?.id) return false;
+        return vendor.drivers?.some((d) =>
+          d.owner?.mobileNumber === driver.driverId ||
+          d.owner?.uuid === driver.driverId ||
+          d.id === driver.driverId ||
+          String(d.owner?.mobileNumber) === String(driver.driverId) ||
+          String(d.owner?.uuid) === String(driver.driverId)
+        );
+      });
+    })();
+
+    // Vendor filter: selected vendor ke drivers se match karo
+    const matchesVendor = !selectedVendor || (() => {
+      const vendorDriverIds = selectedVendor.drivers?.map((d) => [
+        d.owner?.mobileNumber,
+        d.owner?.uuid,
+        d.id,
+        String(d.owner?.mobileNumber),
+        String(d.owner?.uuid),
+      ]).flat().filter(Boolean) || [];
+
+      return vendorDriverIds.some((id) => driver.driverId === id);
+    })();
+
     return matchesSearch && matchesStatus && matchesFillingPoint && matchesVendor;
   });
 
@@ -989,7 +1069,7 @@ export default function LiveTrackingSystem() {
 
                 <Dropdown
                   t={t}
-                  option={vendorOptions}
+                  option={filteredVendorOptions}
                   optionKey="name"
                   select={setSelectedVendor}
                   selected={selectedVendor}
@@ -1092,6 +1172,7 @@ export default function LiveTrackingSystem() {
                     key={driver.driverId}
                     driver={driver}
                     isSelected={selectedDriver?.driverId === driver.driverId}
+                    vendorList={vendorOptions}
                     onClick={() => {
                       setSelectedDriver(driver);
                       if (isMobile) {
