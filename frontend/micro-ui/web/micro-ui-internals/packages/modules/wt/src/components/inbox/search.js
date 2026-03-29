@@ -76,7 +76,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmitInput)} className="search-form-wrapper search-complaint-container">
+    <form id="search-form" onSubmit={handleSubmit(onSubmitInput)} className="search-form-wrapper search-complaint-container">
       <React.Fragment>
         {(type === "mobile" || mobileView) && (
           <div className="complaint-header">

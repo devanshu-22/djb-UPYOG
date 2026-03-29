@@ -10,7 +10,17 @@ import { ToggleSwitch } from "@djb25/digit-ui-react-components";
 //import RegistrySearch from "./RegistrySearch";
 import RegistredVendorSearch from "./RegisteredVendorSearch";
 import { useQueryClient } from "react-query";
-import { add } from "lodash";
+
+const parseAdditionalDetails = (additionalDetails) => {
+  if (!additionalDetails) return {};
+  if (typeof additionalDetails === "object") return additionalDetails;
+  if (typeof additionalDetails !== "string") return {};
+  try {
+    return JSON.parse(additionalDetails);
+  } catch (error) {
+    return {};
+  }
+};
 
 const VendorInbox = (props) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -930,6 +940,97 @@ const VendorInbox = (props) => {
     }
   }, [props.selectedTab, vendors, drivers, tableData, additionalVendorData, allFillingPoints, t]);
 
+  const csvExportColumns = React.useMemo(() => {
+    switch (props.selectedTab) {
+      case "VENDOR":
+        return [
+          {
+            Header: t("ES_VENDOR_INBOX_VENDOR_NAME"),
+            exportAccessor: (row) => row?.name || row?.dsoDetails?.name || "NA",
+          },
+          {
+            Header: t("ES_VENDOR_INBOX_DATE_VENDOR_CREATION"),
+            exportAccessor: (row) =>
+              row?.auditDetails?.createdTime ? Digit.DateUtils.ConvertEpochToDate(row?.auditDetails?.createdTime) : "",
+          },
+          {
+            Header: t("WT_FILLING_POINT"),
+            exportAccessor: (row) =>
+              row?.dsoDetails?.fillingPoint?.fillingPointName ||
+              row?.dsoDetails?.fillingPoint ||
+              row?.fillingPoint ||
+              row?.dsoDetails?.fillingPointId ||
+              row?.fillingPointId ||
+              "NA",
+          },
+          {
+            Header: t("ES_VENDOR_INBOX_SERVICE_TYPE"),
+            exportAccessor: (row) => parseAdditionalDetails(row?.dsoDetails?.additionalDetails)?.serviceType || "N/A",
+          },
+          {
+            Header: t("ES_VENDOR_REGISTRY_INBOX_ENABLED"),
+            exportAccessor: (row) => row?.dsoDetails?.status || "NA",
+          },
+        ];
+      case "VEHICLE":
+        return [
+          {
+            Header: t("ES_FSM_REGISTRY_INBOX_VEHICLE_NAME"),
+            exportAccessor: (row) => row?.registrationNumber || "NA",
+          },
+          {
+            Header: t("ES_FSM_REGISTRY_INBOX_DATE_VEHICLE_CREATION"),
+            exportAccessor: (row) =>
+              row?.auditDetails?.createdTime ? Digit.DateUtils.ConvertEpochToDate(row?.auditDetails?.createdTime) : "",
+          },
+          {
+            Header: t("ES_FSM_REGISTRY_INBOX_VENDOR_NAME"),
+            exportAccessor: (row) => row?.vendor?.name || "NA",
+          },
+          {
+            Header: t("ES_VENDOR_INBOX_SERVICE_TYPE"),
+            exportAccessor: (row) => parseAdditionalDetails(row?.additionalDetails)?.serviceType || "N/A",
+          },
+          {
+            Header: t("ES_FSM_REGISTRY_SELECT_DRIVER"),
+            exportAccessor: (row) => row?.driverData?.name || row?.driver?.name || "NA",
+          },
+          {
+            Header: t("ES_FSM_REGISTRY_INBOX_ENABLED"),
+            exportAccessor: (row) => row?.status || "NA",
+          },
+        ];
+      case "DRIVER":
+        return [
+          {
+            Header: t("ES_FSM_REGISTRY_INBOX_USERNAME"),
+            exportAccessor: (row) => row?.owner?.userName || "NA",
+          },
+          {
+            Header: t("ES_FSM_REGISTRY_INBOX_DRIVER_NAME"),
+            exportAccessor: (row) => row?.name || "NA",
+          },
+          {
+            Header: t("ES_FSM_REGISTRY_INBOX_DATE_DRIVER_CREATION"),
+            exportAccessor: (row) =>
+              row?.auditDetails?.createdTime ? Digit.DateUtils.ConvertEpochToDate(row?.auditDetails?.createdTime) : "",
+          },
+          {
+            Header: t("ES_FSM_REGISTRY_INBOX_VENDOR_NAME"),
+            exportAccessor: (row) => row?.vendorData?.name || row?.vendor?.name || "NA",
+          },
+          {
+            Header: t("ES_FSM_REGISTRY_INBOX_ENABLED"),
+            exportAccessor: (row) => row?.status || "NA",
+          },
+        ];
+      default:
+        return [];
+    }
+  }, [props.selectedTab, t]);
+
+  const getCSVExportData = React.useCallback(async () => tableData, [tableData]);
+
   // if it validate the user role then it starts working
   let result;
   if (props.isLoading || isAllFillingPointsLoading) {
@@ -981,6 +1082,10 @@ const VendorInbox = (props) => {
         disableSort={props.disableSort}
         sortParams={props.sortParams}
         totalRecords={props.totalRecords}
+        showCSVExport={true}
+        getCSVExportData={getCSVExportData}
+        csvExportColumns={csvExportColumns}
+        csvExportFileName={`vendor-${String(props.selectedTab || "registry").toLowerCase()}-inbox`}
       />
     );
   }

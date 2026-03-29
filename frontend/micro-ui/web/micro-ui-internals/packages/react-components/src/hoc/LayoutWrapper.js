@@ -1,0 +1,19 @@
+import React from "react";
+
+/**
+ * @typedef {"normal" | "action"} LayoutType
+ */
+
+/**
+ * @param {{ layoutClass?: LayoutType, children: React.ReactNode }} props
+ */
+const LayoutWrapper = ({ layoutClass = "normal", children }) => {
+  return <div className={layouts[layoutClass]}>{children}</div>;
+};
+
+export default LayoutWrapper;
+
+const layouts = {
+  normal: "employee-form",
+  action: "employee-form employee-form-content-with-action-bar",
+};

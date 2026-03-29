@@ -1,12 +1,22 @@
-import { Header, Loader } from "@djb25/digit-ui-react-components";
 import React, { useCallback, useEffect, useState } from "react";
+import { Loader } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import DesktopInbox from "../components/inbox/DesktopInbox";
 import MobileInbox from "../components/inbox/MobileInbox";
 
+const HRMS_SORT_FIELD_MAP = {
+  employeeCode: "code",
+  employeeName: "name",
+  roleCount: "roles",
+  designation: "designation",
+  department: "department",
+  status: "isActive",
+  createdTime: "createdTime",
+};
+
 const Inbox = ({ parentRoute, businessService = "HRMS", initialStates = {}, filterComponent, isInbox }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const { isLoading: isLoading, Errors, data: res } = Digit.Hooks.hrms.useHRMSCount(tenantId);
+  const { isLoading, data: res } = Digit.Hooks.hrms.useHRMSCount(tenantId);
 
   const { t } = useTranslation();
   const [pageOffset, setPageOffset] = useState(initialStates.pageOffset || 0);
@@ -16,11 +26,12 @@ const Inbox = ({ parentRoute, businessService = "HRMS", initialStates = {}, filt
   const [searchParams, setSearchParams] = useState(() => {
     return initialStates.searchParams || {};
   });
+  const resolvedSortBy = HRMS_SORT_FIELD_MAP[sortParams?.[0]?.id] || sortParams?.[0]?.id || "createdTime";
 
   let isMobile = window.Digit.Utils.browser.isMobile();
   let paginationParams = isMobile
-    ? { limit: 100, offset: pageOffset, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" }
-    : { limit: pageSize, offset: pageOffset, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" };
+    ? { limit: 100, offset: pageOffset, sortBy: resolvedSortBy, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" }
+    : { limit: pageSize, offset: pageOffset, sortBy: resolvedSortBy, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" };
   const isupdate = Digit.SessionStorage.get("isupdate");
   const { isLoading: hookLoading, isError, error, data, ...rest } = Digit.Hooks.hrms.useHRMSSearch(
     searchParams,
@@ -28,7 +39,6 @@ const Inbox = ({ parentRoute, businessService = "HRMS", initialStates = {}, filt
     paginationParams,
     isupdate
   );
-  console.log(data, 'hrms search data')
 
   useEffect(() => {
     if (res) {
@@ -36,7 +46,7 @@ const Inbox = ({ parentRoute, businessService = "HRMS", initialStates = {}, filt
     }
   }, [res]);
 
-  useEffect(() => { }, [hookLoading, rest]);
+  useEffect(() => {}, [hookLoading, rest]);
 
   useEffect(() => {
     setPageOffset(0);
@@ -54,19 +64,49 @@ const Inbox = ({ parentRoute, businessService = "HRMS", initialStates = {}, filt
     let keys_to_delete = filterParam.delete;
     let _new = { ...searchParams, ...filterParam };
     if (keys_to_delete) keys_to_delete.forEach((key) => delete _new[key]);
-    filterParam.delete;
     delete _new.delete;
     setSearchParams({ ..._new });
   };
 
   const handleSort = useCallback((args) => {
-    if (args.length === 0) return;
-    setSortParams(args);
+    if (!Array.isArray(args) || args.length === 0 || !args[0]?.id) return;
+    const normalizedId = HRMS_SORT_FIELD_MAP[args[0].id] ? args[0].id : "createdTime";
+    setSortParams([{ id: normalizedId, desc: !!args[0].desc }]);
   }, []);
 
   const handlePageSizeChange = (e) => {
     setPageSize(Number(e.target.value));
   };
+
+  const getCSVExportData = useCallback(async () => {
+    const limit = 200;
+    const maxIterations = 100;
+    let offset = 0;
+    let employees = [];
+
+    for (let iteration = 0; iteration < maxIterations; iteration++) {
+      const response = await Digit.HRMSService.search(
+        tenantId,
+        {
+          limit,
+          offset,
+          sortBy: HRMS_SORT_FIELD_MAP[sortParams?.[0]?.id] || sortParams?.[0]?.id || "createdTime",
+          sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC",
+        },
+        searchParams
+      );
+
+      const batch = Array.isArray(response?.Employees) ? response.Employees : [];
+      if (!batch.length) break;
+
+      employees = [...employees, ...batch];
+      if (batch.length < limit) break;
+
+      offset += limit;
+    }
+
+    return employees;
+  }, [tenantId, searchParams, sortParams]);
 
   const getSearchFields = () => {
     return [
@@ -120,12 +160,10 @@ const Inbox = ({ parentRoute, businessService = "HRMS", initialStates = {}, filt
           linkPrefix={"/digit-ui/employee/hrms/details/"}
           filterComponent={filterComponent}
         />
-        // <div></div>
       );
     } else {
       return (
-        <div className="" style={{ height: "inherit" }}>
-          {/* {isInbox && <Header>{t("HR_HOME_SEARCH_RESULTS_HEADING")}</Header>} */}
+        <div className="employee-form-content">
           <DesktopInbox
             businessService={businessService}
             data={data}
@@ -147,6 +185,7 @@ const Inbox = ({ parentRoute, businessService = "HRMS", initialStates = {}, filt
             sortParams={sortParams}
             totalRecords={totalRecords}
             filterComponent={filterComponent}
+            getCSVExportData={getCSVExportData}
           />
         </div>
       );

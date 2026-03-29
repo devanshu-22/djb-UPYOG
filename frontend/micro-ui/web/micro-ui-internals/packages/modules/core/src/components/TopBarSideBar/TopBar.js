@@ -273,7 +273,7 @@ const TopBar = ({
 };
 
 const EmployeeDesignationWrapper = ({ userDetails, ...props }) => {
-  const { t } = props;
+  const { t, compact } = props;
   const { isLoading, data } = Digit.Hooks.hrms.useHRMSSearch(
     { codes: userDetails?.info?.userName },
     Digit.ULBService.getCurrentTenantId(),
@@ -291,6 +291,7 @@ const EmployeeDesignationWrapper = ({ userDetails, ...props }) => {
       userName={userDetails?.info?.name || userDetails?.info?.userInfo?.name || "Employee"}
       designation={designationName}
       userCode={userDetails?.info?.userName}
+      compact={compact}
     />
   );
 };

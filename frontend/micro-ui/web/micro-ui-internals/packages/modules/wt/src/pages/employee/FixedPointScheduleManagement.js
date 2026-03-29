@@ -126,9 +126,9 @@ const FixedPointScheduleManagement = ({ ...props }) => {
 
   const [data, setData] = useState([]);
 
-  React.useEffect(() => {
-    if (scheduleData?.fixedPointTimeTableDetails) {
-      const mappedData = scheduleData.fixedPointTimeTableDetails.map((item) => ({
+  const mapScheduleRows = React.useCallback(
+    (rows = []) =>
+      rows.map((item) => ({
         scheduleId: item.systemAssignedScheduleId,
         fixedPoint: item.fixedPointCode,
         day: item.day,
@@ -142,10 +142,15 @@ const FixedPointScheduleManagement = ({ ...props }) => {
         vehicle: item.vehicleId,
         active: item.isEnable ? "Y" : "N",
         totalCount: item.totalCount,
-      }));
-      setData(mappedData);
+      })),
+    []
+  );
+
+  React.useEffect(() => {
+    if (scheduleData?.fixedPointTimeTableDetails) {
+      setData(mapScheduleRows(scheduleData.fixedPointTimeTableDetails));
     }
-  }, [scheduleData]);
+  }, [mapScheduleRows, scheduleData]);
 
   const fetchNextPage = () => {
     setPageOffset((prevState) => prevState + pageSize);
@@ -226,6 +231,52 @@ const FixedPointScheduleManagement = ({ ...props }) => {
           </div>
         ),
       },
+    ],
+    [t]
+  );
+
+  const getCSVExportData = React.useCallback(async () => {
+    const baseFilters = { ...(filters || {}) };
+    delete baseFilters.limit;
+    delete baseFilters.offset;
+    const batchSize = 200;
+    let offset = 0;
+    let totalCount = Number.POSITIVE_INFINITY;
+    const allRows = [];
+
+    while (offset < totalCount) {
+      const response = await Digit.WTService.SearchFixedPointSchedule({
+        tenantId,
+        filters: { ...baseFilters, limit: batchSize, offset },
+      });
+      const pageRows = response?.fixedPointTimeTableDetails || [];
+      allRows.push(...pageRows);
+
+      const resolvedTotal = Number(response?.count ?? response?.totalCount ?? response?.Count);
+      totalCount = Number.isFinite(resolvedTotal) && resolvedTotal >= 0 ? resolvedTotal : allRows.length;
+
+      if (!pageRows.length || pageRows.length < batchSize) {
+        break;
+      }
+      offset += pageRows.length;
+    }
+
+    return mapScheduleRows(allRows);
+  }, [filters, mapScheduleRows, tenantId]);
+
+  const csvExportColumns = React.useMemo(
+    () => [
+      { Header: t("WT_SCHEDULE_ID"), accessor: "scheduleId" },
+      { Header: t("WT_FIXED_POINT"), accessor: "fixedPoint" },
+      { Header: t("WT_DAY"), accessor: "day" },
+      { Header: t("WT_FREQ"), accessor: "freq" },
+      { Header: t("WT_ARR_TO_FPL"), accessor: "arrToFpl" },
+      { Header: t("WT_DEP_FROM_FPL"), accessor: "depFromFpl" },
+      { Header: t("WT_ARR_AT_FIXED_POINT"), accessor: "arrAtFixedPoint" },
+      { Header: t("WT_DEP_AT_FIXED_POINT"), accessor: "depAtFixedPoint" },
+      { Header: t("WT_RETURN_TO_FPL"), accessor: "returnToFpl" },
+      { Header: t("WT_VOLUME"), accessor: "volume" },
+      { Header: t("WT_ACTIVE"), accessor: "active" },
     ],
     [t]
   );
@@ -362,6 +413,10 @@ const FixedPointScheduleManagement = ({ ...props }) => {
             disableSort={props.disableSort}
             sortParams={props.sortParams}
             totalRecords={scheduleData?.count || scheduleData?.totalCount || data?.[0]?.totalCount}
+            showCSVExport={true}
+            getCSVExportData={getCSVExportData}
+            csvExportColumns={csvExportColumns}
+            csvExportFileName="wt-fixed-point-schedule"
           />
         </div>
         <span>
@@ -445,7 +500,7 @@ const FixedPointScheduleManagement = ({ ...props }) => {
               system_assigned_schedule_id: formData.scheduleId,
               fixed_point_code: formData.fixedPointCode,
               day: daysArr.map((d) => d?.toUpperCase?.() || d),
-              trip_no: formData.frequencyNo,
+              trip_no: Number(formData.frequencyNo),
               arrival_time_to_fpl: formData.arrivalTimeFpl,
               departure_time_from_fpl: formData.departureTimeFpl,
               arrival_time_delivery_point: formData.arrivalFixedPoint,

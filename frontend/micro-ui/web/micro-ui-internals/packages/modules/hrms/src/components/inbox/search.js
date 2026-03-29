@@ -80,7 +80,13 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                   )
                 )}
             </div>
-            <div className="inbox-action-container">
+            <div className="formcomposer-section-button">
+              <div className="generic-button clear-search">
+                <p onClick={clearSearch}>{t(`HR_COMMON_CLEAR_SEARCH`)}</p>
+              </div>
+              <SubmitBar className="generic-button" label={t("HR_COMMON_SEARCH")} submit form="search-form" />
+            </div>
+            {/* <div className="inbox-action-container">
               {type === "desktop" && !mobileView && (
                 <button onClick={clearSearch} className="clear-search generic-button">
                   {t("HR_COMMON_CLEAR_SEARCH")}
@@ -89,7 +95,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
               {type === "desktop" && !mobileView && (
                 <SubmitBar style={{ marginTop: "unset" }} className="submit-bar-search generic-button" label={t("ES_COMMON_SEARCH")} submit />
               )}
-            </div>
+            </div> */}
           </div>
         </div>
         {(type === "mobile" || mobileView) && (

@@ -59,6 +59,7 @@ import _ from "lodash";
 export const FormComposer = (props) => {
   const { register, handleSubmit, setValue, getValues, reset, watch, control, formState, errors, setError, clearErrors, className } = useForm({
     defaultValues: props.defaultValues,
+    mode: props.mode || "onSubmit",
   });
   const { t } = useTranslation();
   const formData = watch();
@@ -381,7 +382,7 @@ export const FormComposer = (props) => {
                         errors[field?.populators?.name] &&
                         Object.keys(errors[field?.populators?.name]).length ? (
                           <CardLabelError style={{ gridColumn: field?.colSpan ? field.colSpan : "span 1", fontSize: "12px", marginTop: "8px" }}>
-                            {t(field?.populators?.error)}
+                            {t(field?.populators?.error || errors[field?.populators?.name]?.message)}
                           </CardLabelError>
                         ) : null}
                       </div>
@@ -414,7 +415,7 @@ export const FormComposer = (props) => {
 
   return (
     <form
-      style={{ minHeight: "100%", height: "100%", overflowY: "scroll" }}
+      style={{ minHeight: "100%", height: "100%", overflowY: "scroll", flex: "1" }}
       onSubmit={handleSubmit(onSubmit)}
       onKeyDown={(e) => checkKeyDown(e)}
       id={props.formId}

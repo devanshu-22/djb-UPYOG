@@ -68,12 +68,15 @@
 }
 
 .stepper-container {
-  width: 240px;
+  min-width: 240px;
   background: #fff;
   padding: 24px 0;
   border-radius: 8px;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
   overflow-y: scroll;
+  @media (min-width: 768px) {
+    max-width: 25%;
+  }
 }
 
 .stepper-item {
@@ -113,6 +116,7 @@
 .stepper-label {
   font-size: 14px;
   color: #505a5f;
+  word-wrap: anywhere;
 }
 
 .stepper-label.active {

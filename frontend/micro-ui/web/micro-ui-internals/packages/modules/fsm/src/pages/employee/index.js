@@ -1,18 +1,15 @@
+import React, { useEffect, useState } from "react";
 import {
   BreadCrumb,
-  ShippingTruck,
-  EmployeeModuleCard,
   PrivateRoute,
-  BackButton,
-  AddNewIcon,
-  ViewReportIcon,
-  InboxIcon,
-  ULBHomeCard,
+  // AddNewIcon,
+  // ViewReportIcon,
+  // InboxIcon,
   ModuleHeader,
   ArrowLeft,
   HomeIcon,
+  LayoutWrapper,
 } from "@djb25/digit-ui-react-components";
-import React, { Fragment, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Switch, useLocation } from "react-router-dom";
 import FstpAddVehicle from "./FstpAddVehicle";
@@ -129,48 +126,48 @@ export const FsmBreadCrumb = ({ location }) => {
 const EmployeeApp = ({ path, url, userType }) => {
   const { t } = useTranslation();
   const location = useLocation();
-  const DSO = Digit.UserService.hasAccess(["FSM_DSO"]);
-  const COLLECTOR = Digit.UserService.hasAccess("FSM_COLLECTOR") || false;
-  const FSM_ADMIN = Digit.UserService.hasAccess("FSM_ADMIN") || false;
-  const FSM_EDITOR = Digit.UserService.hasAccess("FSM_EDITOR_EMP") || false;
-  const FSM_CREATOR = Digit.UserService.hasAccess("FSM_CREATOR_EMP") || false;
+  // const DSO = Digit.UserService.hasAccess(["FSM_DSO"]);
+  // const COLLECTOR = Digit.UserService.hasAccess("FSM_COLLECTOR") || false;
+  // const FSM_ADMIN = Digit.UserService.hasAccess("FSM_ADMIN") || false;
+  // const FSM_EDITOR = Digit.UserService.hasAccess("FSM_EDITOR_EMP") || false;
+  // const FSM_CREATOR = Digit.UserService.hasAccess("FSM_CREATOR_EMP") || false;
 
-  const moduleForSomeFSMEmployees =
-    !DSO && !COLLECTOR && !FSM_EDITOR
-      ? [
-          {
-            link: "/digit-ui/employee/fsm/new-application",
-            name: "FSM_NEW_DESLUDGING_APPLICATION",
-            icon: <AddNewIcon />,
-          },
-        ]
-      : [];
+  // const moduleForSomeFSMEmployees =
+  //   !DSO && !COLLECTOR && !FSM_EDITOR
+  //     ? [
+  //         {
+  //           link: "/digit-ui/employee/fsm/new-application",
+  //           name: "FSM_NEW_DESLUDGING_APPLICATION",
+  //           icon: <AddNewIcon />,
+  //         },
+  //       ]
+  //     : [];
 
-  const moduleForSomeFSMAdmin = FSM_ADMIN
-    ? [
-        {
-          link: "/digit-ui/employee/fsm/registry",
-          name: "ES_TITLE_FSM_REGISTRY",
-          icon: <AddNewIcon />,
-        },
-      ]
-    : [];
+  // const moduleForSomeFSMAdmin = FSM_ADMIN
+  //   ? [
+  //       {
+  //         link: "/digit-ui/employee/fsm/registry",
+  //         name: "ES_TITLE_FSM_REGISTRY",
+  //         icon: <AddNewIcon />,
+  //       },
+  //     ]
+  //   : [];
 
-  const module = [
-    ...moduleForSomeFSMEmployees,
-    {
-      link: "/digit-ui/employee/fsm/inbox",
-      name: "ES_COMMON_INBOX",
-      icon: <InboxIcon />,
-    },
-    {
-      link: "/employee/report/fsm/FSMDailyDesludingReport",
-      hyperlink: true,
-      name: "ES_FSM_VIEW_REPORTS_BUTTON",
-      icon: <ViewReportIcon />,
-    },
-    ...moduleForSomeFSMAdmin,
-  ];
+  // const module = [
+  //   ...moduleForSomeFSMEmployees,
+  //   {
+  //     link: "/digit-ui/employee/fsm/inbox",
+  //     name: "ES_COMMON_INBOX",
+  //     icon: <InboxIcon />,
+  //   },
+  //   {
+  //     link: "/employee/report/fsm/FSMDailyDesludingReport",
+  //     hyperlink: true,
+  //     name: "ES_FSM_VIEW_REPORTS_BUTTON",
+  //     icon: <ViewReportIcon />,
+  //   },
+  //   ...moduleForSomeFSMAdmin,
+  // ];
 
   useEffect(() => {
     if (!location?.pathname?.includes("application-details")) {
@@ -192,7 +189,7 @@ const EmployeeApp = ({ path, url, userType }) => {
   const ApplicationAudit = Digit.ComponentRegistryService.getComponent("FSMApplicationAudit");
   const RateView = Digit.ComponentRegistryService.getComponent("FSMRateView");
   const FSMLinks = Digit.ComponentRegistryService.getComponent("FSMLinks");
-  const FSTPO = Digit.UserService.hasAccess(["FSM_EMP_FSTPO"]);
+  // const FSTPO = Digit.UserService.hasAccess(["FSM_EMP_FSTPO"]);
   const FSMRegistry = Digit.ComponentRegistryService.getComponent("FSMRegistry");
   const VendorDetails = Digit.ComponentRegistryService.getComponent("VendorDetails");
   const AddVendor = Digit.ComponentRegistryService.getComponent("AddVendor");
@@ -203,12 +200,9 @@ const EmployeeApp = ({ path, url, userType }) => {
   const DriverDetails = Digit.ComponentRegistryService.getComponent("DriverDetails");
   const AddDriver = Digit.ComponentRegistryService.getComponent("AddDriver");
   const EditDriver = Digit.ComponentRegistryService.getComponent("EditDriver");
-  const BreadCrumbComp = Digit.ComponentRegistryService.getComponent("FsmBreadCrumb");
+  // const BreadCrumbComp = Digit.ComponentRegistryService.getComponent("FsmBreadCrumb");
 
-  const locationCheck =
-    window.location.href.includes("/employee/fsm/inbox") ||
-    window.location.href.includes("/employee/fsm/registry") ||
-    window.location.href.includes("/employee/fsm/application-details/");
+  // const locationCheck =window.location.href.includes("/employee/fsm/inbox") ||window.location.href.includes("/employee/fsm/registry") ||    window.location.href.includes("/employee/fsm/application-details/");
 
   const getDynamicBreadcrumbs = () => {
     const pathname = location.pathname;
@@ -241,8 +235,7 @@ const EmployeeApp = ({ path, url, userType }) => {
     return crumbs;
   };
 
-  const desludgingApplicationCheck =
-    window.location.href.includes("/employee/fsm/new-application") || window.location.href.includes("/employee/fsm/modify-application");
+  // const desludgingApplicationCheck =window.location.href.includes("/employee/fsm/new-application") || window.location.href.includes("/employee/fsm/modify-application");
   return (
     <Switch>
       <React.Fragment>
@@ -272,278 +265,251 @@ const EmployeeApp = ({ path, url, userType }) => {
           <PrivateRoute
             exact
             path={`${path}/`}
-            component={renderWithLayout(
-              () => (
-                <FSMLinks matchPath={path} userType={userType} />
-              ),
-              layouts.normal
+            component={(props) => (
+              <LayoutWrapper layoutClass="normal">
+                <FSMLinks {...props} matchPath={path} userType={userType} />
+              </LayoutWrapper>
             )}
           />
 
           <PrivateRoute
             path={`${path}/inbox`}
-            component={renderWithLayout(
-              (props) => (
+            component={(props) => (
+              <LayoutWrapper layoutClass="normal">
                 <Inbox {...props} parentRoute={path} isInbox={true} />
-              ),
-              layouts.normal
+              </LayoutWrapper>
             )}
           />
 
           <PrivateRoute
             path={`${path}/fstp-inbox`}
-            component={renderWithLayout(
-              (props) => (
+            component={(props) => (
+              <LayoutWrapper layoutClass="normal">
                 <FstpInbox {...props} parentRoute={path} />
-              ),
-              layouts.normal
+              </LayoutWrapper>
             )}
           />
 
           <PrivateRoute
             path={`${path}/new-application`}
-            component={renderWithLayout(
-              () => (
+            component={() => (
+              <LayoutWrapper layoutClass="normal">
                 <NewApplication parentUrl={url} />
-              ),
-              layouts.normal
+              </LayoutWrapper>
             )}
           />
 
           <PrivateRoute
             path={`${path}/modify-application/:id`}
-            component={renderWithLayout(
-              () => (
+            component={() => (
+              <LayoutWrapper layoutClass="normal">
                 <EditApplication />
-              ),
-              layouts.normal
+              </LayoutWrapper>
             )}
           />
 
           <PrivateRoute
             path={`${path}/application-details/:id`}
-            component={renderWithLayout(
-              (props) => (
+            component={(props) => (
+              <LayoutWrapper layoutClass="normal">
                 <EmployeeApplicationDetails {...props} parentRoute={path} userType="EMPLOYEE" />
-              ),
-              layouts.normal
+              </LayoutWrapper>
             )}
           />
 
           <PrivateRoute
             path={`${path}/fstp-operator-details/:id`}
-            component={renderWithLayout(
-              (props) => (
+            component={(props) => (
+              <LayoutWrapper layoutClass="normal">
                 <FstpOperatorDetails {...props} />
-              ),
-              layouts.normal
+              </LayoutWrapper>
             )}
           />
 
           <PrivateRoute
             path={`${path}/response`}
-            component={renderWithLayout(
-              (props) => (
+            component={(props) => (
+              <LayoutWrapper layoutClass="normal">
                 <Response {...props} parentRoute={path} />
-              ),
-              layouts.normal
+              </LayoutWrapper>
             )}
           />
 
           <PrivateRoute
             path={`${path}/application-audit/:id`}
-            component={renderWithLayout(
-              (props) => (
+            component={(props) => (
+              <LayoutWrapper layoutClass="normal">
                 <ApplicationAudit {...props} parentRoute={path} />
-              ),
-              layouts.normal
+              </LayoutWrapper>
             )}
           />
 
           <PrivateRoute
             path={`${path}/search`}
-            component={renderWithLayout(
-              (props) => (
+            component={(props) => (
+              <LayoutWrapper layoutClass="normal">
                 <Inbox {...props} parentRoute={path} isSearch={true} />
-              ),
-              layouts.normal
+              </LayoutWrapper>
             )}
           />
 
           <PrivateRoute
             path={`${path}/rate-view/:id`}
-            component={renderWithLayout(
-              (props) => (
+            component={(props) => (
+              <LayoutWrapper layoutClass="normal">
                 <RateView {...props} parentRoute={path} />
-              ),
-              layouts.normal
+              </LayoutWrapper>
             )}
           />
 
           <PrivateRoute
             path={`${path}/mark-for-disposal`}
-            component={renderWithLayout(
-              () => (
+            component={() => (
+              <LayoutWrapper layoutClass="normal">
                 <div />
-              ),
-              layouts.normal
+              </LayoutWrapper>
             )}
           />
 
           <PrivateRoute
             exact
             path={`${path}/registry`}
-            component={renderWithLayout(
-              (props) => (
+            ccomponent={(props) => (
+              <LayoutWrapper layoutClass="normal">
                 <FSMRegistry {...props} parentRoute={path} />
-              ),
-              layouts.normal
+              </LayoutWrapper>
             )}
           />
 
           <PrivateRoute
             path={`${path}/registry/vendor-details/:id`}
-            component={renderWithLayout(
-              (props) => (
+            component={(props) => (
+              <LayoutWrapper layoutClass="normal">
                 <VendorDetails {...props} parentRoute={path} />
-              ),
-              layouts.normal
+              </LayoutWrapper>
             )}
           />
 
           <PrivateRoute
             path={`${path}/registry/new-vendor`}
-            component={renderWithLayout(
-              (props) => (
+            component={(props) => (
+              <LayoutWrapper layoutClass="normal">
                 <AddVendor {...props} parentRoute={path} />
-              ),
-              layouts.normal
+              </LayoutWrapper>
             )}
           />
 
           <PrivateRoute
             path={`${path}/registry/modify-vendor/:id`}
-            component={renderWithLayout(
-              (props) => (
+            component={(props) => (
+              <LayoutWrapper layoutClass="action">
                 <EditVendor {...props} parentRoute={path} />
-              ),
-              layouts.action
+              </LayoutWrapper>
             )}
           />
 
           <PrivateRoute
             path={`${path}/registry/vehicle-details/:id`}
-            component={renderWithLayout(
-              (props) => (
+            component={(props) => (
+              <LayoutWrapper layoutClass="normal">
                 <VehicleDetails {...props} parentRoute={path} />
-              ),
-              layouts.normal
+              </LayoutWrapper>
             )}
           />
 
           <PrivateRoute
             path={`${path}/registry/new-vehicle`}
-            component={renderWithLayout(
-              (props) => (
+            component={(props) => (
+              <LayoutWrapper layoutClass="normal">
                 <AddVehicle {...props} parentRoute={path} />
-              ),
-              layouts.normal
+              </LayoutWrapper>
             )}
           />
 
           {/* 🔥 ACTION BAR ROUTE */}
           <PrivateRoute
             path={`${path}/registry/modify-vehicle/:id`}
-            component={renderWithLayout(
-              (props) => (
+            component={(props) => (
+              <LayoutWrapper layoutClass="action">
                 <EditVehicle {...props} parentRoute={path} />
-              ),
-              layouts.action
+              </LayoutWrapper>
             )}
           />
 
           <PrivateRoute
             path={`${path}/registry/driver-details/:id`}
-            component={renderWithLayout(
-              (props) => (
+            component={(props) => (
+              <LayoutWrapper layoutClass="normal">
                 <DriverDetails {...props} parentRoute={path} />
-              ),
-              layouts.normal
+              </LayoutWrapper>
             )}
           />
 
           <PrivateRoute
             path={`${path}/registry/new-driver`}
-            component={renderWithLayout(
-              (props) => (
+            component={(props) => (
+              <LayoutWrapper layoutClass="normal">
                 <AddDriver {...props} parentRoute={path} />
-              ),
-              layouts.normal
+              </LayoutWrapper>
             )}
           />
 
           <PrivateRoute
             path={`${path}/registry/modify-driver/:id`}
-            component={renderWithLayout(
-              (props) => (
+            component={(props) => (
+              <LayoutWrapper layoutClass="action">
                 <EditDriver {...props} parentRoute={path} />
-              ),
-              layouts.action
+              </LayoutWrapper>
             )}
           />
 
           <PrivateRoute
             exact
             path={`${path}/fstp-operations`}
-            component={renderWithLayout(
-              () => (
+            component={() => (
+              <LayoutWrapper layoutClass="normal">
                 <FstpOperations />
-              ),
-              layouts.normal
+              </LayoutWrapper>
             )}
           />
 
           <PrivateRoute
             exact
             path={`${path}/fstp-add-vehicle`}
-            component={renderWithLayout(
-              () => (
+            component={() => (
+              <LayoutWrapper layoutClass="normal">
                 <FstpAddVehicle />
-              ),
-              layouts.normal
+              </LayoutWrapper>
             )}
           />
 
           <PrivateRoute
             exact
             path={`${path}/fstp-fsm-request/:id`}
-            component={renderWithLayout(
-              (props) => (
+            component={(props) => (
+              <LayoutWrapper layoutClass="normal">
                 <FstpServiceRequest {...props} />
-              ),
-              layouts.normal
+              </LayoutWrapper>
             )}
           />
 
           <PrivateRoute
             exact
             path={`${path}/fstp/new-vehicle-entry`}
-            component={renderWithLayout(
-              (props) => (
+            component={(props) => (
+              <LayoutWrapper layoutClass="normal">
                 <FstpOperatorDetails {...props} />
-              ),
-              layouts.normal
+              </LayoutWrapper>
             )}
           />
 
           <PrivateRoute
             exact
             path={`${path}/fstp/new-vehicle-entry/:id`}
-            component={renderWithLayout(
-              (props) => (
+            component={(props) => (
+              <LayoutWrapper layoutClass="normal">
                 <FstpOperatorDetails {...props} />
-              ),
-              layouts.normal
+              </LayoutWrapper>
             )}
           />
         </div>
@@ -553,14 +519,3 @@ const EmployeeApp = ({ path, url, userType }) => {
 };
 
 export default EmployeeApp;
-
-const renderWithLayout = (Component, layoutClass) => (routeProps) => (
-  <div className={layoutClass}>
-    <Component {...routeProps} />
-  </div>
-);
-
-const layouts = {
-  normal: "employee-form",
-  action: "employee-form employee-form-content-with-action-bar",
-};

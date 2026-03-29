@@ -16,7 +16,10 @@ const DriverConfig = (t, disabled = false) => {
             name: "driverName",
             validation: {
               required: true,
-              pattern: /^[A-Za-z]/,
+              pattern: {
+                value: /^[A-Za-z\s]+$/,
+                message: t("FSM_REGISTRY_INVALID_NAME"),
+              },
             },
             error: t("FSM_REGISTRY_INVALID_NAME"),
             defaultValue: "",
@@ -32,9 +35,12 @@ const DriverConfig = (t, disabled = false) => {
             name: "license",
             validation: {
               required: true,
-              pattern: /^[a-zA-Z-]{0,}[- ]{0,1}[ 0-9]{1,}/,
+              pattern: {
+                value: /^[A-Z]{2}-[0-9]{2}-[0-9]{4}-[0-9]{7}$/,
+                message: t("ES_FSM_REGISTRY_INVALID_LICENSE"),
+              },
             },
-            error: t("FSM_REGISTRY_INVALID_DRIVER_LICENSE"),
+            error: t("ES_FSM_REGISTRY_INVALID_LICENSE"),
             required: false,
             defaultValue: "",
             className: "payment-form-text-input-correction",
@@ -80,7 +86,7 @@ const DriverConfig = (t, disabled = false) => {
         },
         {
           label: t("ES_FSM_REGISTRY_NEW_DOB"),
-          isMandatory: false,
+          isMandatory: true,
           type: "custom",
           key: "dob",
           populators: {
@@ -93,7 +99,11 @@ const DriverConfig = (t, disabled = false) => {
                 onChange={props.onChange}
                 date={props.value}
                 {...customProps}
-                max={convertEpochToDate(new Date().setFullYear(new Date().getFullYear()))}
+                max={(() => {
+                  const date = new Date();
+                  date.setFullYear(date.getFullYear() - 18);
+                  return date.toISOString().split("T")[0];
+                })()}
               />
             ),
           },
@@ -131,7 +141,7 @@ const DriverConfig = (t, disabled = false) => {
             className: "payment-form-text-input-correction",
             labelStyle: { border: "1px solid black", borderRight: "none" },
           },
-        }, 
+        },
       ],
     },
   ];

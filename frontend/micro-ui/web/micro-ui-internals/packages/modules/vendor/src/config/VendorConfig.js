@@ -16,7 +16,7 @@ const VendorConfig = (t, disabled = false) => {
             name: "vendorName",
             validation: {
               required: true,
-              pattern: /^[A-Za-z]/,
+              pattern: /^[A-Za-z\s]+$/,
             },
             error: t("FSM_REGISTRY_INVALID_NAME"),
             defaultValue: "",

@@ -31,6 +31,32 @@ const WTDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
 
   const columns = React.useMemo(() => (props.isSearch ? tableConfig.searchColumns(props) : tableConfig.inboxColumns(props) || []), []);
 
+  const inboxCsvColumns = React.useMemo(
+    () => [
+      {
+        Header: columns?.[0]?.Header || t("WT_BOOKING_NO"),
+        exportAccessor: (row) => row?.searchData?.bookingNo || "",
+      },
+      {
+        Header: columns?.[1]?.Header || t("WT_APPLICANT_NAME"),
+        exportAccessor: (row) => row?.searchData?.applicantDetail?.name || "",
+      },
+      {
+        Header: columns?.[2]?.Header || t("WT_MOBILE_NUMBER"),
+        exportAccessor: (row) => row?.searchData?.applicantDetail?.mobileNumber || "",
+      },
+      {
+        Header: columns?.[3]?.Header || t("LOCALITY"),
+        exportAccessor: (row) => (row?.searchData?.localityCode ? t(row.searchData.localityCode) : ""),
+      },
+      {
+        Header: columns?.[4]?.Header || t("WT_STATUS"),
+        exportAccessor: (row) => (row?.workflowData?.state?.applicationStatus ? t(row.workflowData.state.applicationStatus) : ""),
+      },
+    ],
+    [columns, t]
+  );
+
   let result;
   if (props.isLoading) {
   result = <Loader />;
@@ -81,7 +107,12 @@ const WTDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
       onSort={props.onSort}
       disableSort={props.disableSort}
       sortParams={props.sortParams}
+      autoSort={false}
       totalRecords={props.totalRecords}
+      showCSVExport={true}
+      getCSVExportData={props.getCSVExportData}
+      csvExportColumns={inboxCsvColumns}
+      csvExportFileName={`${String(props.moduleCode || "wt").toLowerCase()}-inbox`}
     />
   );
 }

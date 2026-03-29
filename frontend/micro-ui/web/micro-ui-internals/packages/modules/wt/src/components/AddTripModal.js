@@ -15,6 +15,8 @@ const AddTripModal = ({ t, closeModal, onSubmit, initialValues }) => {
         arrivalFixedPoint: initialValues.arrivalFixedPoint || currentTime,
         departureFixedPoint: initialValues.departureFixedPoint || currentTime,
         returnFpl: initialValues.returnFpl || currentTime,
+        frequencyNo: initialValues.frequencyNo,
+        vehicleId: initialValues.vehicleId,
       }
     : {
         arrivalTimeFpl: currentTime,
@@ -94,7 +96,7 @@ const AddTripModal = ({ t, closeModal, onSubmit, initialValues }) => {
 
   const onFormSubmit = (data) => {
     if (isFormDisabled) return;
-    onSubmit(data);
+    onSubmit({ ...initialValues, ...data });
   };
 
   return (

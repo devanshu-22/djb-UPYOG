@@ -113,7 +113,10 @@ const VehicleConfig = (t, disabled = false) => {
             name: "ownerName",
             validation: {
               required: true,
-              pattern: /^[A-Za-z]/,
+              pattern: {
+                value: /^[A-Za-z\s]+$/,
+                message: t("FSM_REGISTRY_INVALID_NAME"),
+              },
             },
             error: t("FSM_REGISTRY_INVALID_NAME"),
             defaultValue: "",
@@ -147,7 +150,7 @@ const VehicleConfig = (t, disabled = false) => {
         },
         {
           label: t("ES_FSM_REGISTRY_NEW_DOB"),
-          isMandatory: false,
+          isMandatory: true,
           type: "custom",
           key: "dob",
           populators: {
@@ -160,7 +163,11 @@ const VehicleConfig = (t, disabled = false) => {
                 onChange={props.onChange}
                 date={props.value}
                 {...customProps}
-                max={convertEpochToDate(new Date().setFullYear(new Date().getFullYear()))}
+                max={(() => {
+                  const date = new Date();
+                  date.setFullYear(date.getFullYear() - 18);
+                  return date.toISOString().split("T")[0];
+                })()}
               />
             ),
           },

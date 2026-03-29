@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FormStep, TextInput, CardLabel, Dropdown, VerticalTimeline } from "@djb25/digit-ui-react-components";
+import { FormStep, TextInput, CardLabel, Dropdown, VerticalTimeline, Tooltip, MobileNumber } from "@djb25/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 
 const VendorDetails = ({ t, config, onSelect, userType, formData, ownerIndex }) => {
@@ -266,7 +266,9 @@ const VendorDetails = ({ t, config, onSelect, userType, formData, ownerIndex }) 
               />
             </div> */}
           <div>
-            <CardLabel>{`${t("IFSC_CODE")}`}</CardLabel>
+            <CardLabel className="card-label-smaller">
+              <Tooltip label={`${t("IFSC_CODE")}`} isMandatory={false} message={t("INVALID_IFSC_CODE_ERROR_MESSAGE")} />
+            </CardLabel>
             <TextInput
               t={t}
               type={"text"}
@@ -361,7 +363,7 @@ const VendorDetails = ({ t, config, onSelect, userType, formData, ownerIndex }) 
 
           <div>
             <CardLabel>{`${t("PHONE_NO")}`}</CardLabel>
-            <TextInput
+            {/* <TextInput
               t={t}
               type={"text"}
               isMandatory={false}
@@ -378,7 +380,9 @@ const VendorDetails = ({ t, config, onSelect, userType, formData, ownerIndex }) 
                 title: t("INVALID_ACCOUNT_NO_ERROR_MESSAGE"),
                 length: 10,
               })}
-            />
+            /> */}
+
+            <MobileNumber value={PhoneNo} name="PhoneNo" onChange={setPhoneNo} style={{ width: "100%" }} />
           </div>
           <div>
             <CardLabel>{`${t("CONTACT_PERSON")}`}</CardLabel>

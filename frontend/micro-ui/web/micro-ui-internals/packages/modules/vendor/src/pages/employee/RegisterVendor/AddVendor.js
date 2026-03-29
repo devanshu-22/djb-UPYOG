@@ -186,6 +186,7 @@ const AddVendor = ({ parentUrl, heading }) => {
         {/* STEP 1 */}
         {currentStep === 1 && (
           <FormComposer
+            key="step1"
             isDisabled={!canSubmit}
             label={t("CS_COMMON_NEXT")}
             config={vendorStepConfig
@@ -207,6 +208,7 @@ const AddVendor = ({ parentUrl, heading }) => {
         {/* STEP 2 */}
         {currentStep === 2 && (
           <FormComposer
+            key="step2"
             label={t("ES_COMMON_APPLICATION_SUBMIT")}
             config={addressStepConfig
               .filter((i) => !i.hideInEmployee)
@@ -215,7 +217,9 @@ const AddVendor = ({ parentUrl, heading }) => {
                 body: config.body.filter((a) => !a.hideInEmployee),
               }))}
             onSubmit={onSubmit}
-            defaultValues={defaultValues}
+            defaultValues={{
+              ...defaultValues,
+            }}
             onFormValueChange={(setValue, formData) => {}}
             noBreakLine={true}
           />

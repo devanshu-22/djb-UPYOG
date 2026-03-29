@@ -1,4 +1,4 @@
-import { PrivateRoute, AppContainer, ModuleHeader, ArrowLeft, HomeIcon } from "@djb25/digit-ui-react-components";
+import { PrivateRoute, AppContainer, ModuleHeader, ArrowLeft, HomeIcon, LayoutWrapper } from "@djb25/digit-ui-react-components";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Switch, useLocation } from "react-router-dom";
@@ -83,28 +83,53 @@ const EmployeeApp = ({ path, url, userType }) => {
             onLeftClick={() => window.history.back()}
             breadcrumbs={getDynamicBreadcrumbs()} // Use the dynamic function here
           />
-          <div className="employee-form">
-            <div className="employee-form-content">
-              <PrivateRoute
-                path={`${path}/inbox`}
-                component={() => (
-                  <Inbox
-                    parentRoute={path}
-                    businessService="hrms"
-                    filterComponent="HRMS_INBOX_FILTER"
-                    initialStates={inboxInitialState}
-                    isInbox={true}
-                  />
-                )}
-              />
-              <PrivateRoute path={`${path}/create`} component={() => <CreateEmployee />} />
-              <PrivateRoute path={`${path}/response`} component={(props) => <HRMSResponse {...props} parentRoute={path} />} />
-              <div className="employee-form-content-with-action-bar employee-form-content">
-                <PrivateRoute path={`${path}/details/:tenantId/:id`} component={() => <HRMSDetails />} />
-                <PrivateRoute path={`${path}/edit/:tenantId/:id`} component={() => <EditEmpolyee />} />
-              </div>
-            </div>
-          </div>
+
+          <PrivateRoute
+            path={`${path}/inbox`}
+            component={() => (
+              <LayoutWrapper layoutClass="normal">
+                <Inbox
+                  parentRoute={path}
+                  businessService="hrms"
+                  filterComponent="HRMS_INBOX_FILTER"
+                  initialStates={inboxInitialState}
+                  isInbox={true}
+                />
+              </LayoutWrapper>
+            )}
+          />
+          <PrivateRoute
+            path={`${path}/create`}
+            component={() => (
+              <LayoutWrapper layoutClass="action">
+                <CreateEmployee />
+              </LayoutWrapper>
+            )}
+          />
+          <PrivateRoute
+            path={`${path}/response`}
+            component={(props) => (
+              <LayoutWrapper layoutClass="normal">
+                <HRMSResponse {...props} parentRoute={path} />
+              </LayoutWrapper>
+            )}
+          />
+          <PrivateRoute
+            path={`${path}/details/:tenantId/:id`}
+            component={() => (
+              <LayoutWrapper layoutClass="action">
+                <HRMSDetails />
+              </LayoutWrapper>
+            )}
+          />
+          <PrivateRoute
+            path={`${path}/edit/:tenantId/:id`}
+            component={() => (
+              <LayoutWrapper layoutClass="action">
+                <EditEmpolyee />
+              </LayoutWrapper>
+            )}
+          />
         </div>
       </AppContainer>
     </Switch>

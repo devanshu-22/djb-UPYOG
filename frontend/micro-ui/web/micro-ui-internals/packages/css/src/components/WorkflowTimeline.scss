@@ -26,6 +26,22 @@
   box-sizing: border-box;
 }
 
+.workflow-timeline-wrapper.hide-workflow {
+  @media (max-width: 768px) {
+    width: fit-content;
+  }
+}
+
+.workflow-timeline-wrapper {
+  overflow-y: scroll;
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+  @media (min-width: 768px) {
+    max-width: 25%;
+  }
+}
+
 .hidden-content {
   display: none !important;
 }

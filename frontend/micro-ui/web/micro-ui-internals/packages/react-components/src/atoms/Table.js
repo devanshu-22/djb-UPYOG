@@ -80,11 +80,139 @@ const IconSearch = () => (
   </svg>
 );
 
+const IconDownload = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 3v12" /><path d="m7 10 5 5 5-5" /><path d="M4 20h16" />
+  </svg>
+);
+
 const IconClose = ({ color = "currentColor" }) => (
   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
   </svg>
 );
+
+const flattenColumnsForExport = (columnDefs = []) =>
+  (Array.isArray(columnDefs) ? columnDefs : []).reduce((acc, column) => {
+    if (!column) return acc;
+    if (Array.isArray(column.columns) && column.columns.length > 0) {
+      return [...acc, ...flattenColumnsForExport(column.columns)];
+    }
+    if (column.disableExport || column?.meta?.disableExport) return acc;
+    acc.push(column);
+    return acc;
+  }, []);
+
+const getValueFromPath = (source, path) => {
+  if (!source || !path || typeof path !== "string") return undefined;
+  return path.split(".").reduce((acc, key) => (acc === null || acc === undefined ? undefined : acc[key]), source);
+};
+
+const toExportableString = (value) => {
+  if (value === null || value === undefined) return "";
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  if (Array.isArray(value)) return value.map(toExportableString).join("; ");
+  if (typeof value === "object") return JSON.stringify(value);
+  return String(value);
+};
+
+const escapeCsvCell = (value) => `"${toExportableString(value).replace(/"/g, '""')}"`;
+
+const extractTextFromNode = (node) => {
+  if (node === null || node === undefined) return "";
+  if (typeof node === "string" || typeof node === "number" || typeof node === "boolean") return String(node);
+  if (Array.isArray(node)) return node.map(extractTextFromNode).filter(Boolean).join(" ").trim();
+  if (React.isValidElement(node)) return extractTextFromNode(node.props?.children);
+  return "";
+};
+
+const resolveColumnHeader = (column, index) => {
+  if (column?.exportHeader !== undefined) return column.exportHeader;
+  if (typeof column?.Header === "string") return column.Header;
+  if (typeof column?.Header === "function") {
+    try {
+      const headerNode = column.Header({});
+      const text = extractTextFromNode(headerNode);
+      if (text) return text;
+    } catch (error) {
+      // fallback to id/accessor
+    }
+  }
+  if (React.isValidElement(column?.Header)) {
+    const text = extractTextFromNode(column.Header);
+    if (text) return text;
+  }
+  if (typeof column?.id === "string") return column.id;
+  if (typeof column?.accessor === "string") return column.accessor;
+  return `Column ${index + 1}`;
+};
+
+const resolveColumnValue = (column, row, rowIndex) => {
+  if (typeof column?.exportAccessor === "function") return column.exportAccessor(row, rowIndex);
+  if (typeof column?.accessor === "function") return column.accessor(row, rowIndex);
+  if (typeof column?.accessor === "string") return getValueFromPath(row, column.accessor);
+  if (typeof column?.id === "string") return getValueFromPath(row, column.id);
+  if (typeof column?.mobileCell === "function") {
+    const mobileNode = column.mobileCell(row, rowIndex);
+    const text = extractTextFromNode(mobileNode);
+    if (text) return text;
+  }
+  if (typeof column?.Cell === "function") {
+    try {
+      const cellNode = column.Cell({
+        row: { original: row },
+        cell: { row: { original: row } },
+        value: undefined,
+      });
+      const text = extractTextFromNode(cellNode);
+      if (text) return text;
+    } catch (error) {
+      // ignore cell renderer errors during CSV serialization
+    }
+  }
+  return "";
+};
+
+const buildCsvContent = ({ columnDefs = [], rows = [] }) => {
+  const exportColumns = flattenColumnsForExport(columnDefs);
+  if (exportColumns.length === 0) return "";
+
+  const headerRow = exportColumns.map((column, index) => escapeCsvCell(resolveColumnHeader(column, index))).join(",");
+  const bodyRows = (Array.isArray(rows) ? rows : []).map((row, rowIndex) =>
+    exportColumns.map((column) => escapeCsvCell(resolveColumnValue(column, row, rowIndex))).join(",")
+  );
+
+  return [headerRow, ...bodyRows].join("\n");
+};
+
+const normalizeCsvFileName = (fileName = "table-data") => {
+  const safeName = String(fileName || "table-data").trim().replace(/[\\/:*?"<>|]+/g, "_");
+  if (!safeName) return "table-data.csv";
+  return safeName.toLowerCase().endsWith(".csv") ? safeName : `${safeName}.csv`;
+};
+
+const downloadCsv = (content, fileName) => {
+  const blob = new Blob([`\uFEFF${content}`], { type: "text/csv;charset=utf-8;" });
+  const url = window.URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.setAttribute("href", url);
+  anchor.setAttribute("download", fileName);
+  anchor.style.display = "none";
+  document.body.appendChild(anchor);
+  anchor.click();
+  document.body.removeChild(anchor);
+  window.URL.revokeObjectURL(url);
+};
+
+const normalizeExportRows = (value) => {
+  if (Array.isArray(value)) return value;
+  if (Array.isArray(value?.data)) return value.data;
+  if (Array.isArray(value?.rows)) return value.rows;
+  if (Array.isArray(value?.results)) return value.results;
+  return [];
+};
 
 /* ─── Pagination Button ─────────────────────────────────────────────────────── */
 const PagBtn = ({ onClick, disabled, title, children, active = false }) => {
@@ -125,8 +253,8 @@ const PagBtn = ({ onClick, disabled, title, children, active = false }) => {
 const Table = ({
   className = "table",
   t,
-  data,
-  columns,
+  data = [],
+  columns = [],
   getCellProps,
   currentPage = 0,
   pageSizeLimit = 10,
@@ -153,10 +281,19 @@ const Table = ({
   isReportTable = false,
   inboxStyles,
   tableTitle,
+  showCSVExport = false,
+  csvExportFileName = "",
+  csvExportData,
+  getCSVExportData,
+  csvExportColumns,
+  csvExportButtonLabel,
 }) => {
   const [hoveredRow, setHoveredRow] = useState(null);
   const [internalSearch, setInternalSearch] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
+  const [isCsvExporting, setIsCsvExporting] = useState(false);
+  const tableData = Array.isArray(data) ? data : [];
+  const tableColumns = Array.isArray(columns) ? columns : [];
 
   const {
     getTableProps,
@@ -177,8 +314,8 @@ const Table = ({
     state: { pageIndex, pageSize, sortBy, globalFilter },
   } = useTable(
     {
-      columns,
-      data,
+      columns: tableColumns,
+      data: tableData,
       initialState: {
         pageIndex: currentPage,
         pageSize: pageSizeLimit,
@@ -240,6 +377,55 @@ const Table = ({
   const totalLabel = totalRecords
     ? `of ${manualPagination ? totalRecords : rows.length}`
     : "";
+
+  const isCsvExportEnabled =
+    showCSVExport || typeof getCSVExportData === "function" || Array.isArray(csvExportData);
+
+  const handleCsvExport = async () => {
+    if (isCsvExporting) return;
+    setIsCsvExporting(true);
+
+    try {
+      const isManualExportWithoutDataSource =
+        manualPagination && typeof getCSVExportData !== "function" && !Array.isArray(csvExportData);
+      if (isManualExportWithoutDataSource) {
+        console.warn("Table CSV export skipped: provide csvExportData or getCSVExportData for manual pagination.");
+        return;
+      }
+
+      const exportSource =
+        typeof getCSVExportData === "function"
+          ? await getCSVExportData({
+            currentPage,
+            pageIndex,
+            pageSize,
+            pageSizeLimit,
+            manualPagination,
+            sortBy,
+            globalFilter,
+            totalRecords,
+          })
+          : csvExportData ?? (manualPagination ? [] : tableData);
+
+      const exportRows = normalizeExportRows(exportSource);
+      const csvContent = buildCsvContent({
+        columnDefs: csvExportColumns || tableColumns,
+        rows: exportRows,
+      });
+
+      if (!csvContent) {
+        console.warn("Table CSV export skipped: no exportable columns were found.");
+        return;
+      }
+
+      const resolvedFileName = normalizeCsvFileName(csvExportFileName || tableTitle || "table-data");
+      downloadCsv(csvContent, resolvedFileName);
+    } catch (error) {
+      console.error("Table CSV export failed:", error);
+    } finally {
+      setIsCsvExporting(false);
+    }
+  };
 
   return (
     <div style={{
@@ -312,6 +498,34 @@ const Table = ({
               </button>
             )}
           </div>
+          {isCsvExportEnabled && (
+            <button
+              onClick={handleCsvExport}
+              disabled={isCsvExporting}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                border: `1px solid ${isCsvExporting ? T.borderStrong : T.accentMid}`,
+                background: isCsvExporting ? T.surfaceAlt : T.accentLight,
+                color: isCsvExporting ? T.textMuted : T.accentDark,
+                borderRadius: 6,
+                padding: "6px 10px",
+                fontSize: 12.5,
+                fontWeight: 600,
+                fontFamily: T.fontBody,
+                cursor: isCsvExporting ? "not-allowed" : "pointer",
+                lineHeight: 1,
+                transition: "all 0.15s",
+              }}
+              title={isCsvExporting ? "Export in progress" : "Download CSV"}
+            >
+              <span style={{ lineHeight: 0 }}>
+                <IconDownload />
+              </span>
+              <span>{isCsvExporting ? "Exporting..." : (csvExportButtonLabel || "Download CSV")}</span>
+            </button>
+          )}
           {tableTopComponent || null}
         </div>
       </div>
@@ -388,7 +602,7 @@ const Table = ({
           <tbody {...getTableBodyProps()}>
             {page.length === 0 ? (
               <tr>
-                <td colSpan={columns.length + (showAutoSerialNo ? 1 : 0)} style={{ padding: "48px 20px", textAlign: "center" }}>
+                <td colSpan={tableColumns.length + (showAutoSerialNo ? 1 : 0)} style={{ padding: "48px 20px", textAlign: "center" }}>
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
                     <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke={T.textMuted} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.4 }}>
                       <rect x="3" y="3" width="18" height="18" rx="2" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="9" y1="21" x2="9" y2="9" />

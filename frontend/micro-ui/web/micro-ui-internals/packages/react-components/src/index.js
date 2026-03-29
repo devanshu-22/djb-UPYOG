@@ -244,7 +244,7 @@ import CollapsibleModuleSidebar from "./atoms/CollapsibleModuleSidebar";
 import Tooltip from "./atoms/Tooltip";
 import CollapsibleCardPage from "./hoc/CollapsibleCardPage";
 import VerticalTimeline from "./atoms/VerticalTimeline";
-
+import LayoutWrapper from "./hoc/LayoutWrapper";
 export {
   Phone,
   Body,
@@ -497,4 +497,5 @@ export {
   UploadCloudIcon,
   CollapsibleCardPage,
   VerticalTimeline,
+  LayoutWrapper,
 };

@@ -7,11 +7,12 @@ import VendorInbox from "../../../components/VendorInbox";
 const SearchVendor = () => {
   const { t } = useTranslation();
   const tenantId = Digit.ULBService.getCurrentTenantId();
+  const { selectedTabs } = Digit.Hooks.useQueryParams();
   const [searchParams, setSearchParams] = useState({});
   const [sortParams, setSortParams] = useState([{ id: "createdTime", desc: true }]);
   const [pageOffset, setPageOffset] = useState(0);
   const [pageSize, setPageSize] = useState(10);
-  const [tab, setTab] = useState("VENDOR");
+  const [tab, setTab] = useState(selectedTabs || "VENDOR");
   const [vehicleIds, setVehicleIds] = useState("");
   const [driverIds, setDriverIds] = useState("");
   const [tableData, setTableData] = useState([]);

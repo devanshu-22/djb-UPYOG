@@ -17,7 +17,7 @@ import WorkflowTimeline from "../../components/WorkflowTimeline";
 
 const ApplicationDetails = () => {
   const { t } = useTranslation();
-  const [hideTimeline, setHideTimeline] = React.useState(true);
+  const [hideTimeline, setHideTimeline] = React.useState(typeof window !== "undefined" ? window.innerWidth < 768 : false);
   // const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   // const { tenants } = storeData || {};
@@ -104,7 +104,7 @@ const ApplicationDetails = () => {
 
       <div style={{ display: "flex", flexDirection: "row", gap: "20px", height: "100%" }}>
         {/* Left Column: Workflow Timeline */}
-        <div style={{ flex: !hideTimeline ? "1" : "unset", overflowY: "scroll" }}>
+        <div className={`workflow-timeline-wrapper ${hideTimeline ? "hide-workflow" : ""}`}>
           <WorkflowTimeline hideTimeline={hideTimeline} setHideTimeline={setHideTimeline} workflowDetails={workflowDetails} />
         </div>
 

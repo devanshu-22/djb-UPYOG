@@ -47,7 +47,7 @@ const AddVehicle = ({ parentUrl, heading }) => {
 
   const [canSubmit, setSubmitValve] = useState(false);
 
-   const defaultValues = {
+  const defaultValues = {
     serviceType: {
       code: "WT",
       name: "WT",
@@ -78,7 +78,9 @@ const AddVehicle = ({ parentUrl, heading }) => {
       formData?.phone &&
       formData?.vehicle?.modal &&
       formData?.vehicle?.type &&
-      formData?.selectGender
+      formData?.selectGender &&
+      formData?.dob &&
+      new Date(formData?.dob).getTime() <= new Date().setFullYear(new Date().getFullYear() - 18)
     ) {
       setSubmitValve(true);
     } else {
@@ -147,12 +149,11 @@ const AddVehicle = ({ parentUrl, heading }) => {
       },
       onSuccess: (data, variables) => {
         setShowToast({ key: "success", action: "ADD_VEHICLE" });
-        setTimeout(closeToast, 5000);
         queryClient.invalidateQueries("FSM_VEICLES_SEARCH");
-        // setTimeout(() => {
-        //   closeToast();
-        //   history.push(`/digit-ui/employee/fsm/registry?selectedTabs=VEHICLE`);
-        // }, 5000);
+        setTimeout(() => {
+          closeToast();
+          history.push(`/digit-ui/employee/vendor/search-vendor?selectedTabs=VEHICLE`);
+        }, 3000);
       },
     });
   };
@@ -184,6 +185,7 @@ const AddVehicle = ({ parentUrl, heading }) => {
           defaultValues={defaultValues}
           onFormValueChange={onFormValueChange}
           noBreakLine={true}
+          mode="onChange"
         />
         {showToast && (
           <Toast
