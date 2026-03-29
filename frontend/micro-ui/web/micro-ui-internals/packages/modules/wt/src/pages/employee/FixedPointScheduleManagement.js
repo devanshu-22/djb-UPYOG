@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useQueryClient } from "react-query";
 import { useTranslation } from "react-i18next";
 import { Card, Dropdown, SubmitBar, Toast, CardLabel } from "@djb25/digit-ui-react-components";
 import AddTripModal from "../../components/AddTripModal";
@@ -6,6 +7,7 @@ import ApplicationTable from "../../components/inbox/ApplicationTable";
 
 const FixedPointScheduleManagement = ({ ...props }) => {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [showModal, setShowModal] = useState(false);
   const [toast, setToast] = useState(null);
@@ -19,7 +21,7 @@ const FixedPointScheduleManagement = ({ ...props }) => {
 
   const [filters, setFilters] = useState({ limit: 10, offset: 0 });
 
-  const { isLoading, data: scheduleData, refetch: reSearch } = Digit.Hooks.wt.useFixedPointScheduleSearch(tenantId, filters);
+  const { isLoading, data: scheduleData } = Digit.Hooks.wt.useFixedPointScheduleSearch(tenantId, filters);
 
   const { data: fixedPointData, isLoading: isFpLoading } = Digit.Hooks.wt.useFixedPointSearchAPI({ tenantId, filters: { offset: 0, limit: 100 } });
 
@@ -57,10 +59,10 @@ const FixedPointScheduleManagement = ({ ...props }) => {
     setToast(null);
   };
 
-  const handleDelete = (index) => {
-    const updatedData = data.filter((_, i) => i !== index);
-    setData(updatedData);
-  };
+  // const handleDelete = (index) => {
+  //   const updatedData = data.filter((_, i) => i !== index);
+  //   setData(updatedData);
+  // };
 
   const handleDownload = (type) => {
     const now = new Date();
@@ -124,12 +126,12 @@ const FixedPointScheduleManagement = ({ ...props }) => {
     }
   };
 
-  const [data, setData] = useState([]);
 
   const mapScheduleRows = React.useCallback(
     (rows = []) =>
       rows.map((item) => ({
         scheduleId: item.systemAssignedScheduleId,
+        fixedPointName: item.fixedPointName,
         fixedPoint: item.fixedPointCode,
         day: item.day,
         freq: item.tripNo,
@@ -146,11 +148,9 @@ const FixedPointScheduleManagement = ({ ...props }) => {
     []
   );
 
-  React.useEffect(() => {
-    if (scheduleData?.fixedPointTimeTableDetails) {
-      setData(mapScheduleRows(scheduleData.fixedPointTimeTableDetails));
-    }
-  }, [mapScheduleRows, scheduleData]);
+  const data = React.useMemo(() => {
+    return mapScheduleRows(scheduleData?.fixedPointTimeTableDetails || []);
+  }, [scheduleData, mapScheduleRows]);
 
   const fetchNextPage = () => {
     setPageOffset((prevState) => prevState + pageSize);
@@ -183,8 +183,8 @@ const FixedPointScheduleManagement = ({ ...props }) => {
 
   const columns = React.useMemo(
     () => [
-      // { Header: t("WT_SCHEDULE_ID"), accessor: "scheduleId" },
-      { Header: t("WT_FIXED_POINT"), accessor: "fixedPoint" },
+      { Header: t("WT_FIXED_POINT_NAME"), accessor: "fixedPointName" },
+      // { Header: t("WT_FIXED_POINT"), accessor: "fixedPoint" },
       { Header: t("WT_DAY"), accessor: "day" },
       // { Header: t("WT_FREQ"), accessor: "freq" },
       { Header: t("WT_ARR_TO_FPL"), accessor: "arrToFpl" },
@@ -533,7 +533,7 @@ const FixedPointScheduleManagement = ({ ...props }) => {
                   setTimeout(closeToast, 5000);
                   setShowModal(false);
                   setEditingRowIndex(null);
-                  reSearch();
+                  queryClient.invalidateQueries(["FIXED_POINT_SCHEDULE_SEARCH", tenantId]);
                 },
               });
             } else {
@@ -547,7 +547,7 @@ const FixedPointScheduleManagement = ({ ...props }) => {
                   setTimeout(closeToast, 5000);
                   setShowModal(false);
                   setEditingRowIndex(null);
-                  reSearch();
+                  queryClient.invalidateQueries(["FIXED_POINT_SCHEDULE_SEARCH", tenantId]);
                 },
               });
             }
