@@ -77,7 +77,7 @@ public class WaterTankerFixedPointQueryBuilder {
                         "LEFT JOIN public.upyog_rs_water_tanker_filling_point fp " +
                         "ON m.filling_pt_name = fp.id " +
                         "LEFT JOIN public.upyog_rs_water_tanker_address_details fpa " +
-                        "ON fp.id = fpa.applicant_id AND fpa.type = 'FILLING-POINT' ";
+                        "ON fp.id = fpa.applicant_id AND fpa.type = 'FIXED-POINT' ";
 
         private static final String ORDER_BY = " ORDER BY ad.createdtime DESC ";
 
