@@ -150,7 +150,6 @@ const SearchFillingPointAddress = () => {
     setPageOffset(0);
   };
 
-
   const onFillingPointSelect = (row, value) => {
     const payload = {
       fixedFillingPointMapping: {
@@ -216,6 +215,11 @@ const SearchFillingPointAddress = () => {
   const columns = React.useMemo(() => {
     if (selectedTab === "FIXED_POINT") {
       return [
+        {
+          Header: t("WT_FIXED_POINT_CODE"),
+          accessor: (row) => row?.applicantDetail?.fixedPointId || "NA",
+          id: "fixedPointId",
+        },
         {
           Header: t("WT_FIXING_POINT_APPLICANT_DETAILS"),
           accessor: (row) => row?.applicantDetail?.name || "NA",
@@ -286,6 +290,11 @@ const SearchFillingPointAddress = () => {
       return [
         {
           Header: t("WT_FILLING_POINT_CODE"),
+          accessor: (row) => row?.fillingPointId || "NA",
+          id: "fillingPointId",
+        },
+        {
+          Header: t("WT_FILLING_POINT_NAME"),
           accessor: (row) => row?.fillingPointName || "NA",
           id: "fillingPointName",
           Cell: ({ row }) => (
@@ -435,17 +444,15 @@ const SearchFillingPointAddress = () => {
       const response =
         selectedTab === "FIXED_POINT"
           ? await Digit.WTService.SearchFixedPoint({
-            tenantId,
-            filters: { ...searchParams, offset, limit: batchSize },
-          })
+              tenantId,
+              filters: { ...searchParams, offset, limit: batchSize },
+            })
           : await Digit.WTService.SearchFillPoint({
-            tenantId,
-            filters: { ...searchParams, offset, limit: batchSize },
-          });
+              tenantId,
+              filters: { ...searchParams, offset, limit: batchSize },
+            });
 
-      const pageRows = selectedTab === "FIXED_POINT"
-        ? response?.waterTankerBookingDetail || []
-        : response?.fillingPoints || [];
+      const pageRows = selectedTab === "FIXED_POINT" ? response?.waterTankerBookingDetail || [] : response?.fillingPoints || [];
 
       rows.push(...pageRows);
 
@@ -511,9 +518,7 @@ const SearchFillingPointAddress = () => {
       {
         Header: t("WT_LOCALITY"),
         exportAccessor: (row) =>
-          row?.fillingPointLocalityCodes?.length > 0
-            ? row.fillingPointLocalityCodes.join(", ")
-            : row?.address?.locality || "NA",
+          row?.fillingPointLocalityCodes?.length > 0 ? row.fillingPointLocalityCodes.join(", ") : row?.address?.locality || "NA",
       },
     ];
   }, [selectedTab, t]);
