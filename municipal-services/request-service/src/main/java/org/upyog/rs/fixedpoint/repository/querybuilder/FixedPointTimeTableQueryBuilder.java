@@ -33,7 +33,7 @@ public class FixedPointTimeTableQueryBuilder {
                     "fpt.time_of_arriving_back_fpl_after_delivery, fpt.volume_water_tobe_delivery, " +
                     "fpt.active, fpt.is_enable, fpt.remarks, fpt.vehicle_id, fpt.tenant_id, " +
                     "fpt.createdby, fpt.lastmodifiedby, fpt.createdtime, fpt.lastmodifiedtime, " +
-                    "apd.name AS fixed_point_name " +
+                    "apd.name AS fixed_point_name, apd.fixed_point_id " +
                     "FROM public.eg_fixed_point_time_table fpt " +
                     "LEFT JOIN public.upyog_rs_water_tanker_applicant_details apd " +
                     "ON apd.booking_id = fpt.fixed_point_code";
