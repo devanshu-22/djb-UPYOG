@@ -61,7 +61,7 @@ public class FillingPointRepository {
                         "ad.address_id, ad.house_no, ad.address_line_1, ad.address_line_2, " +
                         "ad.street_name, ad.landmark, ad.city, ad.city_code, " +
                         "ad.locality, ad.locality_code, ad.pincode, " +
-                        "ad.latitude, ad.longitude, ad.type AS addr_type, fp.id as filling_point_id, " +
+                        "ad.latitude, ad.longitude, ad.type AS addr_type, fp.filling_point_id, " +
                         "ad.ward, ad.zone, ad.constituency, "+
                         "lm.locality_code AS filling_point_locality_code " +
                         "FROM upyog_rs_water_tanker_filling_point fp " +
@@ -147,7 +147,7 @@ public class FillingPointRepository {
                         newFp.setCreatedTime(rs.getLong("createdtime"));
                         newFp.setLastModifiedTime(rs.getLong("lastmodifiedtime"));
                         newFp.setFillingPointId(rs.getString("filling_point_id"));
-                        newFp.setLocalityCodes(new ArrayList<>()); // ✅ init empty list
+                        newFp.setLocalityCodes(new ArrayList<>());
 
                         String addressId = rs.getString("address_id");
                         if (addressId != null) {

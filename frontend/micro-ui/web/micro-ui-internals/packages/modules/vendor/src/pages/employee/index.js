@@ -148,13 +148,10 @@ const EmployeeApp = ({ path, url, userType }) => {
 
             <PrivateRoute
               path={`${path}/registry/driver-details/:id`}
-              component={renderWithLayout(
-                (props) =>
-                  (
-                    <LayoutWrapper layoutClass="action">
-                      <DriverDetails {...props} parentRoute={path} />
-                    </LayoutWrapper>
-                  ).layouts.action
+              component={(props) => (
+                <LayoutWrapper layoutClass="action">
+                  <DriverDetails {...props} parentRoute={path} />
+                </LayoutWrapper>
               )}
             />
 
