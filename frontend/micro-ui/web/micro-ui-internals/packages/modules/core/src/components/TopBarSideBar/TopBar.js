@@ -177,7 +177,7 @@ const TopBar = ({
   const loggedin = window.keycloak?.token ? true : false;
 
   return (
-    <div className="topbar">
+    <div className="topbar" style={{ overflow: "visible" }}>
       <span className="topbar-content">
         <div className="brand" onClick={() => (window.location.href = "/digit-ui/employee")}>
           <div className="brand-mark">

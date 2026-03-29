@@ -8,7 +8,7 @@ const TextToImg = (props) => (
 );
 
 const CustomUserDropdown = ({
-  userOptions,
+  userOptions = [],
   roleOptions = [],
   selectedRole,
   handleRoleChange,
@@ -56,7 +56,6 @@ const CustomUserDropdown = ({
           <div
             onClick={() => {
               setIsOpen(false);
-              setIsRoleDropdownOpen(false);
             }}
             style={{
               position: "fixed",
@@ -70,6 +69,7 @@ const CustomUserDropdown = ({
 
           {/* Main Dropdown Content */}
           <div
+            className="user-profile-dropdown"
             style={{
               position: "absolute",
               top: "calc(100% + 8px)",

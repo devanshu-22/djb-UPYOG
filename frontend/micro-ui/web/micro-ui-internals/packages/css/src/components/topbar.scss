@@ -10,7 +10,6 @@
   align-items: center;
   height: 64px !important;
   max-height: 64px !important;
-  overflow: hidden;
 
   @media (max-width: 640px) {
     padding: 8px 16px;
@@ -308,5 +307,20 @@
 
   &.open .chevron-icon {
     transform: rotate(180deg);
+  }
+
+  .select-wrap,
+  .employee-select-wrap {
+    margin-bottom: 0 !important;
+  }
+
+  .options-card {
+    min-width: 130px !important;
+    width: max-content !important;
+    top: calc(100% + 4px) !important;
+    right: 0 !important;
+    left: auto !important;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
 }
