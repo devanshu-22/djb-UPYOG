@@ -136,13 +136,10 @@ const EmployeeApp = ({ path, url, userType }) => {
 
             <PrivateRoute
               path={`${path}/registry/additionaldetails`}
-              component={renderWithLayout(
-                (props) => (
-                  <LayoutWrapper layoutClass="normal">
-                    <VendorCreate {...props} parentRoute={path} />
-                  </LayoutWrapper>
-                ),
-                layouts.action
+              component={(props) => (
+                <LayoutWrapper layoutClass="normal">
+                  <VendorCreate {...props} parentRoute={path} />
+                </LayoutWrapper>
               )}
             />
 
@@ -198,14 +195,3 @@ const EmployeeApp = ({ path, url, userType }) => {
 };
 
 export default EmployeeApp;
-
-const renderWithLayout = (Component, layoutClass) => (routeProps) => (
-  <div className={layoutClass}>
-    <Component {...routeProps} />
-  </div>
-);
-
-const layouts = {
-  normal: "employee-form",
-  action: "employee-form employee-form-content-with-action-bar",
-};

@@ -295,18 +295,18 @@ const DriverDetails = (props) => {
     }
     if (selectedAction === "ADD_VENDOR") {
       return (
-        <>
+        <React.Fragment>
           <CardText>{t(`ES_FSM_REGISTRY_SELECT_VENODOR`)}</CardText>
           <Dropdown t={t} option={vendors} value={selectedOption} selected={selectedOption} select={setSelectedOption} optionKey={"name"} />
-        </>
+        </React.Fragment>
       );
     }
     if (selectedAction === "EDIT_VENDOR") {
       return (
-        <>
+        <React.Fragment>
           <CardText>{t(`ES_FSM_REGISTRY_SELECT_VENODOR`)}</CardText>
           <Dropdown t={t} option={vendors} value={selectedOption} selected={selectedOption} select={setSelectedOption} optionKey={"name"} />
-        </>
+        </React.Fragment>
       );
     }
   };

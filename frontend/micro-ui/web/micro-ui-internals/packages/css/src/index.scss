@@ -342,6 +342,7 @@ input[readonly] {
 .border-none {
   border: none;
   justify-content: space-between;
+  max-width: 450px;
 }
 
 input[type="number"]::-webkit-inner-spin-button,

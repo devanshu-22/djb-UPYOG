@@ -326,130 +326,128 @@ const EditVendorDetails = (props) => {
               <React.Fragment key={index}>
                 {index > 0 && <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t(detail.title)}</CardSectionHeader>}
                 <div>
-                  <div className="formcomposer-section-grid">
-                    {detail?.values?.map((value, index) => {
-                      // ADDITIONAL DETAILS LOGIC
-                      if (value.title === "ES_FSM_REGISTRY_DETAILS_ADDITIONAL_DETAILS") {
-                        const additionalDetails = vendorAdditionalData?.VendorDetails?.[0]?.vendorAdditionalDetails;
+                  {detail?.values?.map((value, index) => {
+                    // ADDITIONAL DETAILS LOGIC
+                    if (value.title === "ES_FSM_REGISTRY_DETAILS_ADDITIONAL_DETAILS") {
+                      const additionalDetails = vendorAdditionalData?.VendorDetails?.[0]?.vendorAdditionalDetails;
 
-                        const entries = Object.entries(additionalDetails || {}).filter(([key]) => !excludedKeys.includes(key));
+                      const entries = Object.entries(additionalDetails || {}).filter(([key]) => !excludedKeys.includes(key));
 
-                        return (
-                          <React.Fragment key={value.title}>
-                            {/* Additional Details Title */}
-                            <Row label={t(value.title)} text="" className="border-none flex-box" />
+                      return (
+                        <React.Fragment key={value.title}>
+                          {/* Additional Details Title */}
+                          <Row label={t(value.title)} text="" className="border-none flex-box" />
 
-                            {/* Additional Details Card */}
-                            {isVendorAdditionalLoading ? (
-                              <Loader />
-                            ) : additionalDetails ? (
-                              <Card
-                                className="card-with-background"
-                                style={{
-                                  margin: "10px 16px",
-                                  padding: "20px",
-                                }}
-                              >
-                                <div className="additional-grid">
-                                  {entries.map(([key, val]) => {
-                                    if (typeof val === "object" && val !== null) return null;
+                          {/* Additional Details Card */}
+                          {isVendorAdditionalLoading ? (
+                            <Loader />
+                          ) : additionalDetails ? (
+                            <Card
+                              className="card-with-background"
+                              style={{
+                                margin: "10px 16px",
+                                padding: "20px",
+                              }}
+                            >
+                              <div className="additional-grid">
+                                {entries.map(([key, val]) => {
+                                  if (typeof val === "object" && val !== null) return null;
 
-                                    const safeKey = String(key);
-                                    let safeVal = val !== null && val !== undefined && val !== "" ? String(val) : "N/A";
+                                  const safeKey = String(key);
+                                  let safeVal = val !== null && val !== undefined && val !== "" ? String(val) : "N/A";
 
-                                    if (key === "name" && (!val || val === "")) {
-                                      safeVal = dsoData?.[0]?.dsoDetails?.name || "N/A";
-                                    }
-                                    return (
-                                      <React.Fragment key={safeKey}>
-                                        <div className="additional-label">{t(formatLabel(safeKey))}</div>
+                                  if (key === "name" && (!val || val === "")) {
+                                    safeVal = dsoData?.[0]?.dsoDetails?.name || "N/A";
+                                  }
+                                  return (
+                                    <React.Fragment key={safeKey}>
+                                      <div className="additional-label">{t(formatLabel(safeKey))}</div>
 
-                                        <div className="additional-value">{safeVal}</div>
-                                      </React.Fragment>
-                                    );
-                                  })}
-                                </div>
+                                      <div className="additional-value">{safeVal}</div>
+                                    </React.Fragment>
+                                  );
+                                })}
+                              </div>
 
-                                <div
-                                  style={{
-                                    marginTop: "16px",
-                                    color: "#a82227",
-                                    cursor: "pointer",
-                                    textDecoration: "underline",
-                                  }}
-                                  onClick={() => history.push(`/digit-ui/employee/vendor/registry/additionaldetails/info?vendorId=${dsoId}`)}
-                                >
-                                  {t("Edit Details")}
-                                </div>
-                              </Card>
-                            ) : (
                               <div
                                 style={{
-                                  marginLeft: "16px",
+                                  marginTop: "16px",
                                   color: "#a82227",
                                   cursor: "pointer",
                                   textDecoration: "underline",
                                 }}
-                                onClick={() => history.push(`/digit-ui/employee/vendor/registry/additionaldetails/vendor-details?vendorId=${dsoId}`)}
+                                onClick={() => history.push(`/digit-ui/employee/vendor/registry/additionaldetails/info?vendorId=${dsoId}`)}
                               >
-                                {t("Add Additional Details")}
+                                {t("Edit Details")}
                               </div>
-                            )}
-                          </React.Fragment>
-                        );
-                      }
-
-                      // DEFAULT ROW LOGIC
-                      return (
-                        <Row
-                          key={t(String(value.title))}
-                          label={t(String(value.title))}
-                          text={value.value ? t(String(value.value)) : "N/A"}
-                          last={index === detail?.values?.length - 1}
-                          caption={value.caption}
-                          className={`border-none flex-box ${!isMobile ? "vendor-details-row" : ""}`}
-                        />
-                      );
-                    })}
-                    {detail?.child?.map((data, index) => {
-                      return (
-                        <Card className="card-with-background" key={data.id || index}>
-                          <div className="card-head">
-                            <h2>
-                              {t(detail.type)} {index + 1}
-                            </h2>
-                            <div style={{ display: "flex" }}>
-                              <span onClick={() => onEdit(data, detail.type, data.id)}>
-                                <EditIcon style={{ cursor: "pointer", marginRight: "20px" }} className="edit" fill="#a82227" />
-                              </span>
-                              <span onClick={() => onDelete(data, detail.type, data.id)}>
-                                <DeleteIcon style={{ cursor: "pointer" }} className="delete" fill="#a82227" />
-                              </span>
+                            </Card>
+                          ) : (
+                            <div
+                              style={{
+                                marginLeft: "16px",
+                                color: "#a82227",
+                                cursor: "pointer",
+                                textDecoration: "underline",
+                              }}
+                              onClick={() => history.push(`/digit-ui/employee/vendor/registry/additionaldetails/vendor-details?vendorId=${dsoId}`)}
+                            >
+                              {t("Add Additional Details")}
                             </div>
-                          </div>
-                          {data?.values?.map((value, index) => (
-                            <Row
-                              key={t(String(value.title))}
-                              label={t(String(value.title))}
-                              text={value.value ? t(String(value.value)) : "N/A"}
-                              last={index === detail?.values?.length - 1}
-                              caption={value.caption}
-                              className="border-none"
-                              textStyle={value.value === "ACTIVE" ? { color: "green" } : {}}
-                            />
-                          ))}
-                        </Card>
+                          )}
+                        </React.Fragment>
                       );
-                    })}
-                    {detail.type && (
-                      <div
-                        style={{ color: "#a82227", cursor: "pointer", marginLeft: "16px" }}
-                        onClick={() => onActionSelect(detail.type === "ES_FSM_REGISTRY_DETAILS_TYPE_DRIVER" ? "ADD_DRIVER" : "ADD_VEHICLE")}
-                      >
-                        {t(`${detail.type}_ADD`)}
-                      </div>
-                    )}
-                  </div>
+                    }
+
+                    // DEFAULT ROW LOGIC
+                    return (
+                      <Row
+                        key={t(String(value.title))}
+                        label={t(String(value.title))}
+                        text={value.value ? t(String(value.value)) : "N/A"}
+                        last={index === detail?.values?.length - 1}
+                        caption={value.caption}
+                        className={`border-none flex-box ${!isMobile ? "vendor-details-row" : ""}`}
+                      />
+                    );
+                  })}
+                  {detail?.child?.map((data, index) => {
+                    return (
+                      <Card className="card-with-background" key={data.id || index}>
+                        <div className="card-head">
+                          <h2>
+                            {t(detail.type)} {index + 1}
+                          </h2>
+                          <div style={{ display: "flex" }}>
+                            <span onClick={() => onEdit(data, detail.type, data.id)}>
+                              <EditIcon style={{ cursor: "pointer", marginRight: "20px" }} className="edit" fill="#a82227" />
+                            </span>
+                            <span onClick={() => onDelete(data, detail.type, data.id)}>
+                              <DeleteIcon style={{ cursor: "pointer" }} className="delete" fill="#a82227" />
+                            </span>
+                          </div>
+                        </div>
+                        {data?.values?.map((value, index) => (
+                          <Row
+                            key={t(String(value.title))}
+                            label={t(String(value.title))}
+                            text={value.value ? t(String(value.value)) : "N/A"}
+                            last={index === detail?.values?.length - 1}
+                            caption={value.caption}
+                            className="border-none"
+                            textStyle={value.value === "ACTIVE" ? { color: "green" } : {}}
+                          />
+                        ))}
+                      </Card>
+                    );
+                  })}
+                  {detail.type && (
+                    <div
+                      style={{ color: "#a82227", cursor: "pointer", marginLeft: "16px" }}
+                      onClick={() => onActionSelect(detail.type === "ES_FSM_REGISTRY_DETAILS_TYPE_DRIVER" ? "ADD_DRIVER" : "ADD_VEHICLE")}
+                    >
+                      {t(`${detail.type}_ADD`)}
+                    </div>
+                  )}
                 </div>
               </React.Fragment>
             ))}

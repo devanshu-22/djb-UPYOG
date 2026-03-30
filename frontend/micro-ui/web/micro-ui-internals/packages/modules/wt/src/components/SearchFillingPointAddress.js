@@ -90,7 +90,7 @@ const SearchFillingPointAddress = () => {
       placeholder: "WT_ENTER_FIXED_POINT_NAME",
     },
     FILLING_POINT: {
-      label: "WT_FILLING_POINT_CODE",
+      label: "WT_FILLING_POINT_NAME",
       placeholder: "WT_ENTER_FILLING_POINT_NAME",
     },
   };

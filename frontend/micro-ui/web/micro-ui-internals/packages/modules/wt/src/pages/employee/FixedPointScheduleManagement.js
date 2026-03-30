@@ -126,13 +126,12 @@ const FixedPointScheduleManagement = ({ ...props }) => {
     }
   };
 
-
   const mapScheduleRows = React.useCallback(
     (rows = []) =>
       rows.map((item) => ({
         scheduleId: item.systemAssignedScheduleId,
         fixedPointName: item.fixedPointName,
-        fixedPoint: item.fixedPointCode,
+        fixedPoint: item.fixedPointId,
         day: item.day,
         freq: item.tripNo,
         arrToFpl: item.arrivalTimeToFpl,
@@ -184,7 +183,7 @@ const FixedPointScheduleManagement = ({ ...props }) => {
   const columns = React.useMemo(
     () => [
       { Header: t("WT_FIXED_POINT_NAME"), accessor: "fixedPointName" },
-      // { Header: t("WT_FIXED_POINT"), accessor: "fixedPoint" },
+      { Header: t("WT_FIXED_POINT_CODE"), accessor: "fixedPoint" },
       { Header: t("WT_DAY"), accessor: "day" },
       // { Header: t("WT_FREQ"), accessor: "freq" },
       { Header: t("WT_ARR_TO_FPL"), accessor: "arrToFpl" },
@@ -282,6 +281,16 @@ const FixedPointScheduleManagement = ({ ...props }) => {
   );
 
   const days = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"];
+
+  const clearSearch = () => {
+    setSelectedDay("all");
+    setDay({ label: "All Days", value: "all" });
+    setFixedPoint({ label: "All Fixed Points", value: "all" });
+    setStatus({ label: "All Status", value: "all" });
+    setPageOffset(0);
+    setFilters({ limit: pageSize, offset: 0 });
+  };
+
   return (
     <div className="fixed-point-schedule-management">
       <Card style={{ padding: "20px" }}>
@@ -362,6 +371,11 @@ const FixedPointScheduleManagement = ({ ...props }) => {
               }}
               placeholder="All Status"
             />
+          </div>
+          <div className="finance-mainlayout-col1" style={{ alignSelf: "flex-end" }}>
+            <span className="clear-search" onClick={clearSearch} style={{ alignSelf: "center" }}>
+              {t("ES_COMMON_CLEAR_SEARCH")}
+            </span>
           </div>
           <div className="finance-mainlayout-col1" style={{ alignSelf: "flex-end" }}>
             <SubmitBar label={t("ES_COMMON_SEARCH")} onSubmit={() => handleSearch()} />
