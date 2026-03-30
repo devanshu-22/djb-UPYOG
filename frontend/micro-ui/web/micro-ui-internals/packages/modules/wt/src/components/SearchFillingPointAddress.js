@@ -592,18 +592,15 @@ const SearchFillingPointAddress = () => {
               <Dropdown option={statusOptions} optionKey="i18nKey" selected={status} select={setStatus} t={t} />
             </div>
           )}
-          <div
-            style={{
-              display: "flex",
-              marginTop: "32px",
-              justifyContent: isMobile ? "center" : "flex-end",
-              flexDirection: isMobile ? "column-reverse" : "row",
-              gap: "16px",
-            }}
-          >
-            <span className="clear-search" onClick={clearSearch} style={{ alignSelf: "center" }}>
+
+          <div className="finance-mainlayout-col1">
+            <Label>&nbsp;</Label>
+            <span className="generic-button clear-search" onClick={clearSearch} style={{ alignSelf: "center" }}>
               {t("ES_COMMON_CLEAR_SEARCH")}
             </span>
+          </div>
+          <div className="finance-mainlayout-col1">
+            <Label>&nbsp;</Label>
             <SubmitBar label={t("ES_COMMON_SEARCH")} onSubmit={onSearch} />
           </div>
         </div>

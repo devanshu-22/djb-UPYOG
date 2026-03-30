@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useQueryClient } from "react-query";
 import { useTranslation } from "react-i18next";
-import { Card, Dropdown, SubmitBar, Toast, CardLabel } from "@djb25/digit-ui-react-components";
+import { Card, Dropdown, SubmitBar, Toast, CardLabel, Label } from "@djb25/digit-ui-react-components";
 import AddTripModal from "../../components/AddTripModal";
 import ApplicationTable from "../../components/inbox/ApplicationTable";
 
@@ -182,8 +182,8 @@ const FixedPointScheduleManagement = ({ ...props }) => {
 
   const columns = React.useMemo(
     () => [
-      { Header: t("WT_FIXED_POINT_NAME"), accessor: "fixedPointName" },
       { Header: t("WT_FIXED_POINT_CODE"), accessor: "fixedPoint" },
+      { Header: t("WT_FIXED_POINT_NAME"), accessor: "fixedPointName" },
       { Header: t("WT_DAY"), accessor: "day" },
       // { Header: t("WT_FREQ"), accessor: "freq" },
       { Header: t("WT_ARR_TO_FPL"), accessor: "arrToFpl" },
@@ -372,12 +372,14 @@ const FixedPointScheduleManagement = ({ ...props }) => {
               placeholder="All Status"
             />
           </div>
-          <div className="finance-mainlayout-col1" style={{ alignSelf: "flex-end" }}>
-            <span className="clear-search" onClick={clearSearch} style={{ alignSelf: "center" }}>
+          <div className="finance-mainlayout-col1">
+            <Label>&nbsp;</Label>
+            <span className="generic-button clear-search" onClick={clearSearch} style={{ alignSelf: "center" }}>
               {t("ES_COMMON_CLEAR_SEARCH")}
             </span>
           </div>
-          <div className="finance-mainlayout-col1" style={{ alignSelf: "flex-end" }}>
+          <div className="finance-mainlayout-col1">
+            <Label>&nbsp;</Label>
             <SubmitBar label={t("ES_COMMON_SEARCH")} onSubmit={() => handleSearch()} />
           </div>
         </div>
