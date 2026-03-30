@@ -66,7 +66,22 @@ const ChangeCity = (prop) => {
         freeze={true}
         showArrow={false}
         customSelector={
-          <div className="city-selector-wrapper">
+          <div
+            className="city-selector-wrapper"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              padding: "8px 14px",
+              borderRadius: "8px",
+              border: "1px solid #E5E7EB",
+              backgroundColor: "#FFFFFF",
+              boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
+              fontSize: "14px",
+              fontWeight: "500",
+              color: "#1F2937",
+            }}
+          >
             <span className="city-label">{prop?.t(`TENANT_TENANTS_DL_DJB`)}</span>
             <ArrowDown className="chevron-icon" />
           </div>

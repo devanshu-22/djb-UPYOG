@@ -37,8 +37,8 @@ const getFlexJustifyFromAlign = (align = DEFAULT_TEXT_ALIGN) => {
 
 /* ─── Design Tokens ─────────────────────────────────────────────────────────── */
 const T = {
-  accent: "#2563eb",
-  accentDark: "#1d4ed8",
+  accent: "#5282e6",
+  accentDark: "#5282e6",
   accentLight: "#eff6ff",
   accentMid: "#bfdbfe",
   surface: "#ffffff",
@@ -287,6 +287,7 @@ const Table = ({
   getCSVExportData,
   csvExportColumns,
   csvExportButtonLabel,
+  isLoading,
 }) => {
   const [hoveredRow, setHoveredRow] = useState(null);
   const [internalSearch, setInternalSearch] = useState("");
@@ -457,10 +458,10 @@ const Table = ({
               padding: "3px 10px 3px 5px", fontSize: 11, fontWeight: 600,
               boxShadow: "0 1px 4px rgba(37,99,235,0.28)",
             }}>
-              <span style={{ background: "rgba(255,255,255,0.22)", borderRadius: 999, padding: "1px 7px", fontSize: 11, fontWeight: 700, fontFamily: T.fontMono }}>
+              <span style={{ background: "rgba(255,255,255,0.22)", borderRadius: 999, padding: "1px 7px", fontSize: 11, fontWeight: 700, fontFamily: T.fontMono , color: "#fff"}}>
                 {totalRecords}
               </span>
-              <span style={{ fontSize: 10, opacity: 0.88, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              <span style={{ fontSize: 10, opacity: 0.88, textTransform: "uppercase", letterSpacing: "0.06em", color: "#fff" }}>
                 {t ? t("CS_TOTAL_RECORDS") : "Total Records"}
               </span>
             </div>
@@ -600,7 +601,27 @@ const Table = ({
 
           {/* ── Body ────────────────────────────────────────────────────── */}
           <tbody {...getTableBodyProps()}>
-            {page.length === 0 ? (
+            {isLoading && page.length === 0 ? (
+              <tr>
+                <td colSpan={tableColumns.length + (showAutoSerialNo ? 1 : 0)} style={{ padding: "80px 20px", textAlign: "center" }}>
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12 }}>
+                    <div style={{
+                      width: 44, height: 44,
+                      border: `3px solid ${T.borderStrong}`,
+                      borderTop: `3px solid ${T.accent}`,
+                      borderRadius: "50%",
+                      animation: "spin 0.8s linear infinite"
+                    }} />
+                    <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: T.textSecondary, letterSpacing: "0.02em" }}>
+                      {t ? t("CS_LOADING") : "Loading records..."}
+                    </p>
+                  </div>
+                  <style>{`
+                    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+                  `}</style>
+                </td>
+              </tr>
+            ) : page.length === 0 ? (
               <tr>
                 <td colSpan={tableColumns.length + (showAutoSerialNo ? 1 : 0)} style={{ padding: "48px 20px", textAlign: "center" }}>
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>

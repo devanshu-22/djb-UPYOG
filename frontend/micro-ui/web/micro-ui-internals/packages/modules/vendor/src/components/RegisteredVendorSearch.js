@@ -192,8 +192,12 @@ const SearchApplication = ({ onSearch, type, onClose, onTabChange, isFstpOperato
                   {getFields(input)}{" "}
                 </span>
               ))}
-              <div style={{ display: "flex", alignItems: "end", gap: "16px" }}>
+              <div className="finance-mainlayout-col1">
+                <Label>&nbsp;</Label>
                 {type === "desktop" && !mobileView && <SubmitBar className="submit-bar-search" label={t("ES_COMMON_SEARCH")} submit />}
+              </div>
+              <div className="finance-mainlayout-col1">
+                <Label>&nbsp;</Label>
                 {type === "desktop" && !mobileView && <span className="clear-search generic-button">{clearAll()}</span>}
               </div>
             </div>

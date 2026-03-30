@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useHistory } from "react-router-dom";
 import { Label, DatePicker, SubmitBar, Toast, Card, Dropdown, UploadFile, CardSubHeader } from "@djb25/digit-ui-react-components";
 import VerticalTimeline from "./VerticalTimeline";
 import SelectServiceType from "../pageComponents/SelectServiceType";
@@ -7,6 +8,7 @@ import SelectServiceType from "../pageComponents/SelectServiceType";
 const VendorAssign = ({ parentUrl, heading }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const { t } = useTranslation();
+  const history = useHistory();
 
   const [showToast, setShowToast] = useState(null);
   const [vendor, setVendor] = useState(null);
@@ -68,6 +70,9 @@ const VendorAssign = ({ parentUrl, heading }) => {
     createWorkOrder(payload, {
       onSuccess: (result) => {
         setShowToast({ isError: false, label: t("ES_COMMON_SAVE_SUCCESS") });
+        setTimeout(() => {
+          history.push("/digit-ui/employee/vendor/search-vendor");
+        }, 3000);
       },
       onError: (err) => {
         setShowToast({ isError: true, label: err?.response?.data?.Errors?.[0]?.message || t("ES_COMMON_ERROR_SAVING") });
