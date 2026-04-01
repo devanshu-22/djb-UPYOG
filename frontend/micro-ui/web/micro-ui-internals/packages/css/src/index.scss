@@ -342,7 +342,7 @@ input[readonly] {
 .border-none {
   border: none;
   justify-content: space-between;
-  max-width: 450px;
+  max-width: 600px;
 }
 
 input[type="number"]::-webkit-inner-spin-button,
@@ -489,7 +489,8 @@ input[type="number"] {
   }
 
   input {
-    border: 1px solid #e5e5e7;
+    border: 2px solid #a1a1aa;
+    color: #a1a1aa;
   }
 }
 
