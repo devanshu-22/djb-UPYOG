@@ -34,9 +34,4 @@ import java.util.List;
         @JsonProperty("pageSize")
         private Integer pageSize;
 
-        @JsonProperty("lastFixedPointId")
-        private String lastFixedPointId;
-
-        @JsonProperty("lastApplicantId")
-        private String lastApplicantId;
     }

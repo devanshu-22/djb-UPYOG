@@ -47,11 +47,15 @@ public class FillingPointLocalityServiceImpl implements FillingPointLocalityServ
         return request.getFillingPointLocality();
     }
 
+    @Override
     public List<FillingPointLocality> searchMapping(FillingPointLocalitySearchCriteria criteria, RequestInfo requestInfo) {
-        if (ObjectUtils.isEmpty(criteria.getTenantId())) {
-            throw new CustomException("EG_BS_ERR_001", "TenantId is mandatory for search");
-        }
 
-        return fillingPointLocalityRepository.getMappings(criteria);
+        return fillingPointLocalityRepository.searchMapping(criteria);
+    }
+
+    @Override
+    public Long getCount(FillingPointLocalitySearchCriteria criteria) {
+
+        return fillingPointLocalityRepository.getCount(criteria);
     }
 }

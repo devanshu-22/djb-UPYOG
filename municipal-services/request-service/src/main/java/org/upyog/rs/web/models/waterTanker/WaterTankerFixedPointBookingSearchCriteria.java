@@ -24,16 +24,4 @@ public class WaterTankerFixedPointBookingSearchCriteria {
     @JsonProperty("offset")
     private Integer offset;
 
-    @JsonProperty("page_no")
-    private Integer pageNo;
-
-    @JsonProperty("page_size")
-    private Integer pageSize;
-
-    @JsonProperty("lastFixedPointId")
-    private String lastFixedPointId;
-
-    @JsonProperty("lastApplicantId")
-    private String lastApplicantId;
-
 }
