@@ -47,13 +47,28 @@ public class FillingPointLocalityController {
 
     @PostMapping("/_search")
     public ResponseEntity<FillingPointLocalityResponse> search(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper,
-                                                               @Valid @ModelAttribute FillingPointLocalitySearchCriteria criteria) {
+            @Valid @ModelAttribute FillingPointLocalitySearchCriteria criteria) {
 
+        // Normalize limit/offset
+        int limit = (criteria.getLimit() != null && criteria.getLimit() > 0)
+                ? Math.min(criteria.getLimit(), 100) : 10;
+        int offset = (criteria.getOffset() != null && criteria.getOffset() >= 0)
+                ? criteria.getOffset() : 0;
+        criteria.setLimit(limit);
+        criteria.setOffset(offset);
+
+        Long totalCount = service.getCount(criteria);
         List<FillingPointLocality> mappings = service.searchMapping(criteria, requestInfoWrapper.getRequestInfo());
+
+        boolean hasMore = (offset + mappings.size()) < totalCount;
 
         FillingPointLocalityResponse response = FillingPointLocalityResponse.builder()
                 .fillingPointLocality(mappings)
-                .responseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(requestInfoWrapper.getRequestInfo(), true))
+                .totalCount(totalCount)
+                .pageSize(limit)
+                .hasMore(hasMore)
+                .responseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(
+                        requestInfoWrapper.getRequestInfo(), true))
                 .build();
 
         return new ResponseEntity<>(response, HttpStatus.OK);

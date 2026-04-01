@@ -49,10 +49,8 @@ public class FixedPointDetailsRepositoryImpl implements FixedPointDetailsReposit
 
     @Override
     public Integer getCount(FixedPointSearchCriteria criteria) {
-        criteria.setCountCall(true);
         List<Object> preparedStmtList = new ArrayList<>();
         String query = fixedPointTimeTableQueryBuilder.getSearchQuery(criteria, preparedStmtList);
-
         return jdbcTemplate.queryForObject(query, preparedStmtList.toArray(), Integer.class);
     }
 

@@ -11,4 +11,5 @@ public interface FillingPointLocalityService {
     List<FillingPointLocality> createMapping(FillingPointLocalityRequest request);
     List<FillingPointLocality> updateMapping(FillingPointLocalityRequest request);
     List<FillingPointLocality> searchMapping(FillingPointLocalitySearchCriteria criteria, RequestInfo requestInfo);
+    Long getCount(FillingPointLocalitySearchCriteria criteria);
     }

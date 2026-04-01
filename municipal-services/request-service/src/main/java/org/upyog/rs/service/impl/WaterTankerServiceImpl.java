@@ -180,22 +180,15 @@ public class WaterTankerServiceImpl implements WaterTankerService {
 	}
 
 	@Override
-	public List<WaterTankerFixedPointDetail> getWaterTankerFixedPointBookingDetails(RequestInfo requestInfo, WaterTankerFixedPointBookingSearchCriteria waterTankerFixedPointBookingSearchCriteria) {
-			if (waterTankerFixedPointBookingSearchCriteria.getPageSize() == null || waterTankerFixedPointBookingSearchCriteria.getPageSize() <= 0) {
-				waterTankerFixedPointBookingSearchCriteria.setPageSize(20);
-			} else if (waterTankerFixedPointBookingSearchCriteria.getPageSize() > 100) {
-				waterTankerFixedPointBookingSearchCriteria.setPageSize(100);
-			}
+	public List<WaterTankerFixedPointDetail> getWaterTankerFixedPointBookingDetails(
+			RequestInfo requestInfo,
+			WaterTankerFixedPointBookingSearchCriteria criteria) {
 
-			List<WaterTankerFixedPointDetail> applications =
-					requestServiceRepository.getWaterTankerFixedPointBookingDetails(waterTankerFixedPointBookingSearchCriteria);
+		List<WaterTankerFixedPointDetail> applications =
+				requestServiceRepository.getWaterTankerFixedPointBookingDetails(criteria);
 
-			if (CollectionUtils.isEmpty(applications)) {
-				return new ArrayList<>();
-			}
-
-			return applications;
-		}
+		return CollectionUtils.isEmpty(applications) ? new ArrayList<>() : applications;
+	}
 
 	@Override
 	public Long getWaterTankerFixedPointCount(

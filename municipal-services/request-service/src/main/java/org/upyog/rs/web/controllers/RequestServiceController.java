@@ -112,45 +112,6 @@ public class RequestServiceController {
 				.waterTankerBookingDetails(applications).responseInfo(responseInfo).count(count).build();
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
-//	@PostMapping("/water-tanker/fixed-point/v1/_search")
-//	public ResponseEntity<WaterTankerFixedPointBookingSearchResponse> search(
-//			@Valid @RequestBody RequestInfoWrapper requestInfoWrapper,
-//			@RequestParam(required = false) String mobileNumber,
-//			@RequestParam(required = false) String name,
-//			@RequestParam(value = "page_size", defaultValue = "20") Integer pageSize,
-//			@RequestParam(value = "page_no", defaultValue = "1") Integer pageNo,
-//			@RequestParam(required = false) String tenantId) {
-//
-//		WaterTankerFixedPointBookingSearchCriteria criteria =
-//				WaterTankerFixedPointBookingSearchCriteria.builder()
-//						.mobileNumber(mobileNumber)
-//						.name(name)
-//						.pageSize(Math.min(pageSize, 100))
-//						.pageNo(pageNo)
-//						.build();
-//
-//		List<WaterTankerFixedPointDetail> applications =
-//				waterTankerService.getWaterTankerFixedPointBookingDetails(
-//						requestInfoWrapper.getRequestInfo(), criteria);
-//
-//		Long count = waterTankerService.getWaterTankerFixedPointCount(criteria);
-//		boolean hasMore = (long) pageNo * pageSize < count;
-//
-//		ResponseInfo responseInfo = RequestServiceUtil.createReponseInfo(
-//				requestInfoWrapper.getRequestInfo(),
-//				RequestServiceConstants.BOOKING_DETAIL_FOUND,
-//				StatusEnum.SUCCESSFUL);
-//
-//		return new ResponseEntity<>(
-//				WaterTankerFixedPointBookingSearchResponse.builder()
-//						.waterTankerFixedPointDetails(applications)
-//						.responseInfo(responseInfo)
-//						.count(count)
-//						.pageSize(pageSize)
-//						.hasMore(hasMore)
-//						.build(),
-//				HttpStatus.OK);
-//	}
 
 	@PostMapping("/water-tanker/fixed-point/v1/_search")
 	public ResponseEntity<WaterTankerFixedPointBookingSearchResponse> search(
@@ -158,23 +119,20 @@ public class RequestServiceController {
 			@ModelAttribute WaterTankerFixedPointBookingSearchCriteria criteria) {
 
 		int limit = (criteria.getLimit() != null && criteria.getLimit() > 0)
-				? Math.min(criteria.getLimit(), 100)
-				: 10;
+				? Math.min(criteria.getLimit(), 100) : 50;
 		criteria.setLimit(limit);
 
-		// ✅ Resolve offset with default
 		int offset = (criteria.getOffset() != null && criteria.getOffset() >= 0)
-				? criteria.getOffset()
-				: 0;
+				? criteria.getOffset() : 0;
 		criteria.setOffset(offset);
+
+		Long totalCount = waterTankerService.getWaterTankerFixedPointCount(criteria);
 
 		List<WaterTankerFixedPointDetail> applications =
 				waterTankerService.getWaterTankerFixedPointBookingDetails(
 						requestInfoWrapper.getRequestInfo(), criteria);
 
-		Long count = waterTankerService.getWaterTankerFixedPointCount(criteria);
-
-		boolean hasMore = (offset + limit) < count;
+		boolean hasMore = (offset + applications.size()) < totalCount;
 
 		ResponseInfo responseInfo = RequestServiceUtil.createReponseInfo(
 				requestInfoWrapper.getRequestInfo(),
@@ -185,7 +143,7 @@ public class RequestServiceController {
 				WaterTankerFixedPointBookingSearchResponse.builder()
 						.waterTankerFixedPointDetails(applications)
 						.responseInfo(responseInfo)
-						.count(count)
+						.count(totalCount)
 						.pageSize(limit)
 						.hasMore(hasMore)
 						.build(),

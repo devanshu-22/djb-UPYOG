@@ -132,7 +132,11 @@ public class RequestServieRepositoryImpl implements RequestServiceRepository {
 			WaterTankerFixedPointBookingSearchCriteria criteria) {
 
 		List<Object> preparedStmtList = new ArrayList<>();
-		String query = waterTankerFixedPointQueryBuilder.getWaterTankerFixedPointQuery(criteria, preparedStmtList);
+		String query = waterTankerFixedPointQueryBuilder
+				.getWaterTankerFixedPointQuery(criteria, preparedStmtList);
+
+		log.info("Fixed Point Query: {}", query);
+		log.info("Params: {}", preparedStmtList);
 
 		return jdbcTemplate.query(query, preparedStmtList.toArray(), waterTankerFixedPointRowMapper);
 	}

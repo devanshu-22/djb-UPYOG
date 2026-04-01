@@ -20,7 +20,7 @@ public class FixedPointTimeTableQueryBuilder {
     private RequestServiceConfiguration config;
 
     public boolean existsByFixedPointCode(String fixedPointCode) {
-        String query = "SELECT COUNT(1) FROM eg_fixed_point_time_table WHERE fixed_point_code = ?";
+        String query = "SELECT COUNT(1) FROM eg_fixed_point_time_table fpt WHERE fpt.fixed_point_code = ?";
         log.info("FixedPointTimeTable :: existsByFixedPointCode :: Checking for fixedPointCode: {}", fixedPointCode);
         Integer count = jdbcTemplate.queryForObject(query, Integer.class, fixedPointCode);
         return count != null && count > 0;
@@ -38,7 +38,7 @@ public class FixedPointTimeTableQueryBuilder {
                     "LEFT JOIN public.upyog_rs_water_tanker_applicant_details apd " +
                     "ON apd.booking_id = fpt.fixed_point_code";
 
-    private static final String COUNT_QUERY = "SELECT count(*) FROM public.eg_fixed_point_time_table";
+    private static final String COUNT_QUERY = "SELECT count(*) FROM eg_fixed_point_time_table fpt";
 
     private final String paginationWrapper =
             "SELECT * FROM (SELECT *, ROW_NUMBER() OVER (ORDER BY createdtime DESC) AS offset_ FROM ({}) result) result_offset " +
@@ -49,32 +49,31 @@ public class FixedPointTimeTableQueryBuilder {
 
         if (!ObjectUtils.isEmpty(criteria.getScheduleId())) {
             addClauseIfRequired(query, preparedStmtList);
-            query.append(" system_assigned_schedule_id = ? ");
+            query.append(" fpt.system_assigned_schedule_id = ? ");
             preparedStmtList.add(criteria.getScheduleId());
         }
 
         if (!ObjectUtils.isEmpty(criteria.getFixedPointCode())) {
             addClauseIfRequired(query, preparedStmtList);
-            query.append(" fixed_point_code = ? ");
+            query.append(" fpt.fixed_point_code = ? ");
             preparedStmtList.add(criteria.getFixedPointCode());
         }
 
         if (!ObjectUtils.isEmpty(criteria.getDay())) {
             addClauseIfRequired(query, preparedStmtList);
-            query.append(" day = ? ");
+            query.append(" fpt.day = ? ");
             preparedStmtList.add(criteria.getDay());
         }
 
-
         if (!ObjectUtils.isEmpty(criteria.getTenantId())) {
             addClauseIfRequired(query, preparedStmtList);
-            query.append(" tenant_id = ? ");
+            query.append(" fpt.tenant_id = ? ");
             preparedStmtList.add(criteria.getTenantId());
         }
 
         if (!ObjectUtils.isEmpty(criteria.getVehicleId())) {
             addClauseIfRequired(query, preparedStmtList);
-            query.append(" vehicle_id = ? ");
+            query.append(" fpt.vehicle_id = ? ");
             preparedStmtList.add(criteria.getVehicleId());
         }
 
