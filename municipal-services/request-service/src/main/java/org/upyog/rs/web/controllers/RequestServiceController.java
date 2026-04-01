@@ -21,6 +21,7 @@ import org.upyog.rs.service.WaterTankerService;
 import org.upyog.rs.util.RequestServiceUtil;
 import org.upyog.rs.util.ResponseInfoFactory;
 import org.upyog.rs.validator.ValidatorService;
+import org.upyog.rs.web.models.CriteriyaSearch;
 import org.upyog.rs.web.models.CriteriyaSearchDto;
 import org.upyog.rs.web.models.RequestDetailsByDriverId;
 import org.upyog.rs.web.models.ResponseInfo;
@@ -251,8 +252,15 @@ public class RequestServiceController {
 	public ResponseEntity<RequestDetailsByDriverId> getDriverAssignments(
 			@RequestBody @Valid CriteriyaSearchDto searchDto) {
 
+		CriteriyaSearch criteria = searchDto.getCriteriyaSearch();
+
+
 		List<RequestDetailsByDriverId.RequestDetailsInfo> details =
-				waterTankerService.getBookingAndAssignmentDetails(searchDto.getCriteriyaSearch().getDriverId());
+				waterTankerService.getBookingAndAssignmentDetails(
+						criteria.getDriverId(),
+						criteria.getFromDate(),
+						criteria.getToDate()
+				);
 
 		RequestDetailsByDriverId response = RequestDetailsByDriverId.builder()
 				.requestDetailsInfo(details)

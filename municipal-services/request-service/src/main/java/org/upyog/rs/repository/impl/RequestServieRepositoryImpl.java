@@ -236,12 +236,12 @@ public class RequestServieRepositoryImpl implements RequestServiceRepository {
 	}
 
 
-	public List<RequestDetailsByDriverId.RequestDetailsInfo> getFullBookingDetailsByDriver(String driverId) {
-		log.info("Fetching details for driverId: {}", driverId);
-
-		return jdbcTemplate.query(DriverDetailsQueryBuilder.DRIVER_QUERY,
-				new Object[]{driverId},
-				new DriverDetailsRowMapper());
+	public List<RequestDetailsByDriverId.RequestDetailsInfo> getFullBookingDetailsByDriver(
+			String driverId, Long fromDate, Long toDate) {
+		log.info("Fetching details for driverId: {}, fromDate: {}, toDate: {}", driverId, fromDate, toDate);
+		List<Object> params = new ArrayList<>();
+		String query = DriverDetailsQueryBuilder.buildQuery(driverId, fromDate, toDate, params);
+		return jdbcTemplate.query(query, params.toArray(), new DriverDetailsRowMapper());
 	}
 
 	private static final String INSERT_QUERY =

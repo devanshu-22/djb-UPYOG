@@ -14,4 +14,10 @@ public class CriteriyaSearch {
 
     @JsonProperty("driverId")
     private String driverId;
+
+    @JsonProperty("fromDate")
+    private Long fromDate;
+
+    @JsonProperty("toDate")
+    private Long toDate;
 }

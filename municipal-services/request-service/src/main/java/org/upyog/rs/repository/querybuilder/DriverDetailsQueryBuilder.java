@@ -1,5 +1,7 @@
 package org.upyog.rs.repository.querybuilder;
 
+import java.util.List;
+
 public class DriverDetailsQueryBuilder {
 
     public static final String DRIVER_QUERY = new StringBuilder()
@@ -42,4 +44,24 @@ public class DriverDetailsQueryBuilder {
 
             .append("ORDER BY ursbd.booking_id, urwtfp.createdtime DESC ")
             .toString();
+
+
+    public static String buildQuery(String driverId, Long fromDate, Long toDate, List<Object> params) {
+        params.add(driverId);
+
+        if (fromDate == null || toDate == null) {
+            return DRIVER_QUERY;
+        }
+
+        params.add(fromDate);
+        params.add(toDate);
+
+        // Insert date filter before ORDER BY
+        return DRIVER_QUERY.replace(
+                "ORDER BY ursbd.booking_id, urwtfp.createdtime DESC",
+                "AND ursbd.lastmodifiedtime BETWEEN ? AND ? " +
+                                 "AND ursbd.booking_status = 'TANKER_DELIVERED' " +
+                                 "ORDER BY ursbd.booking_id, urwtfp.createdtime DESC"
+        );
+    }
 }
