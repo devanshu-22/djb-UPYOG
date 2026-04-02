@@ -216,6 +216,26 @@
   }
 }
 
+.hover-button {
+  &:hover {
+    height: 32px;
+    border-radius: 9999999px;
+    border: 2px solid #a82227;
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: fit-content;
+    text-decoration: none;
+
+    @media (max-width: 768px) {
+      padding: 0 12px;
+    }
+  }
+}
+
 .generic-button {
   height: 32px;
   border-radius: 9999999px;

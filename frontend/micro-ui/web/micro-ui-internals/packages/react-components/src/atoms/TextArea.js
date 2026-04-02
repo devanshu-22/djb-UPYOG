@@ -6,23 +6,23 @@ const TextArea = (props) => {
 
   return (
     <React.Fragment>
-    <textarea
-      placeholder={props.placeholder}
-      name={props.name}
-      ref={props.inputRef}
-      style={props.style}
-      id={props.id}
-      value={props.value}
-      onChange={props.onChange}
-      className={`${user_type !== "citizen" ? "employee-card-textarea" : "card-textarea"} ${props.disable && "disabled"} ${
-        props?.className ? props?.className : ""
-      }`}
-      minLength={props.minLength}
-      maxLength={props.maxLength} 
-      autoComplete="off"
-      disabled={props.disabled}
-    ></textarea>
-    {  <p className="cell-text">{props.hintText}</p>}
+      <textarea
+        placeholder={props.placeholder}
+        name={props.name}
+        ref={props.inputRef}
+        style={props.style}
+        id={props.id}
+        value={props.value}
+        onChange={props.onChange}
+        className={`${user_type !== "citizen" ? "employee-card-textarea" : "card-textarea"} ${props.disable && "disabled"} ${
+          props?.className ? props?.className : ""
+        }`}
+        minLength={props.minLength}
+        maxLength={props.maxLength}
+        autoComplete="off"
+        disabled={props.disabled}
+      />
+      {<p className="cell-text">{props.hintText}</p>}
     </React.Fragment>
   );
 };

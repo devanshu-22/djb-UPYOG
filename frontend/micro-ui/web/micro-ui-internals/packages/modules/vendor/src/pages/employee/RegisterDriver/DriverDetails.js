@@ -156,7 +156,8 @@ const DriverDetails = (props) => {
         queryClient.invalidateQueries("DSO_SEARCH");
 
         setTimeout(() => {
-          closeToast, history.push(`/digit-ui/employee/fsm/registry`);
+          closeToast();
+          history.push(`/digit-ui/employee/fsm/registry`);
         }, 5000);
       },
     });
@@ -310,7 +311,6 @@ const DriverDetails = (props) => {
       );
     }
   };
-  const isMobile = window.Digit.Utils.browser.isMobile();
 
   if (isLoading) {
     return <Loader />;
@@ -319,7 +319,7 @@ const DriverDetails = (props) => {
   return !isLoading ? (
     <React.Fragment>
       <div className="employee-form-content">
-        <Card style={{ position: "relative" }}>
+        <Card style={{ position: "relative", backgroundColor: "#fff" }}>
           {driverData?.[0]?.employeeResponse?.map((detail, index) => (
             <React.Fragment key={index}>
               {index > 0 && <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t(detail.title)}</CardSectionHeader>}
@@ -329,22 +329,22 @@ const DriverDetails = (props) => {
                     <React.Fragment key={index}>
                       <div className={`${index === detail?.values?.length - 1 ? "row last" : "row"} border-none`}>
                         <h2>{t(value.title)}</h2>
-                        <div className="value" style={{ color: "#a82227", display: "flex" }}>
+                        <div className="value" style={{ color: "#a82227", display: "flex", gap: "20px", alignItems: "center" }}>
                           {t(value.value) || "N/A"}
                           {value.value === "ES_FSM_REGISTRY_DETAILS_ADD_VENDOR" && (
-                            <span onClick={() => onActionSelect("ADD_VENDOR")}>
-                              <AddIcon className="" fill="#a82227" styles={{ cursor: "pointer", marginLeft: "20px", height: "24px" }} />
+                            <span className="add-details-link hover-button hover-button-round" onClick={() => onActionSelect("ADD_VENDOR")}>
+                              <AddIcon className="" fill="#a82227" styles={{ cursor: "pointer", height: "24px" }} />
                             </span>
                           )}
-                          {value.value != "ES_FSM_REGISTRY_DETAILS_ADD_VENDOR" && (
-                            <span onClick={() => onActionSelect("EDIT_VENDOR")}>
-                              <EditIcon style={{ cursor: "pointer", marginLeft: "20px" }} />
-                            </span>
+                          {value.value !== "ES_FSM_REGISTRY_DETAILS_ADD_VENDOR" && (
+                            <div className="add-details-link hover-button hover-button-round" onClick={() => onActionSelect("EDIT_VENDOR")}>
+                              <EditIcon style={{ cursor: "pointer" }} />
+                            </div>
                           )}
-                          {value.value != "ES_FSM_REGISTRY_DETAILS_ADD_VENDOR" && (
-                            <span onClick={() => onActionSelect("DELETE_VENDOR")}>
-                              <DeleteIcon className="delete" fill="#a82227" style={{ cursor: "pointer", marginLeft: "20px" }} />
-                            </span>
+                          {value.value !== "ES_FSM_REGISTRY_DETAILS_ADD_VENDOR" && (
+                            <div className="add-details-link hover-button hover-button-round" onClick={() => onActionSelect("DELETE_VENDOR")}>
+                              <DeleteIcon className="delete" fill="#a82227" style={{ cursor: "pointer" }} />
+                            </div>
                           )}
                         </div>
                       </div>

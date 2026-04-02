@@ -370,12 +370,7 @@ const EditVendorDetails = (props) => {
                               </div>
 
                               <div
-                                style={{
-                                  marginTop: "16px",
-                                  color: "#a82227",
-                                  cursor: "pointer",
-                                  textDecoration: "underline",
-                                }}
+                                className="add-details-link hover-button"
                                 onClick={() => history.push(`/digit-ui/employee/vendor/registry/additionaldetails/info?vendorId=${dsoId}`)}
                               >
                                 {t("Edit Details")}
@@ -383,13 +378,8 @@ const EditVendorDetails = (props) => {
                             </Card>
                           ) : (
                             <div
-                              style={{
-                                marginLeft: "16px",
-                                color: "#a82227",
-                                cursor: "pointer",
-                                textDecoration: "underline",
-                              }}
                               onClick={() => history.push(`/digit-ui/employee/vendor/registry/additionaldetails/vendor-details?vendorId=${dsoId}`)}
+                              className="add-details-link hover-button"
                             >
                               {t("Add Additional Details")}
                             </div>
@@ -442,7 +432,7 @@ const EditVendorDetails = (props) => {
                   })}
                   {detail.type && (
                     <div
-                      style={{ color: "#a82227", cursor: "pointer", marginLeft: "16px" }}
+                      className="add-details-link hover-button"
                       onClick={() => onActionSelect(detail.type === "ES_FSM_REGISTRY_DETAILS_TYPE_DRIVER" ? "ADD_DRIVER" : "ADD_VEHICLE")}
                     >
                       {t(`${detail.type}_ADD`)}

@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -11,7 +11,6 @@ import {
   ActionBar,
   Menu,
   Toast,
-  Header,
   EditIcon,
   DeleteIcon,
   Modal,
@@ -45,14 +44,14 @@ const CloseBtn = (props) => {
 
 const VehicleDetails = (props) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const state = Digit.ULBService.getStateId();
+  // const state = Digit.ULBService.getStateId();
   const { t } = useTranslation();
   const history = useHistory();
   const queryClient = useQueryClient();
   let { id: vehicleNumber } = useParams();
   const [displayMenu, setDisplayMenu] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
-  const [config, setCurrentConfig] = useState({});
+  // const [config, setCurrentConfig] = useState({});
   const [showModal, setShowModal] = useState(false);
   const [showToast, setShowToast] = useState(null);
   const [vendors, setVendors] = useState([]);
@@ -270,7 +269,7 @@ const VehicleDetails = (props) => {
         setShowToast({ key: "success", action: "DELETE_VEHICLE" });
         queryClient.invalidateQueries("FSM_VEICLES_SEARCH");
         setTimeout(() => {
-          closeToast;
+          closeToast();
           history.push(`/digit-ui/employee/fsm/registry`);
         }, 5000);
       },
@@ -284,18 +283,18 @@ const VehicleDetails = (props) => {
     }
     if (selectedAction === "ADD_VENDOR") {
       return (
-        <>
+        <React.Fragment>
           <CardText>{t(`ES_FSM_REGISTRY_SELECT_VENODOR`)}</CardText>
           <Dropdown t={t} option={vendors} value={selectedOption} selected={selectedOption} select={setSelectedOption} optionKey={"name"} />
-        </>
+        </React.Fragment>
       );
     }
     if (selectedAction === "EDIT_VENDOR") {
       return (
-        <>
+        <React.Fragment>
           <CardText>{t(`ES_FSM_REGISTRY_SELECT_VENODOR`)}</CardText>
           <Dropdown t={t} option={vendors} value={selectedOption} selected={selectedOption} select={setSelectedOption} optionKey={"name"} />
-        </>
+        </React.Fragment>
       );
     }
   };
@@ -329,29 +328,29 @@ const VehicleDetails = (props) => {
                 <StatusTable>
                   {detail?.values?.map((value, index) => {
                     return value?.type === "custom" ? (
-                      <>
+                      <React.Fragment key={index}>
                         <div className={`${index === detail?.values?.length - 1 ? "row last" : "row"} border-none`}>
                           <h2>{t(value.title)}</h2>
-                          <div className="value" style={{ color: "#a82227", display: "flex" }}>
+                          <div className="value" style={{ color: "#a82227", display: "flex", alignItems: "center", gap: "8px" }}>
                             {t(value.value) || "N/A"}
                             {value.value === "ES_FSM_REGISTRY_DETAILS_ADD_VENDOR" && (
-                              <span onClick={() => onActionSelect("ADD_VENDOR")}>
-                                <AddIcon className="" fill="#a82227" styles={{ cursor: "pointer", marginLeft: "20px", height: "24px" }} />
-                              </span>
+                              <div className="add-details-link hover-button" onClick={() => onActionSelect("ADD_VENDOR")}>
+                                <AddIcon className="" fill="#a82227" />
+                              </div>
                             )}
-                            {value.value != "ES_FSM_REGISTRY_DETAILS_ADD_VENDOR" && (
-                              <span onClick={() => onActionSelect("EDIT_VENDOR")}>
-                                <EditIcon style={{ cursor: "pointer", marginLeft: "20px" }} />
-                              </span>
+                            {value.value !== "ES_FSM_REGISTRY_DETAILS_ADD_VENDOR" && (
+                              <div className="add-details-link hover-button" onClick={() => onActionSelect("EDIT_VENDOR")}>
+                                <EditIcon />
+                              </div>
                             )}
-                            {value.value != "ES_FSM_REGISTRY_DETAILS_ADD_VENDOR" && (
-                              <span onClick={() => onActionSelect("DELETE_VENDOR")}>
-                                <DeleteIcon className="delete" fill="#a82227" style={{ cursor: "pointer", marginLeft: "20px" }} />
-                              </span>
+                            {value.value !== "ES_FSM_REGISTRY_DETAILS_ADD_VENDOR" && (
+                              <div className="add-details-link hover-button" onClick={() => onActionSelect("DELETE_VENDOR")}>
+                                <DeleteIcon className="delete" fill="#a82227" />
+                              </div>
                             )}
                           </div>
                         </div>
-                      </>
+                      </React.Fragment>
                     ) : (
                       <Row
                         key={t(value.title)}

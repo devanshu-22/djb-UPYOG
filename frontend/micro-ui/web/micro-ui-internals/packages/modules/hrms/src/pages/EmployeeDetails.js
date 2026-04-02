@@ -193,6 +193,8 @@ const Details = () => {
                           text={data?.Employees?.[0]?.user.roles
                             .filter((ele) => ele.tenantId == element?.boundary)
                             .map((ele) => t(`ACCESSCONTROL_ROLES_ROLES_` + ele?.code))}
+                          className="employee-role-list"
+                          valueClassName="employee-role-list-value"
                         />
                       </StatusTable>
                     );

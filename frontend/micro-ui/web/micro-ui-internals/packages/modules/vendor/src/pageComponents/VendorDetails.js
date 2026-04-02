@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FormStep, TextInput, CardLabel, Dropdown, VerticalTimeline, Tooltip, MobileNumber } from "@djb25/digit-ui-react-components";
+import { FormStep, TextInput, CardLabel, Dropdown, VerticalTimeline, Tooltip, MobileNumber, LabelFieldPair } from "@djb25/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 
 const VendorDetails = ({ t, config, onSelect, userType, formData, ownerIndex }) => {
@@ -242,6 +242,7 @@ const VendorDetails = ({ t, config, onSelect, userType, formData, ownerIndex }) 
           // onSkip={onSkip}
           t={t}
           // isDisabled={!applicantName || !mobileNumber || !emailId}
+          className="formcomposer-grid-container-form"
         >
           {/* <div>
               <CardLabel>{`${t("VENDOR_ID")}`}</CardLabel>
@@ -265,7 +266,7 @@ const VendorDetails = ({ t, config, onSelect, userType, formData, ownerIndex }) 
                 })}
               />
             </div> */}
-          <div>
+          <LabelFieldPair>
             <CardLabel className="card-label-smaller">
               <Tooltip label={`${t("IFSC_CODE")}`} isMandatory={false} message={t("INVALID_IFSC_CODE_ERROR_MESSAGE")} />
             </CardLabel>
@@ -288,8 +289,8 @@ const VendorDetails = ({ t, config, onSelect, userType, formData, ownerIndex }) 
                 title: t("INVALID_IFSC_CODE_ERROR_MESSAGE"),
               })}
             />
-          </div>
-          <div>
+          </LabelFieldPair>
+          <LabelFieldPair>
             <CardLabel>
               {`${t("VENDOR_BANK_NAME")}`} <span className="check-page-link-button">*</span>
             </CardLabel>
@@ -305,8 +306,8 @@ const VendorDetails = ({ t, config, onSelect, userType, formData, ownerIndex }) 
               onChange={setvendorbank}
               disabled={true}
             />
-          </div>
-          <div>
+          </LabelFieldPair>
+          <LabelFieldPair>
             <CardLabel>
               {`${t("VENDOR_BANK_BRANCH_NAME")}`} <span className="check-page-link-button">*</span>
             </CardLabel>
@@ -322,8 +323,8 @@ const VendorDetails = ({ t, config, onSelect, userType, formData, ownerIndex }) 
               onChange={setBankbranch}
               disabled={false}
             />
-          </div>
-          <div>
+          </LabelFieldPair>
+          <LabelFieldPair>
             <CardLabel>
               {`${t("VENDOR_MICR_NO")}`} <span className="check-page-link-button">*</span>
             </CardLabel>
@@ -339,8 +340,8 @@ const VendorDetails = ({ t, config, onSelect, userType, formData, ownerIndex }) 
               onChange={setmicrNo}
               disabled={false}
             />
-          </div>
-          <div>
+          </LabelFieldPair>
+          <LabelFieldPair>
             <CardLabel>{`${t("ACCOUNT_NO")}`}</CardLabel>
             <TextInput
               t={t}
@@ -359,9 +360,9 @@ const VendorDetails = ({ t, config, onSelect, userType, formData, ownerIndex }) 
                 title: t("INVALID_ACCOUNT_NO_ERROR_MESSAGE"),
               })}
             />
-          </div>
+          </LabelFieldPair>
 
-          <div>
+          <LabelFieldPair>
             <CardLabel>{`${t("PHONE_NO")}`}</CardLabel>
             {/* <TextInput
               t={t}
@@ -383,8 +384,8 @@ const VendorDetails = ({ t, config, onSelect, userType, formData, ownerIndex }) 
             /> */}
 
             <MobileNumber value={PhoneNo} name="PhoneNo" onChange={setPhoneNo} style={{ width: "100%" }} />
-          </div>
-          <div>
+          </LabelFieldPair>
+          <LabelFieldPair>
             <CardLabel>{`${t("CONTACT_PERSON")}`}</CardLabel>
             <TextInput
               t={t}
@@ -403,8 +404,8 @@ const VendorDetails = ({ t, config, onSelect, userType, formData, ownerIndex }) 
                 title: t("INVALID_ACCOUNT_NO_ERROR_MESSAGE"),
               })}
             />
-          </div>
-          {/* <div>
+          </LabelFieldPair>
+          {/* <LabelFieldPair>
               <CardLabel>{`${t("COMPANY_NAME")}`}</CardLabel>
               <TextInput
                 t={t}
@@ -423,8 +424,8 @@ const VendorDetails = ({ t, config, onSelect, userType, formData, ownerIndex }) 
                   title: t("INVALID_ACCOUNT_NO_ERROR_MESSAGE"),
                 })}
               />
-            </div> */}
-          <div>
+            </LabelFieldPair> */}
+          <LabelFieldPair>
             <CardLabel>{`${t("PAN_NO")}`}</CardLabel>
             <TextInput
               t={t}
@@ -443,8 +444,8 @@ const VendorDetails = ({ t, config, onSelect, userType, formData, ownerIndex }) 
                 title: t("INVALID_PAN_NO_ERROR_MESSAGE"),
               })}
             />
-          </div>
-          <div>
+          </LabelFieldPair>
+          <LabelFieldPair>
             <CardLabel>{`${t("GST_NO")}`}</CardLabel>
             <TextInput
               t={t}
@@ -463,8 +464,8 @@ const VendorDetails = ({ t, config, onSelect, userType, formData, ownerIndex }) 
                 title: t("INVALID_GST_NO_ERROR_MESSAGE"),
               })}
             />
-          </div>
-          <div>
+          </LabelFieldPair>
+          <LabelFieldPair>
             <CardLabel>{`${t("GST_REGISTERED_STATE/UT")}`}</CardLabel>
             <TextInput
               t={t}
@@ -483,8 +484,8 @@ const VendorDetails = ({ t, config, onSelect, userType, formData, ownerIndex }) 
                 title: t("PT_NAME_ERROR_MESSAGE"),
               })}
             />
-          </div>
-          <div>
+          </LabelFieldPair>
+          <LabelFieldPair>
             <CardLabel>{`${t("REGISTRATION_NO")}`}</CardLabel>
             <TextInput
               t={t}
@@ -503,8 +504,8 @@ const VendorDetails = ({ t, config, onSelect, userType, formData, ownerIndex }) 
                 title: t("INVALID_REGISTRATION_NO_ERROR_MESSAGE"),
               })}
             />
-          </div>
-          <div>
+          </LabelFieldPair>
+          <LabelFieldPair>
             <CardLabel>{`${t("EPF_NO")}`}</CardLabel>
             <TextInput
               t={t}
@@ -523,8 +524,8 @@ const VendorDetails = ({ t, config, onSelect, userType, formData, ownerIndex }) 
                 title: t("INVALID_EPF_NO_ERROR_MESSAGE"),
               })}
             />
-          </div>
-          <div>
+          </LabelFieldPair>
+          <LabelFieldPair>
             <CardLabel>{`${t("ESI_NO")}`}</CardLabel>
             <TextInput
               t={t}
@@ -543,8 +544,8 @@ const VendorDetails = ({ t, config, onSelect, userType, formData, ownerIndex }) 
                 title: t("INVALID_ESI_NO_ERROR_MESSAGE"),
               })}
             />
-          </div>
-          <div>
+          </LabelFieldPair>
+          <LabelFieldPair>
             <div>
               {t("VENDOR_TYPE")}
               <div className="tooltip" style={{ width: "12px", height: "5px", marginLeft: "10px", display: "inline-flex", alignItems: "center" }}>
@@ -582,9 +583,9 @@ const VendorDetails = ({ t, config, onSelect, userType, formData, ownerIndex }) 
                 />
               )}
             />
-          </div>
+          </LabelFieldPair>
 
-          <div>
+          <LabelFieldPair>
             <div>
               {t("VENOR_CATEGORY")}
               <div className="tooltip" style={{ width: "12px", height: "5px", marginLeft: "10px", display: "inline-flex", alignItems: "center" }}>
@@ -623,8 +624,8 @@ const VendorDetails = ({ t, config, onSelect, userType, formData, ownerIndex }) 
                 />
               )}
             />
-          </div>
-          <div style={{ paddingBottom: "10px" }}>
+          </LabelFieldPair>
+          <LabelFieldPair>
             <div>
               {t("STATUS")}
               <div
@@ -671,7 +672,7 @@ const VendorDetails = ({ t, config, onSelect, userType, formData, ownerIndex }) 
                 />
               )}
             />
-          </div>
+          </LabelFieldPair>
         </FormStep>
       </div>
     </React.Fragment>

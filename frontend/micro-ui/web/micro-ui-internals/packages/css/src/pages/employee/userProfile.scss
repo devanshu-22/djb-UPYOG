@@ -9,6 +9,7 @@
 
   &.employee {
     @media (min-width: 768px) {
+      overflow-y: scroll;
       width: 33.33%;
       height: fit-content;
       min-width: 250px;
@@ -104,16 +105,16 @@
   flex-direction: column;
   gap: 16px;
   width: 100%;
-  padding-top: 16px;
-  padding-inline: 20px;
-  margin-bottom: 88px;
-
+  height: 100%;
+  @media (min-width: 768px) {
+    padding-inline: 20px;
+  }
   .generic-button {
     color: #fff;
     cursor: pointer;
     position: relative;
     border-radius: 10px;
-    background-color: #171f1d;
+    background-color: #7696e7;
   }
 }
 
@@ -128,6 +129,15 @@
   position: relative;
 }
 
+.login {
+  .user-profile-wrapper {
+    padding-bottom: 16px;
+    @media (max-width: 768px) {
+      padding-bottom: 76px;
+    }
+  }
+}
+
 .user-profile-wrapper {
   display: flex;
   flex: 1;
@@ -135,6 +145,7 @@
 
   @media (min-width: 768px) {
     flex-direction: row;
+    overflow-y: scroll;
   }
   @media (max-width: 768px) {
     align-items: center;
@@ -192,7 +203,7 @@
   gap: 8px;
 
   &.employee {
-    flex: 7.5;
+    overflow-y: scroll;
     padding: 24px;
     box-shadow: 1px 1px 4px 0px rgba(0, 0, 0, 0.2);
   }
