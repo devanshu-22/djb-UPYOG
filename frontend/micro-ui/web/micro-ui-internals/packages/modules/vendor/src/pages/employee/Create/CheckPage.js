@@ -247,7 +247,9 @@ const CheckPage = ({ onSubmit, value = {} }) => {
             />
           </div>
           <br />
-          <SubmitBar label={t("COMMON_BUTTON_SUBMIT")} onSubmit={onSubmit} disabled={!agree} />
+          <div className="formcomposer-section-button">
+            <SubmitBar label={t("COMMON_BUTTON_SUBMIT")} onSubmit={onSubmit} disabled={!agree} />
+          </div>
         </Card>
       </div>
     </React.Fragment>

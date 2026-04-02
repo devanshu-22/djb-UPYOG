@@ -1,10 +1,10 @@
 .radio-wrap {
   flex-wrap: wrap;
   .radio-btn-outer-wrap {
-  display: flex;
-  align-items: center;
+    display: flex;
+    align-items: center;
   }
-  @apply my-sm block leading-10 mb-lg;
+  @apply block leading-10;
 
   .radio-btn-wrap {
     @apply block float-left relative;
@@ -35,16 +35,16 @@
     @apply border-2 border-primary-main;
   }
 
-.radio-btn-wrap input:checked ~ .radio-btn-checkmark:after {
-  @apply block bg-primary-main h-3 w-3 rounded-full absolute;
+  .radio-btn-wrap input:checked ~ .radio-btn-checkmark:after {
+    @apply block bg-primary-main h-3 w-3 rounded-full absolute;
 
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
 }
-}
-.reverse-radio-selection-wrapper{
-  div{
-    @apply flex flex-row-reverse place-content-between items-center;    ;
+.reverse-radio-selection-wrapper {
+  div {
+    @apply flex flex-row-reverse place-content-between items-center;
   }
 }
