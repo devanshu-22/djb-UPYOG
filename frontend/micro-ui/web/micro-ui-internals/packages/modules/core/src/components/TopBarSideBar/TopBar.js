@@ -31,19 +31,6 @@ const TopBar = ({
     return month >= 4 ? `FY ${year}-${(year + 1).toString().slice(-2)}` : `FY ${year - 1}-${year.toString().slice(-2)}`;
   };
 
-  const financialYearStyle = {
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    padding: "8px 14px",
-    borderRadius: "8px",
-    border: "1px solid #E5E7EB",
-    backgroundColor: "#FFFFFF",
-    boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
-    fontSize: "14px",
-    fontWeight: "500",
-    color: "#1F2937",
-  };
   const [profilePic, setProfilePic] = React.useState(null);
   const [zoneName, setZoneName] = React.useState(Digit.SessionStorage.get("Employee.zone"));
   const [designationName, setDesignationName] = React.useState(Digit.SessionStorage.get("Employee.designation"));
@@ -151,22 +138,20 @@ const TopBar = ({
             >
               <img src="https://objectstorage.ap-hyderabad-1.oraclecloud.com/n/axn3czn1s06y/b/djb-dev-asset-bucket/o/djb_logo.png" alt="DJB Logo" />
             </div>
-            <div className="btx" style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
-              <h1 style={{ fontFamily: "'Crimson Pro', serif", fontSize: "17px", fontWeight: "700", color: "#003366", margin: 0 }}>
-                Delhi Jal Board
-              </h1>
-              <p style={{ fontSize: "10.5px", fontWeight: "500", color: "#0070B4", margin: 0 }}>Integrated Enterprise Management System</p>
+            <div className="btx">
+              <h1 style={{ fontFamily: "'Crimson Pro', serif", fontSize: "29px", fontWeight: "700", color: "#003366" }}>Delhi Jal Board</h1>
+              <p style={{ fontSize: "10.5px", fontWeight: "500", color: "#0070B4" }}>Integrated Enterprise Management System</p>
             </div>
           </div>
 
           {!mobileView && (
-            <div className="flex-right right w-80 column-gap-15">
-              <div style={financialYearStyle}>
+            <div className="topbar-right-section">
+              <div className="topbar-item-wrapper hide-on-mobile">
                 <Calender width="20" height="20" />
                 <span>{getFinancialYear()}</span>
               </div>
               <div className="left">{showLanguageChange && <ChangeLanguage dropdown={true} />}</div>
-              <div style={{ width: "2px", height: "28px", backgroundColor: "rgb(203, 213, 225)" }}></div>
+              <div className="vertical-divider"></div>
 
               {loggedIn && (
                 <div className="left" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
@@ -221,9 +206,9 @@ const TopBar = ({
           >
             <img src="https://objectstorage.ap-hyderabad-1.oraclecloud.com/n/axn3czn1s06y/b/djb-dev-asset-bucket/o/djb_logo.png" alt="DJB Logo" />
           </div>
-          <div className="btx" style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
-            <h1 style={{ fontFamily: "'Crimson Pro', serif", fontSize: "17px", fontWeight: "700", color: "#003366", margin: 0 }}>Delhi Jal Board</h1>
-            <p style={{ fontSize: "10.5px", fontWeight: "500", color: "#0070B4", margin: 0 }}>Integrated Enterprise Management System</p>
+          <div className="btx">
+            <h1 style={{ fontFamily: "'Crimson Pro', serif", fontSize: "29px", fontWeight: "700", color: "#003366"}}>Delhi Jal Board</h1>
+            <p style={{ fontSize: "10.5px", fontWeight: "500", color: "#0070B4"}}>Integrated Enterprise Management System</p>
           </div>
         </div>
 
@@ -233,19 +218,19 @@ const TopBar = ({
           </p>
         )}
         {!mobileView && (
-          <div className={mobileView ? "right" : "flex-right right w-80 mx-4 column-gap-15"} style={!loggedin ? { width: "80%" } : {}}>
-            <div className="left">
+          <div className={mobileView ? "right" : "topbar-right-section"} style={!loggedin ? { width: "80%" } : {}}>
+            <div className="left hide-on-mobile">
               {!window.location.href.includes("employee/user/login") && !window.location.href.includes("employee/user/language-selection") && (
                 <ChangeCity dropdown={true} t={t} />
               )}
             </div>
-            <div style={financialYearStyle}>
+            <div className="topbar-item-wrapper hide-on-mobile">
               <Calender width="20" height="20" />
               <span>{getFinancialYear()}</span>
             </div>
-            <div style={{ width: "2px", height: "28px", backgroundColor: "rgb(203, 213, 225)" }}></div>
+            <div className="vertical-divider hide-on-mobile"></div>
             <div className="left">{showLanguageChange && <ChangeLanguage dropdown={true} />}</div>
-            <div style={{ width: "2px", height: "28px", backgroundColor: "rgb(203, 213, 225)" }}></div>
+            <div className="vertical-divider"></div>
 
             {userDetails?.access_token && (
               <div className="left" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
