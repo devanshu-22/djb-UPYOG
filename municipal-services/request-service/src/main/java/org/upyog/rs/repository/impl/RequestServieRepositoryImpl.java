@@ -95,7 +95,8 @@ public class RequestServieRepositoryImpl implements RequestServiceRepository {
 		/*passed the preparedStmtList and search criteria inside the getWaterTankerQuery method
 		 developed inside query builder to build and get the data as per search criteria*/
 		String query = queryBuilder.getWaterTankerQuery(waterTankerBookingSearchCriteria, preparedStmtList);
-		log.info("Final query for getWaterTankerBookingDetails {} and paramsList {} : ", query, preparedStmtList);
+		log.info("Final query for getWaterTankerBookingDetails {} and paramsList {} /////////////////////////////: ", query, preparedStmtList);
+		log.info("--------------------//////////////////////   "+query);
 
 		/*
 		*  Execute the query using JdbcTemplate with a generic row mapper
@@ -137,6 +138,8 @@ public class RequestServieRepositoryImpl implements RequestServiceRepository {
 
 		log.info("Fixed Point Query: {}", query);
 		log.info("Params: {}", preparedStmtList);
+
+		log.info("---------------  "+query);
 
 		return jdbcTemplate.query(query, preparedStmtList.toArray(), waterTankerFixedPointRowMapper);
 	}

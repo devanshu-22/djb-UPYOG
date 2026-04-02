@@ -91,7 +91,8 @@ public class DriverDetailsRowMapper implements RowMapper<RequestDetailsByDriverI
             trip.setBookingId(rs.getString("trip_booking_id"));
             trip.setBookingNo(rs.getString("trip_booking_no"));
             trip.setTenantId(rs.getString("tenant_id")); // from main table OK
-
+            trip.setJefilestoreId(rs.getString("jefilestoreid"));
+            trip.setRemarkUpdatedByRole(rs.getString("remark_updated_by_role"));
             trip.setTankerType(rs.getString("trip_tanker_type"));
             trip.setVendorId(rs.getString("trip_vendor_id"));
             trip.setVehicleId(rs.getString("trip_vehicle_id"));

@@ -7,5 +7,5 @@ public interface DriverTripService {
 
      DriverTrip startTrip(DriverTripRequest request);
      DriverTrip completeTrip(DriverTripRequest request) ;
-
+     DriverTrip updateTripByNonDriver(DriverTripRequest request);
 }

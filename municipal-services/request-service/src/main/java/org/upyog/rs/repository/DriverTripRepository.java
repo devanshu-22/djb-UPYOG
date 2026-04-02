@@ -1,6 +1,7 @@
 package org.upyog.rs.repository;
 
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -11,6 +12,7 @@ import org.upyog.rs.web.models.DriverTrip;
 import java.util.List;
 
 @Repository
+@Slf4j
 public class DriverTripRepository {
 
     @Autowired
@@ -91,6 +93,29 @@ public class DriverTripRepository {
                 trip.getAuditDetails().getCreatedBy(),
                 trip.getAuditDetails().getLastModifiedBy(),
                 trip.getAuditDetails().getLastModifiedTime());
+    }
+
+    public void updateByNonDriver(DriverTrip trip) {
+        String sql = "UPDATE eg_driver_trip " +
+                "SET jefilestoreid = ?, " +
+                "photo_updated_by_role = ?, remark_updated_by_role = ?, " +
+                "last_modified_by = ?, last_modified_time = ? " +
+                "WHERE booking_no = ?";
+
+        log.info("Updating trip with values: jefilestoreid={}, photoRole={}, remarkRole={}, lastModifiedBy={}, bookingNo={}",
+                trip.getJefilestoreId(),
+                trip.getPhotoUpdatedByRole(),
+                trip.getRemarkUpdatedByRole(),
+                trip.getAuditDetails().getLastModifiedBy(),
+                trip.getBookingNo());
+
+        jdbcTemplate.update(sql,
+                trip.getJefilestoreId(),
+                trip.getPhotoUpdatedByRole(),
+                trip.getRemarkUpdatedByRole(),
+                trip.getAuditDetails().getLastModifiedBy(),
+                trip.getAuditDetails().getLastModifiedTime(),
+                trip.getBookingNo());
     }
 
     public List<DriverTrip> getHistoryByDriver(String driverId) {

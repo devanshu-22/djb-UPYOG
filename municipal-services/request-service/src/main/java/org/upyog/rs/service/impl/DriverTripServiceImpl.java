@@ -10,6 +10,10 @@ import org.upyog.rs.service.DriverTripService;
 import org.upyog.rs.util.RequestServiceUtil;
 import org.upyog.rs.web.models.DriverTrip;
 import org.upyog.rs.web.models.DriverTripRequest;
+import org.egov.common.contract.request.Role;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class DriverTripServiceImpl implements DriverTripService {
@@ -75,5 +79,38 @@ public class DriverTripServiceImpl implements DriverTripService {
         producer.push(RequestServiceConstants.KAFKA_UPDATE_DRIVER_TRIP_TOPIC, request);
 
         return existingTrip;
+    }
+
+    @Override
+    public DriverTrip updateTripByNonDriver(DriverTripRequest request) {
+        DriverTrip updateReq = request.getDriverTrip();
+        String userUuid = request.getRequestInfo().getUserInfo().getUuid();
+        DriverTrip existingTrip = repository.findByBookingNo(updateReq.getBookingNo());
+
+        if (existingTrip == null) {
+            throw new CustomException("TRIP_NOT_FOUND",
+                    "No trip found for booking: " + updateReq.getBookingNo());
+        }
+        existingTrip.setJefilestoreId(updateReq.getJefilestoreId());
+        existingTrip.setAuditDetails(RequestServiceUtil.getAuditDetails(userUuid, false));
+
+        String roles = getNonDriverRoles(request);
+        existingTrip.setPhotoUpdatedByRole(roles);
+        existingTrip.setRemarkUpdatedByRole(updateReq.getRemarkUpdatedByRole());
+
+        repository.updateByNonDriver(existingTrip);
+
+        request.setDriverTrip(existingTrip);
+        producer.push(RequestServiceConstants.KAFKA_UPDATE_DRIVER_TRIP_TOPIC, request);
+
+        return existingTrip;
+    }
+
+    private String getNonDriverRoles(DriverTripRequest request) {
+        List<Role> roles = request.getRequestInfo().getUserInfo().getRoles();
+
+        return roles.stream()
+                .map(Role::getCode)
+                .collect(Collectors.joining(","));
     }
 }
