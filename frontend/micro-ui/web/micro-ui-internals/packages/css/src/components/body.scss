@@ -1,9 +1,9 @@
 body {
-  @apply bg-grey-bg;
+  background-color: #e7e7e7;
 }
 
 .body-container {
-  @apply bg-grey-bg h-full min-h-screen overflow-x-hidden;
+  @apply  h-full min-h-screen overflow-x-hidden;
 }
 
 .navbar {
