@@ -23,7 +23,7 @@ export const TableConfig = (t) => ({
             <div>
               <span className="link">
                 
-                <Link to={`${props.parentRoute}/booking-details/` + `${row?.original?.searchData?.["bookingNo"]}`}>
+                <Link to={`${props.detailRoute || `${props.parentRoute}/booking-details`}/${row?.original?.searchData?.["bookingNo"]}`}>
 
                   {row.original?.searchData?.["bookingNo"]}
                 </Link>
