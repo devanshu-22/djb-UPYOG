@@ -30,6 +30,7 @@ const Inbox = ({
   useNewInboxAPI,
   parentRoute,
   moduleCode,
+  detailRoute,
   initialStates = {},
   filterComponent,
   isInbox,
@@ -233,6 +234,7 @@ const Inbox = ({
         <div className="app-container" style={{ padding: user?.type === "CITIZEN" ? "0 24px" : "" }}>
           <WTDesktopInbox
             moduleCode={moduleCode}
+            detailRoute={detailRoute}
             data={data}
             tableConfig={TableConfig(t)[moduleCode]}
             isLoading={hookLoading}

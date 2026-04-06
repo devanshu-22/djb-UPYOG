@@ -29,6 +29,10 @@ const getNewButtonText = (moduleName, kpis, links) => {
   return "New";
 };
 
+const getLinkLabelText = (linkItem) => String(linkItem?.label || "");
+
+const shouldRenderLinkCount = (count) => count !== undefined && count !== null && count !== "";
+
 /* ─────────────────────────────────────────────────────────────
    MOBILE TAB BAR — completely self-contained, position:fixed
    so it lives OUTSIDE the flex/sidebar layout entirely
@@ -50,7 +54,8 @@ const MobileModuleTabBar = ({ links = [], moduleName = "" }) => {
 
   const renderTab = (linkItem, index) => {
     const isActive = location.pathname === linkItem.link;
-    const initials = linkItem.label.substring(0, 2).toUpperCase();
+    const labelText = getLinkLabelText(linkItem);
+    const initials = labelText.substring(0, 2).toUpperCase();
 
     const tabInner = (
       <span
@@ -64,7 +69,11 @@ const MobileModuleTabBar = ({ links = [], moduleName = "" }) => {
             <span className="emtb-tab__initials">{initials}</span>
           )}
         </span>
-        <span className="emtb-tab__label">{linkItem.label}</span>
+        <span className="emtb-tab__content">
+          <span className="emtb-tab__label">{labelText}</span>
+          {linkItem.subLabel ? <span className="emtb-tab__sublabel">{linkItem.subLabel}</span> : null}
+        </span>
+        {shouldRenderLinkCount(linkItem.count) ? <span className="emtb-tab__count">{linkItem.count}</span> : null}
       </span>
     );
 
@@ -191,6 +200,40 @@ const MobileModuleTabBar = ({ links = [], moduleName = "" }) => {
 
           .emtb-tab__label {
             line-height: 1;
+          }
+
+          .emtb-tab__content {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 2px;
+            min-width: 0;
+          }
+
+          .emtb-tab__sublabel {
+            font-size: 10px;
+            line-height: 1;
+            color: #94a3b8;
+          }
+
+          .emtb-tab--active .emtb-tab__sublabel {
+            color: #1a67a3;
+          }
+
+          .emtb-tab__count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 18px;
+            height: 18px;
+            padding: 0 6px;
+            border-radius: 9999px;
+            background: #e0f2fe;
+            color: #1a67a3;
+            font-size: 10px;
+            font-weight: 700;
+            line-height: 1;
+            margin-left: 2px;
           }
         }
       `}</style>

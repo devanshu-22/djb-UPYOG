@@ -14,6 +14,7 @@ import VendorAssign from "../../components/VendorAssign";
 const EmployeeApp = ({ path }) => {
   const { t } = useTranslation();
   const location = useLocation();
+  const fixedPointInboxLabel = t("WT_FIXED_POINT") !== "WT_FIXED_POINT" ? `${t("WT_FIXED_POINT")} ${t("ES_COMMON_INBOX")}` : "Fixed Point Inbox";
 
   sessionStorage.removeItem("revalidateddone");
 
@@ -33,7 +34,9 @@ const EmployeeApp = ({ path }) => {
       { label: t("WT_MODULE_NAME"), path: `/digit-ui/employee/module/details?moduleName=${moduleName}` },
     ];
 
-    if (pathname.includes("/inbox")) {
+    if (pathname.includes("/fixed-point/inbox")) {
+      crumbs.push({ label: fixedPointInboxLabel });
+    } else if (pathname.includes("/inbox")) {
       let label = "ES_COMMON_INBOX";
       if (pathname.includes("/tp/inbox")) label = "TP_INBOX";
       crumbs.push({ label: t(label) });
@@ -44,6 +47,9 @@ const EmployeeApp = ({ path }) => {
       crumbs.push({ label: t(label) });
     } else if (pathname.includes("/request-service")) {
       crumbs.push({ label: t("WT_REQUEST_SERVICE") });
+    } else if (pathname.includes("/fixed-point/booking-details")) {
+      crumbs.push({ label: fixedPointInboxLabel, path: `${path}/fixed-point/inbox` });
+      crumbs.push({ label: t("WT_BOOKING_DETAILS") });
     } else if (pathname.includes("/booking-details") || pathname.includes("/bookingsearch/booking-details")) {
       const isSearch = pathname.includes("/bookingsearch");
       if (isSearch) {
@@ -100,6 +106,15 @@ const EmployeeApp = ({ path }) => {
     },
   };
 
+  const inboxInitialStateFixedPoint = {
+    searchParams: {
+      uuid: { code: "ASSIGNED_TO_ALL", name: "ES_INBOX_ASSIGNED_TO_ALL" },
+      services: ["watertanker-fixedpoint"],
+      applicationStatus: [],
+      locality: [],
+    },
+  };
+
   const ApplicationDetails = Digit?.ComponentRegistryService?.getComponent("ApplicationDetails");
 
   const WTCreate = Digit?.ComponentRegistryService?.getComponent("WTCreate");
@@ -142,6 +157,23 @@ const EmployeeApp = ({ path }) => {
                   />
                 )}
               />
+              {/* WT Fixed Point Inbox */}
+              <PrivateRoute
+                path={`${path}/fixed-point/inbox`}
+                component={(props) => (
+                  <Inbox
+                    {...props}
+                    useNewInboxAPI={true}
+                    parentRoute={path}
+                    businessService="watertanker-fixedpoint"
+                    detailRoute={`${path}/fixed-point/booking-details`}
+                    moduleCode="WT"
+                    filterComponent="WT_INBOX_FILTER"
+                    initialStates={inboxInitialStateFixedPoint}
+                    isInbox={true}
+                  />
+                )}
+              />
               {/* MT Inbox */}
               <PrivateRoute
                 path={`${path}/mt/inbox`}
@@ -179,6 +211,7 @@ const EmployeeApp = ({ path }) => {
               <PrivateRoute path={`${path}/mt/request-service`} component={WTCreate} />
               <PrivateRoute path={`${path}/tp/request-service`} component={WTCreate} />
               {/* Booking Details */}
+              <PrivateRoute path={`${path}/fixed-point/booking-details/:id`} component={(props) => <ApplicationDetails {...props} parentRoute={path} />} />
               <PrivateRoute path={`${path}/booking-details/:id`} component={(props) => <ApplicationDetails {...props} parentRoute={path} />} />
               <PrivateRoute path={`${path}/bookingsearch/booking-details/:id`} component={(props) => <ApplicationDetails {...props} parentRoute={path} />} />
               {/* My Bookings */}
