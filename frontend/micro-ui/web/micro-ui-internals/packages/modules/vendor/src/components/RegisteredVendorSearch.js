@@ -182,23 +182,15 @@ const SearchApplication = ({ onSearch, type, onClose, onTabChange, isFstpOperato
           </div>
 
           <form onSubmit={handleSubmit(onSubmitInput)}>
-            <div
-              className={FSTP ? "complaint-input-container for-pt for-search" : "complaint-input-container"}
-              style={{ display: "grid", width: "100%", gridTemplateColumns: "33.33% 66.66% 0%", gap: "16px" }}
-            >
+            <div className={FSTP ? "for-pt for-search flex-box" : "flex-box"} style={{ gap: "16px" }}>
               {searchFields?.map((input, index) => (
-                <span key={index} className={index === 0 ? "complaint-input" : "mobile-input"}>
-                  <Label>{input.label}</Label>
-                  {getFields(input)}{" "}
+                <span key={index} className={index === 0 ? "finance-mainlayout-col2 complaint-input" : "finance-mainlayout-col2 mobile-input"}>
+                  {getFields(input)}
                 </span>
               ))}
-              <div className="finance-mainlayout-col1">
-                <Label>&nbsp;</Label>
-                {type === "desktop" && !mobileView && <SubmitBar className="submit-bar-search" label={t("ES_COMMON_SEARCH")} submit />}
-              </div>
-              <div className="finance-mainlayout-col1">
-                <Label>&nbsp;</Label>
+              <div style={{ display: "flex", justifyContent: "end", gap: "16px", alignItems: "center" }}>
                 {type === "desktop" && !mobileView && <span className="clear-search generic-button">{clearAll()}</span>}
+                {type === "desktop" && !mobileView && <SubmitBar className="submit-bar-search" label={t("ES_COMMON_SEARCH")} submit />}
               </div>
             </div>
             {error ? <CardLabelError className="search-error-label">{t("ES_SEARCH_APPLICATION_ERROR")}</CardLabelError> : null}

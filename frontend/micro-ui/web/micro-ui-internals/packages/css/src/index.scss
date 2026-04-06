@@ -308,6 +308,10 @@ input[readonly] {
   @apply border-grey-dark text-grey-dark !important;
   pointer-events: none !important;
 }
+.disabled-label {
+  @apply border-grey-dark text-grey-dark !important;
+  pointer-events: none !important;
+}
 
 .card-date-input {
   @apply absolute top-0 left-0 w-3/4 bg-white pl-sm border border-input-border border-solid border-r-0;
@@ -491,6 +495,26 @@ input[type="number"] {
   input {
     border: 2px solid #a1a1aa;
     color: #a1a1aa;
+    &:focus-within {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    }
+  }
+}
+
+.phone-input-wrapper:focus-within {
+  .employee-card-input--front {
+    outline: none;
+    border-color: #007bff;
+    border-right: 0;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    z-index: 1;
+  }
+  input {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
   }
 }
 

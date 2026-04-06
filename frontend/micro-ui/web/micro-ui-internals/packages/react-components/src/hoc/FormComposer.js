@@ -105,7 +105,7 @@ export const FormComposer = (props) => {
         return (
           <div className="field-container">
             {populators?.componentInFront ? (
-              <span className={`component-in-front ${disable && "disabled"}`}>{populators.componentInFront}</span>
+              <span className={`component-in-front ${disable && "disabled-label"}`}>{populators.componentInFront}</span>
             ) : null}
             <TextInput
               className="field"
@@ -288,32 +288,22 @@ export const FormComposer = (props) => {
                           ...(field.isInsideBox ? getCombinedStyle(field?.placementinbox) : {}),
                         }}
                       >
-                        {!field.withoutLabel && (
-                          <CardLabel style={{ color: field.isSectionText ? "#505A5F" : "" }} className={field?.disable ? "disabled" : ""}>
-                            {t(field.label)}
-                            {field.isMandatory ? " * " : null}
-                            {field.labelChildren && field.labelChildren}
-                          </CardLabel>
-                        )}
-                        {errors && errors[field.populators?.name] && Object.keys(errors[field.populators?.name]).length ? (
-                          <CardLabelError>{t(field.populators.error || errors[field.populators?.name]?.message)}</CardLabelError>
-                        ) : null}
-                        <div style={field.withoutLabel ? { width: "100%" } : {}} className="field">
-                          {fieldSelector(field.type, field.populators, field.isMandatory, field?.disable, field?.component, field)}
-                          {field?.description && (
-                            <CardLabel
-                              style={{
-                                marginTop: "-24px",
-                                fontSize: "16px",
-                                fontWeight: "bold",
-                                color: "#505A5F",
-                                ...field?.descriptionStyles,
-                              }}
-                            >
-                              {t(field.description)}
+                        <LabelFieldPair>
+                          {!field.withoutLabel && (
+                            <CardLabel style={{ color: field.isSectionText ? "#505A5F" : "" }} className={field?.disable ? "disabled-label" : ""}>
+                              {t(field.label)}
+                              {field.isMandatory ? " * " : null}
+                              {field.labelChildren && field.labelChildren}
                             </CardLabel>
                           )}
-                        </div>
+                          {errors && errors[field.populators?.name] && Object.keys(errors[field.populators?.name]).length ? (
+                            <CardLabelError>{t(field.populators.error || errors[field.populators?.name]?.message)}</CardLabelError>
+                          ) : null}
+                          <div style={field.withoutLabel ? { width: "100%" } : {}} className="field">
+                            {fieldSelector(field.type, field.populators, field.isMandatory, field?.disable, field?.component, field)}
+                            {field?.description && <CardLabel>{t(field.description)}</CardLabel>}
+                          </div>
+                        </LabelFieldPair>
                       </div>
                     </React.Fragment>
                   );

@@ -15,6 +15,26 @@
     width: 100%;
   }
 
+
+  .btx {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px; /* controls space between lines */
+
+    h1 {
+      margin: 0;
+      line-height: 1.1;
+    }
+
+    p {
+      margin: 0;
+      line-height: 1.1;
+    }
+
+
+}
+
   img {
     display: inline;
 
@@ -107,6 +127,27 @@
     .profile-dropdown--item {
       span {
         white-space: pre;
+      }
+    }
+  }
+
+  @media (max-width: 780px) {
+    padding: 10px 16px; // Reduce padding for mobile
+
+    .brand-mark {
+      width: 40px !important;
+      height: 40px !important;
+      img {
+        max-width: 32px;
+      }
+    }
+
+    .btx {
+      h1 {
+        font-size: 15px !important;
+      }
+      p {
+        font-size: 9px !important;
       }
     }
   }
@@ -233,5 +274,157 @@ video::-webkit-media-controls-panel {
     margin-left: 2px;
     color: #6b778c;
     flex-shrink: 0;
+  }
+}
+
+.topbar-right-section {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 1;
+  gap: 15px;
+
+  @media (max-width: 1024px) {
+    gap: 8px;
+    margin-right: 0px !important;
+    margin-left: 0px !important;
+  }
+}
+
+.topbar-item-wrapper {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 8px 14px !important;
+  border-radius: 8px !important;
+  border: 1px solid #e5e7eb !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  color: #1f2937 !important;
+  white-space: nowrap !important;
+
+  @media (max-width: 1024px) {
+    padding: 6px 10px !important;
+    gap: 6px !important;
+    font-size: 12px !important;
+  }
+
+  @media (max-width: 780px) {
+    padding: 4px 6px !important;
+    font-size: 11px !important;
+    svg {
+      width: 14px !important;
+      height: 14px !important;
+    }
+  }
+
+  @media (max-width: 450px) {
+    padding: 3px 5px !important;
+    font-size: 10px !important;
+    gap: 4px !important;
+    svg {
+      width: 12px !important;
+      height: 12px !important;
+    }
+  }
+}
+
+.hide-on-mobile {
+  @media (max-width: 500px) {
+    display: none !important;
+  }
+}
+
+.vertical-divider {
+  width: 2px;
+  height: 28px;
+  background-color: rgb(203, 213, 225);
+
+  @media (max-width: 1024px) {
+    height: 20px;
+  }
+  @media (max-width: 780px) {
+    height: 16px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .user-profile-pill {
+    padding: 4px !important;
+    gap: 0 !important;
+    .user-profile-info {
+      display: none !important;
+    }
+  }
+
+  .topbar img.spect-icon {
+    max-height: 40px !important;
+    padding-right: 10px !important;
+  }
+}
+
+@media (max-width: 780px) {
+  .topbar img.spect-icon {
+    display: none !important;
+  }
+
+  .user-profile-pill {
+    .user-profile-avatar,
+    .user-profile-img {
+      width: 32px !important;
+      height: 32px !important;
+      font-size: 14px !important;
+    }
+  }
+}
+
+@media (max-width: 360px) {
+  .topbar {
+    padding: 8px 10px !important;
+  }
+  .topbar-content {
+    gap: 0 !important;
+  }
+  .topbar .brand {
+    gap: 6px !important;
+  }
+  .topbar .brand-mark {
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 6px !important;
+    min-width: 34px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  .topbar .brand-mark img {
+    max-width: 24px !important;
+    height: auto !important;
+    object-fit: contain !important;
+  }
+  .topbar .btx p {
+    display: none !important;
+  }
+  .topbar .btx h1 {
+    font-size: 14px !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+  }
+  .user-profile-pill {
+    padding: 2px 6px 2px 2px !important;
+    gap: 4px !important;
+    border: none !important;
+    .user-profile-avatar,
+    .user-profile-img {
+      width: 28px !important;
+      height: 28px !important;
+      font-size: 13px !important;
+    }
+  }
+  .topbar-item-wrapper {
+    padding: 4px !important;
+    border: none !important;
   }
 }

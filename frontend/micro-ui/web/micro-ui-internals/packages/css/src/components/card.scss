@@ -214,6 +214,24 @@
     background: linear-gradient(278deg, rgba(110, 191, 221, 0.925) -24.44%, rgba(97, 119, 236, 0.9) 93.53%);
   }
 }
+
+.label-field-pair .field .text-input .select .select-active input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+.label-field-pair .field .text-input .select .select-active input:focus-within {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.employee-card-input:focus-within {
+  outline: none;
+  border-color: #007bff !important;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
 @screen dt {
   .submit-bar,
   .submit-bar-disabled {
@@ -247,7 +265,9 @@
   }
 
   .label-field-pair {
-    align-items: center;
+    display: flex;
+    gap: 4px;
+    flex-direction: column;
   }
 
   .employeeCard {
