@@ -1,15 +1,15 @@
 package org.upyog.rs.fixedpoint.web.model;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.upyog.rs.web.models.AuditDetails;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 
-@ApiModel(description = "Details of the fixed point time table schedule")
+@Schema(description = "Details of the fixed point time table schedule")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

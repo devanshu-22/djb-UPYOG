@@ -1,6 +1,5 @@
 package org.upyog.rs.config;
 
-import javax.annotation.PostConstruct;
 
 import org.egov.tracer.config.TracerConfiguration;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,6 +11,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import javax.annotation.PostConstruct;
 
 @Component
 @AllArgsConstructor

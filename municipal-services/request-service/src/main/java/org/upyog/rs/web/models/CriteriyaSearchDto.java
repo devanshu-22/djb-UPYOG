@@ -1,12 +1,12 @@
 package org.upyog.rs.web.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.egov.common.contract.request.RequestInfo;
 
-import javax.validation.constraints.NotNull;
 
 
 @Data

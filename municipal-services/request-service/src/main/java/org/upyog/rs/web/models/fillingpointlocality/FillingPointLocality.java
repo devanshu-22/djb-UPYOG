@@ -9,6 +9,7 @@ import org.upyog.rs.web.models.AuditDetails;
 
 import javax.validation.constraints.NotNull;
 
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

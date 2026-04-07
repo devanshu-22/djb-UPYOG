@@ -1,22 +1,24 @@
 package org.upyog.rs.web.models;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.validation.annotation.Validated;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import io.swagger.annotations.ApiModel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.annotation.processing.Generated;
+
 /**
  * Collection of audit related fields used by most models
  */
-@ApiModel(description = "Collection of audit related fields used by most models")
+@Schema(description = "Collection of audit related fields used by most models")
 @Validated
-@javax.annotation.Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2024-04-19T11:17:29.419+05:30")
+@Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2024-04-19T11:17:29.419+05:30")
 
 @Getter
 @Setter

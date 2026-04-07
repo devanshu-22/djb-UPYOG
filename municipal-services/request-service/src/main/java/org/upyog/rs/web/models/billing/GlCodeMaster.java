@@ -1,8 +1,8 @@
 package org.upyog.rs.web.models.billing;
 
-import javax.validation.constraints.NotNull;
 
 import digit.models.coremodels.AuditDetails;
+import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

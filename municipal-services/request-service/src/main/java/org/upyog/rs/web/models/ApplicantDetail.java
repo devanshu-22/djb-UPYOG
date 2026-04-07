@@ -1,14 +1,14 @@
 package org.upyog.rs.web.models;
 
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.validation.annotation.Validated;
 import org.upyog.rs.validator.CreateApplicationGroup;
 
-import io.swagger.annotations.ApiModel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,12 +16,14 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import javax.annotation.processing.Generated;
+
 /**
  * Details of the advertisement booking
  */
-@ApiModel(description = "Details of the advertisement booking")
+@Schema(description = "Details of the advertisement booking")
 @Validated
-@javax.annotation.Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2024-04-19T11:17:29.419+05:30")
+@Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2024-04-19T11:17:29.419+05:30")
 
 @Getter
 @Setter

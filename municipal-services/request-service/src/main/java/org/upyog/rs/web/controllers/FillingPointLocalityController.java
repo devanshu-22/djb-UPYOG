@@ -1,6 +1,7 @@
 package org.upyog.rs.web.controllers;
 
 import digit.models.coremodels.RequestInfoWrapper;
+import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +13,6 @@ import org.upyog.rs.web.models.fillingpointlocality.FillingPointLocalityRequest;
 import org.upyog.rs.web.models.fillingpointlocality.FillingPointLocalityResponse;
 import org.upyog.rs.web.models.fillingpointlocality.FillingPointLocalitySearchCriteria;
 
-import javax.validation.Valid;
 import java.util.List;
 
 @RestController

@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
+
+import javax.validation.Valid;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
 import org.egov.tracer.model.CustomException;
@@ -30,8 +32,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
 import org.upyog.rs.web.models.waterTanker.WaterTankerBookingSearchCriteria;
-
-import javax.validation.Valid;
 
 @Slf4j
 @Service
@@ -132,7 +132,7 @@ public class UserService {
 	 * Searches if the applicant is already created in user registry with the mobile
 	 * number entered. Search is based on name of owner, uuid and mobileNumber
 	 * 
-	 * @param owner       Owner which is to be searched
+	 * @param
 	 * @param requestInfo RequestInfo from the propertyRequest
 	 * @return UserDetailResponse containing the user if present and the
 	 *         responseInfo
