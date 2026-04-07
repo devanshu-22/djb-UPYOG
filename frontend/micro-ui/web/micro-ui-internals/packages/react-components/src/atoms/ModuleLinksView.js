@@ -1,6 +1,8 @@
 import React, { Fragment } from "react";
 import { Link } from "react-router-dom";
 
+const shouldRenderLinkCount = (count) => count !== undefined && count !== null && count !== "";
+
 const ModuleLinksView = ({ links = [], moduleName }) => {
     return (
         <div className="expanded-content">
@@ -14,14 +16,18 @@ const ModuleLinksView = ({ links = [], moduleName }) => {
                 {links && links.length > 0 ? (
                     links.map((linkItem, index) => {
                         const label = linkItem.label;
+                        const subLabel = linkItem.subLabel;
                         const count = linkItem.count;
                         const url = linkItem.link;
 
                         const Content = (
                             <div className="module-link-card">
                                 <div className="link-card-info">
-                                    <span className="link-card-label">{label}</span>
-                                    {count ? <span className="link-card-count">{count}</span> : ""}
+                                    <div className="link-card-copy">
+                                        <span className="link-card-label">{label}</span>
+                                        {subLabel ? <span className="link-card-sublabel">{subLabel}</span> : null}
+                                    </div>
+                                    {shouldRenderLinkCount(count) ? <span className="link-card-count">{count}</span> : null}
                                 </div>
                                 <div className="link-card-arrow">
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

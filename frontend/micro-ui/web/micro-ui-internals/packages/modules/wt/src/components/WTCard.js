@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useTranslation } from "react-i18next";
 import { EmployeeModuleCard, CHBIcon } from "@djb25/digit-ui-react-components";
 import { APPLICATION_PATH } from "../utils";
@@ -14,13 +14,11 @@ import { APPLICATION_PATH } from "../utils";
  */
 const WTCard = () => {
   const { t } = useTranslation();
-
-  const [total, setTotal] = useState("-");
-  const { data, isLoading, isFetching, isSuccess } = Digit.Hooks.useNewInboxGeneral({
-    tenantId: Digit.ULBService.getCurrentTenantId(),
+  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const { data: citizenInboxData, isLoading: isCitizenInboxLoading } = Digit.Hooks.useNewInboxGeneral({
+    tenantId,
     ModuleCode: "WT",
     filters: { limit: 10, offset: 0, services: ["watertanker"] },
-
     config: {
       select: (data) => {
         return { totalCount: data?.totalCount, nearingSlaCount: data?.nearingSlaCount } || "-";
@@ -29,15 +27,33 @@ const WTCard = () => {
     },
   });
 
-  useEffect(() => {
-    if (!isFetching && isSuccess) setTotal(data);
-  }, [isFetching]);
+  const { data: fixedPointInboxData, isLoading: isFixedPointInboxLoading } = Digit.Hooks.useNewInboxGeneral({
+    tenantId,
+    ModuleCode: "WT",
+    filters: { limit: 10, offset: 0, services: ["watertanker-fixedpoint"] },
+    config: {
+      select: (data) => {
+        return { totalCount: data?.totalCount, nearingSlaCount: data?.nearingSlaCount } || "-";
+      },
+      enabled: Digit.Utils.wtAccess(),
+    },
+  });
+
+  const citizenInboxCount = isCitizenInboxLoading ? "-" : citizenInboxData?.totalCount ?? 0;
+  const fixedPointInboxCount = isFixedPointInboxLoading ? "-" : fixedPointInboxData?.totalCount ?? 0;
 
   const links = [
     {
-      count: isLoading ? "-" : total?.totalCount,
+      count: citizenInboxCount,
       label: t("ES_COMMON_INBOX"),
+      subLabel: "citizen",
       link: `${APPLICATION_PATH}/employee/wt/inbox`,
+    },
+    {
+      count: fixedPointInboxCount,
+      label: t("ES_COMMON_INBOX"),
+      subLabel: "Fixed Point",
+      link: `${APPLICATION_PATH}/employee/wt/fixed-point/inbox`,
     },
     {
       label: t("ES_COMMON_APPLICATION_SEARCH"),
@@ -71,7 +87,7 @@ const WTCard = () => {
     moduleName: t("WT_MODULE_NAME"),
     kpis: [
       {
-        count: total?.totalCount,
+        count: citizenInboxCount,
         label: t("ES_TITLE_INBOX"),
         link: `${APPLICATION_PATH}/employee/wt/inbox`,
       },
