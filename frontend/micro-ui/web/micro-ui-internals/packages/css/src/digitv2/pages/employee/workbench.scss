@@ -718,9 +718,6 @@ button:hover {
   display: block;
   width: 100%;
   height: 2.5rem;
-  --border-opacity: 1;
-  border: 1px solid #f47738;
-  border-color: rgba(244, 119, 56, var(--border-opacity));
 }
 
 .modal-content .label-field-pair {

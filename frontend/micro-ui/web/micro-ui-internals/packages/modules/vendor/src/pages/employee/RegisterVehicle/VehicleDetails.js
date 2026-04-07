@@ -331,11 +331,13 @@ const VehicleDetails = (props) => {
                       <React.Fragment key={index}>
                         <div className={`${index === detail?.values?.length - 1 ? "row last" : "row"} border-none`}>
                           <h2>{t(value.title)}</h2>
-                          <div className="value" style={{ color: "#a82227", display: "flex", alignItems: "center", gap: "8px" }}>
-                            {t(value.value) || "N/A"}
+                          <div
+                            className="value add-details-link hover-button"
+                            style={{ color: "#a82227", display: "flex", alignItems: "center", gap: "8px" }}
+                          >
                             {value.value === "ES_FSM_REGISTRY_DETAILS_ADD_VENDOR" && (
-                              <div className="add-details-link hover-button" onClick={() => onActionSelect("ADD_VENDOR")}>
-                                <AddIcon className="" fill="#a82227" />
+                              <div onClick={() => onActionSelect("ADD_VENDOR")} style={{ color: "#a82227", display: "flex", alignItems: "center", gap: "8px" }}>
+                                <AddIcon className="" fill="#a82227" /> {t(value.value) || "N/A"}
                               </div>
                             )}
                             {value.value !== "ES_FSM_REGISTRY_DETAILS_ADD_VENDOR" && (

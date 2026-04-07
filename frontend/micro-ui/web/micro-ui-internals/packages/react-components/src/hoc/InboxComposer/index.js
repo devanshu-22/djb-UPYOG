@@ -260,7 +260,7 @@ const InboxComposer = ({
             <Loader />
           ) : (
             <div className="result">
-              <div style={{ background: "#fff", height: "inherit" }}>
+              <div style={{ background: "#fff", height: "inherit", borderRadius: "12px" }}>
                 {propsForInboxTable?.data?.length < 1 ? (
                   <Card className="margin-unset text-align-center inboxLinks">
                     {propsForInboxTable.noResultsMessage ? t(propsForInboxTable.noResultsMessage) : t("CS_MYAPPLICATIONS_NO_APPLICATION")}
@@ -270,7 +270,8 @@ const InboxComposer = ({
                 )}
               </div>
             </div>
-          )}</div>
+          )}
+        </div>
       </div>
     );
   }

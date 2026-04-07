@@ -1,14 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
-import {
-  useGlobalFilter,
-  usePagination,
-  useRowSelect,
-  useSortBy,
-  useTable,
-} from "react-table";
+import { useGlobalFilter, usePagination, useRowSelect, useSortBy, useTable } from "react-table";
 import { ArrowBack, ArrowForward, ArrowToFirst, ArrowToLast } from "./svgindex";
 
-const noop = () => { };
+const noop = () => {};
 
 const getSearchableText = (obj) => {
   if (obj === null || obj === undefined) return "";
@@ -59,8 +53,19 @@ const T = {
 
 /* ─── Icons ──────────────────────────────────────────────────────────────────── */
 const IconSortNeutral = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.3 }}>
-    <path d="M7 16V4m0 0L3 8m4-4 4 4" /><path d="M17 8v12m0 0 4-4m-4 4-4-4" />
+  <svg
+    width="13"
+    height="13"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    style={{ opacity: 0.3 }}
+  >
+    <path d="M7 16V4m0 0L3 8m4-4 4 4" />
+    <path d="M17 8v12m0 0 4-4m-4 4-4-4" />
   </svg>
 );
 const IconSortAsc = () => (
@@ -76,19 +81,23 @@ const IconSortDesc = () => (
 
 const IconSearch = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+    <circle cx="11" cy="11" r="8" />
+    <line x1="21" y1="21" x2="16.65" y2="16.65" />
   </svg>
 );
 
 const IconDownload = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 3v12" /><path d="m7 10 5 5 5-5" /><path d="M4 20h16" />
+    <path d="M12 3v12" />
+    <path d="m7 10 5 5 5-5" />
+    <path d="M4 20h16" />
   </svg>
 );
 
 const IconClose = ({ color = "currentColor" }) => (
   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <line x1="6" y1="6" x2="18" y2="18" />
   </svg>
 );
 
@@ -188,7 +197,9 @@ const buildCsvContent = ({ columnDefs = [], rows = [] }) => {
 };
 
 const normalizeCsvFileName = (fileName = "table-data") => {
-  const safeName = String(fileName || "table-data").trim().replace(/[\\/:*?"<>|]+/g, "_");
+  const safeName = String(fileName || "table-data")
+    .trim()
+    .replace(/[\\/:*?"<>|]+/g, "_");
   if (!safeName) return "table-data.csv";
   return safeName.toLowerCase().endsWith(".csv") ? safeName : `${safeName}.csv`;
 };
@@ -218,23 +229,37 @@ const normalizeExportRows = (value) => {
 const PagBtn = ({ onClick, disabled, title, children, active = false }) => {
   const [hovered, setHovered] = useState(false);
   const base = {
-    display: "inline-flex", alignItems: "center", justifyContent: "center",
-    width: 30, height: 30, borderRadius: 5,
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: 30,
+    height: 30,
+    borderRadius: 5,
     cursor: disabled ? "not-allowed" : "pointer",
-    fontFamily: T.fontMono, fontSize: 12, fontWeight: 600,
-    lineHeight: 0, opacity: disabled ? 0.35 : 1,
+    fontFamily: T.fontMono,
+    fontSize: 12,
+    fontWeight: 600,
+    lineHeight: 0,
+    opacity: disabled ? 0.35 : 1,
     transition: "all 0.15s",
   };
   if (active) {
     return (
-      <button onClick={onClick} disabled={disabled} title={title} style={{ ...base, background: T.accent, border: `1.5px solid ${T.accent}`, color: "#fff", boxShadow: "0 2px 6px rgba(37,99,235,0.30)" }}>
+      <button
+        onClick={onClick}
+        disabled={disabled}
+        title={title}
+        style={{ ...base, background: T.accent, border: `1.5px solid ${T.accent}`, color: "#fff", boxShadow: "0 2px 6px rgba(37,99,235,0.30)" }}
+      >
         {children}
       </button>
     );
   }
   return (
     <button
-      onClick={onClick} disabled={disabled} title={title}
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
@@ -300,9 +325,9 @@ const Table = ({
     getTableProps,
     getTableBodyProps,
     headerGroups,
-    rows,         // all rows (after filtering/sorting, before pagination)
+    rows, // all rows (after filtering/sorting, before pagination)
     prepareRow,
-    page,         // current page rows
+    page, // current page rows
     canPreviousPage,
     canNextPage,
     pageOptions,
@@ -332,14 +357,16 @@ const Table = ({
       autoResetSortBy: false,
       disableSortRemove: true,
       disableGlobalFilter: false,
-      globalFilter: globalSearch || ((rows, columnIds, filterValue) => {
-        if (!filterValue) return rows;
-        const lowerVal = String(filterValue).toLowerCase();
-        return rows.filter((row) => {
-          const rowText = getSearchableText(row.original);
-          return rowText.includes(lowerVal);
-        });
-      }),
+      globalFilter:
+        globalSearch ||
+        ((rows, columnIds, filterValue) => {
+          if (!filterValue) return rows;
+          const lowerVal = String(filterValue).toLowerCase();
+          return rows.filter((row) => {
+            const rowText = getSearchableText(row.original);
+            return rowText.includes(lowerVal);
+          });
+        }),
       useControlledState: (state) => {
         return React.useMemo(() => ({
           ...state,
@@ -355,7 +382,9 @@ const Table = ({
   );
 
   // Keep original onSort behaviour
-  useEffect(() => { onSort(sortBy); }, [onSort, sortBy]);
+  useEffect(() => {
+    onSort(sortBy);
+  }, [onSort, sortBy]);
 
   // Integrated Search box
   useEffect(() => {
@@ -375,20 +404,16 @@ const Table = ({
       ? totalRecords
       : (currentPage + 1) * pageSizeLimit
     : pageIndex * pageSize + page?.length;
-  const totalLabel = totalRecords
-    ? `of ${manualPagination ? totalRecords : rows.length}`
-    : "";
+  const totalLabel = totalRecords ? `of ${manualPagination ? totalRecords : rows.length}` : "";
 
-  const isCsvExportEnabled =
-    showCSVExport || typeof getCSVExportData === "function" || Array.isArray(csvExportData);
+  const isCsvExportEnabled = showCSVExport || typeof getCSVExportData === "function" || Array.isArray(csvExportData);
 
   const handleCsvExport = async () => {
     if (isCsvExporting) return;
     setIsCsvExporting(true);
 
     try {
-      const isManualExportWithoutDataSource =
-        manualPagination && typeof getCSVExportData !== "function" && !Array.isArray(csvExportData);
+      const isManualExportWithoutDataSource = manualPagination && typeof getCSVExportData !== "function" && !Array.isArray(csvExportData);
       if (isManualExportWithoutDataSource) {
         console.warn("Table CSV export skipped: provide csvExportData or getCSVExportData for manual pagination.");
         return;
@@ -397,15 +422,15 @@ const Table = ({
       const exportSource =
         typeof getCSVExportData === "function"
           ? await getCSVExportData({
-            currentPage,
-            pageIndex,
-            pageSize,
-            pageSizeLimit,
-            manualPagination,
-            sortBy,
-            globalFilter,
-            totalRecords,
-          })
+              currentPage,
+              pageIndex,
+              pageSize,
+              pageSizeLimit,
+              manualPagination,
+              sortBy,
+              globalFilter,
+              totalRecords,
+            })
           : csvExportData ?? (manualPagination ? [] : tableData);
 
       const exportRows = normalizeExportRows(exportSource);
@@ -429,36 +454,59 @@ const Table = ({
   };
 
   return (
-    <div style={{
-      fontFamily: T.fontBody,
-      background: T.surface,
-      border: `1px solid ${T.border}`,
-      borderRadius: 12,
-      boxShadow: "0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04)",
-      width: "100%",
-    }}>
-
+    <div
+      style={{
+        fontFamily: T.fontBody,
+        background: T.surface,
+        border: `1px solid ${T.border}`,
+        borderRadius: "12px",
+        boxShadow: "0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04)",
+        width: "100%",
+      }}
+    >
       {/* ── Top Bar ──────────────────────────────────────────────────────── */}
-      <div style={{
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "12px 16px", borderBottom: `1px solid ${T.border}`,
-        background: T.surfaceAlt, gap: 12, flexWrap: "wrap",
-      }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "12px 16px",
+          borderBottom: `1px solid ${T.border}`,
+          background: T.surfaceAlt,
+          gap: 12,
+          flexWrap: "wrap",
+          borderRadius: "12px 12px 0 0",
+        }}
+      >
         {/* Left: title + total badge */}
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-          {tableTitle && (
-            <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: T.textPrimary, letterSpacing: "-0.015em" }}>
-              {tableTitle}
-            </h3>
-          )}
+          {tableTitle && <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: T.textPrimary, letterSpacing: "-0.015em" }}>{tableTitle}</h3>}
           {totalRecords !== undefined && (
-            <div style={{
-              display: "inline-flex", alignItems: "center", gap: 6,
-              background: T.accent, color: "#fff", borderRadius: 999,
-              padding: "3px 10px 3px 5px", fontSize: 11, fontWeight: 600,
-              boxShadow: "0 1px 4px rgba(37,99,235,0.28)",
-            }}>
-              <span style={{ background: "rgba(255,255,255,0.22)", borderRadius: 999, padding: "1px 7px", fontSize: 11, fontWeight: 700, fontFamily: T.fontMono , color: "#fff"}}>
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                background: T.accent,
+                color: "#fff",
+                borderRadius: 999,
+                padding: "3px 10px 3px 5px",
+                fontSize: 11,
+                fontWeight: 600,
+                boxShadow: "0 1px 4px rgba(37,99,235,0.28)",
+              }}
+            >
+              <span
+                style={{
+                  background: "rgba(255,255,255,0.22)",
+                  borderRadius: 999,
+                  padding: "1px 7px",
+                  fontSize: 11,
+                  fontWeight: 700,
+                  fontFamily: T.fontMono,
+                  color: "#fff",
+                }}
+              >
                 {totalRecords}
               </span>
               <span style={{ fontSize: 10, opacity: 0.88, textTransform: "uppercase", letterSpacing: "0.06em", color: "#fff" }}>
@@ -482,9 +530,13 @@ const Table = ({
               onBlur={() => setSearchFocused(false)}
               style={{
                 border: `1.5px solid ${searchFocused ? T.accent : T.borderStrong}`,
-                borderRadius: 6, padding: "6px 10px 6px 30px",
-                fontSize: 13, fontFamily: T.fontBody,
-                color: T.textPrimary, background: T.surface, outline: "none",
+                borderRadius: 6,
+                padding: "6px 10px 6px 30px",
+                fontSize: 13,
+                fontFamily: T.fontBody,
+                color: T.textPrimary,
+                background: T.surface,
+                outline: "none",
                 width: 200,
                 boxShadow: searchFocused ? "0 0 0 3px rgba(37,99,235,0.10)" : "none",
                 transition: "border-color 0.15s, box-shadow 0.15s",
@@ -493,7 +545,18 @@ const Table = ({
             {internalSearch && (
               <button
                 onClick={() => setInternalSearch("")}
-                style={{ position: "absolute", right: 7, background: "none", border: "none", cursor: "pointer", padding: 2, lineHeight: 0, color: T.textMuted, display: "flex", alignItems: "center" }}
+                style={{
+                  position: "absolute",
+                  right: 7,
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: 2,
+                  lineHeight: 0,
+                  color: T.textMuted,
+                  display: "flex",
+                  alignItems: "center",
+                }}
               >
                 <IconClose />
               </button>
@@ -524,7 +587,7 @@ const Table = ({
               <span style={{ lineHeight: 0 }}>
                 <IconDownload />
               </span>
-              <span>{isCsvExporting ? "Exporting..." : (csvExportButtonLabel || "Download CSV")}</span>
+              <span>{isCsvExporting ? "Exporting..." : csvExportButtonLabel || "Download CSV"}</span>
             </button>
           )}
           {tableTopComponent || null}
@@ -536,23 +599,47 @@ const Table = ({
         ref={tref}
         className={customTableWrapperClassName}
         style={{
-          width: "100%", overflowX: "auto", WebkitOverflowScrolling: "touch",
+          width: "100%",
+          overflowX: "auto",
+          WebkitOverflowScrolling: "touch",
           ...(tref.current && tref.current.offsetWidth < tref.current.scrollWidth ? inboxStyles : {}),
         }}
       >
         <table
           className={className}
           {...getTableProps()}
-          style={{ width: "100%", borderCollapse: "collapse", borderSpacing: 0, fontSize: 13.5, color: T.textPrimary, fontFamily: T.fontBody, ...styles }}
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            borderSpacing: 0,
+            fontSize: 13.5,
+            color: T.textPrimary,
+            fontFamily: T.fontBody,
+            ...styles,
+          }}
           ref={tableRef}
         >
           {/* ── Head ────────────────────────────────────────────────────── */}
           <thead>
             {headerGroups.map((headerGroup) => (
               <tr {...headerGroup.getHeaderGroupProps()} style={{ background: T.surfaceAlt }}>
-
                 {showAutoSerialNo && (
-                  <th style={{ width: 48, padding: "12px 8px", textAlign: "center", borderBottom: `2px solid ${T.borderStrong}`, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: T.textSecondary, whiteSpace: "nowrap", verticalAlign: "middle", height: DEFAULT_ROW_HEIGHT }}>
+                  <th
+                    style={{
+                      width: 48,
+                      padding: "12px 8px",
+                      textAlign: "center",
+                      borderBottom: `2px solid ${T.borderStrong}`,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.07em",
+                      color: T.textSecondary,
+                      whiteSpace: "nowrap",
+                      verticalAlign: "middle",
+                      height: DEFAULT_ROW_HEIGHT,
+                    }}
+                  >
                     {typeof showAutoSerialNo === "string" ? t(showAutoSerialNo) : t("TB_SNO")}
                   </th>
                 )}
@@ -577,18 +664,25 @@ const Table = ({
                   };
 
                   return (
-                    <th
-                      {...headerProps}
-                      title={column.canSort ? "Click to sort" : ""}
-                      style={mergedStyle}
-                    >
-                      <div style={{ display: "flex", alignItems: "center", gap: 5, justifyContent: getFlexJustifyFromAlign(textAlign), width: "100%" }}>
-                        <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: isSorted ? T.accentDark : T.textSecondary, transition: "color 0.15s" }}>
+                    <th {...headerProps} title={column.canSort ? "Click to sort" : ""} style={mergedStyle}>
+                      <div
+                        style={{ display: "flex", alignItems: "center", gap: 5, justifyContent: getFlexJustifyFromAlign(textAlign), width: "100%" }}
+                      >
+                        <span
+                          style={{
+                            fontSize: 11,
+                            fontWeight: 700,
+                            textTransform: "uppercase",
+                            letterSpacing: "0.07em",
+                            color: isSorted ? T.accentDark : T.textSecondary,
+                            transition: "color 0.15s",
+                          }}
+                        >
                           {column.render("Header")}
                         </span>
                         {column.canSort && (
                           <span style={{ lineHeight: 0, color: isSorted ? T.accent : T.textMuted }}>
-                            {isSorted ? (column.isSortedDesc ? <IconSortDesc /> : <IconSortAsc />) : <IconSortNeutral />}
+                            {isSorted ? column.isSortedDesc ? <IconSortDesc /> : <IconSortAsc /> : <IconSortNeutral />}
                           </span>
                         )}
                       </div>
@@ -605,13 +699,16 @@ const Table = ({
               <tr>
                 <td colSpan={tableColumns.length + (showAutoSerialNo ? 1 : 0)} style={{ padding: "80px 20px", textAlign: "center" }}>
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12 }}>
-                    <div style={{
-                      width: 44, height: 44,
-                      border: `3px solid ${T.borderStrong}`,
-                      borderTop: `3px solid ${T.accent}`,
-                      borderRadius: "50%",
-                      animation: "spin 0.8s linear infinite"
-                    }} />
+                    <div
+                      style={{
+                        width: 44,
+                        height: 44,
+                        border: `3px solid ${T.borderStrong}`,
+                        borderTop: `3px solid ${T.accent}`,
+                        borderRadius: "50%",
+                        animation: "spin 0.8s linear infinite",
+                      }}
+                    />
                     <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: T.textSecondary, letterSpacing: "0.02em" }}>
                       {t ? t("CS_LOADING") : "Loading records..."}
                     </p>
@@ -625,12 +722,22 @@ const Table = ({
               <tr>
                 <td colSpan={tableColumns.length + (showAutoSerialNo ? 1 : 0)} style={{ padding: "48px 20px", textAlign: "center" }}>
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
-                    <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke={T.textMuted} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.4 }}>
-                      <rect x="3" y="3" width="18" height="18" rx="2" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="9" y1="21" x2="9" y2="9" />
+                    <svg
+                      width="44"
+                      height="44"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke={T.textMuted}
+                      strokeWidth="1.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      style={{ opacity: 0.4 }}
+                    >
+                      <rect x="3" y="3" width="18" height="18" rx="2" />
+                      <line x1="3" y1="9" x2="21" y2="9" />
+                      <line x1="9" y1="21" x2="9" y2="9" />
                     </svg>
-                    <p style={{ margin: 0, fontSize: 14, fontWeight: 500, color: T.textMuted }}>
-                      {t ? t("CS_NO_DATA") : "No records found"}
-                    </p>
+                    <p style={{ margin: 0, fontSize: 14, fontWeight: 500, color: T.textMuted }}>{t ? t("CS_NO_DATA") : "No records found"}</p>
                   </div>
                 </td>
               </tr>
@@ -652,7 +759,21 @@ const Table = ({
                   >
                     {showAutoSerialNo && (
                       <td style={{ padding: "12px 8px", textAlign: "center", verticalAlign: "middle" }}>
-                        <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 22, height: 22, background: T.border, borderRadius: 4, fontSize: 10, fontWeight: 700, color: T.textMuted, fontFamily: T.fontMono }}>
+                        <span
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            width: 22,
+                            height: 22,
+                            background: T.border,
+                            borderRadius: 4,
+                            fontSize: 10,
+                            fontWeight: 700,
+                            color: T.textMuted,
+                            fontFamily: T.fontMono,
+                          }}
+                        >
                           {pageIndex * pageSize + i + 1}
                         </span>
                       </td>
@@ -662,7 +783,10 @@ const Table = ({
                       const cellStyleFromProps = cellProps?.style || {};
                       const textAlign = normalizeTextAlign(cellStyleFromProps.textAlign, getColumnAlign(cell.column));
                       const renderedCell = cell.attachment_link ? (
-                        <a href={cell.attachment_link} style={{ color: T.accent, textDecoration: "none", fontWeight: 500, borderBottom: `1px solid ${T.accentMid}` }}>
+                        <a
+                          href={cell.attachment_link}
+                          style={{ color: T.accent, textDecoration: "none", fontWeight: 500, borderBottom: `1px solid ${T.accentMid}` }}
+                        >
                           {cell.render("Cell")}
                         </a>
                       ) : (
@@ -672,8 +796,11 @@ const Table = ({
                         <td
                           {...cell.getCellProps([cellProps])}
                           style={{
-                            padding: "12px 14px", verticalAlign: "middle",
-                            fontSize: 13.5, color: T.textPrimary, lineHeight: 1.45,
+                            padding: "12px 14px",
+                            verticalAlign: "middle",
+                            fontSize: 13.5,
+                            color: T.textPrimary,
+                            lineHeight: 1.45,
                             whiteSpace: "nowrap",
                             ...cellStyleFromProps,
                             textAlign,
@@ -693,37 +820,60 @@ const Table = ({
 
       {/* ── Pagination — original logic, modernised UI ───────────────────── */}
       {isPaginationRequired && (
-        <div style={{
-          display: "flex", alignItems: "center", justifyContent: "flex-end",
-          gap: 12, padding: "12px 16px",
-          borderTop: `1px solid ${T.border}`,
-          background: T.surfaceAlt, flexWrap: "wrap",
-          fontFamily: T.fontBody,
-          color: T.textSecondary,
-        }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            gap: 12,
+            padding: "12px 16px",
+            borderTop: `1px solid ${T.border}`,
+            background: T.surfaceAlt,
+            flexWrap: "wrap",
+            fontFamily: T.fontBody,
+            color: T.textSecondary,
+            borderRadius: "0 0 12px 12px",
+          }}
+        >
           {/* Rows per page */}
-          <span style={{ fontSize: 12, color: T.textMuted, whiteSpace: "nowrap" }}>
-            {t ? t("CS_COMMON_ROWS_PER_PAGE") : "Rows per page"} :
-          </span>
+          <span style={{ fontSize: 12, color: T.textMuted, whiteSpace: "nowrap" }}>{t ? t("CS_COMMON_ROWS_PER_PAGE") : "Rows per page"} :</span>
           <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
             <select
               value={pageSize}
               onChange={manualPagination ? onPageSizeChange : (e) => setPageSize(Number(e.target.value))}
               style={{
-                appearance: "none", WebkitAppearance: "none",
-                background: T.surface, border: `1.5px solid ${T.borderStrong}`,
-                borderRadius: 5, padding: "5px 26px 5px 9px",
-                fontSize: 12.5, fontFamily: T.fontBody, fontWeight: 600,
-                color: T.textPrimary, cursor: "pointer", outline: "none",
+                appearance: "none",
+                WebkitAppearance: "none",
+                background: T.surface,
+                border: `1.5px solid ${T.borderStrong}`,
+                borderRadius: 5,
+                padding: "5px 26px 5px 9px",
+                fontSize: 12.5,
+                fontFamily: T.fontBody,
+                fontWeight: 600,
+                color: T.textPrimary,
+                cursor: "pointer",
+                outline: "none",
                 marginRight: 8,
               }}
             >
               {[10, 20, 30, 40, 50].map((ps) => (
-                <option key={ps} value={ps}>{ps}</option>
+                <option key={ps} value={ps}>
+                  {ps}
+                </option>
               ))}
             </select>
             <span style={{ position: "absolute", right: 15, pointerEvents: "none", lineHeight: 0, color: T.textMuted }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <polyline points="6 9 12 15 18 9" />
               </svg>
             </span>
@@ -731,15 +881,9 @@ const Table = ({
 
           {/* Record range — original display logic */}
           <span style={{ fontSize: 12.5 }}>
-            <strong style={{ fontFamily: T.fontMono, fontWeight: 700, color: T.textPrimary, fontSize: 12 }}>
-              {pageIndex * pageSize + 1}
-            </strong>
+            <strong style={{ fontFamily: T.fontMono, fontWeight: 700, color: T.textPrimary, fontSize: 12 }}>{pageIndex * pageSize + 1}</strong>
             {"–"}
-            <strong style={{ fontFamily: T.fontMono, fontWeight: 700, color: T.textPrimary, fontSize: 12 }}>
-              {rangeEnd}
-            </strong>
-            {" "}
-            {totalLabel}
+            <strong style={{ fontFamily: T.fontMono, fontWeight: 700, color: T.textPrimary, fontSize: 12 }}>{rangeEnd}</strong> {totalLabel}
           </span>
 
           {/* ── Navigation — original conditions, modernised buttons ─────── */}
@@ -757,14 +901,14 @@ const Table = ({
 
           {/* Previous */}
           {canPreviousPage && (
-            <PagBtn title="Previous page" onClick={() => manualPagination ? onPrevPage() : previousPage()}>
+            <PagBtn title="Previous page" onClick={() => (manualPagination ? onPrevPage() : previousPage())}>
               <ArrowBack />
             </PagBtn>
           )}
 
           {/* Next */}
           {canNextPage && (
-            <PagBtn title="Next page" onClick={() => manualPagination ? onNextPage() : nextPage()}>
+            <PagBtn title="Next page" onClick={() => (manualPagination ? onNextPage() : nextPage())}>
               <ArrowForward />
             </PagBtn>
           )}

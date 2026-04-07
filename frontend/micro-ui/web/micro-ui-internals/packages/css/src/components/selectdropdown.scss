@@ -50,7 +50,10 @@
   }
 
   .select-active {
-    @apply relative block w-full h-10 border-2 border-solid border-primary-main rounded-md;
+    outline: none;
+    border: 2px solid #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    @apply relative block w-full h-10 rounded-md;
 
     input[type="text"] {
       width: calc(100% - 32px);
@@ -130,7 +133,10 @@
   }
 
   .select-active {
-    @apply relative block w-full h-10 border-2 border-solid border-primary-main rounded-md;
+    outline: none;
+    border: 2px solid #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    @apply relative block w-full h-10 rounded-md;
 
     input[type="text"] {
       width: calc(100% - 32px);

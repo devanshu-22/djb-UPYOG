@@ -109,7 +109,7 @@ const EmployeeApp = ({ path, url, userType }) => {
           <PrivateRoute
             path={`${path}/response`}
             component={(props) => (
-              <LayoutWrapper layoutClass="normal">
+              <LayoutWrapper layoutClass="action">
                 <HRMSResponse {...props} parentRoute={path} />
               </LayoutWrapper>
             )}

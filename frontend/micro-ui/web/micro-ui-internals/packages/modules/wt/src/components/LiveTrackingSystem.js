@@ -44,7 +44,7 @@ const destinationIcon = new L.Icon({
   shadowSize: [41, 41],
 });
 
-const Address = ({ lat, lng, fallback = "Resolving area..." }) => {
+const Address = ({ lat, lng, fallback = "Resolving area" }) => {
   const [address, setAddress] = useState(fallback);
 
   useEffect(() => {
@@ -63,17 +63,33 @@ const Address = ({ lat, lng, fallback = "Resolving area..." }) => {
 const SOCKET_URL = "https://dev-djb.nitcon.in";
 
 // Component to handle map centering
-const MapController = ({ selectedDriver }) => {
+
+const MapController = ({ selectedDriver, mapZoom, mapCenter }) => {
   const map = useMap();
 
   useEffect(() => {
     if (selectedDriver?.lat && selectedDriver?.lng) {
-      map.setView([selectedDriver.lat, selectedDriver.lng], 15, {
+      map.setView([selectedDriver.lat, selectedDriver.lng], mapZoom || 15, {
         animate: true,
         duration: 1,
       });
     }
   }, [selectedDriver, map]);
+
+  useEffect(() => {
+    if (Array.isArray(mapCenter) && mapCenter.length === 2) {
+      map.setView(mapCenter, mapZoom || 15, {
+        animate: true,
+        duration: 1,
+      });
+    }
+  }, [mapCenter, map]);
+
+  useEffect(() => {
+    if (mapZoom) {
+      map.setZoom(mapZoom); // ✅ THIS IS THE KEY FIX
+    }
+  }, [mapZoom, map]);
 
   return null;
 };
@@ -95,7 +111,7 @@ const useRoute = (start, end) => {
           `https://router.project-osrm.org/route/v1/driving/${start.lng},${start.lat};${end.lng},${end.lat}?overview=full&geometries=geojson&steps=true`
         );
 
-        if (!response.ok) throw new Error("Failed to fetch route");
+        if (!response.ok) throw new Error(t("FAILED_TO_FETCH_ROUTE"));
 
         const data = await response.json();
 
@@ -112,7 +128,7 @@ const useRoute = (start, end) => {
           });
         }
       } catch (err) {
-        console.error("Error fetching route:", err);
+        console.error(t("Error fetching route:"), err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -145,7 +161,7 @@ const RouteLayer = ({ start, end, color = "#2196f3", weight = 6 }) => {
           zIndex: 1000,
         }}
       >
-        Loading route...
+        {t("LOADING_ROUTE")}
       </div>
     );
   }
@@ -165,7 +181,7 @@ const RouteLayer = ({ start, end, color = "#2196f3", weight = 6 }) => {
           zIndex: 1000,
         }}
       >
-        Error loading route: {error}
+        {t("ERROR_LOADING_ROUTE")}{error}
       </div>
     );
   }
@@ -271,7 +287,7 @@ const RouteLayer = ({ start, end, color = "#2196f3", weight = 6 }) => {
           }}
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-            <h4 style={{ margin: 0, color: "#667eea" }}>Route Information</h4>
+            <h4 style={{ margin: 0, color: "#667eea" }}>{t("ROUTE_INFORMATION")}</h4>
             <button
               onClick={() => setShowSteps(false)}
               style={{
@@ -289,10 +305,10 @@ const RouteLayer = ({ start, end, color = "#2196f3", weight = 6 }) => {
 
           <div style={{ marginBottom: "12px" }}>
             <div>
-              <strong>Total Distance:</strong> {(routeData.distance / 1000).toFixed(2)} km
+              <strong>{t("TOTAL_DISTANCE")}:</strong> {(routeData.distance / 1000).toFixed(2)} km
             </div>
             <div>
-              <strong>Est. Time:</strong> {Math.round(routeData.duration / 60)} minutes
+              <strong>{t("ESTIMATED_TIME")}:</strong> {Math.round(routeData.duration / 60)} minutes
             </div>
           </div>
 
@@ -306,23 +322,23 @@ const RouteLayer = ({ start, end, color = "#2196f3", weight = 6 }) => {
               }}
             >
               <div>
-                <strong>Current Step:</strong> {selectedStep.maneuver.type}
+                <strong>{t("CURRENT_STEP")}:</strong> {selectedStep.maneuver.type}
               </div>
               <div>
-                <strong>Instruction:</strong> {selectedStep.maneuver.instruction || selectedStep.name}
+                <strong>{t("INSTRUCTION")}:</strong> {selectedStep.maneuver.instruction || selectedStep.name}
               </div>
               <div>
-                <strong>Distance:</strong> {(selectedStep.distance / 1000).toFixed(2)} km
+                <strong>{t("DISTANCE")}:</strong> {(selectedStep.distance / 1000).toFixed(2)} km
               </div>
               <div>
-                <strong>Duration:</strong> {Math.round(selectedStep.duration / 60)} min
+                <strong>{t("DURATION")}:</strong> {Math.round(selectedStep.duration / 60)} min
               </div>
             </div>
           )}
 
           {showSteps && routeData.legs && (
             <div style={{ maxHeight: "200px", overflowY: "auto" }}>
-              <h5 style={{ margin: "8px 0", color: "#666" }}>Turn-by-turn directions:</h5>
+              <h5 style={{ margin: "8px 0", color: "#666" }}>{t("TURN_BY_TURN_DIRECTIONS")}:</h5>
               {routeData.legs[0].steps.map((step, idx) => (
                 <div
                   key={idx}
@@ -436,7 +452,9 @@ const StatusBadge = ({ isOnline }) => (
   </span>
 );
 
+
 const DriverCard = ({ driver, isSelected, onClick, vendorList }) => {
+  const { t } = useTranslation();
   const [currentAddress, setCurrentAddress] = useState("Resolving area...");
   const [deliveryAddress, setDeliveryAddress] = useState("Resolving area...");
   const lastResolvedPos = useRef({ lat: null, lng: null });
@@ -445,11 +463,9 @@ const DriverCard = ({ driver, isSelected, onClick, vendorList }) => {
   useEffect(() => {
     const resolveCurrent = async () => {
       if (driver.lat && driver.lng) {
-        // Only re-resolve if moved more than 200m
         const dist = lastResolvedPos.current.lat
           ? geoDistance(lastResolvedPos.current.lat, lastResolvedPos.current.lng, driver.lat, driver.lng)
           : Infinity;
-
         if (dist > 0.2) {
           const data = await reverseGeocode(driver.lat, driver.lng);
           setCurrentAddress(getAreaName(data));
@@ -466,7 +482,6 @@ const DriverCard = ({ driver, isSelected, onClick, vendorList }) => {
         const dist = lastResolvedDest.current.lat
           ? geoDistance(lastResolvedDest.current.lat, lastResolvedDest.current.lng, driver.deliveryLat, driver.deliveryLng)
           : Infinity;
-
         if (dist > 0.2) {
           const data = await reverseGeocode(driver.deliveryLat, driver.deliveryLng);
           setDeliveryAddress(getAreaName(data));
@@ -477,208 +492,97 @@ const DriverCard = ({ driver, isSelected, onClick, vendorList }) => {
     resolveDest();
   }, [driver.deliveryLat, driver.deliveryLng]);
 
-  const vehicleNumber = useMemo(() => {
-    if (!vendorList || !vendorList.length) return null;
-
+  const driverDetails = useMemo(() => {
+    if (!vendorList || !vendorList.length) return { name: "Unknown", vehicle: "N/A" };
     for (const vendor of vendorList) {
-      if (!vendor.drivers || !vendor.drivers.length) continue;
-
-      const driverMatch = vendor.drivers.find((d) =>
-        d.owner?.mobileNumber === driver.driverId ||
-        d.owner?.uuid === driver.driverId ||
-        d.id === driver.driverId ||
-        String(d.owner?.mobileNumber) === String(driver.driverId) ||
-        String(d.owner?.uuid) === String(driver.driverId)
+      const match = vendor.drivers?.find(d =>
+        d.id === driver.driverId || d.owner?.mobileNumber === driver.driverId || d.owner?.uuid === driver.driverId
       );
-
-      if (driverMatch && vendor.vehicles && vendor.vehicles.length > 0) {
-        return vendor.vehicles[0]?.registrationNumber || vendor.vehicles[0]?.vehicleNo || null;
+      if (match) {
+        return {
+          name: match.owner?.name || "Unknown",
+          vehicle: vendor.vehicles?.[0]?.registrationNumber || "N/A"
+        };
       }
     }
-    return null;
+    return { name: "Unknown", vehicle: "N/A" };
   }, [vendorList, driver.driverId]);
-
-  const calculateETA = () => {
-    if (!driver.lat || !driver.lng || !driver.deliveryLat || !driver.deliveryLng) return null;
-
-    const distance = calculateDistance(driver.lat, driver.lng, driver.deliveryLat, driver.deliveryLng);
-    const minutes = Math.round((distance / 30) * 60);
-    return minutes;
-  };
-
-  const eta = calculateETA();
 
   return (
     <div
       onClick={onClick}
       style={{
         padding: "16px",
-        marginBottom: "12px",
         borderRadius: "12px",
-        background: isSelected ? "#e3f2fd" : "#ffffff",
-        border: `2px solid ${isSelected ? "#2196f3" : "#e0e0e0"}`,
-        boxShadow: isSelected ? "0 4px 12px rgba(33, 150, 243, 0.2)" : "0 2px 8px rgba(0, 0, 0, 0.05)",
+        background: isSelected ? "#f0f4ff" : "white",
+        border: `2px solid ${isSelected ? "#667eea" : "#f0f0f0"}`,
         cursor: "pointer",
-        transition: "all 0.2s ease",
         position: "relative",
-        overflow: "hidden",
+        transition: "all 0.2s ease",
       }}
     >
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          height: "4px",
-          background: driver.isOnline ? "linear-gradient(90deg, #4caf50, #81c784)" : "linear-gradient(90deg, #f44336, #e57373)",
-        }}
-      />
-
-      <div style={{ display: "flex", alignItems: "center", marginBottom: "12px" }}>
+      <div style={{ display: "flex", gap: "12px", marginBottom: "12px" }}>
         <div
           style={{
             width: "40px",
             height: "40px",
-            borderRadius: "50%",
-            background: driver.isOnline ? "linear-gradient(135deg, #4caf50, #81c784)" : "linear-gradient(135deg, #9e9e9e, #bdbdbd)",
+            borderRadius: "8px",
+            background: "#f0f2f5",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            color: "white",
-            fontWeight: "bold",
-            fontSize: "16px",
-            marginRight: "12px",
-            flexShrink: 0,
+            fontSize: "20px",
           }}
         >
-          {driver.driverId.charAt(0).toUpperCase()}
+          👤
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div
-            style={{
-              fontWeight: "600",
-              fontSize: "16px",
-              color: "#667eea",
-              marginBottom: "4px",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
-            Driver #{driver.driverId.substring(0, 8)}...
+        <div style={{ flex: 1 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <div>
+              <div style={{ fontWeight: "700", fontSize: "14px", color: "#0d47a1" }}>
+                DRV-{driver.driverId.substring(0, 4).toUpperCase()}
+              </div>
+              <div style={{ fontSize: "11px", color: "#666" }}>
+                {driverDetails.name} • {driverDetails.vehicle}
+              </div>
+            </div>
+            <div
+              style={{
+                fontSize: "10px",
+                fontWeight: "700",
+                padding: "2px 8px",
+                borderRadius: "4px",
+                background: driver.isOnline ? "#e8f5e9" : "#ffebee",
+                color: driver.isOnline ? "#2e7d32" : "#c62828",
+              }}
+            >
+              {driver.isOnline ? "ONLINE" : "OFFLINE"}
+            </div>
           </div>
-          <StatusBadge isOnline={driver.isOnline} />
         </div>
       </div>
 
-      {driver.lat && driver.lng && (
-        <div style={{ marginBottom: "8px" }}>
-          <div style={{ fontSize: "12px", color: "#666", marginBottom: "4px" }}>Current Location</div>
-          <div
-            style={{
-              fontSize: "13px",
-              fontWeight: "500",
-              color: "#333",
-              display: "flex",
-              alignItems: "center",
-              gap: "4px"
-            }}
-          >
-            <span title={`${driver.lat.toFixed(6)}, ${driver.lng.toFixed(6)}`}>{currentAddress}</span>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+        <div>
+          <div style={{ fontSize: "10px", fontWeight: "600", color: "#aaa", marginBottom: "2px" }}>{t("CURRENT_LOCATION")}</div>
+          <div style={{ fontSize: "11px", fontWeight: "700", color: "#333", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            {currentAddress}
           </div>
         </div>
-      )}
+      </div>
+      <div>
+        <div>
 
-      {driver.deliveryLat && driver.deliveryLng && (
-        <div style={{ marginBottom: "8px" }}>
-          <div style={{ fontSize: "12px", color: "#666", marginBottom: "4px" }}>Delivery Destination</div>
-          <div
-            style={{
-              fontSize: "13px",
-              fontWeight: "500",
-              color: "#333",
-              display: "flex",
-              alignItems: "center",
-              gap: "4px"
-            }}
-          >
-            <span title={`${driver.deliveryLat.toFixed(6)}, ${driver.deliveryLng.toFixed(6)}`}>{deliveryAddress}</span>
+          <div style={{ fontSize: "10px", fontWeight: "600", color: "#aaa", marginBottom: "2px" }}>{t("DESTINATION")}</div>
+          <div style={{ fontSize: "11px", fontWeight: "700", color: "#333", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            {deliveryAddress}
           </div>
         </div>
-      )}
-
-      {eta !== null && (
-        <div
-          style={{
-            marginTop: "8px",
-            padding: "8px",
-            background: "#f5f5f5",
-            borderRadius: "6px",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            flexWrap: "wrap",
-            gap: "8px",
-          }}
-        >
-          <div>
-            <div style={{ fontSize: "11px", color: "#666" }}>Est. Arrival</div>
-            <div style={{ fontSize: "14px", fontWeight: "600", color: "#667eea" }}>{eta} min</div>
-          </div>
-          {driver.speed && (
-            <div>
-              <div style={{ fontSize: "11px", color: "#666" }}>Speed</div>
-              <div style={{ fontSize: "14px", fontWeight: "600", color: "#4caf50" }}>{Math.round(driver.speed * 3.6)} km/h</div>
-            </div>
-          )}
-        </div>
-      )}
-
-      <div
-        style={{
-          marginTop: "12px",
-          fontSize: "11px",
-          color: "#999",
-          borderTop: "1px solid #eee",
-          paddingTop: "8px",
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "4px",
-        }}
-      >
-        {vehicleNumber && (
-          <React.Fragment>
-            <span style={{ color: "#555" }}>Vehicle</span>
-            <span style={{ fontWeight: "600", color: "#667eea" }}>{vehicleNumber}</span>
-          </React.Fragment>
-        )}
-        {driver.accuracy && (
-          <React.Fragment>
-            <span>Accuracy</span>
-            <span>{Math.round(driver.accuracy)}m</span>
-          </React.Fragment>
-        )}
-        {driver.heading && (
-          <React.Fragment>
-            <span>Heading</span>
-            <span>{Math.round(driver.heading)}°</span>
-          </React.Fragment>
-        )}
-        {driver.lastSeen && (
-          <React.Fragment>
-            <span>Last seen</span>
-            <span>{new Date(driver.lastSeen).toLocaleTimeString()}</span>
-          </React.Fragment>
-        )}
       </div>
     </div>
   );
 };
 
-function calculateDistance(lat1, lon1, lat2, lon2) {
-  return geoDistance(lat1, lon1, lat2, lon2);
-}
 
 export default function LiveTrackingSystem() {
   const { t } = useTranslation();
@@ -896,554 +800,648 @@ export default function LiveTrackingSystem() {
     <div
       style={{
         display: "flex",
+        flexDirection: "column",
         height: "100vh",
         width: "100%",
         fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-        position: "relative",
-        overflow: "hidden",
+        background: "#f0f2f5",
+        padding: "16px",
+        boxSizing: "border-box",
       }}
     >
-      {/* Mobile Menu Button */}
-      {isMobile && (
-        <button
-          onClick={toggleSidebar}
-          style={{
-            position: "absolute",
-            top: "10px",
-            left: "10px",
-            zIndex: 2000,
-            background: "#667eea",
-            color: "white",
-            border: "none",
-            borderRadius: "8px",
-            padding: "10px 16px",
-            fontSize: "14px",
-            fontWeight: "500",
-            cursor: "pointer",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-          }}
-        >
-          <span style={{ fontSize: "20px" }}>☰</span>
-          {showSidebar ? "Hide List" : "Show Drivers"}
-        </button>
-      )}
-
-      {/* Sidebar - with mobile responsive styles */}
+      {/* Header Section */}
       <div
         style={{
-          width: isMobile ? (showSidebar ? "100%" : "0") : "380px",
-          height: "100%",
-          borderRight: isMobile ? "none" : "1px solid #e0e0e0",
           display: "flex",
-          flexDirection: "column",
-          background: "#ffffff",
-          boxShadow: isMobile ? (showSidebar ? "0 0 20px rgba(0,0,0,0.2)" : "none") : "2px 0 8px rgba(0, 0, 0, 0.05)",
-          position: isMobile ? "absolute" : "relative",
-          top: 0,
-          left: 0,
-          zIndex: 1500,
-          transition: "all 0.3s ease-in-out",
-          overflow: showSidebar ? "visible" : "hidden",
-          ...(isMobile &&
-            !showSidebar && {
-            width: "0",
-            opacity: 0,
-            pointerEvents: "none",
-          }),
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "16px",
+          background: "white",
+          padding: "16px 24px",
+          borderRadius: "12px",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+          border: "2px solid #667eea44",
         }}
       >
-        {showSidebar && (
-          <React.Fragment>
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <h1 style={{ margin: 0, fontSize: "24px", fontWeight: "700", color: "#0d47a1" }}>
+              {t("WT_LIVE_DRIVER_TRACKING")}
+            </h1>
             <div
               style={{
-                padding: isMobile ? "16px" : "24px",
-                background: "linear-gradient(135deg, #667eea, #0d47a1)",
-                color: "white",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                background: "#e8f5e9",
+                color: "#2e7d32",
+                padding: "4px 12px",
+                borderRadius: "20px",
+                fontSize: "12px",
+                fontWeight: "700",
+                border: "1px solid #c8e6c9",
               }}
             >
-              {isMobile && (
-                <button
-                  onClick={toggleSidebar}
-                  style={{
-                    position: "absolute",
-                    top: "10px",
-                    right: "10px",
-                    background: "rgba(255,255,255,0.2)",
-                    border: "none",
-                    color: "white",
-                    fontSize: "20px",
-                    cursor: "pointer",
-                    width: "30px",
-                    height: "30px",
-                    borderRadius: "4px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  ✕
-                </button>
-              )}
-              <h2
+              <span
                 style={{
-                  margin: "0 0 8px 0",
-                  fontSize: isMobile ? "20px" : "24px",
-                  fontWeight: "600",
-                  letterSpacing: "-0.5px",
+                  width: "8px",
+                  height: "8px",
+                  borderRadius: "50%",
+                  backgroundColor: isConnected ? "#4caf50" : "#f44336",
+                  boxShadow: isConnected ? "0 0 8px #4caf50" : "none",
                 }}
-              >
-                Live Driver Tracking
-              </h2>
-
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  fontSize: "14px",
-                  opacity: 0.9,
-                }}
-              >
-                <span
-                  style={{
-                    display: "inline-block",
-                    width: "10px",
-                    height: "10px",
-                    borderRadius: "50%",
-                    backgroundColor: isConnected ? "#4caf50" : "#f44336",
-                    animation: isConnected ? "pulse 2s infinite" : "none",
-                  }}
-                />
-                <span>{isConnected ? "Connected to server" : "Disconnected"}</span>
-              </div>
-            </div>
-
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr 1fr 1fr",
-                gap: isMobile ? "4px" : "8px",
-                padding: isMobile ? "12px" : "16px",
-                background: "#f5f5f5",
-                borderBottom: "1px solid #e0e0e0",
-              }}
-            >
-              <div style={{ textAlign: "center" }}>
-                <div style={{ fontSize: isMobile ? "10px" : "11px", color: "#666" }}>Total</div>
-                <div style={{ fontSize: isMobile ? "16px" : "20px", fontWeight: "bold", color: "#667eea" }}>{Object.keys(drivers).length}</div>
-              </div>
-              <div style={{ textAlign: "center" }}>
-                <div style={{ fontSize: isMobile ? "10px" : "11px", color: "#666" }}>Online</div>
-                <div style={{ fontSize: isMobile ? "16px" : "20px", fontWeight: "bold", color: "#4caf50" }}>{onlineCount}</div>
-              </div>
-              <div style={{ textAlign: "center" }}>
-                <div style={{ fontSize: isMobile ? "10px" : "11px", color: "#666" }}>Offline</div>
-                <div style={{ fontSize: isMobile ? "16px" : "20px", fontWeight: "bold", color: "#f44336" }}>{offlineCount}</div>
-              </div>
-              <div style={{ textAlign: "center" }}>
-                <div style={{ fontSize: isMobile ? "10px" : "11px", color: "#666" }}>Active</div>
-                <div style={{ fontSize: isMobile ? "16px" : "20px", fontWeight: "bold", color: "#ff9800" }}>{activeDeliveries}</div>
-              </div>
-            </div>
-
-            <div
-              style={{
-                padding: isMobile ? "12px" : "16px",
-                borderBottom: "1px solid #e0e0e0",
-                background: "#fafafa",
-              }}
-            >
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "12px" }}>
-                <Dropdown
-                  t={t}
-                  option={fillingPointOptions}
-                  optionKey="fillingPointName"
-                  select={handleFillingPointSelect}
-                  selected={selectedFillingPoint}
-                  placeholder={t("WT_SELECT_FILLING_POINT")}
-                  style={{ width: "100%", margin: 0, padding: 0 }}
-                />
-
-                <Dropdown
-                  t={t}
-                  option={filteredVendorOptions}
-                  optionKey="name"
-                  select={setSelectedVendor}
-                  selected={selectedVendor}
-                  placeholder={t("WT_SELECT_VENDOR")}
-                  style={{ width: "100%", margin: 0, padding: 0 }}
-                />
-              </div>
-
-              <input
-                type="text"
-                placeholder="Search by driver ID..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: isMobile ? "10px" : "12px",
-                  border: "1px solid #e0e0e0",
-                  borderRadius: "8px",
-                  fontSize: isMobile ? "14px" : "14px",
-                  marginBottom: "12px",
-                  outline: "none",
-                  transition: "border-color 0.2s",
-                  boxSizing: "border-box",
-                }}
-                onFocus={(e) => (e.target.style.borderColor = "#667eea")}
-                onBlur={(e) => (e.target.style.borderColor = "#e0e0e0")}
               />
-
-              <div style={{ display: "flex", gap: "8px", marginBottom: "8px" }}>
-                {["all", "online", "offline"].map((filter) => (
-                  <button
-                    key={filter}
-                    onClick={() => setFilterOnline(filter)}
-                    style={{
-                      flex: 1,
-                      padding: isMobile ? "6px" : "8px",
-                      border: "1px solid #e0e0e0",
-                      borderRadius: "6px",
-                      background: filterOnline === filter ? "#667eea" : "white",
-                      color: filterOnline === filter ? "white" : "#333",
-                      cursor: "pointer",
-                      fontSize: isMobile ? "11px" : "12px",
-                      fontWeight: "500",
-                      textTransform: "capitalize",
-                      transition: "all 0.2s",
-                    }}
-                  >
-                    {filter}
-                  </button>
-                ))}
-              </div>
-
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  marginTop: "8px",
-                }}
-              >
-                <input
-                  type="checkbox"
-                  id="showRoutes"
-                  checked={showRoutes}
-                  onChange={(e) => setShowRoutes(e.target.checked)}
-                  style={{ cursor: "pointer", width: "16px", height: "16px" }}
-                />
-                <label htmlFor="showRoutes" style={{ fontSize: isMobile ? "12px" : "13px", color: "#333", cursor: "pointer" }}>
-                  Show delivery routes
-                </label>
-              </div>
+              {isConnected ? "CONNECTED" : "DISCONNECTED"}
             </div>
+          </div>
+          <p style={{ margin: "4px 0 0 0", fontSize: "14px", color: "#666" }}>
+            {t("REAL_TIME_TELEMETRY_AND_FLEET_COORDINATION")}
+          </p>
+        </div>
 
+        <div style={{ display: "flex", gap: "12px" }}>
+          {[
+            { label: t("TOTAL_FLEET"), value: Object.keys(drivers).length, color: "#0d47a1" },
+            { label: t("ONLINE"), value: onlineCount, color: "#2e7d32" },
+            { label: t("OFFLINE"), value: offlineCount, color: "#c62828" },
+            { label: t("ACTIVE"), value: activeDeliveries, color: "#0d47a1" },
+          ].map((stat, idx) => (
             <div
+              key={idx}
               style={{
-                flex: 1,
-                overflowY: "auto",
-                padding: isMobile ? "12px" : "16px",
-                background: "#f5f5f5",
+                background: "#f8f9fa",
+                padding: "8px 16px",
+                borderRadius: "8px",
+                minWidth: "100px",
+                display: "flex",
+                flexDirection: "column",
+                border: "1px solid #e0e0e0",
               }}
             >
-              {filteredDrivers.length === 0 ? (
-                <div
-                  style={{
-                    textAlign: "center",
-                    padding: isMobile ? "20px" : "40px 20px",
-                    color: "#999",
-                    background: "white",
-                    borderRadius: "12px",
-                  }}
-                >
-                  <div style={{ fontSize: isMobile ? "36px" : "48px", marginBottom: "16px" }}>🚗</div>
-                  <p style={{ fontSize: isMobile ? "14px" : "16px", margin: 0 }}>
-                    {Object.keys(drivers).length === 0 ? "No drivers available" : "No drivers match your filters"}
-                  </p>
-                </div>
-              ) : (
-                filteredDrivers.map((driver) => (
-                  <DriverCard
-                    key={driver.driverId}
-                    driver={driver}
-                    isSelected={selectedDriver?.driverId === driver.driverId}
-                    vendorList={vendorOptions}
-                    onClick={() => {
-                      setSelectedDriver(driver);
-                      if (isMobile) {
-                        setShowSidebar(false); // Auto-hide sidebar on mobile after selection
-                      }
-                    }}
-                  />
-                ))
-              )}
+              <div style={{ fontSize: "10px", fontWeight: "600", color: "#888", marginBottom: "4px" }}>
+                {stat.label}
+              </div>
+              <div style={{ fontSize: "20px", fontWeight: "700", color: stat.color }}>
+                {stat.value}
+              </div>
             </div>
-          </React.Fragment>
-        )}
+          ))}
+        </div>
       </div>
 
       <div
         style={{
+          display: "flex",
           flex: 1,
-          position: "relative",
-          width: isMobile ? "100%" : "calc(100% - 380px)",
-          height: "100%",
+          gap: "16px",
+          overflow: "hidden",
         }}
       >
-        <MapContainer
-          center={mapCenter}
-          zoom={mapZoom}
-          style={{ height: "100%", width: "100%" }}
-          zoomControl={false}
-        >
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          />
+        {/* Mobile Menu Button - simplified as we have a header now */}
+        {isMobile && (
+          <button
+            onClick={toggleSidebar}
+            style={{
+              position: "absolute",
+              top: "80px",
+              left: "20px",
+              zIndex: 2000,
+              background: "#667eea",
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              padding: "8px 12px",
+              fontSize: "12px",
+              cursor: "pointer",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+            }}
+          >
+            {showSidebar ? "Close" : "Menu"}
+          </button>
+        )}
 
-          {/* Map controller for centering */}
-          <MapController selectedDriver={selectedDriver} />
-
-          {/* Show ONLY selected driver marker */}
-          {selectedDriver && selectedDriver.lat != null && selectedDriver.lng != null && (
-            <Marker
-              key={selectedDriver.driverId}
-              position={[Number(selectedDriver.lat), Number(selectedDriver.lng)]}
-              icon={selectedDriver.isOnline ? onlineIcon : offlineIcon}
-            >
-              <Popup>
-                <div style={{ minWidth: isMobile ? "200px" : "250px", padding: "8px" }}>
-                  <div
-                    style={{
-                      fontWeight: "bold",
-                      fontSize: isMobile ? "14px" : "16px",
-                      color: "#667eea",
-                      marginBottom: "8px",
-                      borderBottom: "1px solid #eee",
-                      paddingBottom: "4px",
-                    }}
-                  >
-                    Driver #{selectedDriver.driverId.substring(0, 8)}... (Selected)
-                  </div>
-
-                  <div style={{ marginBottom: "8px" }}>
-                    <StatusBadge isOnline={selectedDriver.isOnline} />
-                  </div>
-
-                  <div style={{ fontSize: isMobile ? "12px" : "13px" }}>
-                    <div style={{ marginBottom: "8px" }}>
-                      <strong>📍 Current Location</strong>
-                      <div><Address lat={selectedDriver.lat} lng={selectedDriver.lng} /></div>
-                    </div>
-
-                    {selectedDriver.deliveryLat && selectedDriver.deliveryLng && (
-                      <div style={{ marginBottom: "8px" }}>
-                        <strong>🎯 Delivery Destination</strong>
-                        <div><Address lat={selectedDriver.deliveryLat} lng={selectedDriver.deliveryLng} /></div>
-                      </div>
-                    )}
-
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "1fr 1fr",
-                        gap: "8px",
-                        background: "#f5f5f5",
-                        padding: "8px",
-                        borderRadius: "4px",
-                        marginTop: "8px",
-                      }}
-                    >
-                      {selectedDriver.speed && (
-                        <React.Fragment>
-                          <span>Speed:</span>
-                          <span>{(selectedDriver.speed * 3.6).toFixed(1)} km/h</span>
-                        </React.Fragment>
-                      )}
-                      {selectedDriver.heading && (
-                        <React.Fragment>
-                          <span>Heading:</span>
-                          <span>{Math.round(selectedDriver.heading)}°</span>
-                        </React.Fragment>
-                      )}
-                      {selectedDriver.accuracy && (
-                        <React.Fragment>
-                          <span>Accuracy:</span>
-                          <span>{Math.round(selectedDriver.accuracy)}m</span>
-                        </React.Fragment>
-                      )}
-                    </div>
-
-                    {selectedDriver.lastUpdate && (
-                      <div style={{ marginTop: "8px", color: "#666", fontSize: "10px" }}>
-                        Last update: {new Date(selectedDriver.lastUpdate).toLocaleString()}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </Popup>
-            </Marker>
-          )}
-
-          {/* Show destination marker ONLY if selected driver has delivery location */}
-          {selectedDriver && selectedDriver.deliveryLat != null && selectedDriver.deliveryLng != null && (
-            <Marker
-              key={`dest-${selectedDriver.driverId}`}
-              position={[Number(selectedDriver.deliveryLat), Number(selectedDriver.deliveryLng)]}
-              icon={destinationIcon}
-            >
-              <Popup>
-                <div>
-                  <strong>Delivery Destination</strong>
-                  <div><Address lat={selectedDriver.deliveryLat} lng={selectedDriver.deliveryLng} /></div>
-                  <div style={{ fontSize: "11px", color: "#666", marginTop: "4px" }}>
-                    Driver: #{selectedDriver.driverId.substring(0, 8)}...
-                  </div>
-                </div>
-              </Popup>
-            </Marker>
-          )}
-
-          {/* Routes - only for selected driver */}
-          {showRoutes && selectedDriver && selectedDriver.lat && selectedDriver.lng && selectedDriver.deliveryLat && selectedDriver.deliveryLng && (
-            <RouteLayer
-              start={{ lat: selectedDriver.lat, lng: selectedDriver.lng }}
-              end={{ lat: selectedDriver.deliveryLat, lng: selectedDriver.deliveryLng }}
-              color="#2196f3"
-              weight={6}
-            />
-          )}
-        </MapContainer>
-
-        {/* Map Controls - Mobile Responsive */}
+        {/* Sidebar */}
         <div
           style={{
-            position: "absolute",
-            top: isMobile ? "60px" : "20px",
-            right: "10px",
-            zIndex: 1000,
-            background: "white",
-            borderRadius: "8px",
-            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
-            padding: "4px",
+            width: isMobile ? (showSidebar ? "100%" : "0") : "360px",
+            height: "100%",
             display: "flex",
-            flexDirection: isMobile ? "column" : "row",
-            gap: "4px",
+            flexDirection: "column",
+            background: "transparent",
+            position: isMobile ? "absolute" : "relative",
+            top: 0,
+            left: 0,
+            zIndex: 1500,
+            transition: "all 0.3s ease-in-out",
+            ...(isMobile && !showSidebar && { width: "0", opacity: 0, pointerEvents: "none" }),
           }}
         >
-          {selectedDriver && (
+          {showSidebar && (
             <React.Fragment>
-              <button
-                onClick={() => {
-                  if (selectedDriver?.lat && selectedDriver?.lng) {
-                    setMapCenter([selectedDriver.lat, selectedDriver.lng]);
-                    setMapZoom(15);
-                  }
-                }}
+              <div
                 style={{
-                  padding: isMobile ? "10px 12px" : "8px 16px",
-                  background: "#667eea",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                  fontSize: isMobile ? "12px" : "14px",
-                  fontWeight: "500",
-                  whiteSpace: "nowrap",
+                  padding: "20px",
+                  background: "white",
+                  borderRadius: "12px",
+                  display: "flex",
+                  flexDirection: "column",
+                  height: "100%",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                  border: "1px solid #e0e0e0",
                 }}
               >
-                Center
-              </button>
-              <button
-                onClick={() => setSelectedDriver(null)}
-                style={{
-                  padding: isMobile ? "10px 12px" : "8px 16px",
-                  background: "#f44336",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                  fontSize: isMobile ? "12px" : "14px",
-                  fontWeight: "500",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                Clear
-              </button>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+                  <h3 style={{ margin: 0, fontSize: "14px", fontWeight: "700", color: "#888", letterSpacing: "1px" }}>
+                    {t("WT_FILTER_FLEET")}
+                  </h3>
+                  <button
+                    onClick={() => {
+                      setSelectedFillingPoint(null);
+                      setSelectedVendor(null);
+                      setSearchTerm("");
+                      setFilterOnline("all");
+                    }}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      color: "#667eea",
+                      fontSize: "12px",
+                      fontWeight: "700",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {t("WT_RESET_ALL")}
+                  </button>
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "16px", marginBottom: "20px" }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                    <label style={{ fontSize: "12px", fontWeight: "700", color: "#888" }}>{t("WT_SELECT_FILLING_POINT")}</label>
+                    <Dropdown
+                      t={t}
+                      option={fillingPointOptions}
+                      optionKey="fillingPointName"
+                      select={handleFillingPointSelect}
+                      selected={selectedFillingPoint}
+                      placeholder={t("WT_SELECT_FILLING_POINT")}
+                      style={{ width: "100%", margin: 0 }}
+                    />
+                  </div>
+
+                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                    <label style={{ fontSize: "12px", fontWeight: "700", color: "#888" }}>{t("WT_SELECT_VENDOR")}</label>
+                    <Dropdown
+                      t={t}
+                      option={filteredVendorOptions}
+                      optionKey="name"
+                      select={setSelectedVendor}
+                      selected={selectedVendor}
+                      placeholder={t("WT_SELECT_VENDOR")}
+                      style={{ width: "100%", margin: 0 }}
+                    />
+                  </div>
+
+                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                    <label style={{ fontSize: "10px", fontWeight: "700", color: "#888" }}>{t("WT_SEARCH_DRIVER_BY_ID")}</label>
+                    <div style={{ position: "relative" }}>
+                      <span style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "#888" }}>🔍</span>
+                      <input
+                        type="text"
+                        placeholder={t("WT_SEARCH_DRIVER_BY_ID")}
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        style={{
+                          width: "100%",
+                          padding: "10px 10px 10px 36px",
+                          border: "1px solid #e0e0e0",
+                          borderRadius: "8px",
+                          fontSize: "12px",
+                          outline: "none",
+                          background: "#f8f9fa",
+                          boxSizing: "border-box",
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    {["all", "online", "offline"].map((filter) => (
+                      <button
+                        key={filter}
+                        onClick={() => setFilterOnline(filter)}
+                        style={{
+                          padding: "4px 12px",
+                          borderRadius: "4px",
+                          background: filterOnline === filter ? "#667eea" : "transparent",
+                          color: filterOnline === filter ? "white" : "#666",
+                          border: filterOnline === filter ? "none" : "1px solid #e0e0e0",
+                          cursor: "pointer",
+                          fontSize: "12px",
+                          fontWeight: "600",
+                          textTransform: "capitalize",
+                        }}
+                      >
+                        {filter}
+                      </button>
+                    ))}
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <input
+                      type="checkbox"
+                      id="showRoutes"
+                      checked={showRoutes}
+                      onChange={(e) => setShowRoutes(e.target.checked)}
+                      style={{ cursor: "pointer" }}
+                    />
+                    <label htmlFor="showRoutes" style={{ fontSize: "12px", color: "#666", cursor: "pointer" }}>Routes</label>
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    flex: 1,
+                    overflowY: "auto",
+                    padding: "4px",
+                    marginTop: "8px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "12px",
+                  }}
+                >
+                  {filteredDrivers.length === 0 ? (
+                    <div style={{ textAlign: "center", padding: "40px 20px", color: "#999" }}>
+                      <p>{t("WT_NO_DRIVERS_FOUND")}</p>
+                    </div>
+                  ) : (
+                    filteredDrivers.map((driver) => (
+                      <DriverCard
+                        key={driver.driverId}
+                        driver={driver}
+                        isSelected={selectedDriver?.driverId === driver.driverId}
+                        vendorList={vendorOptions}
+                        onClick={() => {
+                          setSelectedDriver(driver);
+                          if (isMobile) setShowSidebar(false);
+                        }}
+                      />
+                    ))
+                  )}
+                </div>
+              </div>
             </React.Fragment>
-          )}
-          {!selectedDriver && (
-            <div
-              style={{
-                padding: isMobile ? "10px 12px" : "8px 16px",
-                background: "#f5f5f5",
-                color: "#666",
-                borderRadius: "4px",
-                fontSize: isMobile ? "12px" : "14px",
-              }}
-            >
-              {isMobile ? "Select driver" : "Select a driver from the list"}
-            </div>
           )}
         </div>
 
-        {/* Selected driver info panel - Mobile Responsive */}
-        {selectedDriver && (
+        <div
+          style={{
+            flex: 1,
+            position: "relative",
+            background: "white",
+            borderRadius: "12px",
+            overflow: "hidden",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+            border: "1px solid #e0e0e0",
+          }}
+        >
+          <MapContainer
+            center={mapCenter}
+            zoom={mapZoom}
+            style={{ height: "100%", width: "100%" }}
+            zoomControl={false}
+          >
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            />
+
+            <MapController selectedDriver={selectedDriver} mapZoom={mapZoom} mapCenter={mapCenter} />
+
+            {/* Fleet Markers */}
+            {filteredDrivers
+              .filter((d) => d.driverId !== selectedDriver?.driverId)
+              .map((driver) => (
+                <Marker
+                  key={driver.driverId}
+                  position={[Number(driver.lat), Number(driver.lng)]}
+                  icon={driver.isOnline ? onlineIcon : offlineIcon}
+                  eventHandlers={{
+                    click: () => {
+                      setSelectedDriver(driver);
+                    },
+                  }}
+                />
+              ))}
+
+            {selectedDriver && selectedDriver.lat != null && selectedDriver.lng != null && (
+              <Marker
+                key={selectedDriver.driverId}
+                position={[Number(selectedDriver.lat), Number(selectedDriver.lng)]}
+                icon={selectedDriver.isOnline ? onlineIcon : offlineIcon}
+              >
+                <Popup>
+                  <div style={{ minWidth: isMobile ? "200px" : "250px", padding: "8px" }}>
+                    <div
+                      style={{
+                        fontWeight: "bold",
+                        fontSize: isMobile ? "14px" : "16px",
+                        color: "#667eea",
+                        marginBottom: "8px",
+                        borderBottom: "1px solid #eee",
+                        paddingBottom: "4px",
+                      }}
+                    >
+                      Driver #{selectedDriver.driverId.substring(0, 8)}... (Selected)
+                    </div>
+
+                    <div style={{ marginBottom: "8px" }}>
+                      <StatusBadge isOnline={selectedDriver.isOnline} />
+                    </div>
+
+                    <div style={{ fontSize: isMobile ? "12px" : "13px" }}>
+                      <div style={{ marginBottom: "8px" }}>
+                        <strong>Current Location</strong>
+                        <div><Address lat={selectedDriver.lat} lng={selectedDriver.lng} /></div>
+                      </div>
+
+                      {selectedDriver.deliveryLat && selectedDriver.deliveryLng && (
+                        <div style={{ marginBottom: "8px" }}>
+                          <strong>{t("DELIVERY_DESTINATION")}</strong>
+                          <div><Address lat={selectedDriver.deliveryLat} lng={selectedDriver.deliveryLng} /></div>
+                        </div>
+                      )}
+
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "1fr 1fr",
+                          gap: "8px",
+                          background: "#f5f5f5",
+                          padding: "8px",
+                          borderRadius: "4px",
+                          marginTop: "8px",
+                        }}
+                      >
+                        {selectedDriver.speed && (
+                          <React.Fragment>
+                            <span>{t("WT_SPEED")}:</span>
+                            <span>{(selectedDriver.speed * 3.6).toFixed(1)} {t("WT_KM_PER_HOUR")}</span>
+                          </React.Fragment>
+                        )}
+                        {selectedDriver.heading && (
+                          <React.Fragment>
+                            <span>{t("WT_HEADING")}:</span>
+                            <span>{Math.round(selectedDriver.heading)}°</span>
+                          </React.Fragment>
+                        )}
+                        {selectedDriver.accuracy && (
+                          <React.Fragment>
+                            <span>{t("WT_ACCURACY")}:</span>
+                            <span>{Math.round(selectedDriver.accuracy)}m</span>
+                          </React.Fragment>
+                        )}
+                      </div>
+
+                      {selectedDriver.lastUpdate && (
+                        <div style={{ marginTop: "8px", color: "#666", fontSize: "10px" }}>
+                          {t("WT_LAST_UPDATE")}: {new Date(selectedDriver.lastUpdate).toLocaleString()}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </Popup>
+              </Marker>
+            )}
+
+            {selectedDriver && selectedDriver.deliveryLat != null && selectedDriver.deliveryLng != null && (
+              <Marker
+                key={`dest-${selectedDriver.driverId}`}
+                position={[Number(selectedDriver.deliveryLat), Number(selectedDriver.deliveryLng)]}
+                icon={destinationIcon}
+              />
+            )}
+
+            {showRoutes && selectedDriver && selectedDriver.lat && selectedDriver.lng && selectedDriver.deliveryLat && selectedDriver.deliveryLng && (
+              <RouteLayer
+                start={{ lat: selectedDriver.lat, lng: selectedDriver.lng }}
+                end={{ lat: selectedDriver.deliveryLat, lng: selectedDriver.deliveryLng }}
+                color="#2196f3"
+                weight={6}
+              />
+            )}
+          </MapContainer>
+
+          {/* Map Controls - Mobile Responsive */}
           <div
             style={{
               position: "absolute",
-              bottom: isMobile ? "10px" : "20px",
-              left: isMobile ? "10px" : "20px",
-              right: isMobile ? "10px" : "auto",
+              top: isMobile ? "60px" : "20px",
+              right: "10px",
               zIndex: 1000,
               background: "white",
               borderRadius: "8px",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-              padding: isMobile ? "12px" : "16px",
-              maxWidth: isMobile ? "calc(100% - 20px)" : "300px",
-              border: "2px solid #2196f3",
+              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
+              padding: "4px",
+              display: "flex",
+              flexDirection: isMobile ? "column" : "row",
+              gap: "4px",
             }}
           >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-              <h4 style={{ margin: 0, color: "#667eea", fontSize: isMobile ? "14px" : "16px" }}>Selected Driver</h4>
-              <span
+            {selectedDriver && (
+              <React.Fragment>
+                <button
+                  onClick={() => {
+                    if (selectedDriver?.lat && selectedDriver?.lng) {
+                      const center = [Number(selectedDriver.lat), Number(selectedDriver.lng)];
+                      setMapCenter(center);
+                      setMapZoom(15);
+                    }
+                  }}
+                  style={{
+                    padding: isMobile ? "10px 12px" : "8px 16px",
+                    background: "#667eea",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                    fontSize: isMobile ? "12px" : "14px",
+                    fontWeight: "500",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {t("WT_CENTER")}
+                </button>
+                <button
+                  onClick={() => setSelectedDriver(null)}
+                  style={{
+                    padding: isMobile ? "10px 12px" : "8px 16px",
+                    background: "#f44336",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                    fontSize: isMobile ? "12px" : "14px",
+                    fontWeight: "500",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {t("WT_CLEAR")}
+                </button>
+              </React.Fragment>
+            )}
+            {!selectedDriver && (
+              <div
                 style={{
-                  background: selectedDriver.isOnline ? "#4caf50" : "#f44336",
-                  color: "white",
-                  padding: "2px 8px",
-                  borderRadius: "12px",
-                  fontSize: isMobile ? "10px" : "11px",
-                  fontWeight: "bold",
+                  padding: isMobile ? "10px 12px" : "8px 16px",
+                  background: "#f5f5f5",
+                  color: "#666",
+                  borderRadius: "4px",
+                  fontSize: isMobile ? "12px" : "14px",
                 }}
               >
-                {selectedDriver.isOnline ? "ONLINE" : "OFFLINE"}
-              </span>
-            </div>
-            <div style={{ fontSize: isMobile ? "12px" : "13px" }}>
-              <div>
-                <strong>ID:</strong> {selectedDriver.driverId.substring(0, 12)}...
+                {isMobile ? "Select driver" : "Select a driver from the list"}
               </div>
-              <div>
-                <strong>Location:</strong> <Address lat={selectedDriver.lat} lng={selectedDriver.lng} />
-              </div>
-              {selectedDriver.speed && (
-                <div>
-                  <strong>Speed:</strong> {Math.round(selectedDriver.speed * 3.6)} km/h
-                </div>
-              )}
-              {selectedDriver.lastSeen && (
-                <div>
-                  <strong>Last seen:</strong> {new Date(selectedDriver.lastSeen).toLocaleTimeString()}
-                </div>
-              )}
-            </div>
+            )}
           </div>
-        )}
+
+          {/* Selected driver info panel - Mobile Responsive */}
+          {selectedDriver && (
+            <div
+              style={{
+                position: "absolute",
+                bottom: isMobile ? "10px" : "20px",
+                left: isMobile ? "10px" : "20px",
+                right: isMobile ? "10px" : "auto",
+                zIndex: 1000,
+                background: "white",
+                borderRadius: "8px",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                padding: isMobile ? "12px" : "16px",
+                maxWidth: isMobile ? "calc(100% - 20px)" : "300px",
+                border: "2px solid #2196f3",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                <h4 style={{ margin: 0, color: "#667eea", fontSize: isMobile ? "14px" : "16px" }}>{t("WT_SELECTED_DRIVER")}</h4>
+                <StatusBadge isOnline={selectedDriver.isOnline} />
+              </div>
+              <div style={{ fontSize: isMobile ? "12px" : "13px" }}>
+                <div>
+                  <strong>{t("WT_ID")}:</strong> {selectedDriver.driverId.substring(0, 6).toUpperCase()}...
+                </div>
+                <div>
+                  <strong>{t("WT_LOCATION")}:</strong> <Address lat={selectedDriver.lat} lng={selectedDriver.lng} />
+                </div>
+                {selectedDriver.speed && (
+                  <div>
+                    <strong>{t("WT_SPEED")}:</strong> {Math.round(selectedDriver.speed * 3.6)} {t("km/h")}
+                  </div>
+                )}
+                {selectedDriver.lastSeen && (
+                  <div>
+                    <strong>{t("WT_LAST_SEEN")}:</strong> {new Date(selectedDriver.lastSeen).toLocaleTimeString()}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Map Logic Controls */}
+          <div style={{ position: "absolute", top: "20px", left: "20px", zIndex: 1000, display: "flex", flexDirection: "column", gap: "8px" }}>
+            <button
+              onClick={() => setMapZoom(prev => prev + 1)}
+              style={{ width: "32px", height: "32px", background: "white", border: "1px solid #e0e0e0", borderRadius: "4px", fontSize: "18px", fontWeight: "700", cursor: "pointer", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}
+            >
+              +
+            </button>
+            <button
+              onClick={() => setMapZoom(prev => prev - 1)}
+              style={{ width: "32px", height: "32px", background: "white", border: "1px solid #e0e0e0", borderRadius: "4px", fontSize: "18px", fontWeight: "700", cursor: "pointer", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}
+            >
+              −
+            </button>
+          </div>
+
+          <div style={{ position: "absolute", top: "20px", right: "20px", zIndex: 1000, display: "flex", gap: "12px" }}>
+            {/* <button
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "8px 16px",
+                background: "white",
+                border: "1px solid #e0e0e0",
+                borderRadius: "8px",
+                fontSize: "12px",
+                fontWeight: "700",
+                color: "#444",
+                cursor: "pointer",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+              }}
+            >
+              🗺️ Satellite View
+            </button>
+            <button
+              onClick={() => {
+                if (selectedDriver?.lat && selectedDriver?.lng) {
+                  setMapCenter([selectedDriver.lat, selectedDriver.lng]);
+                  setMapZoom(15);
+                } else {
+                  setMapCenter([28.6139, 77.209]);
+                  setMapZoom(12);
+                }
+              }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "8px 16px",
+                background: "white",
+                border: "1px solid #e0e0e0",
+                borderRadius: "8px",
+                fontSize: "12px",
+                fontWeight: "700",
+                color: "#444",
+                cursor: "pointer",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+              }}
+            >
+              🎯 Recenter
+            </button> */}
+          </div>
+
+          {/* <div
+            style={{
+              position: "absolute",
+              bottom: "20px",
+              right: "20px",
+              zIndex: 1000,
+              background: "white",
+              padding: "12px",
+              borderRadius: "12px",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+              border: "1px solid #e0e0e0",
+              minWidth: "160px",
+            }}
+          >
+            <div style={{ fontSize: "10px", fontWeight: "700", color: "#888", marginBottom: "8px", textAlign: "center" }}>
+              FLEET STATUS LEGEND
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              {[
+                { label: "Moving Online", color: "#2e7d32" },
+                { label: "Stationary (Filling)", color: "#0d47a1" },
+                { label: "Offline / No Signal", color: "#c62828" },
+              ].map((item, idx) => (
+                <div key={idx} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: item.color }} />
+                  <span style={{ fontSize: "10px", fontWeight: "600", color: "#444" }}>{item.label}</span>
+                </div>
+              ))}
+            </div>
+          </div> */}
+        </div>
       </div>
     </div>
   );

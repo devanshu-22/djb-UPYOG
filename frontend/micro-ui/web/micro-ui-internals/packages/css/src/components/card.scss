@@ -215,12 +215,12 @@
   }
 }
 
-.label-field-pair .field .text-input .select .select-active input:focus {
+.label-field-pair .field .text-input .select .select-active .master-active input:focus {
   outline: none;
   border-color: #007bff;
   box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
-.label-field-pair .field .text-input .select .select-active input:focus-within {
+.label-field-pair .field .text-input .select .master-active .select-active input:focus-within {
   outline: none;
   border-color: #007bff;
   box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);

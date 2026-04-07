@@ -19,7 +19,6 @@ const SelectEmployeeName = ({ t, config, onSelect, formData = {}, userType, regi
   ];
 
   function setValue(value, input) {
-    console.log(value, input, config.key, { ...formData[config.key], [input]: value, onSelect });
     onSelect(config.key, { ...formData[config.key], [input]: value });
   }
 

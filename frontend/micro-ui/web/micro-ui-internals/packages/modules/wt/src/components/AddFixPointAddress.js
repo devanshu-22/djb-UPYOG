@@ -29,7 +29,7 @@ const AddFixPointAddress = () => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
   // ✅ Memoize filters and config to prevent excessive re-fetching/re-renders
-  const searchFilters = React.useMemo(() => ({ tenantId, filters: { bookingId: editId } }), [tenantId, editId]);
+  const searchFilters = React.useMemo(() => ({ tenantId, filters: { id: editId } }), [tenantId, editId]);
   const searchConfig = React.useMemo(() => ({ enabled: !!editId }), [editId]);
 
   // ✅ Fetch data if editing
@@ -39,7 +39,7 @@ const AddFixPointAddress = () => {
 
   useEffect(() => {
     if (editId && editData?.waterTankerBookingDetail && !isDataFetched) {
-      const data = editData.waterTankerBookingDetail.find((item) => item.bookingId === editId);
+      const data = editData.waterTankerBookingDetail.find((item) => item.applicantDetail?.applicantId === editId);
 
       if (data) {
         setFormData({

@@ -22,7 +22,7 @@ const BannerPicker = (props) => {
   return (
     <Banner
       message={GetActionMessage(props.action, props.isSuccess, props.isEmployee, props.t)}
-      applicationNumber={props.isSuccess?props?.data?.Employees?.[0]?.code:''}
+      applicationNumber={props.isSuccess ? props?.data?.Employees?.[0]?.code : ""}
       info={GetLabel(props.action, props.isSuccess, props.isEmployee, props.t)}
       successful={props.isSuccess}
     />
@@ -40,7 +40,7 @@ const Response = (props) => {
   const mutation = state.key === "UPDATE" ? Digit.Hooks.hrms.useHRMSUpdate(tenantId) : Digit.Hooks.hrms.useHRMSCreate(tenantId);
 
   const onError = (error, variables) => {
-    setErrorInfo(error?.response?.data?.Errors[0]?.code || 'ERROR');
+    setErrorInfo(error?.response?.data?.Errors[0]?.code || "ERROR");
     setMutationHappened(true);
   };
 
@@ -52,7 +52,7 @@ const Response = (props) => {
     const onSuccess = () => {
       setMutationHappened(true);
     };
-    if (!mutationHappened ) {
+    if (!mutationHappened) {
       if (state.key === "UPDATE") {
         mutation.mutate(
           {
@@ -73,20 +73,20 @@ const Response = (props) => {
 
   const DisplayText = (action, isSuccess, isEmployee, t) => {
     if (!isSuccess) {
-      return mutation?.error?.response?.data?.Errors[0].code||errorInfo;
+      return mutation?.error?.response?.data?.Errors[0].code || errorInfo;
     } else {
       Digit.SessionStorage.set("isupdate", Math.floor(100000 + Math.random() * 900000));
-      return state.key === "CREATE"?"HRMS_CREATE_EMPLOYEE_INFO" :"";
+      return state.key === "CREATE" ? "HRMS_CREATE_EMPLOYEE_INFO" : "";
     }
   };
-    if (mutation.isLoading || (mutation.isIdle && !mutationHappened)) {
+  if (mutation.isLoading || (mutation.isIdle && !mutationHappened)) {
     return <Loader />;
   }
   return (
-    <Card>
+    <Card className="vehicle-details-card">
       <BannerPicker
         t={t}
-        data={mutation?.data|| successData}
+        data={mutation?.data || successData}
         action={state.action}
         isSuccess={!successData ? mutation?.isSuccess : true}
         isLoading={(mutation.isIdle && !mutationHappened) || mutation?.isLoading}

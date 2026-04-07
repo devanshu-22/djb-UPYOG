@@ -45,7 +45,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmitInput)}>
+    <form id="search-form" onSubmit={handleSubmit(onSubmitInput)}>
       <React.Fragment>
         <div className="search-container" style={{ width: "auto" }}>
           <div className="search-form-wrapper">
@@ -94,7 +94,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
               <div className="generic-button clear-search">
                 <p onClick={clearSearch}>{t(`HR_COMMON_CLEAR_SEARCH`)}</p>
               </div>
-              <SubmitBar className="generic-button" label={t("HR_COMMON_SEARCH")} submit form="search-form" />
+              <SubmitBar className="generic-button" label={t("HR_COMMON_SEARCH")} submit={true} form="search-form" />
             </div>
             {/* <div className="inbox-action-container">
               {type === "desktop" && !mobileView && (

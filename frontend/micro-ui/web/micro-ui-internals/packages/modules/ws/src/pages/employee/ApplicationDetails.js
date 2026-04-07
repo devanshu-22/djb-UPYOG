@@ -6,7 +6,7 @@ import * as func from "../../utils";
 import getPDFData from "../../utils/getWSAcknowledgementData";
 import getModifyPDFData from "../../utils/getWsAckDataForModifyPdfs";
 import { getFiles, getBusinessService } from "../../utils";
-import _ from "lodash";
+// import _ from "lodash";
 import { ifUserRoleExists } from "../../utils";
 const ApplicationDetails = () => {
   const { t } = useTranslation();
@@ -17,6 +17,7 @@ const ApplicationDetails = () => {
   const [showWaringToast, setShowWaringToast] = useState(null);
   const [showOptions, setShowOptions] = useState(false);
   let filters = func.getQueryStringParams(location.search);
+
   const applicationNumber = filters?.applicationNumber;
   const serviceType = filters?.service;
   const menuRef = useRef();
@@ -36,7 +37,7 @@ const ApplicationDetails = () => {
   const index =
     commonPayDetails &&
     commonPayDetails.findIndex((item) => {
-      return item.code == "WS.ONE_TIME_FEE";
+      return item.code === "WS.ONE_TIME_FEE";
     });
   let commonPayInfo = "";
   if (index > -1) commonPayInfo = commonPayDetails[index];
@@ -48,7 +49,7 @@ const ApplicationDetails = () => {
     "DataSecurity",
     [{ name: "SecurityPolicy" }],
     {
-      select: (data) => data?.DataSecurity?.SecurityPolicy?.find((elem) => elem?.model == "User") || {},
+      select: (data) => data?.DataSecurity?.SecurityPolicy?.find((elem) => elem?.model === "User") || {},
     }
   );
 
@@ -95,6 +96,7 @@ const ApplicationDetails = () => {
       privacy: Digit.Utils.getPrivacyObject(),
     }
   );
+
   sessionStorage.removeItem("eyeIconClicked");
   const oldValueWC = oldData?.WaterConnection;
   const oldValueSC = oldData?.SewerageConnections;
@@ -130,8 +132,8 @@ const ApplicationDetails = () => {
 
   const checkWSAdditionalDetails = () => {
     if (
-      applicationDetails?.processInstancesDetails?.[0]?.businessService == "WSReconnection" ||
-      applicationDetails?.processInstancesDetails?.[0]?.businessService == "SWReconnection"
+      applicationDetails?.processInstancesDetails?.[0]?.businessService === "WSReconnection" ||
+      applicationDetails?.processInstancesDetails?.[0]?.businessService === "SWReconnection"
     ) {
       return true;
     } else {
@@ -207,7 +209,7 @@ const ApplicationDetails = () => {
     !workflowDetails?.data?.actionState?.nextActions?.find((e) => e.action === "SUBMIT_APPLICATION")
   ) {
     workflowDetails?.data?.nextActions?.forEach((data) => {
-      if (data.action == "EDIT") workflowDetails.data.actionState.nextActions.push(data);
+      if (data.action === "EDIT") workflowDetails.data.actionState.nextActions.push(data);
     });
   }
 
@@ -256,12 +258,12 @@ const ApplicationDetails = () => {
   });
   workflowDetails?.data?.nextActions?.forEach((action) => {
     if (action?.action === "PAY") {
-      if (workflowDetails?.data?.processInstances?.[0]?.businessService == "WSReconnection") {
+      if (workflowDetails?.data?.processInstances?.[0]?.businessService === "WSReconnection") {
         action.redirectionUrll = {
           pathname: `WSReconnection/${applicationDetails?.applicationNo}/${applicationDetails?.tenantId}?tenantId=${applicationDetails?.tenantId}&ISWSAPP&applicationNumber=${applicationDetails?.applicationNo}`,
           state: applicationDetails?.tenantId,
         };
-      } else if (workflowDetails?.data?.processInstances?.[0]?.businessService == "SWReconnection") {
+      } else if (workflowDetails?.data?.processInstances?.[0]?.businessService === "SWReconnection") {
         action.redirectionUrll = {
           pathname: `SWReconnection/${applicationDetails?.applicationNo}/${applicationDetails?.tenantId}?tenantId=${applicationDetails?.tenantId}&ISWSAPP&applicationNumber=${applicationDetails?.applicationNo}`,
           state: applicationDetails?.tenantId,
@@ -279,12 +281,12 @@ const ApplicationDetails = () => {
 
   workflowDetails?.data?.actionState?.nextActions?.forEach((action) => {
     if (action?.action === "PAY") {
-      if (workflowDetails?.data?.processInstances?.[0]?.businessService == "WSReconnection") {
+      if (workflowDetails?.data?.processInstances?.[0]?.businessService === "WSReconnection") {
         action.redirectionUrll = {
           pathname: `WSReconnection/${applicationDetails?.applicationNo}/${applicationDetails?.tenantId}?tenantId=${applicationDetails?.tenantId}&ISWSAPP&applicationNumber=${applicationDetails?.applicationNo}`,
           state: applicationDetails?.tenantId,
         };
-      } else if (workflowDetails?.data?.processInstances?.[0]?.businessService == "SWReconnection") {
+      } else if (workflowDetails?.data?.processInstances?.[0]?.businessService === "SWReconnection") {
         action.redirectionUrll = {
           pathname: `SWReconnection/${applicationDetails?.applicationNo}/${applicationDetails?.tenantId}?tenantId=${applicationDetails?.tenantId}&ISWSAPP&applicationNumber=${applicationDetails?.applicationNo}`,
           state: applicationDetails?.tenantId,
@@ -337,14 +339,14 @@ const ApplicationDetails = () => {
     } else {
       const warningCount = sessionStorage.getItem("WARINIG_COUNT") || "0";
       const warningCountDetails = JSON.parse(warningCount);
-      if (warningCountDetails == 0) {
+      if (warningCountDetails === 0) {
         const filters = { applicationNumber };
         const response = await Digit.WSService.search({
           tenantId: applicationDetails?.tenantId,
           filters: { ...filters },
-          businessService: serviceType == "WATER" ? "WS" : "SW",
+          businessService: serviceType === "WATER" ? "WS" : "SW",
         });
-        let details = serviceType == "WATER" ? response?.WaterConnection?.[0] : response?.SewerageConnections?.[0];
+        let details = serviceType === "WATER" ? response?.WaterConnection?.[0] : response?.SewerageConnections?.[0];
         if (details?.additionalDetails?.estimationFileStoreId) {
           getFiles([details?.additionalDetails?.estimationFileStoreId], tenantId);
         } else {
@@ -389,26 +391,26 @@ const ApplicationDetails = () => {
     onClick: () =>
       getRecieptSearch(Digit.ULBService.getStateId(), reciept_data?.Payments?.[0], applicationDetails?.applicationData?.applicationNo, receiptKey),
   };
-  const handleViewTimeline = () => {
-    const timelineSection = document.getElementById("timeline");
-    if (timelineSection) {
-      timelineSection.scrollIntoView({ behavior: "smooth" });
-    }
-  };
-  const applicationFeeReceipt = {
-    order: 4,
-    label: t("WS_APLICATION_RECEIPT"),
-    onClick: async () => {
-      const tenant = Digit.ULBService.getStateId();
-      const ConnectionDetailsfile = await Digit.PaymentService.generatePdf(
-        tenantId,
-        { WaterConnection: [applicationDetails?.applicationData] },
-        "ws-consolidatedacknowlegment"
-      );
-      const file = await Digit.PaymentService.printReciept(tenant, { fileStoreIds: ConnectionDetailsfile.filestoreIds[0] });
-      window.open(file[ConnectionDetailsfile.filestoreIds[0]], "_blank");
-    },
-  };
+  // const handleViewTimeline = () => {
+  //   const timelineSection = document.getElementById("timeline");
+  //   if (timelineSection) {
+  //     timelineSection.scrollIntoView({ behavior: "smooth" });
+  //   }
+  // };
+  // const applicationFeeReceipt = {
+  //   order: 4,
+  //   label: t("WS_APLICATION_RECEIPT"),
+  //   onClick: async () => {
+  //     const tenant = Digit.ULBService.getStateId();
+  //     const ConnectionDetailsfile = await Digit.PaymentService.generatePdf(
+  //       tenantId,
+  //       { WaterConnection: [applicationDetails?.applicationData] },
+  //       "ws-consolidatedacknowlegment"
+  //     );
+  //     const file = await Digit.PaymentService.printReciept(tenant, { fileStoreIds: ConnectionDetailsfile.filestoreIds[0] });
+  //     window.open(file[ConnectionDetailsfile.filestoreIds[0]], "_blank");
+  //   },
+  // };
 
   switch (appStatus) {
     case "PENDING_FOR_DOCUMENT_VERIFICATION":
