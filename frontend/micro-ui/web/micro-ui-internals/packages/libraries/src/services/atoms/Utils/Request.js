@@ -206,9 +206,31 @@ export const Request = async ({
     params["tenantId"] = tenantInfo;
   }
 
-  const res = userDownload
-    ? await Axios({ method, url: _url, data, params, headers, responseType: "arraybuffer" })
-    : await Axios({ method, url: _url, data, params, headers });
+  let res;
+
+  try {
+    // ✅ TRY BLOCK:
+    // Attempt to make the API request.
+    // If the API responds with 2xx → execution continues normally.
+    // If API returns 4xx/5xx → Axios throws error → control goes to catch block.
+    res = userDownload
+      ? await Axios({ method, url: _url, data, params, headers, responseType: "arraybuffer" })
+      : await Axios({ method, url: _url, data, params, headers });
+  } catch (error) {
+    // ❌ CATCH BLOCK:
+    // Handles all failed API responses (400, 401, 500, network errors, etc.)
+    // Prevents app crash and ensures function ALWAYS returns something usable.
+
+    console.error("API Error:", error?.response);
+
+    //  return meaningful data instead of breaking flow
+    return {
+      error: true, // ❗ tells UI this failed
+      status: error?.response?.status,
+      data: error?.response?.data,
+      message: error?.message,
+    };
+  }
 
   if (userDownload) return res;
 

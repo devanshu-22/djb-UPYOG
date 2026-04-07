@@ -1,15 +1,5 @@
-import React, {  useRef } from "react";
-import {
-  ActionBar,
-  Card,
-  CardHeader,
-  CardLabel,
-  CardLabelDesc,
-  DownloadIcon,
-  Header,
-  Loader,
-  SubmitBar,
-} from "@djb25/digit-ui-react-components";
+import React, { useRef } from "react";
+import { ActionBar, Card, CardHeader, CardLabel, CardLabelDesc, DownloadIcon, Header, Loader, SubmitBar } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useHistory, useLocation } from "react-router-dom";
 
@@ -32,7 +22,7 @@ const RequiredDocuments = ({ path }) => {
   const handlePrint = () => Digit.Download.PDF(fullPageRef, t("ES_COMMON_WS_DOCUMENTS_REQUIRED"));
 
   return (
-    <>
+    <React.Fragment>
       <div ref={fullPageRef}>
         <div className="options">
           <Header>{t("ES_COMMON_WS_DOCUMENTS_REQUIRED")}</Header>
@@ -47,7 +37,7 @@ const RequiredDocuments = ({ path }) => {
           ) : (
             BillAmendmentMDMS?.map((e) => {
               return (
-                <>
+                <React.Fragment>
                   <CardHeader>{t(e.code).replaceAll("_", " ")}</CardHeader>
                   <CardLabel>{t(`WS_DOCS_REQ_INFO`)}</CardLabel>
                   {e.allowedDocuments.allowedDocs.map((e, i) => (
@@ -55,7 +45,7 @@ const RequiredDocuments = ({ path }) => {
                       {i + 1}. {t(`${e.documentType}`)}
                     </CardLabelDesc>
                   ))}
-                </>
+                </React.Fragment>
               );
             })
           )}
@@ -64,7 +54,7 @@ const RequiredDocuments = ({ path }) => {
       <ActionBar>
         <SubmitBar label={t("WS_COMMON_BUTTON_APPLY")} onSubmit={() => redirectToBillAmdmentPage()} />
       </ActionBar>
-    </>
+    </React.Fragment>
   );
 };
 
