@@ -16,7 +16,7 @@ import {
 } from "@djb25/digit-ui-react-components";
 import React, { Fragment, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useHistory, useLocation, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import BPADocuments from "./BPADocuments";
 import InspectionReport from "./InspectionReport";
 import NOCDocuments from "./NOCDocuments";
@@ -55,13 +55,13 @@ function ApplicationDetailsContent({
 }) {
   const { t } = useTranslation();
   var base_url = window.location.origin;
-  const history = useHistory();
-  const location = useLocation();
+  // const history = useHistory();
+  // const location = useLocation();
   const [showPopup, setShowPopup] = useState(false);
-  const [selectedData, setSelectedData] = useState(null);
-  const searchParams = new URLSearchParams(location.search);
+  // const [selectedData, setSelectedData] = useState(null);
+  // const searchParams = new URLSearchParams(location.search);
   let { id: applicationNo } = useParams(); // Extracts PG-1013-2025-I-001019
-  const ownersSequences = applicationDetails?.applicationData?.owners;
+  // const ownersSequences = applicationDetails?.applicationData?.owners;
   function OpenImage(imageSource, index, thumbnailsToShow) {
     window.open(thumbnailsToShow?.fullImage?.[0], "_blank");
   }
@@ -90,7 +90,7 @@ function ApplicationDetailsContent({
     canLoad: false,
   });
 
-  if (applicationData?.status == "ACTIVE" && !billData.loading && !billData.loaded && !billData.canLoad) {
+  if (applicationData?.status === "ACTIVE" && !billData.loading && !billData.loaded && !billData.canLoad) {
     updateCanFetchBillData({
       loading: false,
       loaded: false,
@@ -106,7 +106,7 @@ function ApplicationDetailsContent({
     setBillData(applicationData?.tenantId || tenantId, applicationData?.propertyId, updatefetchBillData, updateCanFetchBillData);
   }
   const convertEpochToDateDMY = (dateEpoch) => {
-    if (dateEpoch == null || dateEpoch == undefined || dateEpoch == "") {
+    if (dateEpoch == null || dateEpoch === undefined || dateEpoch === "") {
       return "NA";
     }
     const dateFromApi = new Date(dateEpoch);
@@ -183,7 +183,7 @@ function ApplicationDetailsContent({
     window.location.href.includes("employee/tl") || window.location.href.includes("employee/obps") || window.location.href.includes("employee/noc");
   const isNocLocation = window.location.href.includes("employee/noc");
   const isBPALocation = window.location.href.includes("employee/obps");
-  const isWS = window.location.href.includes("employee/ws");
+  // const isWS = window.location.href.includes("employee/ws");
 
   const getRowStyles = () => {
     if (window.location.href.includes("employee/obps") || window.location.href.includes("employee/noc")) {
@@ -273,7 +273,7 @@ function ApplicationDetailsContent({
   };
 
   const handleViewClick = (data) => {
-    setSelectedData(data);
+    // setSelectedData(data);
     setShowPopup(true);
   };
 

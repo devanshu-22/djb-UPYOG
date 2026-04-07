@@ -227,7 +227,6 @@ const WSInbox = ({ parentRoute }) => {
 
   const propsForMobileSortForm = { onMobileSortOrderData, sortFormDefaultValues: formState?.tableForm, onSortFormReset };
 
-
   return (
     <div className="app-container">
       <InboxComposer
@@ -241,7 +240,7 @@ const WSInbox = ({ parentRoute }) => {
           propsForInboxMobileCards,
           formState,
         }}
-      ></InboxComposer>
+      />
     </div>
   );
 };
