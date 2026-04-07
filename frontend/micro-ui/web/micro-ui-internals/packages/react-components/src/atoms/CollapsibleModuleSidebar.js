@@ -23,10 +23,8 @@ const CollapsibleModuleSidebar = ({ links = [], moduleName = "Dashboard", Icon }
                 <div className="nav-icon-wrapper">
                     {linkItem.icon ? linkItem.icon : <span className="fallback-initial">{initials}</span>}
                 </div>
-                <div className="nav-copy">
                     <span className="nav-text">{labelText}</span>
                     {linkItem.subLabel ? <span className="nav-subtext">{linkItem.subLabel}</span> : null}
-                </div>
                 {shouldRenderLinkCount(linkItem.count) ? <span className="nav-count">{linkItem.count}</span> : null}
             </div>
         );

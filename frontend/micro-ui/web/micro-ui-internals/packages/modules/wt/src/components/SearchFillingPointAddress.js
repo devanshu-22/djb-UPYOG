@@ -20,7 +20,7 @@ const SearchFillingPointAddress = () => {
   const [showLocalityModal, setShowLocalityModal] = useState(false);
   const [selectedLocalityRow, setSelectedLocalityRow] = useState(null);
   const [modalMode, setModalMode] = useState("ADD"); // ADD, UPDATE, VIEW
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(50);
   const [pageOffset, setPageOffset] = useState(0);
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -226,7 +226,7 @@ const SearchFillingPointAddress = () => {
           id: "applicantName",
           Cell: ({ row }) => (
             <span className="link">
-              <Link to={`/digit-ui/employee/wt/add-fix-point-address?id=${row.original.bookingId}`}>
+              <Link to={`/digit-ui/employee/wt/add-fix-point-address?id=${row.original.applicantDetail?.applicantId}`}>
                 {row.original.applicantDetail?.name || "NA"}
               </Link>
             </span>
@@ -409,8 +409,11 @@ const SearchFillingPointAddress = () => {
     setPageSize(Number(e.target.value));
   };
 
-  const fixedLength = fixedPointData?.waterTankerBookingDetail?.length || 0;
-  const fillingLength = fillingPointData?.fillingPoints?.length || 0;
+  const totalCount = Number(
+    selectedTab === "FIXED_POINT"
+      ? fixedPointData?.Count ?? fixedPointData?.count ?? fixedPointData?.totalCount ?? 0
+      : fillingPointData?.Count ?? fillingPointData?.count ?? fillingPointData?.totalCount ?? 0
+  );
 
   const applyFixedPointMappedFilter = React.useCallback(
     (rows = []) => {
@@ -628,7 +631,8 @@ const SearchFillingPointAddress = () => {
           onNextPage={fetchNextPage}
           onPrevPage={fetchPrevPage}
           pageSizeLimit={pageSize}
-          totalRecords={fixedLength + fillingLength}
+          totalRecords={totalCount}
+          isPaginationRequired={true}
           showPagination={true}
           showPageSizeOptions={true}
           isSearchRequired={false}
