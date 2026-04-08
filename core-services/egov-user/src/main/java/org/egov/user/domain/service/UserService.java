@@ -373,10 +373,14 @@ public class UserService {
                     throw new IllegalArgumentException("Username is required to generate default password");
                 }
                 String generatedPassword = defaultPasswordPattern.replace("{username}", username);
+                log.info("/_createCitizen endpoint called with default password enabled");
+                log.info("Default password set is {}", generatedPassword);
                 user.setPassword(generatedPassword);
             }
             else{
+                log.info("/_createCitizen endpoint called with default password disabled with reandon uuid");
                 user.setPassword(UUID.randomUUID().toString());
+                log.info("Generated password is {}",user.getCreatedBy());
             }
         } else {
             validatePassword(user.getPassword());
