@@ -64,8 +64,8 @@ public class UserService {
     @Value("${user.default.password.pattern}")
     private String defaultPasswordPattern;
 
-    @Value("${citizen.registration.default.active:true}")
-    private boolean defaultCitizenActive;
+    @Value("${citizen.registration.withlogin.enabled}")
+    private boolean isRegWithLoginEnabled;
 
     private UserRepository userRepository;
     private OtpRepository otpRepository;
@@ -413,7 +413,7 @@ public class UserService {
      * @return
      */
     public User createCitizen(User user, RequestInfo requestInfo) {
-        user.setActive(defaultCitizenActive);
+        user.setActive(isRegWithLoginEnabled);
         validateAndEnrichCitizen(user);
         return createUser(user, requestInfo);
     }
@@ -440,7 +440,7 @@ public class UserService {
      * @return
      */
     public Object registerWithLogin(User user, RequestInfo requestInfo) {
-        user.setActive(true);
+        user.setActive(isRegWithLoginEnabled);
         createCitizen(user, requestInfo);
         return getAccess(user, user.getOtpReference());
     }

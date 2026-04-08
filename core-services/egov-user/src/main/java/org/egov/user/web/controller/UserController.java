@@ -84,9 +84,11 @@ public class UserController {
         User user = createUserRequest.toDomain(true);
         user.setOtpValidationMandatory(IsValidationMandatory);
         if (isRegWithLoginEnabled) {
+            log.info("/_createCitizen endpoint called with login enabled");
             Object object = userService.registerWithLogin(user, createUserRequest.getRequestInfo());
             return new ResponseEntity<>(object, HttpStatus.OK);
         }
+        log.info("Received Citizen Registration Request  /_createCitizen endpoint called with login disabled" + createUserRequest.toString());
         User createdUser = userService.createCitizen(user, createUserRequest.getRequestInfo());
         return createResponse(createdUser);
     }

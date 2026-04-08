@@ -63,12 +63,16 @@ public class EventLogRequest {
     public static EventLogRequest fromRequestContext(ServerWebExchange exchange, Map body, RequestCaptureCriteria criteria) {
 
         Object reqBody = null;
-        if (criteria.isCaptureInputBody()) {
+//        if (criteria.isCaptureInputBody()) {
+//            reqBody = body.get(CURRENT_REQUEST_SANITIZED_BODY_STR);
+//
+//            if (body == null) {
+//                reqBody = exchange.getRequest().getBody().toString();
+//            }
+//        }
+        // Updated by Bimal
+        if (criteria.isCaptureInputBody() && body != null) {
             reqBody = body.get(CURRENT_REQUEST_SANITIZED_BODY_STR);
-
-            if (body == null) {
-                reqBody = exchange.getRequest().getBody().toString();
-            }
         }
 
 

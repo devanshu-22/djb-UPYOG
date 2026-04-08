@@ -7,6 +7,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 
@@ -41,6 +42,7 @@ public class EventLoggerUtil {
 
     public Object logCurrentRequest(ServerWebExchange exchange , Map body, String topic){
         try {
+
             EventLogRequest request = EventLogRequest.fromRequestContext(exchange , body , criteria);
             producer.push(topic, request);
         } catch (Exception ex) {
@@ -48,4 +50,5 @@ public class EventLoggerUtil {
         }
         return null;
     }
+
 }
