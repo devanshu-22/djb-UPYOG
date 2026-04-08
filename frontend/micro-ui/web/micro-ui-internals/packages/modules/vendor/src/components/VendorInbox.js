@@ -376,9 +376,7 @@ const VendorInbox = (props) => {
                 <div>
                   <span className="link">
                     <Link to={"/digit-ui/employee/vendor/registry/vendor-details/" + row.original["id"]}>
-                      <div>
-                        {row.original.name}
-                      </div>
+                      <div>{row.original.name}</div>
                     </Link>
                   </span>
                 </div>
@@ -695,7 +693,7 @@ const VendorInbox = (props) => {
                   <button
                     className="submit-bar"
                     style={{
-                      backgroundColor: hasDetails ? "#417505" : "#F47738",
+                      backgroundColor: hasDetails ? "#417505" : "#3A8DCC",
                       color: "white",
                     }}
                   >
@@ -805,7 +803,7 @@ const VendorInbox = (props) => {
           {
             Header: t("ES_FSM_REGISTRY_SELECT_DRIVER"),
             id: "driver",
-            accessor: (row) => (row.driverData?.name || row.driver?.name || "NA"),
+            accessor: (row) => row.driverData?.name || row.driver?.name || "NA",
             Cell: ({ row }) => {
               return (
                 <Dropdown
@@ -897,7 +895,7 @@ const VendorInbox = (props) => {
           {
             Header: t("ES_FSM_REGISTRY_INBOX_VENDOR_NAME"),
             id: "vendorName",
-            accessor: (row) => (row.vendorData?.name || row.vendor?.name || "NA"),
+            accessor: (row) => row.vendorData?.name || row.vendor?.name || "NA",
             Cell: ({ row }) => {
               return (
                 <Dropdown
@@ -950,8 +948,7 @@ const VendorInbox = (props) => {
           },
           {
             Header: t("ES_VENDOR_INBOX_DATE_VENDOR_CREATION"),
-            exportAccessor: (row) =>
-              row?.auditDetails?.createdTime ? Digit.DateUtils.ConvertEpochToDate(row?.auditDetails?.createdTime) : "",
+            exportAccessor: (row) => (row?.auditDetails?.createdTime ? Digit.DateUtils.ConvertEpochToDate(row?.auditDetails?.createdTime) : ""),
           },
           {
             Header: t("WT_FILLING_POINT"),
@@ -980,8 +977,7 @@ const VendorInbox = (props) => {
           },
           {
             Header: t("ES_FSM_REGISTRY_INBOX_DATE_VEHICLE_CREATION"),
-            exportAccessor: (row) =>
-              row?.auditDetails?.createdTime ? Digit.DateUtils.ConvertEpochToDate(row?.auditDetails?.createdTime) : "",
+            exportAccessor: (row) => (row?.auditDetails?.createdTime ? Digit.DateUtils.ConvertEpochToDate(row?.auditDetails?.createdTime) : ""),
           },
           {
             Header: t("ES_FSM_REGISTRY_INBOX_VENDOR_NAME"),
@@ -1012,8 +1008,7 @@ const VendorInbox = (props) => {
           },
           {
             Header: t("ES_FSM_REGISTRY_INBOX_DATE_DRIVER_CREATION"),
-            exportAccessor: (row) =>
-              row?.auditDetails?.createdTime ? Digit.DateUtils.ConvertEpochToDate(row?.auditDetails?.createdTime) : "",
+            exportAccessor: (row) => (row?.auditDetails?.createdTime ? Digit.DateUtils.ConvertEpochToDate(row?.auditDetails?.createdTime) : ""),
           },
           {
             Header: t("ES_FSM_REGISTRY_INBOX_VENDOR_NAME"),

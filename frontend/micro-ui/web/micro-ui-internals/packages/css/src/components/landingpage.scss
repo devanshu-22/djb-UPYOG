@@ -2973,7 +2973,7 @@ svg text {
 /* Premium Professional Organizational Chart - Version 4.0 */
 
 :root {
-  --primary-color: #667eea;
+  --primary-color: #1f5fa8;
   --primary-dark: #5a67d8;
   --secondary-color: #f093fb;
   --accent-color: #4facfe;
@@ -3319,7 +3319,7 @@ svg text {
 
 /* Instruction Banner */
 .instruction-banner {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1f5fa8 0%, #0b2e5b 100%);
   color: white;
   padding: 14px 24px;
   border-radius: 10px;
@@ -3553,7 +3553,7 @@ svg text {
 
 /* Hierarchy Level Styling */
 .org-tree > .org-node > .org-box {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1f5fa8 0%, #0b2e5b 100%);
   color: white;
   border-color: var(--primary-dark);
   font-size: 16px;
@@ -3740,7 +3740,7 @@ svg text {
 }
 
 .legend-color.level-1 {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1f5fa8 0%, #0b2e5b 100%);
 }
 
 .legend-color.level-2 {

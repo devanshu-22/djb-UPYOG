@@ -98,14 +98,14 @@ const DeleteBtn = ({ className, onClick, fill }) => (
 );
 
 const SuccessSvg = ({ className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#00703C" className={className}>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#2E9E8F" className={className}>
     <path d="M0 0h24v24H0V0z" fill="none" />
     <path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z" />
   </svg>
 );
 
 const ErrorSvg = ({ className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#d4351c" className={className}>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#D83A2F" className={className}>
     <path d="M0 0h24v24H0V0z" fill="none" />
     <circle cx="12" cy="19" r="2" />
     <path d="M10 3h4v12h-4z" />
@@ -473,7 +473,7 @@ function CloseSvg({ onClick }) {
   );
 }
 
-const UpwardArrow = ({ color = "#00703C", rotate = 0, marginRight = 0 }) => (
+const UpwardArrow = ({ color = "#2E9E8F", rotate = 0, marginRight = 0 }) => (
   <svg
     style={{ display: "inline-block", verticalAlign: "baseline", transform: `rotate(${rotate}deg)`, marginRight: `${marginRight}px` }}
     width="11"

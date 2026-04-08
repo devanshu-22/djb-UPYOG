@@ -544,11 +544,11 @@
     text-decoration: none;
     .browse-text {
       text-decoration: none;
-      color: #f47738;
+      color: #3a8dcc;
       transition: color 0.3s;
     }
     .browse-text:hover {
-      color: #f47738;
+      color: #3a8dcc;
       text-decoration: underline;
       cursor: pointer;
     }
@@ -738,7 +738,7 @@ button:hover {
     flex-direction: row-reverse;
     .add-new {
       position: relative;
-      color: #f47738;
+      color: #3a8dcc;
       cursor: pointer;
       margin-right: 1em;
       font-weight: bolder;
@@ -785,7 +785,7 @@ button:hover {
 
   .view-all-link {
     background-color: #bdc5d1;
-    color: #f47738;
+    color: #3a8dcc;
     font-size: 16px;
     text-decoration: underline;
     cursor: pointer;
@@ -839,7 +839,7 @@ button:hover {
     .success-container {
       display: flex;
       flex-direction: row;
-      background-color: #00703c;
+      background-color: #2e9e8f;
       color: #fff;
       padding: 5px 10px;
       border-radius: 5px;
@@ -848,7 +848,7 @@ button:hover {
 
       .success-count {
         background-color: #fff;
-        color: #00703c;
+        color: #2e9e8f;
         padding: 3px 5px;
         border-radius: 3px;
         margin-left: 5px;
@@ -899,7 +899,7 @@ button:hover {
     cursor: pointer;
 
     &:hover {
-      background-color: #d4351c;
+      background-color: #d83a2f;
       color: white;
       /* Yellowish color on hover */
     }

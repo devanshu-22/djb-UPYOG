@@ -44,7 +44,7 @@
 }
 
 .vertical-timeline-connector.completed {
-  background-color: #667eea;
+  background-color: #1f5fa8;
 }
 
 .vertical-timeline-pill {
@@ -68,8 +68,8 @@
 }
 
 .vertical-timeline-step.active .vertical-timeline-pill {
-  background-color: #667eea;
-  border-color: #667eea;
+  background-color: #1f5fa8;
+  border-color: #1f5fa8;
   color: #fff;
   box-shadow: 0 0 0 5px rgba(244, 119, 56, 0.2);
   /* Enhanced glow */
@@ -78,8 +78,8 @@
 }
 
 .vertical-timeline-step.completed .vertical-timeline-pill {
-  background-color: #667eea;
-  border-color: #667eea;
+  background-color: #1f5fa8;
+  border-color: #1f5fa8;
   color: #fff;
 }
 
@@ -121,7 +121,7 @@
     display: flex;
     border-radius: 99999px;
     padding: 0.25rem;
-    background-color: #667eea36;
+    background-color: #1f5fa836;
     overflow-x: scroll;
     max-width: 100%;
   }
@@ -170,7 +170,7 @@
 
   /* active tab */
   .vertical-timeline-step.active .vertical-timeline-pill {
-    background-color: #667eea;
+    background-color: #1f5fa8;
     color: #fff;
     transform: none;
     box-shadow: none;
@@ -178,7 +178,7 @@
 
   /* completed tab */
   .vertical-timeline-step.completed .vertical-timeline-pill {
-    background-color: #667eea;
+    background-color: #1f5fa8;
     color: #fff;
   }
 }

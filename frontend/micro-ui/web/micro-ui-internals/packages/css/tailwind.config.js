@@ -11,7 +11,7 @@ module.exports = {
     },
     colors: {
       primary: {
-        light: "#764ba2",
+        light: "#0B2E5B",
         main: "#667eea",
         dark: "#C8602B",
       },
@@ -28,8 +28,8 @@ module.exports = {
       inputBorder: "#464646",
       "input-border": "#464646",
       focus: "#667eea",
-      error: "#D4351C",
-      success: "#00703C",
+      error: "#D83A2F",
+      success: "#2E9E8F",
       black: "#000000",
       grey: {
         dark: "#9E9E9E",
@@ -121,9 +121,9 @@ module.exports = {
         "primary-bg": "#FEEFE7",
       },
       alert: {
-        error: "#D4351C",
+        error: "#D83A2F",
         "error-bg": "#EFC7C1",
-        success: "#00703C",
+        success: "#2E9E8F",
         "success-bg": "#BAD6C9",
         info: "#3498DB",
         "info-bg": "#C7E0F1",

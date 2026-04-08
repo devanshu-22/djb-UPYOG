@@ -83,14 +83,14 @@ const ApplicationDetails = (props) => {
       applicationData?.paymentPreference === "POST_PAY"
         ? "FSM_POST_PAY_SERVICE"
         : applicationData?.advanceAmount === 0
-          ? "PAY_LATER_SERVICE"
-          : applicationData?.advanceAmount > 0
-            ? "FSM_ADVANCE_PAY_SERVICE"
-            : applicationData?.paymentPreference === null &&
-              applicationData?.additionalDetails?.tripAmount === 0 &&
-              applicationData?.advanceAmount === null
-              ? "FSM_ZERO_PAY_SERVICE"
-              : "FSM",
+        ? "PAY_LATER_SERVICE"
+        : applicationData?.advanceAmount > 0
+        ? "FSM_ADVANCE_PAY_SERVICE"
+        : applicationData?.paymentPreference === null &&
+          applicationData?.additionalDetails?.tripAmount === 0 &&
+          applicationData?.advanceAmount === null
+        ? "FSM_ZERO_PAY_SERVICE"
+        : "FSM",
     role: "FSM_EMPLOYEE",
     serviceData: applicationDetails,
     getTripData: true,
@@ -149,9 +149,9 @@ const ApplicationDetails = (props) => {
   };
 
   const handleViewTimeline = () => {
-    const timelineSection = document.getElementById('timeline');
+    const timelineSection = document.getElementById("timeline");
     if (timelineSection) {
-      timelineSection.scrollIntoView({ behavior: 'smooth' });
+      timelineSection.scrollIntoView({ behavior: "smooth" });
     }
     setViewTimeline(true);
   };
@@ -270,28 +270,28 @@ const ApplicationDetails = (props) => {
   let dowloadOptions =
     paymentsHistory?.Payments?.length > 0
       ? [
-        {
-          label: t("CS_COMMON_APPLICATION_ACKNOWLEDGEMENT"),
-          onClick: handleDownloadPdf,
-        },
-        {
-          label: t("CS_DOWNLOAD_RECEIPT"),
-          onClick: downloadPaymentReceipt,
-        },
-      ]
+          {
+            label: t("CS_COMMON_APPLICATION_ACKNOWLEDGEMENT"),
+            onClick: handleDownloadPdf,
+          },
+          {
+            label: t("CS_DOWNLOAD_RECEIPT"),
+            onClick: downloadPaymentReceipt,
+          },
+        ]
       : [
-        {
-          label: t("CS_COMMON_APPLICATION_ACKNOWLEDGEMENT"),
-          onClick: handleDownloadPdf,
-        },
-      ];
+          {
+            label: t("CS_COMMON_APPLICATION_ACKNOWLEDGEMENT"),
+            onClick: handleDownloadPdf,
+          },
+        ];
 
   if (isLoading) {
     return <Loader />;
   }
   const toggleTimeline = () => {
     setShowAllTimeline((prev) => !prev);
-  }
+  };
 
   // let deepCopy = _.cloneDeep(workflowDetails)
   // let index1 = 0
@@ -306,18 +306,18 @@ const ApplicationDetails = (props) => {
   //   }
   // })
 
-    return (
+  return (
     <React.Fragment>
       {!isLoading ? (
         <React.Fragment>
-          <div style={{display:"flex",justifyContent:"space-between"}}>
-          <Header style={{ marginBottom: "16px" }}>{t("ES_TITLE_APPLICATION_DETAILS")}</Header>           
-          <LinkButton label={t("VIEW_TIMELINE")} style={{ color:"#A52A2A"}} onClick={handleViewTimeline}></LinkButton>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <Header style={{ marginBottom: "16px" }}>{t("ES_TITLE_APPLICATION_DETAILS")}</Header>
+            <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline}></LinkButton>
           </div>
           <Card className="fsm" style={{ position: "relative" }}>
             {/* {!DSO && (
               <LinkButton
-                label={<span style={{ color: "#f47738", marginLeft: "8px" }}>{t("ES_APPLICATION_DETAILS_VIEW_AUDIT_TRAIL")}</span>}
+                label={<span style={{ color: "#3A8DCC", marginLeft: "8px" }}>{t("ES_APPLICATION_DETAILS_VIEW_AUDIT_TRAIL")}</span>}
                 style={{ position: "absolute", top: 0, right: 20 }}
                 onClick={() => {
                   history.push(props.parentRoute + "/application-audit/" + applicationNumber);
@@ -388,23 +388,24 @@ const ApplicationDetails = (props) => {
                   ) : (
                     <ConnectingCheckPoints>
                       {workflowDetails?.data?.timeline &&
-                        workflowDetails?.data?.timeline.slice(0, showAllTimeline ? workflowDetails.data.timeline.length : 2).map((checkpoint, index, arr) => {
-                          return (
-                            <React.Fragment key={index}>
-                              <CheckPoint
-                                keyValue={index}
-                                isCompleted={index === 0}
-                                label={t("CS_COMMON_FSM_" + `${checkpoint.performedAction === "UPDATE" ? "UPDATE_" : ""}` + checkpoint.status)}
-                                customChild={getTimelineCaptions(checkpoint)}
-                              />
-                            </React.Fragment>
-                          );
-                        })}
+                        workflowDetails?.data?.timeline
+                          .slice(0, showAllTimeline ? workflowDetails.data.timeline.length : 2)
+                          .map((checkpoint, index, arr) => {
+                            return (
+                              <React.Fragment key={index}>
+                                <CheckPoint
+                                  keyValue={index}
+                                  isCompleted={index === 0}
+                                  label={t("CS_COMMON_FSM_" + `${checkpoint.performedAction === "UPDATE" ? "UPDATE_" : ""}` + checkpoint.status)}
+                                  customChild={getTimelineCaptions(checkpoint)}
+                                />
+                              </React.Fragment>
+                            );
+                          })}
                     </ConnectingCheckPoints>
                   )}
                   {workflowDetails?.data?.timeline?.length > 2 && (
-                    <LinkButton label={showAllTimeline ? t("COLLAPSE") : t("VIEW_TIMELINE")} onClick={toggleTimeline}>
-                    </LinkButton>
+                    <LinkButton label={showAllTimeline ? t("COLLAPSE") : t("VIEW_TIMELINE")} onClick={toggleTimeline}></LinkButton>
                   )}
                 </div>
               </Fragment>
@@ -430,14 +431,16 @@ const ApplicationDetails = (props) => {
               onClose={closeToast}
             />
           )}
-          {!workflowDetails?.isLoading && workflowDetails?.data?.nextActions?.length === 1 && workflowDetails?.data?.nextActions?.[0]?.action !== "RATE" && (
-            <ActionBar style={{ zIndex: "19" }}>
-              <SubmitBar
-                label={t(`ES_FSM_${workflowDetails?.data?.nextActions[0].action}`)}
-                onSubmit={() => onActionSelect(workflowDetails?.data?.nextActions[0].action)}
-              />
-            </ActionBar>
-          )}
+          {!workflowDetails?.isLoading &&
+            workflowDetails?.data?.nextActions?.length === 1 &&
+            workflowDetails?.data?.nextActions?.[0]?.action !== "RATE" && (
+              <ActionBar style={{ zIndex: "19" }}>
+                <SubmitBar
+                  label={t(`ES_FSM_${workflowDetails?.data?.nextActions[0].action}`)}
+                  onSubmit={() => onActionSelect(workflowDetails?.data?.nextActions[0].action)}
+                />
+              </ActionBar>
+            )}
           {!workflowDetails?.isLoading && workflowDetails?.data?.nextActions?.length > 1 && (
             <ActionBar style={{ zIndex: "19" }}>
               {displayMenu && workflowDetails?.data?.nextActions ? (

@@ -46,13 +46,13 @@ const WTCard = () => {
     {
       count: citizenInboxCount,
       label: t("ES_COMMON_INBOX"),
-      subLabel: "citizen",
+      subLabel: t("CITIZEN"),
       link: `${APPLICATION_PATH}/employee/wt/inbox`,
     },
     {
       count: fixedPointInboxCount,
       label: t("ES_COMMON_INBOX"),
-      subLabel: "Fixed Point",
+      subLabel: t("FIXED_POINT"),
       link: `${APPLICATION_PATH}/employee/wt/fixed-point/inbox`,
     },
     {

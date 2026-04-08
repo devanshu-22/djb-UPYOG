@@ -5,7 +5,7 @@ import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from "recha
 import FilterContext from "./FilterContext";
 import NoData from "./NoData";
 // ["#048BD0", "#FBC02D", "#8E29BF","#EA8A3B","#0BABDE","#6E8459"]
-const COLORS = ["#048BD0", "#FBC02D", "#8E29BF", "#EA8A3B", "#0BABDE", "#6E8459", "#D4351C", "#0CF7E4", "#F80BF4", "#22F80B"];
+const COLORS = ["#048BD0", "#FBC02D", "#8E29BF", "#EA8A3B", "#0BABDE", "#6E8459", "#D83A2F", "#0CF7E4", "#F80BF4", "#22F80B"];
 const mobileView = innerWidth <= 640;
 
 const CustomPieChart = ({ dataKey = "value", data, setChartDenomination, moduleCode }) => {
@@ -43,12 +43,12 @@ const CustomPieChart = ({ dataKey = "value", data, setChartDenomination, moduleC
           return acc;
         }, []);
   }, [response]);
-  const totalValue= useMemo(()=>{
-    if(chartData){
-      return chartData.reduce((total, entry)=> total+entry.value,0);
+  const totalValue = useMemo(() => {
+    if (chartData) {
+      return chartData.reduce((total, entry) => total + entry.value, 0);
     }
     return 0;
-  }, [chartData])
+  }, [chartData]);
 
   const renderLegend = (value) => (
     <span style={{ fontSize: "14px", color: "#505A5F" }}>{t(`COMMON_MASTERS_${value && Digit.Utils.locale.getTransformedLocale(value)}`)}</span>
@@ -152,18 +152,24 @@ const CustomPieChart = ({ dataKey = "value", data, setChartDenomination, moduleC
     setdrillDownId(null);
     setPieSelected(null);
   }, [id]);
-  const CustomLegend=({payload, totalValue})=>{
+  const CustomLegend = ({ payload, totalValue }) => {
     return (
-      <div style={{display:"flex",flexWrap:"wrap"}}>
-        {payload.map((entry, index)=>(
-          <div key={`legend-${index}`} style={{display:'flex', alignItems:'center', marginBottom: "5px", width:"50%"}}>
-            <div style={{width: 10, height:10, backgroundColor: entry.color, marginRight: 5}}/>
-            <span style={{fontSize: 14, color: '#505ASF', marginRight: 10}}>
-              {`${entry.value}:${(entry?.payload?.percent  * 100).toFixed(1)}% (${Digit.Utils.dss.formatter(entry?.payload?.value, entry?.payload?.payload?.symbol, value?.denomination, true, t)} )`}
+      <div style={{ display: "flex", flexWrap: "wrap" }}>
+        {payload.map((entry, index) => (
+          <div key={`legend-${index}`} style={{ display: "flex", alignItems: "center", marginBottom: "5px", width: "50%" }}>
+            <div style={{ width: 10, height: 10, backgroundColor: entry.color, marginRight: 5 }} />
+            <span style={{ fontSize: 14, color: "#505ASF", marginRight: 10 }}>
+              {`${entry.value}:${(entry?.payload?.percent * 100).toFixed(1)}% (${Digit.Utils.dss.formatter(
+                entry?.payload?.value,
+                entry?.payload?.payload?.symbol,
+                value?.denomination,
+                true,
+                t
+              )} )`}
             </span>
-            </div>
+          </div>
         ))}
-     </div>
+      </div>
     );
   };
   if (isLoading) {
@@ -214,8 +220,7 @@ const CustomPieChart = ({ dataKey = "value", data, setChartDenomination, moduleC
               ))}
             </Pie>
             <Tooltip content={renderTooltip} />
-            <Legend content={CustomLegend}/>
-           
+            <Legend content={CustomLegend} />
           </PieChart>
         </ResponsiveContainer>
       )}
