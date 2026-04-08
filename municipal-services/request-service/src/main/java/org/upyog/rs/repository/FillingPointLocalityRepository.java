@@ -23,13 +23,16 @@ public class FillingPointLocalityRepository {
     @Autowired
     private FillingPointLocalityRowMapper rowMapper;
 
-    public List<FillingPointLocality> getMappings(FillingPointLocalitySearchCriteria criteria) {
+    public List<FillingPointLocality> searchMapping(FillingPointLocalitySearchCriteria criteria) {
         List<Object> preparedStmtList = new ArrayList<>();
-
-        // Generate dynamic query
         String query = queryBuilder.getSearchQuery(criteria, preparedStmtList);
-
-        // Execute query using RowMapper defined in the previous step
         return jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
+    }
+
+    public Long getCount(FillingPointLocalitySearchCriteria criteria) {
+        List<Object> preparedStmtList = new ArrayList<>();
+        String query = queryBuilder.getCountQuery(criteria, preparedStmtList);
+        Long count = jdbcTemplate.queryForObject(query, preparedStmtList.toArray(), Long.class);
+        return count != null ? count : 0L;
     }
 }

@@ -1,22 +1,23 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { CardLabel, DatePicker, SubmitBar, Toast, Card, Dropdown } from "@djb25/digit-ui-react-components";
-import Timeline from "../../../vendor/src/components/VENDORTimeline";
+import { useHistory } from "react-router-dom";
+import { Label, DatePicker, SubmitBar, Toast, Card, Dropdown, UploadFile, CardSubHeader } from "@djb25/digit-ui-react-components";
 import VerticalTimeline from "./VerticalTimeline";
+import SelectServiceType from "../pageComponents/SelectServiceType";
 
 const VendorAssign = ({ parentUrl, heading }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const { t } = useTranslation();
+  const history = useHistory();
 
   const [showToast, setShowToast] = useState(null);
-  const [workOrderId, setWorkOrderId] = useState("");
   const [vendor, setVendor] = useState(null);
-  const [applicantName, setApplicantName] = useState("");
-  const [mobileNumber, setMobileNumber] = useState("");
-  const [alternateNumber, setAlternateNumber] = useState("");
-  const [emailId, setEmailId] = useState("");
   const [validFrom, setValidFrom] = useState("");
   const [validTo, setValidTo] = useState("");
+  const [uploadedFile, setUploadedFile] = useState(null);
+  const [file, setFile] = useState(null);
+  const [selectedServiceType, setSelectedServiceType] = useState(null);
+  const [error, setError] = useState(null);
 
   const { data: vendorOptions, isLoading: isVendorLoading } = Digit.Hooks.fsm.useVendorSearch({
     tenantId,
@@ -28,35 +29,66 @@ const VendorAssign = ({ parentUrl, heading }) => {
 
   const { mutate: createWorkOrder } = Digit.Hooks.wt.useVendorWorkOrderCreate(tenantId);
 
+  useEffect(() => {
+    (async () => {
+      setError(null);
+      if (file) {
+        if (file.size >= 2000000) {
+          setError(t("WT_MAXIMUM_UPLOAD_SIZE_EXCEEDED"));
+        } else {
+          try {
+            const response = await Digit.UploadServices.Filestorage("WT", file, Digit.ULBService.getStateId());
+            if (response?.data?.files?.length > 0) {
+              setUploadedFile(response?.data?.files[0]?.fileStoreId);
+            } else {
+              setError(t("WT_FILE_UPLOAD_ERROR"));
+            }
+          } catch (err) {
+            setError(t("WT_FILE_UPLOAD_ERROR"));
+          }
+        }
+      }
+    })();
+  }, [file]);
+
+  const onServiceTypeSelect = (key, value) => {
+    setSelectedServiceType(value);
+  };
+
   const handleSubmit = () => {
     const payload = {
       vendorWorkOrder: {
-        id: workOrderId,
         tenantId,
-        name: applicantName,
         vendorId: vendor?.code || vendor?.id,
         validFrom: new Date(validFrom).getTime(),
         validTo: new Date(validTo).getTime(),
-        mobileNumber,
-        alternateNumber,
-        emailId,
-        serviceType: "WT",
+        serviceType: selectedServiceType?.code || "WT",
+        fileStoreId: uploadedFile,
       },
     };
 
     createWorkOrder(payload, {
       onSuccess: (result) => {
         setShowToast({ isError: false, label: t("ES_COMMON_SAVE_SUCCESS") });
+        setTimeout(() => {
+          history.push("/digit-ui/employee/vendor/search-vendor");
+        }, 3000);
       },
       onError: (err) => {
         setShowToast({ isError: true, label: err?.response?.data?.Errors?.[0]?.message || t("ES_COMMON_ERROR_SAVING") });
       },
     });
-
-    console.log(payload, "iuyui");
   };
 
   const isMobile = window.Digit.Utils.browser.isMobile();
+  const userType = Digit.UserService.getUser().info.type;
+
+  function selectfile(e) {
+    setUploadedFile(null);
+    setFile(e.target.files[0]);
+  }
+
+  const isFormDisabled = !vendor || !validFrom || !validTo || !selectedServiceType;
 
   return (
     <div className="employee-form-section-wrapper">
@@ -65,86 +97,50 @@ const VendorAssign = ({ parentUrl, heading }) => {
 
       <div style={{ flex: 1 }}>
         <Card className="formcomposer-section-grid">
-          {/* <div style={{ display: "flex", flexDirection: "column" }}>
-              <CardLabel>
-                {`${t("WT_WORK_ORDER_ID")}`} <span className="astericColor">*</span>
-              </CardLabel>
-              <TextInput
-                t={t}
-                type={"text"}
-                isMandatory={true}
-                name="workOrderId"
-                value={workOrderId}
-                style={{ width: "100%" }}
-                onChange={(e) => setWorkOrderId(e.target.value)}
-              />
-            </div> */}
+          <CardSubHeader style={{ marginBottom: "10px", gridColumn: "span 2" }}>{t("WT_VENDOR_ASSIGN")}</CardSubHeader>
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <CardLabel>
+            <Label>
               {`${t("WT_VENDOR_NAME")}`} <span className="astericColor">*</span>
-            </CardLabel>
+            </Label>
             <Dropdown t={t} option={vendorOptions} optionKey="name" select={setVendor} selected={vendor} placeholder={t("WT_SELECT_VENDOR")} />
           </div>
-          {/* <div style={{ display: "flex", flexDirection: "column" }}>
-              <CardLabel>
-                {`${t("COMMON_APPLICANT_NAME")}`} <span className="astericColor">*</span>
-              </CardLabel>
-              <TextInput
-                t={t}
-                type={"text"}
-                isMandatory={true}
-                name="applicantName"
-                value={applicantName}
-                style={{ width: "100%" }}
-                onChange={(e) => setApplicantName(e.target.value)}
-              />
-            </div> */}
-          {/* <div style={{ display: "flex", flexDirection: "column" }}>
-              <CardLabel>
-                {`${t("CORE_COMMON_APPLICANT_MOBILE_NUMBER")}`} <span className="astericColor">*</span>
-              </CardLabel>
-              <MobileNumber value={mobileNumber} name="mobileNumber" onChange={(value) => setMobileNumber(value)} style={{ width: "100%" }} />
-            </div>
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              <CardLabel>{`${t("WT_VENDOR_ALT_MOBILE_NUMBER")}`}</CardLabel>
-              <MobileNumber
-                value={alternateNumber}
-                name="alternateNumber"
-                onChange={(value) => setAlternateNumber(value)}
-                style={{ width: "100%" }}
-              />
-            </div> */}
-          {/* <div style={{ display: "flex", flexDirection: "column" }}>
-              <CardLabel>
-                {`${t("CORE_COMMON_APPLICANT_EMAIL_ID")}`} <span className="astericColor">*</span>
-              </CardLabel>
-              <TextInput
-                t={t}
-                type={"email"}
-                isMandatory={true}
-                name="emailId"
-                value={emailId}
-                style={{ width: "100%" }}
-                onChange={(e) => setEmailId(e.target.value)}
-              />
-            </div> */}
-
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <CardLabel>
+            <Label>
               {`${t("COMMON_VALID_FROM_DATE")}`} <span className="astericColor">*</span>
-            </CardLabel>
+            </Label>
             <DatePicker date={validFrom} onChange={(date) => setValidFrom(date)} style={{ width: "100%" }} />
           </div>
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <CardLabel>
+            <Label>
               {`${t("COMMON_VALID_TO_DATE")}`} <span className="astericColor">*</span>
-            </CardLabel>
-            <DatePicker date={validTo} onChange={(date) => setValidTo(date)} style={{ width: "100%" }} />
+            </Label>
+            <DatePicker date={validTo} min={validFrom} onChange={(date) => setValidTo(date)} style={{ width: "100%" }} />
           </div>
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <Label>{`${t("WT_UPLOAD_DOCUMENT")}`}</Label>
+            <UploadFile
+              id={"wt-doc"}
+              extraStyleName={"propertyCreate"}
+              accept=".jpg,.png,.pdf,.jpeg"
+              onUpload={selectfile}
+              onDelete={() => {
+                setUploadedFile(null);
+              }}
+              message={uploadedFile ? `1 ${t(`WT_ACTION_FILEUPLOADED`)}` : t(`WT_ACTION_NO_FILEUPLOADED`)}
+              error={error}
+            />
+          </div>
+          <SelectServiceType
+            t={t}
+            config={{ key: "serviceType", label: t("WT_SELECT_SERVICE_TYPE") }}
+            onSelect={onServiceTypeSelect}
+            userType={userType}
+            formData={{ serviceType: selectedServiceType }}
+          />
         </Card>
 
         <div style={{ display: "flex", marginTop: "24px", justifyContent: isMobile ? "center" : "flex-end" }}>
-          <SubmitBar label={t("ES_COMMON_SAVE")} onSubmit={handleSubmit} />
+          <SubmitBar label={t("ES_COMMON_SAVE")} onSubmit={isFormDisabled ? null : handleSubmit} disabled={isFormDisabled} />
         </div>
       </div>
       {showToast && <Toast error={showToast.isError} label={showToast.label} onClose={() => setShowToast(null)} />}

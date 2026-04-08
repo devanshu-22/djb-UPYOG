@@ -29,10 +29,18 @@ public class DriverTripController {
     public ResponseEntity<DriverTripResponse> updateTrip(@RequestBody DriverTripRequest request) {
         DriverTrip result;
 
-        if (request.getDriverTrip().getCurrentStatus().equalsIgnoreCase("START")) {
-            result = driverTripService.startTrip(request);
+        boolean isDriver = request.getRequestInfo().getUserInfo().getRoles()
+                .stream()
+                .anyMatch(role -> "WT_DRIVER".equalsIgnoreCase(role.getCode()));
+
+        if (isDriver) {
+            if (request.getDriverTrip().getCurrentStatus().equalsIgnoreCase("START")) {
+                result = driverTripService.startTrip(request);
+            } else {
+                result = driverTripService.completeTrip(request);
+            }
         } else {
-            result = driverTripService.completeTrip(request);
+            result = driverTripService.updateTripByNonDriver(request);
         }
 
         ResponseInfo responseInfo = responseInfoFactory.createResponseInfoFromRequestInfo(request.getRequestInfo(), true);

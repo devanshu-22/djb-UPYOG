@@ -21,7 +21,6 @@ const VehicleConfig = (t, disabled = false) => {
             },
             error: t("FSM_REGISTRY_INVALID_REGISTRATION_NUMBER"),
             defaultValue: "",
-            className: "payment-form-text-input-correction",
           },
         },
 
@@ -29,20 +28,22 @@ const VehicleConfig = (t, disabled = false) => {
           label: "ES_VENDOR_REGISTRY_SERVICE_TYPE",
           isMandatory: true,
           type: "component",
-          route: "select-service",
-          hideInEmployee: false,
-          key: "additionalDetails",
+          key: "serviceType",
           component: "SelectServiceType",
           disable: disabled,
+          populators: {
+            name: "serviceType",
+            defaultValue: {
+              code: "WT",
+              name: "WT",
+              i18nKey: "WT",
+            },
+          },
           texts: {
-            headerCaption: "",
-            header: "CS_COMMON_CHOOSE_SERVICE",
-            cardText: "CS_COMMON_SELECT_SERVICE",
+            header: "CS_COMMON_CHOOSE_SERVICE_TYPE",
             submitBarLabel: "CS_COMMON_NEXT",
-            skipText: "CORE_COMMON_SKIP_CONTINUE",
           },
         },
-
         {
           route: "vehicle",
           component: "SelectVehicleType",
@@ -112,11 +113,13 @@ const VehicleConfig = (t, disabled = false) => {
             name: "ownerName",
             validation: {
               required: true,
-              pattern: /^[A-Za-z]/,
+              pattern: {
+                value: /^[A-Za-z\s]+$/,
+                message: t("FSM_REGISTRY_INVALID_NAME"),
+              },
             },
             error: t("FSM_REGISTRY_INVALID_NAME"),
             defaultValue: "",
-            className: "payment-form-text-input-correction",
           },
         },
         {
@@ -133,8 +136,6 @@ const VehicleConfig = (t, disabled = false) => {
             },
             error: t("FSM_REGISTRY_INVALID_PHONE"),
             defaultValue: "",
-            className: "payment-form-text-input-correction",
-            labelStyle: { border: "1px solid black", borderRight: "none" },
           },
         },
         {
@@ -149,7 +150,7 @@ const VehicleConfig = (t, disabled = false) => {
         },
         {
           label: t("ES_FSM_REGISTRY_NEW_DOB"),
-          isMandatory: false,
+          isMandatory: true,
           type: "custom",
           key: "dob",
           populators: {
@@ -162,7 +163,11 @@ const VehicleConfig = (t, disabled = false) => {
                 onChange={props.onChange}
                 date={props.value}
                 {...customProps}
-                max={convertEpochToDate(new Date().setFullYear(new Date().getFullYear()))}
+                max={(() => {
+                  const date = new Date();
+                  date.setFullYear(date.getFullYear() - 18);
+                  return date.toISOString().split("T")[0];
+                })()}
               />
             ),
           },
@@ -180,7 +185,6 @@ const VehicleConfig = (t, disabled = false) => {
             },
             error: t("FSM_REGISTRY_INVALID_EMAIL"),
             defaultValue: "",
-            className: "payment-form-text-input-correction",
           },
         },
       ],

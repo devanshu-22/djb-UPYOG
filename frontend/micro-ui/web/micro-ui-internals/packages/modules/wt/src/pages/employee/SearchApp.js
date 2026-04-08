@@ -60,7 +60,7 @@ const SearchApp = ({path,moduleCode}) => {
     let error = null;
 
     if (moduleCode === "WT") {
-        ({ isLoading, isSuccess, isError, error, data: { waterTankerBookingDetail: searchResult = [], Count: count = 0 } = {} } = 
+        ({ isLoading, isSuccess, isError, error, data: { waterTankerBookingDetail: searchResult = [], count = 0 } = {} } = 
             Digit.Hooks.wt.useTankerSearchAPI({ tenantId, filters: payload }, config));
     } else if (moduleCode === "MT") {
         ({ isLoading, isSuccess, isError, error, data: { mobileToiletBookingDetails: searchResult = [], Count: count = 0 } = {} } = 

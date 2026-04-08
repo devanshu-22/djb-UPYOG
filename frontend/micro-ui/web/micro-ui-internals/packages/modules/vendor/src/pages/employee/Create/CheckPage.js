@@ -1,4 +1,15 @@
-import { Card, CardHeader, CardSubHeader, CardText, CheckBox, LinkButton, Row, StatusTable, SubmitBar } from "@djb25/digit-ui-react-components";
+import {
+  Card,
+  CardHeader,
+  CardSubHeader,
+  CardText,
+  CheckBox,
+  LinkButton,
+  Row,
+  StatusTable,
+  SubmitBar,
+  VerticalTimeline,
+} from "@djb25/digit-ui-react-components";
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
@@ -65,50 +76,59 @@ const CheckPage = ({ onSubmit, value = {} }) => {
 
   return (
     <React.Fragment>
-      <div style={{ display: "flex", width: "100%", gap: "24px" }}>
-        {window.location.href.includes("/employee") ? <Timeline steps={steps} currentStep={5} /> : null}
-        <div style={{ flex: "1", overflowY: "auto" }}>
-          <Card>
-            <CardHeader>{t("VENDOR_CHECK_DETAILS")}</CardHeader>
-            <div>
-              <br></br>
+      {window.location.href.includes("/employee") ? (
+        <VerticalTimeline
+          config={[
+            { timeLine: [{ actions: t("VENDOR_ADDITIONAL_DETAILS"), currentStep: 1 }] },
+            { timeLine: [{ actions: t("VENDOR_DOCUMENT_DETAILS"), currentStep: 2 }] },
+            { timeLine: [{ actions: t("VENDOR_SUMMARY"), currentStep: 3 }] },
+          ]}
+          currentActiveIndex={2}
+          showFinalStep={false}
+        />
+      ) : null}
+      <div style={{ flex: "1", overflowY: "auto", marginBottom: "20px" }}>
+        <Card>
+          <CardHeader>{t("VENDOR_CHECK_DETAILS")}</CardHeader>
+          <div>
+            <br />
 
-              <CardSubHeader>{t("VENDOR_ADDITIONAL_DETAILS")}</CardSubHeader>
+            <CardSubHeader>{t("VENDOR_ADDITIONAL_DETAILS")}</CardSubHeader>
 
-              <StatusTable>
-                <React.Fragment>
-                  <Row
-                    label={t("VENDOR_ID")}
-                    text={`${t(checkForNA(vendordet?.VendorId))}`}
-                    actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/vendor-details`} />}
-                  />
-                  <Row
-                    label={t("VENDOR_BANK_IFSC_CODE")}
-                    text={`${t(checkForNA(vendordet?.IFSC))}`}
-                    actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/vendor-details`} />}
-                  />
-                  <Row
-                    label={t("VENDOR_BANK_NAME")}
-                    text={`${t(checkForNA(vendordet?.Bank))}`}
-                    actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/vendor-details`} />}
-                  />
-                  <Row
-                    label={t("VENDOR_BANK_BRANCH")}
-                    text={`${t(checkForNA(vendordet?.BankbranchName))}`}
-                    actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/vendor-details`} />}
-                  />
-                  <Row
-                    label={t("VENDOR_MICR_NO")}
-                    text={`${t(checkForNA(vendordet?.micrNo))}`}
-                    actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/vendor-details`} />}
-                  />
-                  <Row
-                    label={t("BANK_ACCONT_NO")}
-                    text={`${t(checkForNA(vendordet?.AccountNo))}`}
-                    actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/vendor-details`} />}
-                  />
+            <StatusTable>
+              <React.Fragment>
+                <Row
+                  label={t("VENDOR_ID")}
+                  text={`${t(checkForNA(vendordet?.VendorId))}`}
+                  actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/vendor-details`} />}
+                />
+                <Row
+                  label={t("VENDOR_BANK_IFSC_CODE")}
+                  text={`${t(checkForNA(vendordet?.IFSC))}`}
+                  actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/vendor-details`} />}
+                />
+                <Row
+                  label={t("VENDOR_BANK_NAME")}
+                  text={`${t(checkForNA(vendordet?.Bank))}`}
+                  actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/vendor-details`} />}
+                />
+                <Row
+                  label={t("VENDOR_BANK_BRANCH")}
+                  text={`${t(checkForNA(vendordet?.BankbranchName))}`}
+                  actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/vendor-details`} />}
+                />
+                <Row
+                  label={t("VENDOR_MICR_NO")}
+                  text={`${t(checkForNA(vendordet?.micrNo))}`}
+                  actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/vendor-details`} />}
+                />
+                <Row
+                  label={t("BANK_ACCONT_NO")}
+                  text={`${t(checkForNA(vendordet?.AccountNo))}`}
+                  actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/vendor-details`} />}
+                />
 
-                  {/* <Row
+                {/* <Row
                 label={t("PHONE_NO")}
                 text={`${t(checkForNA(vendordet?.AccountNo))}`}
                 actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/vendor-details`} />}
@@ -126,57 +146,57 @@ const CheckPage = ({ onSubmit, value = {} }) => {
                 actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/vendor-details`} />}
               /> */}
 
-                  <Row
-                    label={t("PAN_NO")}
-                    text={`${t(checkForNA(vendordet?.PanNo))}`}
-                    actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/vendor-details`} />}
-                  />
-                  <Row
-                    label={t("GST_NO")}
-                    text={`${t(checkForNA(vendordet?.GstNo))}`}
-                    actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/vendor-details`} />}
-                  />
-                  <Row
-                    label={t("GST_REGISTERED_STATE/UT")}
-                    text={`${t(checkForNA(vendordet?.GstState))}`}
-                    actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/vendor-detailss`} />}
-                  />
-                  <Row
-                    label={t("REGISTRATION_NO")}
-                    text={`${t(checkForNA(vendordet?.RegistrationNo))}`}
-                    actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/vendor-details`} />}
-                  />
+                <Row
+                  label={t("PAN_NO")}
+                  text={`${t(checkForNA(vendordet?.PanNo))}`}
+                  actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/vendor-details`} />}
+                />
+                <Row
+                  label={t("GST_NO")}
+                  text={`${t(checkForNA(vendordet?.GstNo))}`}
+                  actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/vendor-details`} />}
+                />
+                <Row
+                  label={t("GST_REGISTERED_STATE/UT")}
+                  text={`${t(checkForNA(vendordet?.GstState))}`}
+                  actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/vendor-detailss`} />}
+                />
+                <Row
+                  label={t("REGISTRATION_NO")}
+                  text={`${t(checkForNA(vendordet?.RegistrationNo))}`}
+                  actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/vendor-details`} />}
+                />
 
-                  <Row
-                    label={t("EPF_NO")}
-                    text={`${t(checkForNA(vendordet?.EpfNo))}`}
-                    actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/vendor-details`} />}
-                  />
+                <Row
+                  label={t("EPF_NO")}
+                  text={`${t(checkForNA(vendordet?.EpfNo))}`}
+                  actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/vendor-details`} />}
+                />
 
-                  <Row
-                    label={t("ESI_NO")}
-                    text={`${t(checkForNA(vendordet?.EsiNo))}`}
-                    actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/vendor-details`} />}
-                  />
+                <Row
+                  label={t("ESI_NO")}
+                  text={`${t(checkForNA(vendordet?.EsiNo))}`}
+                  actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/vendor-details`} />}
+                />
 
-                  <Row
-                    label={t("VENDOR_TYPE")}
-                    text={`${t(checkForNA(vendordet?.VendorType?.code))}`}
-                    actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/vendor-details`} />}
-                  />
+                <Row
+                  label={t("VENDOR_TYPE")}
+                  text={`${t(checkForNA(vendordet?.VendorType?.code))}`}
+                  actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/vendor-details`} />}
+                />
 
-                  <Row
-                    label={t("VENDOR_CATEGORY")}
-                    text={`${t(checkForNA(vendordet?.VendorCategory?.code))}`}
-                    actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/vendor-details`} />}
-                  />
+                <Row
+                  label={t("VENDOR_CATEGORY")}
+                  text={`${t(checkForNA(vendordet?.VendorCategory?.code))}`}
+                  actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/vendor-details`} />}
+                />
 
-                  <Row
-                    label={t("VENDOR_STATUS")}
-                    text={`${t(checkForNA(vendordet?.Status?.code))}`}
-                    actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/vendor-details`} />}
-                  />
-                  {/* {formJson.map((row, index) => (
+                <Row
+                  label={t("VENDOR_STATUS")}
+                  text={`${t(checkForNA(vendordet?.Status?.code))}`}
+                  actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/vendor-details`} />}
+                />
+                {/* {formJson.map((row, index) => (
                 <Row
                   key={index}
                   label={t(row.code)}
@@ -184,52 +204,53 @@ const CheckPage = ({ onSubmit, value = {} }) => {
                   actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/vendor-details`} />}
                 />
               ))} */}
-                </React.Fragment>
-              </StatusTable>
+              </React.Fragment>
+            </StatusTable>
 
-              <br></br>
-              <CardSubHeader>{t("VENDOR_DOCUMENTS_DETAILS")}</CardSubHeader>
+            <br />
+            <CardSubHeader>{t("VENDOR_DOCUMENTS_DETAILS")}</CardSubHeader>
 
+            <StatusTable>
               <StatusTable>
-                <StatusTable>
-                  <Row
-                    label={t("VENDOR_DOCUMENTS")}
-                    text={
-                      documents?.documents?.length > 0
-                        ? documents.documents.map((doc, index) => (
-                            <div key={index}>
-                              <span
-                                style={{
-                                  color: "#5a6ee1",
-                                  cursor: "pointer",
-                                  textDecoration: "underline",
-                                }}
-                                onClick={() => openFilePDF(doc?.filestoreId)} // ← fix here
-                              >
-                                {t(doc.documentType)}
-                              </span>
-                            </div>
-                          ))
-                        : t("CS_NA")
-                    }
-                  />
-                </StatusTable>
+                <Row
+                  label={t("VENDOR_DOCUMENTS")}
+                  text={
+                    documents?.documents?.length > 0
+                      ? documents.documents.map((doc, index) => (
+                          <div key={index}>
+                            <span
+                              style={{
+                                color: "#5a6ee1",
+                                cursor: "pointer",
+                                textDecoration: "underline",
+                              }}
+                              onClick={() => openFilePDF(doc?.filestoreId)} // ← fix here
+                            >
+                              {t(doc.documentType)}
+                            </span>
+                          </div>
+                        ))
+                      : t("CS_NA")
+                  }
+                />
               </StatusTable>
+            </StatusTable>
 
-              <br></br>
+            <br />
 
-              <CheckBox
-                label={t("AST_FINAL_DECLARATION_MESSAGE")}
-                onChange={setdeclarationhandler}
-                styles={{ height: "auto" }}
-                checked={agree}
-                //disabled={!agree}
-              />
-            </div>
-            <br></br>
+            <CheckBox
+              label={t("AST_FINAL_DECLARATION_MESSAGE")}
+              onChange={setdeclarationhandler}
+              styles={{ height: "auto" }}
+              checked={agree}
+              //disabled={!agree}
+            />
+          </div>
+          <br />
+          <div className="formcomposer-section-button">
             <SubmitBar label={t("COMMON_BUTTON_SUBMIT")} onSubmit={onSubmit} disabled={!agree} />
-          </Card>
-        </div>
+          </div>
+        </Card>
       </div>
     </React.Fragment>
   );

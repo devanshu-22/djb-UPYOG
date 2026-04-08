@@ -16,7 +16,12 @@ const MobileNumber = (props) => {
     <React.Fragment>
       <div className="phone-input-wrapper">
         {!props.hideSpan ? (
-          <span style={{ ...props.labelStyle }} className="employee-card-input employee-card-input--front phone-country-code">
+          <span
+            style={{ ...props.labelStyle }}
+            className={`employee-card-input employee-card-input--front phone-country-code ${props.disable && "disabled"} focus-visible ${
+              props.errorStyle && "employee-card-input-error"
+            }`}
+          >
             +91
           </span>
         ) : null}
@@ -25,9 +30,9 @@ const MobileNumber = (props) => {
             type={"text"}
             name={props.name}
             id={props.id || "Mobile"}
-            className={`${user_type ? "employee-card-input" : "citizen-card-input"} ${props.disable && "disabled"} focus-visible ${props.errorStyle && "employee-card-input-error"
-              }`}
-
+            className={`${user_type ? "employee-card-input" : "citizen-card-input"} ${props.disable && "disabled"} focus-visible ${
+              props.errorStyle && "employee-card-input-error"
+            }`}
             placeholder={props.placeholder}
             onChange={onChange}
             ref={props.inputRef}

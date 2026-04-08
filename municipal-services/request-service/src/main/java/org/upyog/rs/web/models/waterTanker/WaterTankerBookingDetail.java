@@ -3,10 +3,8 @@ package org.upyog.rs.web.models.waterTanker;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.validation.annotation.Validated;
 import org.upyog.rs.util.RequestServiceUtil;
 import org.upyog.rs.validator.CreateApplicationGroup;
@@ -15,7 +13,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 
-import io.swagger.annotations.ApiModel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -29,15 +26,18 @@ import org.upyog.rs.web.models.Workflow;
 import org.upyog.rs.web.models.fillingpoint.*;
 import org.upyog.rs.web.models.fillingpoint.FillingPointMetadata;
 
-
+import javax.annotation.processing.Generated;
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 
 /**
  * Details for new booking of advertisement
  */
-@ApiModel(description = "Details for new booking of Water Tanker")
+@Schema(description = "Details for new booking of Water Tanker")
 @Validated
-@javax.annotation.Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2024-04-19T11:17:29.419+05:30")
+@Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2024-04-19T11:17:29.419+05:30")
 @Getter
 @Setter
 @AllArgsConstructor

@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import org.upyog.rs.web.models.Address;
 
+import java.util.List;
+
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class FillingPoint {
@@ -60,6 +62,9 @@ public class FillingPoint {
 
     @JsonProperty("lastModifiedTime")
     private Long lastModifiedTime;
+
+    @JsonProperty("fillingPointLocalityCodes")
+    private List<String> localityCodes;
 
     private Address address;
 }

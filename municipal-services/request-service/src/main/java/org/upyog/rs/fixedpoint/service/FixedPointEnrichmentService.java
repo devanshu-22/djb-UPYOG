@@ -18,6 +18,9 @@ public class FixedPointEnrichmentService {
 
         fixedPointDetailsRequest.getFixedPointDetailsList().forEach(fixedPointDetails -> {
             AuditDetails auditDetails = fixedPointDetails.getAuditDetails();
+            if (auditDetails == null) {
+                auditDetails = new AuditDetails();
+            }
             auditDetails.setLastModifiedBy(userId);
             auditDetails.setLastModifiedTime(currentTime);
             fixedPointDetails.setAuditDetails(auditDetails);

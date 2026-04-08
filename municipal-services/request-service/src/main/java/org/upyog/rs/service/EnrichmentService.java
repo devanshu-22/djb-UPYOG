@@ -159,12 +159,10 @@ public class EnrichmentService {
 				config.getWaterTankerApplicationKey(), config.getWaterTankerApplicationFormat(), 1);
 
 		log.info("Enriched application request application no :" + customIds.get(0));
-		waterTankerFixedPointDetail.setBookingNo(customIds.get(0));
 
 		ApplicantDetail applicantDetail = waterTankerFixedPointDetail.getApplicantDetail();
 		Address address = waterTankerFixedPointDetail.getAddress();
 
-		waterTankerFixedPointDetail.setBookingId(bookingId);
 		waterTankerFixedPointDetail.getApplicantDetail().setBookingId(bookingId);
 		waterTankerFixedPointDetail.setMobileNumber(applicantDetail.getMobileNumber());
 
@@ -182,8 +180,8 @@ public class EnrichmentService {
 	public void enrichUpdateFixedPointWaterTankerRequest(
 			WaterTankerFixedPointRequest waterTankerFixedPointRequest) {
 
-		log.info("Enriching update for fixed point water tanker booking id: "
-				+ waterTankerFixedPointRequest.getWaterTankerFixedPointDetail().getBookingId());
+		log.info("Enriching update for fixed point water tanker Applicant id: "
+				+ waterTankerFixedPointRequest.getWaterTankerFixedPointDetail().getApplicantDetail());
 
 		RequestInfo requestInfo = waterTankerFixedPointRequest.getRequestInfo();
 		WaterTankerFixedPointDetail detail = waterTankerFixedPointRequest.getWaterTankerFixedPointDetail();

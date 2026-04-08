@@ -182,6 +182,7 @@ export const CitizenSideBar = ({
       linkData.FSM = FSM;
     }
     Object.keys(linkData)
+      ?.filter((key) => !linkData[key][0]?.sidebarURL?.includes("wt-home"))
       ?.sort((x, y) => y.localeCompare(x))
       ?.map((key) => {
         if (linkData[key][0]?.sidebar === "digit-ui-links")

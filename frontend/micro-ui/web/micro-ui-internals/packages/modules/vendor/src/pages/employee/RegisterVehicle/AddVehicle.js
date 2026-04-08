@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FormComposer, Toast, Header, InfoIcon } from "@djb25/digit-ui-react-components";
+import { FormComposer, Toast, InfoIcon, VerticalTimeline } from "@djb25/digit-ui-react-components";
 import { useHistory } from "react-router-dom";
 //import VehicleConfig from "../../../configs/VehicleConfig";
 import { useQueryClient } from "react-query";
 import VehicleConfig from "../../../config/VehicleConfig";
-import Timeline from "../../../components/VENDORTimeline";
 
 const AddVehicle = ({ parentUrl, heading }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -49,13 +48,17 @@ const AddVehicle = ({ parentUrl, heading }) => {
   const [canSubmit, setSubmitValve] = useState(false);
 
   const defaultValues = {
+    serviceType: {
+      code: "WT",
+      name: "WT",
+      i18nKey: "WT",
+    },
     tripData: {
       noOfTrips: 1,
       amountPerTrip: null,
       amount: null,
     },
   };
-
   const onFormValueChange = (setValue, formData) => {
     if (formData?.registrationNumber) {
       let updatedRegNo = formData.registrationNumber
@@ -75,7 +78,9 @@ const AddVehicle = ({ parentUrl, heading }) => {
       formData?.phone &&
       formData?.vehicle?.modal &&
       formData?.vehicle?.type &&
-      formData?.selectGender
+      formData?.selectGender &&
+      formData?.dob &&
+      new Date(formData?.dob).getTime() <= new Date().setFullYear(new Date().getFullYear() - 18)
     ) {
       setSubmitValve(true);
     } else {
@@ -98,7 +103,7 @@ const AddVehicle = ({ parentUrl, heading }) => {
     const fitnessValidity = new Date(`${data?.fitnessValidity}`).getTime();
     const ownerName = data?.ownerName;
     const phone = data?.phone;
-    const additionalDetails = data?.additionalDetails?.code;
+    const additionalDetails = data?.serviceType?.code;
     const gender = data?.selectGender?.code;
     const emailId = data?.emailId;
     const dob = new Date(`${data.dob}`).getTime() || new Date(`1/1/1970`).getTime();
@@ -144,50 +149,51 @@ const AddVehicle = ({ parentUrl, heading }) => {
       },
       onSuccess: (data, variables) => {
         setShowToast({ key: "success", action: "ADD_VEHICLE" });
-        setTimeout(closeToast, 5000);
         queryClient.invalidateQueries("FSM_VEICLES_SEARCH");
-        // setTimeout(() => {
-        //   closeToast();
-        //   history.push(`/digit-ui/employee/fsm/registry?selectedTabs=VEHICLE`);
-        // }, 5000);
+        setTimeout(() => {
+          closeToast();
+          history.push(`/digit-ui/employee/vendor/search-vendor?selectedTabs=VEHICLE`);
+        }, 3000);
       },
     });
   };
-  const isMobile = window.Digit.Utils.browser.isMobile();
 
   return (
     <React.Fragment>
-      {/* <div>
-        <Header>{t("ES_FSM_REGISTRY_TITLE_NEW_VEHICLE")}</Header>
-      </div> */}
-      <div style={{ display: "flex", width: "100%", gap: "24px" }}>
-        {/* Timeline */}
-        <Timeline steps={steps} currentStep={currentStep} />
-
-        <div style={{ flex: "1", overflowY: "auto" }}>
-          <FormComposer
-            isDisabled={!canSubmit}
-            label={t("ES_COMMON_APPLICATION_SUBMIT")}
-            config={Config.filter((i) => !i.hideInEmployee).map((config) => {
-              return {
-                ...config,
-                body: config.body.filter((a) => !a.hideInEmployee),
-              };
-            })}
-            fieldStyle={{ marginRight: 0 }}
-            onSubmit={onSubmit}
-            defaultValues={defaultValues}
-            onFormValueChange={onFormValueChange}
-            noBreakLine={true}
+      <VerticalTimeline
+        config={[
+          {
+            route: "vendor-details",
+            timeLine: [{ actions: t("ES_FSM_REGISTRY_TITLE_NEW_VEHICLE"), currentStep: 1 }],
+          },
+        ]}
+        currentActiveIndex={currentStep - 1}
+        showFinalStep={false}
+      />
+      <div style={{ flex: "1", overflowY: "auto" }}>
+        <FormComposer
+          isDisabled={!canSubmit}
+          label={t("ES_COMMON_APPLICATION_SUBMIT")}
+          config={Config.filter((i) => !i.hideInEmployee).map((config) => {
+            return {
+              ...config,
+              body: config.body.filter((a) => !a.hideInEmployee),
+            };
+          })}
+          fieldStyle={{ marginRight: 0 }}
+          onSubmit={onSubmit}
+          defaultValues={defaultValues}
+          onFormValueChange={onFormValueChange}
+          noBreakLine={true}
+          mode="onChange"
+        />
+        {showToast && (
+          <Toast
+            error={showToast.key === "error" ? true : false}
+            label={t(showToast.key === "success" ? `ES_FSM_REGISTRY_${showToast.action}_SUCCESS` : showToast.action)}
+            onClose={closeToast}
           />
-          {showToast && (
-            <Toast
-              error={showToast.key === "error" ? true : false}
-              label={t(showToast.key === "success" ? `ES_FSM_REGISTRY_${showToast.action}_SUCCESS` : showToast.action)}
-              onClose={closeToast}
-            />
-          )}
-        </div>
+        )}
       </div>
     </React.Fragment>
   );

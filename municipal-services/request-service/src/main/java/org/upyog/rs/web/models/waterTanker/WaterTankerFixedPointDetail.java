@@ -1,6 +1,9 @@
 package org.upyog.rs.web.models.waterTanker;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import lombok.*;
 import org.upyog.rs.validator.CreateApplicationGroup;
 import org.upyog.rs.web.models.Address;
@@ -8,11 +11,10 @@ import org.upyog.rs.web.models.ApplicantDetail;
 import org.upyog.rs.web.models.AuditDetails;
 import org.upyog.rs.web.models.fillingpoint.FillingPoint;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import javax.annotation.processing.Generated;
 
-@javax.annotation.Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2024-04-19T11:17:29.419+05:30")
+
+@Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2024-04-19T11:17:29.419+05:30")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -36,8 +38,5 @@ public class WaterTankerFixedPointDetail {
 
     @JsonProperty("fillingPoint")
     private FillingPoint fillingPoint;
-
-    private String bookingId;
     private String mobileNumber;
-    private String bookingNo;
 }

@@ -1,4 +1,4 @@
-import { PrivateRoute, AppContainer, ModuleHeader, ArrowLeft, HomeIcon } from "@djb25/digit-ui-react-components";
+import { PrivateRoute, AppContainer, ModuleHeader, ArrowLeft, HomeIcon, LayoutWrapper } from "@djb25/digit-ui-react-components";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Switch, useLocation } from "react-router-dom";
@@ -7,7 +7,6 @@ import SearchApp from "./SearchApp";
 const EmployeeApp = ({ path, url, userType }) => {
   const { t } = useTranslation();
   const location = useLocation();
-  const mobileView = innerWidth <= 640;
   sessionStorage.removeItem("revalidateddone");
   // const isMobile = window.Digit.Utils.browser.isMobile();
 
@@ -110,92 +109,82 @@ const EmployeeApp = ({ path, url, userType }) => {
 
             <PrivateRoute
               path={`${path}/search-vendor`}
-              component={renderWithLayout(
-                (props) => (
+              component={(props) => (
+                <LayoutWrapper layoutClass="normal">
                   <SearchVendor {...props} parentRoute={path} />
-                ),
-                layouts.normal
+                </LayoutWrapper>
               )}
             />
 
             <PrivateRoute
               path={`${path}/registry/new-driver`}
-              component={renderWithLayout(
-                (props) => (
+              component={(props) => (
+                <LayoutWrapper layoutClass="action">
                   <AddDriver {...props} parentRoute={path} />
-                ),
-                layouts.normal
+                </LayoutWrapper>
               )}
             />
 
             <PrivateRoute
               path={`${path}/registry/new-vehicle`}
-              component={renderWithLayout(
-                (props) => (
+              component={(props) => (
+                <LayoutWrapper layoutClass="action">
                   <AddVehicle {...props} parentRoute={path} />
-                ),
-                layouts.normal
+                </LayoutWrapper>
               )}
             />
 
             <PrivateRoute
               path={`${path}/registry/additionaldetails`}
-              component={renderWithLayout(
-                (props) => (
+              component={(props) => (
+                <LayoutWrapper layoutClass="normal">
                   <VendorCreate {...props} parentRoute={path} />
-                ),
-                layouts.normal
+                </LayoutWrapper>
               )}
             />
 
             <PrivateRoute
               path={`${path}/registry/driver-details/:id`}
-              component={renderWithLayout(
-                (props) => (
+              component={(props) => (
+                <LayoutWrapper layoutClass="action">
                   <DriverDetails {...props} parentRoute={path} />
-                ),
-                layouts.action
+                </LayoutWrapper>
               )}
             />
 
             <PrivateRoute
               path={`${path}/common-search/:id`}
-              component={renderWithLayout(
-                (props) => (
+              component={(props) => (
+                <LayoutWrapper layoutClass="normal">
                   <SearchApp {...props} parentRoute={path} />
-                ),
-                layouts.normal
+                </LayoutWrapper>
               )}
             />
 
-            {/* ACTION BAR LAYOUT */}
             <PrivateRoute
               path={`${path}/registry/new-vendor`}
-              component={renderWithLayout(
-                (props) => (
+              component={(props) => (
+                <LayoutWrapper layoutClass="action">
                   <AddVendor {...props} parentRoute={path} />
-                ),
-                layouts.action
+                </LayoutWrapper>
               )}
             />
 
             <PrivateRoute
               path={`${path}/registry/vendor-details/:id`}
-              component={renderWithLayout(
-                (props) => (
+              component={(props) => (
+                <LayoutWrapper layoutClass="action">
                   <EditVendorDetails {...props} parentRoute={path} />
-                ),
-                layouts.action
+                </LayoutWrapper>
               )}
             />
 
             <PrivateRoute
               path={`${path}/registry/vehicle-details/:id`}
-              component={renderWithLayout(
-                (props) => (
+              component={(props) => (
+                <LayoutWrapper layoutClass="action">
                   <VehicleDetails {...props} parentRoute={path} />
-                ),
-                layouts.action
+                </LayoutWrapper>
               )}
             />
           </div>
@@ -206,14 +195,3 @@ const EmployeeApp = ({ path, url, userType }) => {
 };
 
 export default EmployeeApp;
-
-const renderWithLayout = (Component, layoutClass) => (routeProps) => (
-  <div className={layoutClass}>
-    <Component {...routeProps} />
-  </div>
-);
-
-const layouts = {
-  normal: "employee-form",
-  action: "employee-form employee-form-content-with-action-bar",
-};

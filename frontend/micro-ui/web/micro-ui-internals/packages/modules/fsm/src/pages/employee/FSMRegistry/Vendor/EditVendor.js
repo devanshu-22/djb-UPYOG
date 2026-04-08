@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FormComposer, Loader, Toast, Header } from "@djb25/digit-ui-react-components";
+import { FormComposer, Loader, Toast, VerticalTimeline } from "@djb25/digit-ui-react-components";
 import { useHistory, useParams } from "react-router-dom";
 import VendorConfig from "../../configs/VendorConfig";
 import { useQueryClient } from "react-query";
-import Timeline from "../../../../../../vendor/src/components/VENDORTimeline";
 
 const EditVendor = ({ parentUrl, heading }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -169,49 +168,42 @@ const EditVendor = ({ parentUrl, heading }) => {
       },
     });
   };
-  const isMobile = window.Digit.Utils.browser.isMobile();
 
-  if (daoDataLoading || Object.keys(defaultValues).length == 0) {
+  if (daoDataLoading || Object.keys(defaultValues).length === 0) {
     return <Loader />;
   }
 
-  const steps = [t("ES_FSM_REGISTRY_TITLE_EDIT_VENDOR")];
-
   return (
     <React.Fragment>
-      {/* <div>
-        <Header>{t("ES_FSM_REGISTRY_TITLE_EDIT_VENDOR")}</Header>
-      </div> */}
-      {/* <div style={!isMobile ? { marginLeft: "-15px" } : {}}> */}
-
-      <div style={{ display: "flex", width: "100%", gap: "24px" }}>
-        <Timeline steps={steps} currentStep={currentStep} />
-
-        <div style={{ flex: "1", overflowY: "auto" }}>
-          <FormComposer
-            isDisabled={!canSubmit}
-            label={t("ES_COMMON_APPLICATION_SUBMIT")}
-            config={Config.filter((i) => !i.hideInEmployee).map((config) => {
-              return {
-                ...config,
-                body: config.body.filter((a) => !a.hideInEmployee),
-              };
-            })}
-            fieldStyle={{ marginRight: 0 }}
-            onSubmit={onSubmit}
-            defaultValues={defaultValues}
-            onFormValueChange={onFormValueChange}
-            noBreakLine={true}
+      <VerticalTimeline
+        config={[{ timeLine: [{ actions: t("ES_FSM_REGISTRY_TITLE_EDIT_VENDOR"), currentStep: 1 }] }]}
+        currentActiveIndex={currentStep - 1}
+        showFinalStep={false}
+      />
+      <div style={{ flex: "1", overflowY: "auto" }}>
+        <FormComposer
+          isDisabled={!canSubmit}
+          label={t("ES_COMMON_APPLICATION_SUBMIT")}
+          config={Config.filter((i) => !i.hideInEmployee).map((config) => {
+            return {
+              ...config,
+              body: config.body.filter((a) => !a.hideInEmployee),
+            };
+          })}
+          fieldStyle={{ marginRight: 0 }}
+          onSubmit={onSubmit}
+          defaultValues={defaultValues}
+          onFormValueChange={onFormValueChange}
+          noBreakLine={true}
+        />
+        {showToast && (
+          <Toast
+            error={showToast.key === "error" ? true : false}
+            label={t(showToast.key === "success" ? `ES_FSM_REGISTRY_${showToast.action}_SUCCESS` : showToast.action)}
+            onClose={closeToast}
           />
-          {showToast && (
-            <Toast
-              error={showToast.key === "error" ? true : false}
-              label={t(showToast.key === "success" ? `ES_FSM_REGISTRY_${showToast.action}_SUCCESS` : showToast.action)}
-              onClose={closeToast}
-            />
-          )}
-          {/* </div> */}
-        </div>
+        )}
+        {/* </div> */}
       </div>
     </React.Fragment>
   );

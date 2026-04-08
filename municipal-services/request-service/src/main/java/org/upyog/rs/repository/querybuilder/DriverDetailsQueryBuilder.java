@@ -1,5 +1,7 @@
 package org.upyog.rs.repository.querybuilder;
 
+import java.util.List;
+
 public class DriverDetailsQueryBuilder {
 
     public static final String DRIVER_QUERY = new StringBuilder()
@@ -16,6 +18,7 @@ public class DriverDetailsQueryBuilder {
             .append("edt.id AS trip_id, edt.booking_id AS trip_booking_id, edt.booking_no AS trip_booking_no, ")
             .append("edt.tanker_type AS trip_tanker_type, edt.vendor_id AS trip_vendor_id, edt.vehicle_id AS trip_vehicle_id, ")
             .append("edt.driver_id AS trip_driver_id, edt.current_status AS trip_current_status, ")
+            .append("edt.jefilestoreid, edt.remark_updated_by_role,")
             .append("edt.start_latitude AS trip_start_latitude, edt.start_longitude AS trip_start_longitude, ")
             .append("edt.start_file_store_id AS trip_start_file_store_id, edt.end_latitude AS trip_end_latitude, ")
             .append("edt.end_longitude AS trip_end_longitude, edt.end_file_store_id AS trip_end_file_store_id, ")
@@ -42,4 +45,24 @@ public class DriverDetailsQueryBuilder {
 
             .append("ORDER BY ursbd.booking_id, urwtfp.createdtime DESC ")
             .toString();
+
+
+    public static String buildQuery(String driverId, Long fromDate, Long toDate, List<Object> params) {
+        params.add(driverId);
+
+        if (fromDate == null || toDate == null) {
+            return DRIVER_QUERY;
+        }
+
+        params.add(fromDate);
+        params.add(toDate);
+
+        // Insert date filter before ORDER BY
+        return DRIVER_QUERY.replace(
+                "ORDER BY ursbd.booking_id, urwtfp.createdtime DESC",
+                "AND ursbd.lastmodifiedtime BETWEEN ? AND ? " +
+                                 "AND ursbd.booking_status = 'TANKER_DELIVERED' " +
+                                 "ORDER BY ursbd.booking_id, urwtfp.createdtime DESC"
+        );
+    }
 }

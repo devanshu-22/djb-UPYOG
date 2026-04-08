@@ -12,7 +12,8 @@
   height: 38px;
   opacity: 0;
   position: absolute;
-  top: 0;
+  top: 50%;
+  transform: translateY(-50%);
   left: 0;
   z-index: 10;
   cursor: pointer;
@@ -49,7 +50,8 @@
   background-color: #fff;
   border-radius: 2px;
   position: absolute;
-  top: 0;
+  top: 50%;
+  transform: translateY(-50%);
   left: 0;
   z-index: 0;
   display: flex;

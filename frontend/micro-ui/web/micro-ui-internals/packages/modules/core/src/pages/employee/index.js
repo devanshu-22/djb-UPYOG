@@ -67,51 +67,55 @@ const EmployeeApp = ({
             />
           )}
           <div
-            className={isUserProfile ? "grounded-container" : "loginContainer"}
-            style={isUserProfile ? { padding: 0, paddingTop: "80px" } : { "--banner-url": `url(${stateInfo?.bannerUrl})`, padding: "0px" }}
+            className={isUserProfile ? "main" : "loginContainer"}
+            style={isUserProfile ? { padding: 0, paddingTop: "72px" } : { "--banner-url": `url(${stateInfo?.bannerUrl})`, padding: "0px" }}
           >
-            <div className="login">
-              {/* <picture>
+            <div className="employee-app-wrapper">
+              <div className="ground-container employee-app-container form-container" style={{ width: "100%" }}>
+                <div className="login">
+                  {/* <picture>
               <source media="(min-width: 760px)" src="https://i.postimg.cc/wxnnKGtG/Banner-18-10-22-1.png" style={{"position":"absolute","height":"100%","width":"100%"}}/>
                 <source media="(min-width: 400px)" srcset="https://i.postimg.cc/9Q7jT6Dd/Banner-Image-2.png" style={{"position":"absolute","height":"100%","width":"100%"}}/>
                 </picture> */}
 
-              {/* <picture>
+                  {/* <picture>
                 <source id="backgroung-login" media="(min-width: 950px)" srcset="https://abdeas-dev-asset.s3.ap-south-1.amazonaws.com/bannerImage.jpg" style={{"position":"absolute","height":"100%","width":"100%"}} />
                   <source media="(min-width: 250px)" srcset="https://abdeas-dev-asset.s3.ap-south-1.amazonaws.com/bannerImageMobileView.jpg" />
                     <img src="https://abdeas-dev-asset.s3.ap-south-1.amazonaws.com/bannerImage.jpg" alt="imagealttext" style={{"position":"absolute","height":"100%","width":"100%","zIndex":"1","display":window.location.href.includes("user/profile")?"none":""}}/>
                     </picture> */}
-              {/* <img class="image" id="main-img" src="https://in-egov-assets.s3.ap-south-1.amazonaws.com/images/employee-login.png" /> */}
-              {/* <img class="image" id="main-img" src="https://i.postimg.cc/9Q7jT6Dd/Banner-Image-2.png" /> */}
-              {/* <img id="backgroung-login" src="https://in-egov-assets.s3.ap-south-1.amazonaws.com/images/employee-login.png" style={{"position":"absolute","height":"100%","width":"100%"}}></img> */}
-              <Switch>
-                <Route path={`${path}/user/login`}>
-                  <EmployeeLogin />
-                </Route>
-                <Route path={`${path}/user/forgot-password`}>
-                  <ForgotPassword />
-                </Route>
-                <Route path={`${path}/user/change-password`}>
-                  <ChangePassword />
-                </Route>
-                <PrivateRoute path={`${path}/user/profile`}>
-                  <UserProfile stateCode={stateCode} userType={"employee"} cityDetails={cityDetails} />
-                </PrivateRoute>
-                <Route path={`${path}/user/error`}>
-                  <ErrorComponent
-                    initData={initData}
-                    goToHome={() => {
-                      history.push("/digit-ui/employee");
-                    }}
-                  />
-                </Route>
-                <Route path={`${path}/user/language-selection`}>
-                  <LanguageSelection />
-                </Route>
-                {/* <Route>
+                  {/* <img class="image" id="main-img" src="https://in-egov-assets.s3.ap-south-1.amazonaws.com/images/employee-login.png" /> */}
+                  {/* <img class="image" id="main-img" src="https://i.postimg.cc/9Q7jT6Dd/Banner-Image-2.png" /> */}
+                  {/* <img id="backgroung-login" src="https://in-egov-assets.s3.ap-south-1.amazonaws.com/images/employee-login.png" style={{"position":"absolute","height":"100%","width":"100%"}}></img> */}
+                  <Switch>
+                    <Route path={`${path}/user/login`}>
+                      <EmployeeLogin />
+                    </Route>
+                    <Route path={`${path}/user/forgot-password`}>
+                      <ForgotPassword />
+                    </Route>
+                    <Route path={`${path}/user/change-password`}>
+                      <ChangePassword />
+                    </Route>
+                    <PrivateRoute path={`${path}/user/profile`}>
+                      <UserProfile stateCode={stateCode} userType={"employee"} cityDetails={cityDetails} />
+                    </PrivateRoute>
+                    <Route path={`${path}/user/error`}>
+                      <ErrorComponent
+                        initData={initData}
+                        goToHome={() => {
+                          history.push("/digit-ui/employee");
+                        }}
+                      />
+                    </Route>
+                    <Route path={`${path}/user/language-selection`}>
+                      <LanguageSelection />
+                    </Route>
+                    {/* <Route>
                 <Redirect to={`${path}/user/language-selection`} />
               </Route> */}
-              </Switch>
+                  </Switch>
+                </div>
+              </div>
             </div>
           </div>
         </Route>

@@ -18,5 +18,10 @@ public class WaterTankerFixedPointBookingSearchCriteria {
     @JsonProperty("name")
     private String name;
 
+    @JsonProperty("limit")
+    private Integer limit;
+
+    @JsonProperty("offset")
+    private Integer offset;
 
 }

@@ -20,6 +20,12 @@ public class FillingPointLocalitySearchCriteria {
     @JsonProperty("localityCodes")
     private List<String> localityCodes;
 
+    @JsonProperty("limit")
+    private Integer limit;
+
+    @JsonProperty("offset")
+    private Integer offset;
+
     @JsonProperty("tenantId")
     private String tenantId;
 }

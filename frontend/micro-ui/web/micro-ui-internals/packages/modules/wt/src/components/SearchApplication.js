@@ -240,12 +240,17 @@ const WTSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, se
               )}
 
               {/* ACTIONS */}
-              <div className="wt-search-actions" style={{ display: "flex", justifyContent: isMobile ? "center" : "flex-end", flexDirection: isMobile ? "column-reverse" : "row", gap: "24px", marginTop: "16px" }}>
-                <span
-                  className="clear-search-link"
-                  onClick={handleClearSearch}
-                  style={{ color: "#f47738", cursor: "pointer", alignSelf: "center", textDecoration: "underline" }}
-                >
+              <div
+                className="wt-search-actions"
+                style={{
+                  display: "flex",
+                  justifyContent: isMobile ? "center" : "flex-end",
+                  flexDirection: isMobile ? "column-reverse" : "row",
+                  gap: "24px",
+                  marginTop: "16px",
+                }}
+              >
+                <span className="generic-button clear-search" onClick={handleClearSearch} style={{ cursor: "pointer", alignSelf: "center" }}>
                   {t("ES_COMMON_CLEAR_ALL")}
                 </span>
                 <div style={{ minWidth: isMobile ? "100%" : "160px" }}>

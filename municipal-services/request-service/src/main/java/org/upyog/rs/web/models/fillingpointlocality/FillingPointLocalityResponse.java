@@ -20,4 +20,14 @@ public class FillingPointLocalityResponse {
 
     @JsonProperty("FillingPointLocality")
     private List<FillingPointLocality> fillingPointLocality;
+
+
+    @JsonProperty("totalCount")
+    private Long totalCount;
+
+    @JsonProperty("pageSize")
+    private Integer pageSize;
+
+    @JsonProperty("hasMore")
+    private Boolean hasMore;
 }

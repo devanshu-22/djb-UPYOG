@@ -1,6 +1,5 @@
 import React from "react";
 import { Table } from "@djb25/digit-ui-react-components";
-import { over } from "lodash";
 
 const ApplicationTable = ({
   t,
@@ -17,6 +16,13 @@ const ApplicationTable = ({
   pageSizeLimit,
   sortParams,
   totalRecords,
+  showCSVExport,
+  csvExportFileName,
+  csvExportData,
+  getCSVExportData,
+  csvExportColumns,
+  csvExportButtonLabel,
+  ...rest
 }) => {
   return (
     <Table
@@ -34,7 +40,14 @@ const ApplicationTable = ({
       onSort={onSort}
       sortParams={sortParams}
       totalRecords={totalRecords}
+      showCSVExport={showCSVExport}
+      csvExportFileName={csvExportFileName}
+      csvExportData={csvExportData}
+      getCSVExportData={getCSVExportData}
+      csvExportColumns={csvExportColumns}
+      csvExportButtonLabel={csvExportButtonLabel}
       inboxStyles={{ overflowX: "scroll" }}
+      {...rest}
     />
   );
 };

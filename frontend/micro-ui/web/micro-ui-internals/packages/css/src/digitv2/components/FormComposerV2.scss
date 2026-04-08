@@ -75,7 +75,7 @@
 
 .card-textarea,
 .employee-card-textarea {
-  @apply block outline-none border w-full border-input-border border-solid bg-white h-24 text-form-field text-text-primary p-sm;
+  @apply block outline-none w-full bg-white h-24 text-form-field text-text-primary p-sm;
   @extend .light-input-border;
 }
 

@@ -6,7 +6,10 @@ import InboxLinks from "../inbox/ApplicationLinks";
 import SearchApplication from "./search";
 import { Link } from "react-router-dom";
 
-const DesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
+const getPrimaryAssignment = (assignments = []) =>
+  [...(Array.isArray(assignments) ? assignments : [])].sort((a, b) => new Date(a?.fromDate || 0) - new Date(b?.fromDate || 0))[0];
+
+const DesktopInbox = ({ tableConfig, filterComponent, getCSVExportData: getCSVExportDataProp, ...props }) => {
   const { t } = useTranslation();
   const tenantIds = Digit.SessionStorage.get("HRMS_TENANTS");
   const GetCell = (value) => <span className="cell-text">{t(value)}</span>;
@@ -25,7 +28,8 @@ const DesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
     return [
       {
         Header: t("HR_EMP_ID_LABEL"),
-        disableSortBy: true,
+        id: "employeeCode",
+        accessor: (row) => row?.code || "",
         Cell: ({ row }) => {
           return (
             <span className="link">
@@ -36,13 +40,16 @@ const DesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
       },
       {
         Header: t("HR_EMP_NAME_LABEL"),
-        disableSortBy: true,
+        id: "employeeName",
+        accessor: (row) => row?.user?.name || "",
         Cell: ({ row }) => {
           return GetCell(`${row.original?.user?.name}`);
         },
       },
       {
         Header: t("HR_ROLE_NO_LABEL"),
+        id: "roleCount",
+        accessor: (row) => row?.user?.roles?.length || 0,
         Cell: ({ row }) => {
           return (
             <div className="tooltip">
@@ -58,35 +65,45 @@ const DesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
             </div>
           );
         },
-        disableSortBy: true,
       },
       {
         Header: t("HR_DESG_LABEL"),
-        disableSortBy: true,
+        id: "designation",
+        accessor: (row) => {
+          const assignment = getPrimaryAssignment(row?.assignments);
+          return assignment?.designation ? t(`COMMON_MASTERS_DESIGNATION_${assignment?.designation}`) : "";
+        },
         Cell: ({ row }) => {
           return GetCell(
-            `${t(
-              "COMMON_MASTERS_DESIGNATION_" + row.original?.assignments?.sort((a, b) => new Date(a.fromDate) - new Date(b.fromDate))[0]?.designation
-            ) || ""
+            `${
+              t(
+                "COMMON_MASTERS_DESIGNATION_" + row.original?.assignments?.sort((a, b) => new Date(a.fromDate) - new Date(b.fromDate))[0]?.designation
+              ) || ""
             }`
           );
         },
       },
       {
         Header: t("HR_DEPT_LABEL"),
-        disableSortBy: true,
+        id: "department",
+        accessor: (row) => {
+          const assignment = getPrimaryAssignment(row?.assignments);
+          return assignment?.department ? t(`COMMON_MASTERS_DEPARTMENT_${assignment?.department}`) : "";
+        },
         Cell: ({ row }) => {
           return GetCell(
-            `${t(
-              "COMMON_MASTERS_DEPARTMENT_" + row.original?.assignments?.sort((a, b) => new Date(a.fromDate) - new Date(b.fromDate))[0]?.department
-            ) || ""
+            `${
+              t(
+                "COMMON_MASTERS_DEPARTMENT_" + row.original?.assignments?.sort((a, b) => new Date(a.fromDate) - new Date(b.fromDate))[0]?.department
+              ) || ""
             }`
           );
         },
       },
       {
         Header: t("HR_STATUS_LABEL"),
-        disableSortBy: true,
+        id: "status",
+        accessor: (row) => (row?.isActive ? "ACTIVE" : "INACTIVE"),
         Cell: ({ row }) => {
           return GetSlaCell(`${row.original?.isActive ? "ACTIVE" : "INACTIVE"}`);
         },
@@ -94,6 +111,49 @@ const DesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
     ];
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const csvExportColumns = React.useMemo(
+    () => [
+      {
+        Header: t("HR_EMP_ID_LABEL"),
+        exportAccessor: (row) => row?.code || "",
+      },
+      {
+        Header: t("HR_EMP_NAME_LABEL"),
+        exportAccessor: (row) => row?.user?.name || "",
+      },
+      {
+        Header: t("HR_ROLE_NO_LABEL"),
+        exportAccessor: (row) => row?.user?.roles?.length || 0,
+      },
+      {
+        Header: t("HR_DESG_LABEL"),
+        exportAccessor: (row) => {
+          const assignment = getPrimaryAssignment(row?.assignments);
+          return assignment?.designation ? t(`COMMON_MASTERS_DESIGNATION_${assignment?.designation}`) : "";
+        },
+      },
+      {
+        Header: t("HR_DEPT_LABEL"),
+        exportAccessor: (row) => {
+          const assignment = getPrimaryAssignment(row?.assignments);
+          return assignment?.department ? t(`COMMON_MASTERS_DEPARTMENT_${assignment?.department}`) : "";
+        },
+      },
+      {
+        Header: t("HR_STATUS_LABEL"),
+        exportAccessor: (row) => (row?.isActive ? "ACTIVE" : "INACTIVE"),
+      },
+    ],
+    [t]
+  );
+
+  const getCSVExportData = React.useCallback(async () => {
+    if (typeof getCSVExportDataProp === "function") {
+      return getCSVExportDataProp();
+    }
+    return data || [];
+  }, [getCSVExportDataProp, data]);
 
   let result;
   if (props.isLoading) {
@@ -121,8 +181,6 @@ const DesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
           return {
             style: {
               maxWidth: cellInfo.column.Header === t("HR_EMP_ID_LABEL") ? "150px" : "",
-              padding: "20px 18px",
-              fontSize: "16px",
               minWidth: "150px",
             },
           };
@@ -135,53 +193,60 @@ const DesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
         onSort={props.onSort}
         disableSort={props.disableSort}
         sortParams={props.sortParams}
+        autoSort={false}
         totalRecords={props.totalRecords}
+        showCSVExport={true}
+        getCSVExportData={getCSVExportData}
+        csvExportColumns={csvExportColumns}
+        csvExportFileName="hrms-inbox"
       />
     );
   }
 
   return (
-    <div className="inbox-container">
-      {!props.isSearch && (
-        <div className="filters-container">
-          <InboxLinks
-            parentRoute={props.parentRoute}
-            allLinks={[
+    <div className="app-container">
+      <div className="inbox-container">
+        {!props.isSearch && (
+          <div className="filters-container">
+            <InboxLinks
+              parentRoute={props.parentRoute}
+              allLinks={[
+                {
+                  text: "HR_COMMON_CREATE_EMPLOYEE_HEADER",
+                  link: "/digit-ui/employee/hrms/create",
+                  businessService: "hrms",
+                  roles: ["HRMS_ADMIN"],
+                },
+              ]}
+              headerText={"HRMS"}
+              businessService={props.businessService}
+            />
+            <div>
               {
-                text: "HR_COMMON_CREATE_EMPLOYEE_HEADER",
-                link: "/digit-ui/employee/hrms/create",
-                businessService: "hrms",
-                roles: ["HRMS_ADMIN"],
-              },
-            ]}
-            headerText={"HRMS"}
-            businessService={props.businessService}
-          />
-          <div>
-            {
-              <FilterComponent
-                defaultSearchParams={props.defaultSearchParams}
-                onFilterChange={props.onFilterChange}
-                searchParams={props.searchParams}
-                type="desktop"
-                tenantIds={tenantIds}
-              />
-            }
+                <FilterComponent
+                  defaultSearchParams={props.defaultSearchParams}
+                  onFilterChange={props.onFilterChange}
+                  searchParams={props.searchParams}
+                  type="desktop"
+                  tenantIds={tenantIds}
+                />
+              }
+            </div>
           </div>
-        </div>
-      )}
-      <div className="form-search-wrapper employee-form-content">
-        <SearchApplication
-          defaultSearchParams={props.defaultSearchParams}
-          onSearch={props.onSearch}
-          type="desktop"
-          tenantIds={tenantIds}
-          searchFields={props.searchFields}
-          isInboxPage={!props?.isSearch}
-          searchParams={props.searchParams}
-        />
-        <div className="result" style={{ flex: 1 }}>
-          {result}
+        )}
+        <div className="form-search-wrapper employee-form-content">
+          <SearchApplication
+            defaultSearchParams={props.defaultSearchParams}
+            onSearch={props.onSearch}
+            type="desktop"
+            tenantIds={tenantIds}
+            searchFields={props.searchFields}
+            isInboxPage={!props?.isSearch}
+            searchParams={props.searchParams}
+          />
+          <div className="result" style={{ flex: 1 }}>
+            {result}
+          </div>
         </div>
       </div>
     </div>

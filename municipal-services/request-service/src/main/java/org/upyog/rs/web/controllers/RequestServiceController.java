@@ -4,8 +4,8 @@ package org.upyog.rs.web.controllers;
 import java.util.Collections;
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import javax.validation.Valid;
-
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,12 +14,14 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.upyog.rs.constant.RequestServiceConstants;
 import org.upyog.rs.service.MobileToiletService;
 import org.upyog.rs.service.WaterTankerService;
 import org.upyog.rs.util.RequestServiceUtil;
 import org.upyog.rs.util.ResponseInfoFactory;
 import org.upyog.rs.validator.ValidatorService;
+import org.upyog.rs.web.models.CriteriyaSearch;
 import org.upyog.rs.web.models.CriteriyaSearchDto;
 import org.upyog.rs.web.models.RequestDetailsByDriverId;
 import org.upyog.rs.web.models.ResponseInfo;
@@ -32,10 +34,11 @@ import org.upyog.rs.web.models.waterTanker.*;
 import org.upyog.rs.web.models.ResponseInfo.StatusEnum;
 
 import digit.models.coremodels.RequestInfoWrapper;
-import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 
-@javax.annotation.Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2025-01-16T15:46:56.897+05:30")
+import javax.annotation.processing.Generated;
+
+@Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2025-01-16T15:46:56.897+05:30")
 
 @Controller
 @Slf4j
@@ -55,7 +58,7 @@ public class RequestServiceController {
 
 	@PostMapping("/water-tanker/v1/_create")
 	public ResponseEntity<WaterTankerBookingResponse> createWaterTankerBooking(
-			@ApiParam(value = "Details for the water tanker booking time, payment and documents", required = true)
+			@Schema(description = "Details for the water tanker booking time, payment and documents", required = true)
 			@RequestBody WaterTankerBookingRequest waterTankerbookingRequest) {
 		log.info("waterTankerbookingRequest : {}" , waterTankerbookingRequest);
         validatorService.validateRequest(waterTankerbookingRequest);
@@ -84,7 +87,7 @@ public class RequestServiceController {
 
 	@PostMapping("/water-tanker/v1/_search")
 	public ResponseEntity<WaterTankerBookingSearchResponse> searchWaterTankerBookingDetails(
-			@ApiParam(value = "Details for the water tanker booking time, payment and documents", required = true) @Valid @RequestBody RequestInfoWrapper requestInfoWrapper,
+			@Schema(description = "Details for the water tanker booking time, payment and documents", required = true) @Valid @RequestBody RequestInfoWrapper requestInfoWrapper,
 			@ModelAttribute WaterTankerBookingSearchCriteria waterTankerBookingSearchCriteria) {
 
 		List<WaterTankerBookingDetail> applications = null;
@@ -111,31 +114,45 @@ public class RequestServiceController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-
-	// Fixed Point Water Tanked Search
-
 	@PostMapping("/water-tanker/fixed-point/v1/_search")
-	public ResponseEntity<WaterTankerFixedPointBookingSearchResponse> searchWaterTankerFixedPointBookingDetails(
-			@ApiParam(value = "Details for the water tanker booking time, payment and documents", required = true) @Valid @RequestBody RequestInfoWrapper requestInfoWrapper,
-			@ModelAttribute WaterTankerFixedPointBookingSearchCriteria waterTankerFixedPointBookingSearchCriteria) {
+	public ResponseEntity<WaterTankerFixedPointBookingSearchResponse> search(
+			@Valid @RequestBody RequestInfoWrapper requestInfoWrapper,
+			@ModelAttribute WaterTankerFixedPointBookingSearchCriteria criteria) {
 
-		List<WaterTankerFixedPointDetail> applications = null;
-		Integer count = 0;
+		int limit = (criteria.getLimit() != null && criteria.getLimit() > 0)
+				? Math.min(criteria.getLimit(), 100) : 50;
+		criteria.setLimit(limit);
 
-		applications = waterTankerService.getWaterTankerFixedPointBookingDetails(requestInfoWrapper.getRequestInfo(),
-				waterTankerFixedPointBookingSearchCriteria);
+		int offset = (criteria.getOffset() != null && criteria.getOffset() >= 0)
+				? criteria.getOffset() : 0;
+		criteria.setOffset(offset);
 
-		ResponseInfo responseInfo = RequestServiceUtil.createReponseInfo(requestInfoWrapper.getRequestInfo(),
-				RequestServiceConstants.BOOKING_DETAIL_FOUND, StatusEnum.SUCCESSFUL);
+		Long totalCount = waterTankerService.getWaterTankerFixedPointCount(criteria);
 
-		WaterTankerFixedPointBookingSearchResponse response = WaterTankerFixedPointBookingSearchResponse.builder()
-				.waterTankerFixedPointDetails(applications).responseInfo(responseInfo).count(count).build();
-		return new ResponseEntity<>(response, HttpStatus.OK);
+		List<WaterTankerFixedPointDetail> applications =
+				waterTankerService.getWaterTankerFixedPointBookingDetails(
+						requestInfoWrapper.getRequestInfo(), criteria);
+
+		boolean hasMore = (offset + applications.size()) < totalCount;
+
+		ResponseInfo responseInfo = RequestServiceUtil.createReponseInfo(
+				requestInfoWrapper.getRequestInfo(),
+				RequestServiceConstants.BOOKING_DETAIL_FOUND,
+				StatusEnum.SUCCESSFUL);
+
+		return new ResponseEntity<>(
+				WaterTankerFixedPointBookingSearchResponse.builder()
+						.waterTankerFixedPointDetails(applications)
+						.responseInfo(responseInfo)
+						.count(totalCount)
+						.pageSize(limit)
+						.hasMore(hasMore)
+						.build(),
+				HttpStatus.OK);
 	}
-
 	@PostMapping("/water-tanker/v1/_update")
 	public ResponseEntity<WaterTankerBookingResponse> waterTankerUpdate(
-			@ApiParam(value = "Updated water tanker details and RequestInfo meta data.", required = true)
+			@Schema(description = "Updated water tanker details and RequestInfo meta data.", required = true)
 			@RequestBody WaterTankerBookingRequest waterTankerRequest) {
 		
 		WaterTankerBookingDetail waterTankerDetail = waterTankerService.updateWaterTankerBooking(waterTankerRequest, null);
@@ -155,8 +172,8 @@ public class RequestServiceController {
 		log.info("updateWaterTankerFixedPointRequest : {}", waterTankerFixedPointRequest);
 
 		if (waterTankerFixedPointRequest.getWaterTankerFixedPointDetail() == null
-				|| waterTankerFixedPointRequest.getWaterTankerFixedPointDetail().getBookingId() == null) {
-			throw new CustomException("INVALID_REQUEST", "bookingId is mandatory for update");
+				|| waterTankerFixedPointRequest.getWaterTankerFixedPointDetail().getApplicantDetail() == null) {
+			throw new CustomException("INVALID_REQUEST", "applicantID is mandatory for update");
 		}
 
 		WaterTankerFixedPointDetail updated =
@@ -176,7 +193,7 @@ public class RequestServiceController {
 
 	@PostMapping("/mobile-toilet/v1/_create")
 	public ResponseEntity<MobileToiletBookingResponse> createMobileToiletBooking(
-			@ApiParam(value = "Details for the mobile Toilet booking time, payment and documents", required = true)
+			@Schema(description = "Details for the mobile Toilet booking time, payment and documents", required = true)
 			@RequestBody MobileToiletBookingRequest mobileToiletbookingRequest) {
 		log.info("mobileToiletbookingRequest : {}" , mobileToiletbookingRequest);
 		validatorService.validateRequest(mobileToiletbookingRequest);
@@ -191,7 +208,7 @@ public class RequestServiceController {
 
 	@PostMapping("/mobile-toilet/v1/_search")
 	public ResponseEntity<MobileToiletBookingSearchResponse> searchMobileToiletBookingDetails(
-			@ApiParam(value = "Details for the Mobile Toilet booking time, payment and documents", required = true) @Valid @RequestBody RequestInfoWrapper requestInfoWrapper,
+			@Schema(description = "Details for the Mobile Toilet booking time, payment and documents", required = true) @Valid @RequestBody RequestInfoWrapper requestInfoWrapper,
 			@ModelAttribute MobileToiletBookingSearchCriteria mobileToiletBookingSearchCriteria) {
 
 		List<MobileToiletBookingDetail> applications = null;
@@ -220,7 +237,7 @@ public class RequestServiceController {
 
 	@PostMapping("/mobile-toilet/v1/_update")
 	public ResponseEntity<MobileToiletBookingResponse> mobileToiletUpdate(
-			@ApiParam(value = "Updated water tanker details and RequestInfo meta data.", required = true)
+			@Schema(description = "Updated water tanker details and RequestInfo meta data.", required = true)
 			@RequestBody MobileToiletBookingRequest mobileToiletRequest) {
 
 		MobileToiletBookingDetail mobileToiletDetail = mobileToiletService.updateMobileToiletBooking(mobileToiletRequest, null);
@@ -236,8 +253,15 @@ public class RequestServiceController {
 	public ResponseEntity<RequestDetailsByDriverId> getDriverAssignments(
 			@RequestBody @Valid CriteriyaSearchDto searchDto) {
 
+		CriteriyaSearch criteria = searchDto.getCriteriyaSearch();
+
+
 		List<RequestDetailsByDriverId.RequestDetailsInfo> details =
-				waterTankerService.getBookingAndAssignmentDetails(searchDto.getCriteriyaSearch().getDriverId());
+				waterTankerService.getBookingAndAssignmentDetails(
+						criteria.getDriverId(),
+						criteria.getFromDate(),
+						criteria.getToDate()
+				);
 
 		RequestDetailsByDriverId response = RequestDetailsByDriverId.builder()
 				.requestDetailsInfo(details)

@@ -95,7 +95,8 @@ public class RequestServieRepositoryImpl implements RequestServiceRepository {
 		/*passed the preparedStmtList and search criteria inside the getWaterTankerQuery method
 		 developed inside query builder to build and get the data as per search criteria*/
 		String query = queryBuilder.getWaterTankerQuery(waterTankerBookingSearchCriteria, preparedStmtList);
-		log.info("Final query for getWaterTankerBookingDetails {} and paramsList {} : ", query, preparedStmtList);
+		log.info("Final query for getWaterTankerBookingDetails {} and paramsList {} /////////////////////////////: ", query, preparedStmtList);
+		log.info("--------------------//////////////////////   "+query);
 
 		/*
 		*  Execute the query using JdbcTemplate with a generic row mapper
@@ -132,9 +133,28 @@ public class RequestServieRepositoryImpl implements RequestServiceRepository {
 			WaterTankerFixedPointBookingSearchCriteria criteria) {
 
 		List<Object> preparedStmtList = new ArrayList<>();
-		String query = waterTankerFixedPointQueryBuilder.getWaterTankerFixedPointQuery(criteria, preparedStmtList);
+		String query = waterTankerFixedPointQueryBuilder
+				.getWaterTankerFixedPointQuery(criteria, preparedStmtList);
+
+		log.info("Fixed Point Query: {}", query);
+		log.info("Params: {}", preparedStmtList);
+
+		log.info("---------------  "+query);
 
 		return jdbcTemplate.query(query, preparedStmtList.toArray(), waterTankerFixedPointRowMapper);
+	}
+
+	@Override
+	public Long getWaterTankerFixedPointCount(
+			WaterTankerFixedPointBookingSearchCriteria criteria) {
+
+		List<Object> preparedStmtList = new ArrayList<>();
+		String query = waterTankerFixedPointQueryBuilder
+				.getApproximateCountQuery(criteria, preparedStmtList);
+
+		Long count = jdbcTemplate.queryForObject(
+				query, preparedStmtList.toArray(), Long.class);
+		return count != null ? count : 0L;
 	}
 
 	@Override
@@ -219,12 +239,12 @@ public class RequestServieRepositoryImpl implements RequestServiceRepository {
 	}
 
 
-	public List<RequestDetailsByDriverId.RequestDetailsInfo> getFullBookingDetailsByDriver(String driverId) {
-		log.info("Fetching details for driverId: {}", driverId);
-
-		return jdbcTemplate.query(DriverDetailsQueryBuilder.DRIVER_QUERY,
-				new Object[]{driverId},
-				new DriverDetailsRowMapper());
+	public List<RequestDetailsByDriverId.RequestDetailsInfo> getFullBookingDetailsByDriver(
+			String driverId, Long fromDate, Long toDate) {
+		log.info("Fetching details for driverId: {}, fromDate: {}, toDate: {}", driverId, fromDate, toDate);
+		List<Object> params = new ArrayList<>();
+		String query = DriverDetailsQueryBuilder.buildQuery(driverId, fromDate, toDate, params);
+		return jdbcTemplate.query(query, params.toArray(), new DriverDetailsRowMapper());
 	}
 
 	private static final String INSERT_QUERY =

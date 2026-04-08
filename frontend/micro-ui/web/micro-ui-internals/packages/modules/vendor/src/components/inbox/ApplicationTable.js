@@ -16,7 +16,14 @@ const ApplicationTable = ({
   pageSizeLimit,
   sortParams,
   totalRecords,
-  isPaginationRequired
+  isPaginationRequired,
+  showCSVExport,
+  csvExportFileName,
+  csvExportData,
+  getCSVExportData,
+  csvExportColumns,
+  csvExportButtonLabel,
+  ...rest
 }) => {
   return (
     <Table
@@ -35,6 +42,13 @@ const ApplicationTable = ({
       sortParams={sortParams}
       totalRecords={totalRecords}
       isPaginationRequired={isPaginationRequired}
+      showCSVExport={showCSVExport}
+      csvExportFileName={csvExportFileName}
+      csvExportData={csvExportData}
+      getCSVExportData={getCSVExportData}
+      csvExportColumns={csvExportColumns}
+      csvExportButtonLabel={csvExportButtonLabel}
+      {...rest}
     />
   );
 };

@@ -1,5 +1,6 @@
 package org.upyog.rs.service.impl;
 
+import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.upyog.rs.constant.RequestServiceConstants;
@@ -9,6 +10,10 @@ import org.upyog.rs.service.DriverTripService;
 import org.upyog.rs.util.RequestServiceUtil;
 import org.upyog.rs.web.models.DriverTrip;
 import org.upyog.rs.web.models.DriverTripRequest;
+import org.egov.common.contract.request.Role;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class DriverTripServiceImpl implements DriverTripService {
@@ -23,6 +28,16 @@ public class DriverTripServiceImpl implements DriverTripService {
     public DriverTrip startTrip(DriverTripRequest request) {
         DriverTrip trip = request.getDriverTrip();
         String userUuid = request.getRequestInfo().getUserInfo().getUuid();
+
+        DriverTrip existingTrip = repository.findByBookingNo(trip.getBookingNo());
+
+        if (existingTrip != null) {
+            if ("STARTED".equalsIgnoreCase(existingTrip.getCurrentStatus())) {
+                throw new CustomException("TRIP_ALREADY_STARTED",
+                        "Trip is already started for booking: " + trip.getBookingNo());
+            }
+            // COMPLETED status → allow new trip
+        }
 
         trip.setId(RequestServiceUtil.getRandonUUID());
         trip.setAuditDetails(RequestServiceUtil.getAuditDetails(userUuid, true));
@@ -39,6 +54,17 @@ public class DriverTripServiceImpl implements DriverTripService {
 
         DriverTrip existingTrip = repository.findByBookingNo(updateReq.getBookingNo());
 
+        if (existingTrip == null) {
+            throw new CustomException("TRIP_NOT_FOUND",
+                    "No trip found for booking: " + updateReq.getBookingNo());
+        }
+
+        // Can only complete a STARTED trip
+        if (!"STARTED".equalsIgnoreCase(existingTrip.getCurrentStatus())) {
+            throw new CustomException("TRIP_NOT_STARTED",
+                    "Cannot complete trip. Current status: " + existingTrip.getCurrentStatus());
+        }
+
         existingTrip.setCurrentStatus("COMPLETED");
         existingTrip.setEndLatitude(updateReq.getEndLatitude());
         existingTrip.setEndLongitude(updateReq.getEndLongitude());
@@ -53,5 +79,38 @@ public class DriverTripServiceImpl implements DriverTripService {
         producer.push(RequestServiceConstants.KAFKA_UPDATE_DRIVER_TRIP_TOPIC, request);
 
         return existingTrip;
+    }
+
+    @Override
+    public DriverTrip updateTripByNonDriver(DriverTripRequest request) {
+        DriverTrip updateReq = request.getDriverTrip();
+        String userUuid = request.getRequestInfo().getUserInfo().getUuid();
+        DriverTrip existingTrip = repository.findByBookingNo(updateReq.getBookingNo());
+
+        if (existingTrip == null) {
+            throw new CustomException("TRIP_NOT_FOUND",
+                    "No trip found for booking: " + updateReq.getBookingNo());
+        }
+        existingTrip.setJefilestoreId(updateReq.getJefilestoreId());
+        existingTrip.setAuditDetails(RequestServiceUtil.getAuditDetails(userUuid, false));
+
+        String roles = getNonDriverRoles(request);
+        existingTrip.setPhotoUpdatedByRole(roles);
+        existingTrip.setRemarkUpdatedByRole(updateReq.getRemarkUpdatedByRole());
+
+        repository.updateByNonDriver(existingTrip);
+
+        request.setDriverTrip(existingTrip);
+        producer.push(RequestServiceConstants.KAFKA_UPDATE_DRIVER_TRIP_TOPIC, request);
+
+        return existingTrip;
+    }
+
+    private String getNonDriverRoles(DriverTripRequest request) {
+        List<Role> roles = request.getRequestInfo().getUserInfo().getRoles();
+
+        return roles.stream()
+                .map(Role::getCode)
+                .collect(Collectors.joining(","));
     }
 }

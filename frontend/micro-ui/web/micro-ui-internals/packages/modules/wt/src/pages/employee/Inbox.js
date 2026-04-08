@@ -1,9 +1,18 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Header } from "@djb25/digit-ui-react-components";
 
 import WTDesktopInbox from "../../components/WTDesktopInbox";
 import MobileInbox from "../../components/MobileInbox";
+
+const WT_SORT_FIELD_MAP = {
+  bookingNo: "bookingNo",
+  applicantName: "applicantName",
+  mobileNumber: "mobileNumber",
+  localityCode: "localityCode",
+  applicationStatus: "applicationStatus",
+  bookingStatus: "bookingStatus",
+  createdTime: "createdTime",
+};
 
 /**
  * `Inbox` is a responsive React component that displays and manages water tanker (WT) service requests.
@@ -21,6 +30,7 @@ const Inbox = ({
   useNewInboxAPI,
   parentRoute,
   moduleCode,
+  detailRoute,
   initialStates = {},
   filterComponent,
   isInbox,
@@ -43,11 +53,12 @@ const Inbox = ({
   const [pageSize, setPageSize] = useState(initialStates.pageSize || 10);
   const [sortParams, setSortParams] = useState(initialStates.sortParams || [{ id: "createdTime", desc: true }]);
   const [searchParams, setSearchParams] = useState(initialStates.searchParams || {});
+  const resolvedSortBy = WT_SORT_FIELD_MAP[sortParams?.[0]?.id] || sortParams?.[0]?.id || "createdTime";
 
   let isMobile = window.Digit.Utils.browser.isMobile();
   let paginationParams = isMobile
-    ? { limit: 100, offset: 0, sortBy: sortParams?.[0]?.id, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" }
-    : { limit: pageSize, offset: pageOffset, sortBy: sortParams?.[0]?.id, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" };
+    ? { limit: 100, offset: 0, sortBy: resolvedSortBy, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" }
+    : { limit: pageSize, offset: pageOffset, sortBy: resolvedSortBy, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" };
 
   const { isFetching, isLoading: hookLoading, searchResponseKey, data, searchFields, ...rest } = useNewInboxAPI
     ? Digit.Hooks.useNewInboxGeneral({
@@ -91,13 +102,111 @@ const Inbox = ({
   };
 
   const handleSort = useCallback((args) => {
-    if (args.length === 0) return;
+    if (!Array.isArray(args) || args.length === 0 || !args[0]?.id) return;
     setSortParams(args);
   }, []);
 
   const handlePageSizeChange = (e) => {
     setPageSize(Number(e.target.value));
   };
+
+  const buildExportInboxCriteria = useCallback(() => {
+    const moduleNameMap = {
+      WT: "request-service.water_tanker",
+      MT: "request-service.mobile_toilet",
+      TP: "request-service.tree_pruning",
+    };
+
+    const workflowFilters = {
+      moduleName: moduleNameMap[moduleCode] || moduleNameMap.WT,
+    };
+    const moduleSearchCriteria = {
+      isInboxSearch: true,
+      creationReason: [""],
+    };
+
+    const assignedToMe = searchParams?.uuid?.code === "ASSIGNED_TO_ME";
+    const loggedInUserUuid = Digit.UserService.getUser()?.info?.uuid;
+    if (assignedToMe && loggedInUserUuid) {
+      workflowFilters.assignee = loggedInUserUuid;
+    }
+
+    if (Array.isArray(searchParams?.services) && searchParams.services.length > 0) {
+      workflowFilters.businessService = searchParams.services;
+    }
+
+    if (Array.isArray(searchParams?.applicationStatus) && searchParams.applicationStatus.length > 0) {
+      const workflowStatus = searchParams.applicationStatus.map((status) => status?.uuid).filter(Boolean);
+      if (workflowStatus.length > 0) {
+        workflowFilters.status = workflowStatus;
+      }
+    }
+
+    if (searchParams?.mobileNumber) {
+      moduleSearchCriteria.mobileNumber = searchParams.mobileNumber;
+    }
+
+    if (searchParams?.bookingNo) {
+      moduleSearchCriteria.bookingNo = searchParams.bookingNo;
+    }
+
+    if (Array.isArray(searchParams?.locality) && searchParams.locality.length > 0) {
+      moduleSearchCriteria.locality = searchParams.locality
+        .map((item) => String(item?.code || "").split("_").pop())
+        .filter(Boolean);
+    }
+
+    if (Array.isArray(sortParams) && sortParams[0]?.id) {
+      moduleSearchCriteria.sortBy = WT_SORT_FIELD_MAP[sortParams[0].id] || sortParams[0].id;
+      moduleSearchCriteria.sortOrder = sortParams[0].desc ? "DESC" : "ASC";
+    }
+
+    return { workflowFilters, moduleSearchCriteria };
+  }, [moduleCode, searchParams, sortParams]);
+
+  const getCSVExportData = useCallback(async () => {
+    if (!useNewInboxAPI || typeof Digit?.InboxGeneral?.Search !== "function") {
+      return Array.isArray(data) ? data : [];
+    }
+
+    const { workflowFilters, moduleSearchCriteria } = buildExportInboxCriteria();
+    const batchSize = 200;
+    let offset = 0;
+    let totalCount = Number.POSITIVE_INFINITY;
+    const rows = [];
+
+    while (offset < totalCount) {
+      const response = await Digit.InboxGeneral.Search({
+        inbox: {
+          tenantId,
+          processSearchCriteria: workflowFilters,
+          moduleSearchCriteria,
+          limit: batchSize,
+          offset,
+        },
+      });
+
+      const items = Array.isArray(response?.items) ? response.items : [];
+      const mappedItems = items.map((item) => ({
+        searchData: item?.businessObject || {},
+        workflowData: item?.ProcessInstance || {},
+        statusMap: response?.statusMap,
+        totalCount: response?.totalCount,
+      }));
+
+      rows.push(...mappedItems);
+
+      const resolvedTotal = Number(response?.totalCount);
+      totalCount = Number.isFinite(resolvedTotal) && resolvedTotal >= 0 ? resolvedTotal : rows.length;
+
+      if (items.length === 0 || items.length < batchSize) {
+        break;
+      }
+      offset += items.length;
+    }
+
+    return rows;
+  }, [buildExportInboxCriteria, data, tenantId, useNewInboxAPI]);
 
   if (rest?.data?.length !== null) {
     if (isMobile) {
@@ -112,12 +221,12 @@ const Inbox = ({
           onSort={handleSort}
           parentRoute={parentRoute}
           searchParams={searchParams}
-          sortParams={sortParams}
-          linkPrefix={`${parentRoute}/application-details/`}
-          tableConfig={rest?.tableConfig ? res?.tableConfig : TableConfig(t)[moduleCode]}
-          filterComponent={filterComponent}
-          EmptyResultInboxComp={EmptyResultInboxComp}
-          useNewInboxAPI={useNewInboxAPI}
+            sortParams={sortParams}
+            linkPrefix={`${parentRoute}/application-details/`}
+            tableConfig={rest?.tableConfig ? rest.tableConfig : TableConfig(t)[moduleCode]}
+            filterComponent={filterComponent}
+            EmptyResultInboxComp={EmptyResultInboxComp}
+            useNewInboxAPI={useNewInboxAPI}
         />
       );
     } else {
@@ -125,6 +234,7 @@ const Inbox = ({
         <div className="app-container" style={{ padding: user?.type === "CITIZEN" ? "0 24px" : "" }}>
           <WTDesktopInbox
             moduleCode={moduleCode}
+            detailRoute={detailRoute}
             data={data}
             tableConfig={TableConfig(t)[moduleCode]}
             isLoading={hookLoading}
@@ -147,6 +257,7 @@ const Inbox = ({
             filterComponent={filterComponent}
             EmptyResultInboxComp={EmptyResultInboxComp}
             useNewInboxAPI={useNewInboxAPI}
+            getCSVExportData={getCSVExportData}
           />
         </div>
       );

@@ -1,14 +1,16 @@
 package org.upyog.rs.web.models.waterTanker;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.validation.Valid;
 import lombok.*;
 import org.egov.common.contract.request.RequestInfo;
 import org.springframework.validation.annotation.Validated;
 
-import javax.validation.Valid;
+import javax.annotation.processing.Generated;
+
 
 @Validated
-@javax.annotation.Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2024-04-19T11:17:29.419+05:30")
+@Generated(value = "org.egov.codegen.SpringBootCodegen", date = "2024-04-19T11:17:29.419+05:30")
 
 @Getter
 @Setter

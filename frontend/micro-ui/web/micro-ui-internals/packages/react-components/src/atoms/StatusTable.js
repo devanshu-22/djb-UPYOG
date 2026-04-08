@@ -91,11 +91,11 @@ export const Row = (props) => {
   } else {
     return (
       <div style={props.rowContainerStyle} className={`${props.last ? "row last" : "row"} ${props?.className || ""}`}>
-        <h2 style={labelStyle}>
+        <span className={props?.labelClassName || "row-content"} style={labelStyle}>
           {props.label}
           {props.labelChildren && props.labelChildren}
-        </h2>
-        <div className="value" style={{ ...valueStyle /*, wordBreak: "break-word"*/ }}>
+        </span>
+        <div className={props?.valueClassName + " value"} style={{ ...valueStyle /*, wordBreak: "break-word"*/ }}>
           {/* {value}////
         {props?.privacy && (
           <span style={{ display: "inline-flex", width: "fit-content", marginLeft: "10px" }}>

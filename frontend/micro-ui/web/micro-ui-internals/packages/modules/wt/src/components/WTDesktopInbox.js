@@ -31,54 +31,91 @@ const WTDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
 
   const columns = React.useMemo(() => (props.isSearch ? tableConfig.searchColumns(props) : tableConfig.inboxColumns(props) || []), []);
 
+  const inboxCsvColumns = React.useMemo(
+    () => [
+      {
+        Header: columns?.[0]?.Header || t("WT_BOOKING_NO"),
+        exportAccessor: (row) => row?.searchData?.bookingNo || "",
+      },
+      {
+        Header: columns?.[1]?.Header || t("WT_APPLICANT_NAME"),
+        exportAccessor: (row) => row?.searchData?.applicantDetail?.name || "",
+      },
+      {
+        Header: columns?.[2]?.Header || t("WT_MOBILE_NUMBER"),
+        exportAccessor: (row) => row?.searchData?.applicantDetail?.mobileNumber || "",
+      },
+      {
+        Header: columns?.[3]?.Header || t("LOCALITY"),
+        exportAccessor: (row) => (row?.searchData?.localityCode ? t(row.searchData.localityCode) : ""),
+      },
+      {
+        Header: columns?.[4]?.Header || t("WT_STATUS"),
+        exportAccessor: (row) => (row?.workflowData?.state?.applicationStatus ? t(row.workflowData.state.applicationStatus) : ""),
+      },
+    ],
+    [columns, t]
+  );
+
   let result;
   if (props.isLoading) {
-    result = <Loader />;
-  } else if (clearSearchCalled) {
-    result = null;
-  } else if (!data || data?.length === 0 || (useNewInboxAPI && data?.[0].dataEmpty)) {
-    result =
-      (EmptyInboxComp && <EmptyInboxComp data={data} />) ||
-      (data?.length === 0 || (useNewInboxAPI && data?.[0].dataEmpty) ? (
-        <Card style={{ marginTop: 20 }}>
-          {t("CS_MYAPPLICATIONS_NO_APPLICATION")
-            .split("\\n")
-            .map((text, index) => (
-              <p key={index} style={{ textAlign: "center" }}>
-                {text}
-              </p>
-            ))}
-        </Card>
-      ) : (
-        <Loader />
-      ));
-  } else if (data?.length > 0) {
+  result = <Loader />;
+} else if (clearSearchCalled) {
+  result = null;
+} else if (
+  !data ||
+  data?.length === 0 ||
+  (useNewInboxAPI && data?.[0]?.dataEmpty)
+) {
+  if (EmptyInboxComp) {
+    result = <EmptyInboxComp data={data} />;
+  } else if (
+    data?.length === 0 ||
+    (useNewInboxAPI && data?.[0]?.dataEmpty)
+  ) {
     result = (
-      <ApplicationTable
-        t={t}
-        data={data}
-        columns={columns}
-        getCellProps={(cellInfo) => {
-          return {
-            style: {
-              minWidth: cellInfo.column.Header === t("ES_INBOX_APPLICATION_NO") ? "240px" : "",
-              padding: "20px 18px",
-              fontSize: "16px",
-            },
-          };
-        }}
-        onPageSizeChange={props.onPageSizeChange}
-        currentPage={props.currentPage}
-        onNextPage={props.onNextPage}
-        onPrevPage={props.onPrevPage}
-        pageSizeLimit={props.pageSizeLimit}
-        onSort={props.onSort}
-        disableSort={props.disableSort}
-        sortParams={props.sortParams}
-        totalRecords={props.totalRecords}
-      />
+      <Card style={{ marginTop: 20 }}>
+        {t("CS_MYAPPLICATIONS_NO_APPLICATION")
+          .split("\n")
+          .map((text, index) => (
+            <p key={index} style={{ textAlign: "center" }}>
+              {text}
+            </p>
+          ))}
+      </Card>
     );
+  } else {
+    result = <Loader />;
   }
+} else if (data?.length > 0) {
+  result = (
+    <ApplicationTable
+      t={t}
+      data={data}
+      columns={columns}
+      getCellProps={(cellInfo) => ({
+        style: {
+          padding: "8px 12px",
+          fontSize: "13.5px",
+        },
+      })}
+      onPageSizeChange={props.onPageSizeChange}
+      currentPage={props.currentPage}
+      onNextPage={props.onNextPage}
+      onPrevPage={props.onPrevPage}
+      pageSizeLimit={props.pageSizeLimit}
+      onSort={props.onSort}
+      disableSort={props.disableSort}
+      sortParams={props.sortParams}
+      autoSort={false}
+      totalRecords={props.totalRecords}
+      showCSVExport={true}
+      getCSVExportData={props.getCSVExportData}
+      csvExportColumns={inboxCsvColumns}
+      csvExportFileName={`${String(props.moduleCode || "wt").toLowerCase()}-inbox`}
+    />
+  );
+}
 
   return (
     <div className="inbox-container">

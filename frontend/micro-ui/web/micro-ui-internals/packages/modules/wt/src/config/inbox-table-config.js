@@ -16,12 +16,14 @@ export const TableConfig = (t) => ({
     inboxColumns: (props) => [
       {
         Header: t("WT_BOOKING_NO"),
+        id: "bookingNo",
+        accessor: (row) => row?.searchData?.["bookingNo"] || "",
         Cell: ({ row }) => {
           return (
             <div>
               <span className="link">
                 
-                <Link to={`${props.parentRoute}/booking-details/` + `${row?.original?.searchData?.["bookingNo"]}`}>
+                <Link to={`${props.detailRoute || `${props.parentRoute}/booking-details`}/${row?.original?.searchData?.["bookingNo"]}`}>
 
                   {row.original?.searchData?.["bookingNo"]}
                 </Link>
@@ -34,6 +36,8 @@ export const TableConfig = (t) => ({
       
       {
         Header: t("WT_APPLICANT_NAME"),
+        id: "applicantName",
+        accessor: (row) => row?.searchData?.applicantDetail?.["name"] || "",
         Cell: ( row ) => {
         
           return GetCell(`${row?.cell?.row?.original?.searchData?.applicantDetail?.["name"]}`)
@@ -44,6 +48,8 @@ export const TableConfig = (t) => ({
       },
       {
         Header: t("WT_MOBILE_NUMBER"),
+        id: "mobileNumber",
+        accessor: (row) => row?.searchData?.applicantDetail?.["mobileNumber"] || "",
         Cell: ( row ) => {
         
           return GetCell(`${row?.cell?.row?.original?.searchData?.applicantDetail?.["mobileNumber"]}`)
@@ -54,6 +60,8 @@ export const TableConfig = (t) => ({
       },
       {
         Header: t("LOCALITY"),
+        id: "localityCode",
+        accessor: (row) => row?.searchData?.["localityCode"] || "",
         Cell: ({ row }) => {
           return GetCell(t(`${row.original?.searchData?.["localityCode"]}`));
         },
@@ -62,6 +70,8 @@ export const TableConfig = (t) => ({
       },
       {
         Header: t("WT_STATUS"),
+        id: "applicationStatus",
+        accessor: (row) => row?.workflowData?.state?.["applicationStatus"] || "",
         Cell: ({ row }) => {
           
           const wf = row.original?.workflowData;
@@ -82,6 +92,8 @@ export const TableConfig = (t) => ({
     inboxColumns: (props) => [
       {
         Header: t("MT_BOOKING_NO"),
+        id: "bookingNo",
+        accessor: (row) => row?.searchData?.["bookingNo"] || "",
         Cell: ({ row }) => {
           return (
             <div>
@@ -100,6 +112,8 @@ export const TableConfig = (t) => ({
       
       {
         Header: t("MT_APPLICANT_NAME"),
+        id: "applicantName",
+        accessor: (row) => row?.searchData?.applicantDetail?.["name"] || "",
         Cell: ( row ) => {
         
           return GetCell(`${row?.cell?.row?.original?.searchData?.applicantDetail?.["name"]}`)
@@ -110,6 +124,8 @@ export const TableConfig = (t) => ({
       },
       {
         Header: t("MT_MOBILE_NUMBER"),
+        id: "mobileNumber",
+        accessor: (row) => row?.searchData?.applicantDetail?.["mobileNumber"] || "",
         Cell: ( row ) => {
         
           return GetCell(`${row?.cell?.row?.original?.searchData?.applicantDetail?.["mobileNumber"]}`)
@@ -120,6 +136,8 @@ export const TableConfig = (t) => ({
       },
       {
         Header: t("LOCALITY"),
+        id: "localityCode",
+        accessor: (row) => row?.searchData?.["localityCode"] || "",
         Cell: ({ row }) => {
           return GetCell(t(`${row.original?.searchData?.["localityCode"]}`));
         },
@@ -128,6 +146,8 @@ export const TableConfig = (t) => ({
       },
       {
         Header: t("MT_STATUS"),
+        id: "applicationStatus",
+        accessor: (row) => row?.workflowData?.state?.["applicationStatus"] || "",
         Cell: ({ row }) => {
           
           const wf = row.original?.workflowData;
@@ -149,6 +169,8 @@ export const TableConfig = (t) => ({
     inboxColumns: (props) => [
       {
         Header: t("MT_BOOKING_NO"),
+        id: "bookingNo",
+        accessor: (row) => row?.searchData?.["bookingNo"] || "",
         Cell: ({ row }) => {
           return (
             <div>
@@ -167,6 +189,8 @@ export const TableConfig = (t) => ({
       
       {
         Header: t("MT_APPLICANT_NAME"),
+        id: "applicantName",
+        accessor: (row) => row?.searchData?.applicantDetail?.["name"] || "",
         Cell: ( row ) => {
         
           return GetCell(`${row?.cell?.row?.original?.searchData?.applicantDetail?.["name"]}`)
@@ -177,6 +201,8 @@ export const TableConfig = (t) => ({
       },
       {
         Header: t("MT_MOBILE_NUMBER"),
+        id: "mobileNumber",
+        accessor: (row) => row?.searchData?.applicantDetail?.["mobileNumber"] || "",
         Cell: ( row ) => {
         
           return GetCell(`${row?.cell?.row?.original?.searchData?.applicantDetail?.["mobileNumber"]}`)
@@ -187,6 +213,8 @@ export const TableConfig = (t) => ({
       },
       {
         Header: t("LOCALITY"),
+        id: "localityCode",
+        accessor: (row) => row?.searchData?.["localityCode"] || "",
         Cell: ({ row }) => {
           return GetCell(t(`${row.original?.searchData?.["localityCode"]}`));
         },
@@ -195,6 +223,8 @@ export const TableConfig = (t) => ({
       },
       {
         Header: t("MT_STATUS"),
+        id: "applicationStatus",
+        accessor: (row) => row?.workflowData?.state?.["applicationStatus"] || "",
         Cell: ({ row }) => {
           
           const wf = row.original?.workflowData;

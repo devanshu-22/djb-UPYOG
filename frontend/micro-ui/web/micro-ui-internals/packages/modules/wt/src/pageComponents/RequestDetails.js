@@ -22,7 +22,7 @@ const RequestDetails = ({ t, config, onSelect, userType, formData }) => {
   const [file, setFile] = useState(null);
   const [error, setError] = useState(null);
   const tenantId = Digit.ULBService.getStateId();
-  const inputStyles = { width: user.type === "EMPLOYEE" ? "100%" : "100%" };
+  const inputStyles = { width: user.type === "EMPcommonConfigLOYEE" ? "100%" : "100%" };
 
   // Fetch VehicleType data from MDMS
   const { data: VehicleType } = Digit.Hooks.useCustomMDMS(tenantId, "request-service", [{ name: "VehicleType" }], {
@@ -182,23 +182,26 @@ const RequestDetails = ({ t, config, onSelect, userType, formData }) => {
         onSelect={goNext}
         t={t}
         isDisabled={!tankerType || !deliveryDate || !tankerQuantity || !waterQuantity || !deliveryTime || !description || !waterType}
+        className="card-form-container"
       >
-        <CardLabel>
-          {`${t("WT_TANKER_TYPE")}`} <span className="astericColor">*</span>
-        </CardLabel>
-        <RadioButtons
-          t={t}
-          options={tankerTypeDetails}
-          style={{ display: "flex", flexWrap: "wrap", maxHeight: "30px" }}
-          innerStyles={{ minWidth: "24%" }}
-          optionsKey="i18nKey"
-          name={`tankerType`}
-          value={tankerType}
-          selectedOption={tankerType}
-          onSelect={settankerType}
-          labelKey="i18nKey"
-          isPTFlow={true}
-        />
+        <div>
+          <CardLabel>
+            {`${t("WT_TANKER_TYPE")}`} <span className="astericColor">*</span>
+          </CardLabel>
+          <RadioButtons
+            t={t}
+            options={tankerTypeDetails}
+            style={{ display: "flex", flexWrap: "wrap", maxHeight: "30px" }}
+            innerStyles={{ minWidth: "24%" }}
+            optionsKey="i18nKey"
+            name={`tankerType`}
+            value={tankerType}
+            selectedOption={tankerType}
+            onSelect={settankerType}
+            labelKey="i18nKey"
+            isPTFlow={true}
+          />
+        </div>
         <div>
           <CardLabel>
             {`${t("WT_WATER_TYPE")}`} <span className="astericColor">*</span>

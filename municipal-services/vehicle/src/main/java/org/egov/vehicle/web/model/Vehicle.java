@@ -99,6 +99,9 @@ public class Vehicle {
     @JsonProperty("driverData")
     private Driver driver;
 
+    @JsonProperty("fillingPoint")
+    private FillingPoint fillingPoint;
+
 
     public enum StatusEnum {
         ACTIVE("ACTIVE"),

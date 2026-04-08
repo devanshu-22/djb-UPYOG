@@ -126,7 +126,6 @@ public class FillingPointServiceImpl implements FillingPointService {
                 fp.setAeName(null);   fp.setAeEmail(null);   fp.setAeMobile(null);
             }
         }
-
         return list;
     }
 

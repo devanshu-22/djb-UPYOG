@@ -1,33 +1,33 @@
 import React, { useState } from "react";
+import { useQueryClient } from "react-query";
 import { useTranslation } from "react-i18next";
-import { Card, Header, Table, Dropdown, TextInput, DatePicker, SubmitBar, FormStep, Toast, CardLabel } from "@djb25/digit-ui-react-components";
-
+import { Card, Dropdown, SubmitBar, Toast, CardLabel, Label } from "@djb25/digit-ui-react-components";
 import AddTripModal from "../../components/AddTripModal";
 import ApplicationTable from "../../components/inbox/ApplicationTable";
 
 const FixedPointScheduleManagement = ({ ...props }) => {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [showModal, setShowModal] = useState(false);
   const [toast, setToast] = useState(null);
   const [selectedDay, setSelectedDay] = useState("all");
-  const [year, setYear] = useState({ label: "Year 2026", value: "2026" });
   const [fixedPoint, setFixedPoint] = useState({ label: "All Fixed Points", value: "all" });
   const [day, setDay] = useState({ label: "All Days", value: "all" });
   const [status, setStatus] = useState({ label: "All Status", value: "all" });
-  const [vehicle, setVehicle] = useState({ label: "All Vehicles", value: "all" });
   const [editingRowIndex, setEditingRowIndex] = useState(null);
   const [pageOffset, setPageOffset] = useState(0);
   const [pageSize, setPageSize] = useState(10);
 
   const [filters, setFilters] = useState({ limit: 10, offset: 0 });
 
-  const { isLoading, data: scheduleData, refetch: reSearch } = Digit.Hooks.wt.useFixedPointScheduleSearch(tenantId, filters);
+  const { isLoading, data: scheduleData } = Digit.Hooks.wt.useFixedPointScheduleSearch(tenantId, filters);
 
   const { data: fixedPointData, isLoading: isFpLoading } = Digit.Hooks.wt.useFixedPointSearchAPI({ tenantId, filters: { offset: 0, limit: 100 } });
 
-  // Also fetch all unique fixed points from the schedules to ensure they are available in the dropdown
-  const { data: allSchedulesData } = Digit.Hooks.wt.useFixedPointScheduleSearch(tenantId, { limit: 1000, offset: 0 });
+  // Fetch all filtered records for export (up to 1000)
+  const allFilters = React.useMemo(() => ({ ...filters, limit: 1000, offset: 0 }), [filters]);
+  const { data: allSchedulesData } = Digit.Hooks.wt.useFixedPointScheduleSearch(tenantId, allFilters);
 
   const fixedPoints = React.useMemo(() => {
     const fromFpApi = fixedPointData?.fixedPointTimeTableDetails || fixedPointData?.waterTankerBookingDetail || fixedPointData?.fixedPoints || [];
@@ -53,34 +53,67 @@ const FixedPointScheduleManagement = ({ ...props }) => {
   }, [fixedPointData, allSchedulesData, t]);
 
   const { mutate: createSchedule } = Digit.Hooks.wt.useCreateFixedPointSchedule(tenantId);
+  const { mutate: updateSchedule } = Digit.Hooks.wt.useUpdateFixedPointSchedule(tenantId);
 
   const closeToast = () => {
     setToast(null);
   };
 
-  const handleDelete = (index) => {
-    const updatedData = data.filter((_, i) => i !== index);
-    setData(updatedData);
-  };
+  // const handleDelete = (index) => {
+  //   const updatedData = data.filter((_, i) => i !== index);
+  //   setData(updatedData);
+  // };
 
   const handleDownload = (type) => {
-    const filename = `FixedPointSchedule_${type.value}_${new Date().toLocaleDateString()}`;
+    const now = new Date();
+    const formattedDate = `${now.getDate()}-${now.getMonth() + 1}-${now.getFullYear()}`;
+    const filename = `FixedPointSchedule_${type.value}_${formattedDate}`;
+    const allData = allSchedulesData?.fixedPointTimeTableDetails || [];
+
+    // Format data for Excel: Array of Arrays starting with Headers
+    const excelData = [
+      [
+        t("WT_SCHEDULE_ID"),
+        t("WT_FIXED_POINT"),
+        t("WT_DAY"),
+        t("WT_FREQ"),
+        t("WT_ARR_TO_FPL"),
+        t("WT_DEP_FROM_FPL"),
+        t("WT_ARR_AT_FIXED_POINT"),
+        t("WT_DEP_AT_FIXED_POINT"),
+        t("WT_RETURN_TO_FPL"),
+        t("WT_VOLUME"),
+        t("WT_VEHICLE"),
+        t("WT_ACTIVE"),
+      ],
+      ...allData.map((item) => [
+        item.systemAssignedScheduleId,
+        item.fixedPointCode,
+        t(item.day),
+        item.tripNo,
+        item.arrivalTimeToFpl,
+        item.departureTimeFromFpl,
+        item.arrivalTimeDeliveryPoint,
+        item.departureTimeDeliveryPoint,
+        item.timeOfArrivingBackFplAfterDelivery,
+        item.volumeWaterTobeDelivery,
+        item.vehicleId,
+        item.isEnable ? "Y" : "N",
+      ]),
+    ];
+
     if (window.Digit && window.Digit.Download && window.Digit.Download.Excel) {
-      window.Digit.Download.Excel(data, filename);
+      window.Digit.Download.Excel(excelData, filename);
     } else {
-      // Fallback to CSV if Digit.Download.Excel is not available
-      const csvRows = [];
-      if (data.length > 0) {
-        const headers = Object.keys(data[0]);
-        csvRows.push(headers.join(","));
-        for (const row of data) {
-          const values = headers.map((header) => {
-            const escaped = ("" + row[header]).replace(/"/g, '\\"');
+      // Fallback to CSV with formatted excelData
+      const csvRows = excelData.map((row) =>
+        row
+          .map((cell) => {
+            const escaped = ("" + (cell === null || cell === undefined ? "" : cell)).replace(/"/g, '\\"');
             return `"${escaped}"`;
-          });
-          csvRows.push(values.join(","));
-        }
-      }
+          })
+          .join(",")
+      );
       const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -93,13 +126,12 @@ const FixedPointScheduleManagement = ({ ...props }) => {
     }
   };
 
-  const [data, setData] = useState([]);
-
-  React.useEffect(() => {
-    if (scheduleData?.fixedPointTimeTableDetails) {
-      const mappedData = scheduleData.fixedPointTimeTableDetails.map((item) => ({
+  const mapScheduleRows = React.useCallback(
+    (rows = []) =>
+      rows.map((item) => ({
         scheduleId: item.systemAssignedScheduleId,
-        fixedPoint: item.fixedPointCode,
+        fixedPointName: item.fixedPointName,
+        fixedPoint: item.fixedPointId,
         day: item.day,
         freq: item.tripNo,
         arrToFpl: item.arrivalTimeToFpl,
@@ -111,10 +143,13 @@ const FixedPointScheduleManagement = ({ ...props }) => {
         vehicle: item.vehicleId,
         active: item.isEnable ? "Y" : "N",
         totalCount: item.totalCount,
-      }));
-      setData(mappedData);
-    }
-  }, [scheduleData]);
+      })),
+    []
+  );
+
+  const data = React.useMemo(() => {
+    return mapScheduleRows(scheduleData?.fixedPointTimeTableDetails || []);
+  }, [scheduleData, mapScheduleRows]);
 
   const fetchNextPage = () => {
     setPageOffset((prevState) => prevState + pageSize);
@@ -133,7 +168,6 @@ const FixedPointScheduleManagement = ({ ...props }) => {
       fixedPointCode: fixedPoint?.value === "all" ? "" : fixedPoint?.value,
       day: day?.value === "all" ? "" : day?.value?.toUpperCase(),
       status: status?.value === "all" ? "" : status?.value,
-      vehicleId: vehicle?.value === "all" ? "" : vehicle?.value,
     };
     const newOffset = offset !== null ? offset : 0;
     if (offset === null) setPageOffset(0);
@@ -148,17 +182,16 @@ const FixedPointScheduleManagement = ({ ...props }) => {
 
   const columns = React.useMemo(
     () => [
-      { Header: t("WT_SCHEDULE_ID"), accessor: "scheduleId" },
-      { Header: t("WT_FIXED_POINT"), accessor: "fixedPoint" },
+      { Header: t("WT_FIXED_POINT_CODE"), accessor: "fixedPoint" },
+      { Header: t("WT_FIXED_POINT_NAME"), accessor: "fixedPointName" },
       { Header: t("WT_DAY"), accessor: "day" },
-      { Header: t("WT_FREQ"), accessor: "freq" },
+      // { Header: t("WT_FREQ"), accessor: "freq" },
       { Header: t("WT_ARR_TO_FPL"), accessor: "arrToFpl" },
       { Header: t("WT_DEP_FROM_FPL"), accessor: "depFromFpl" },
       { Header: t("WT_ARR_AT_FIXED_POINT"), accessor: "arrAtFixedPoint" },
       { Header: t("WT_DEP_AT_FIXED_POINT"), accessor: "depAtFixedPoint" },
       { Header: t("WT_RETURN_TO_FPL"), accessor: "returnToFpl" },
       { Header: t("WT_VOLUME"), accessor: "volume" },
-      { Header: t("WT_VEHICLE"), accessor: "vehicle" },
       {
         Header: t("WT_ACTIVE"),
         accessor: "active",
@@ -188,12 +221,12 @@ const FixedPointScheduleManagement = ({ ...props }) => {
             >
               {t("WT_EDIT")}
             </button>
-            <button
+            {/* <button
               onClick={() => handleDelete(row.index)}
               style={{ color: "#fff", border: "none", background: "#D93025", padding: "2px 8px", cursor: "pointer" }}
             >
               {t("WT_DELETE")}
-            </button>
+            </button> */}
           </div>
         ),
       },
@@ -201,7 +234,63 @@ const FixedPointScheduleManagement = ({ ...props }) => {
     [t]
   );
 
+  const getCSVExportData = React.useCallback(async () => {
+    const baseFilters = { ...(filters || {}) };
+    delete baseFilters.limit;
+    delete baseFilters.offset;
+    const batchSize = 200;
+    let offset = 0;
+    let totalCount = Number.POSITIVE_INFINITY;
+    const allRows = [];
+
+    while (offset < totalCount) {
+      const response = await Digit.WTService.SearchFixedPointSchedule({
+        tenantId,
+        filters: { ...baseFilters, limit: batchSize, offset },
+      });
+      const pageRows = response?.fixedPointTimeTableDetails || [];
+      allRows.push(...pageRows);
+
+      const resolvedTotal = Number(response?.count ?? response?.totalCount ?? response?.Count);
+      totalCount = Number.isFinite(resolvedTotal) && resolvedTotal >= 0 ? resolvedTotal : allRows.length;
+
+      if (!pageRows.length || pageRows.length < batchSize) {
+        break;
+      }
+      offset += pageRows.length;
+    }
+
+    return mapScheduleRows(allRows);
+  }, [filters, mapScheduleRows, tenantId]);
+
+  const csvExportColumns = React.useMemo(
+    () => [
+      { Header: t("WT_SCHEDULE_ID"), accessor: "scheduleId" },
+      { Header: t("WT_FIXED_POINT"), accessor: "fixedPoint" },
+      { Header: t("WT_DAY"), accessor: "day" },
+      { Header: t("WT_FREQ"), accessor: "freq" },
+      { Header: t("WT_ARR_TO_FPL"), accessor: "arrToFpl" },
+      { Header: t("WT_DEP_FROM_FPL"), accessor: "depFromFpl" },
+      { Header: t("WT_ARR_AT_FIXED_POINT"), accessor: "arrAtFixedPoint" },
+      { Header: t("WT_DEP_AT_FIXED_POINT"), accessor: "depAtFixedPoint" },
+      { Header: t("WT_RETURN_TO_FPL"), accessor: "returnToFpl" },
+      { Header: t("WT_VOLUME"), accessor: "volume" },
+      { Header: t("WT_ACTIVE"), accessor: "active" },
+    ],
+    [t]
+  );
+
   const days = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"];
+
+  const clearSearch = () => {
+    setSelectedDay("all");
+    setDay({ label: "All Days", value: "all" });
+    setFixedPoint({ label: "All Fixed Points", value: "all" });
+    setStatus({ label: "All Status", value: "all" });
+    setPageOffset(0);
+    setFilters({ limit: pageSize, offset: 0 });
+  };
+
   return (
     <div className="fixed-point-schedule-management">
       <Card style={{ padding: "20px" }}>
@@ -219,27 +308,6 @@ const FixedPointScheduleManagement = ({ ...props }) => {
               t={t}
               select={handleDownload}
             />
-            {/* <CardLabel>{t("WT_YEAR")}</CardLabel>
-            <Dropdown
-              option={[
-                { label: "Year 2024", value: "2024" },
-                { label: "Year 2025", value: "2025" },
-                { label: "Year 2026", value: "2026" },
-              ]}
-              optionKey="label"
-              selected={year}
-              t={t}
-              select={(val) => {
-                setYear(val);
-                handleSearch({
-                  fixedPointCode: fixedPoint?.value === "all" ? "" : fixedPoint?.value,
-                  day: day?.value === "all" ? "" : day?.value?.toUpperCase(),
-                  status: status?.value === "all" ? "" : status?.value,
-                  vehicleId: vehicle?.value === "all" ? "" : vehicle?.value,
-                  // year: val.value // Include if backend supports it
-                });
-              }}
-            /> */}
           </div>
           <div className="finance-mainlayout-col1">
             <CardLabel>{t("WT_FIXED_POINT")}</CardLabel>
@@ -277,7 +345,6 @@ const FixedPointScheduleManagement = ({ ...props }) => {
                   fixedPointCode: fixedPoint?.value === "all" ? "" : fixedPoint?.value,
                   day: val?.value === "all" ? "" : val?.value?.toUpperCase(),
                   status: status?.value === "all" ? "" : status?.value,
-                  vehicleId: vehicle?.value === "all" ? "" : vehicle?.value,
                 });
               }}
               placeholder="All Days"
@@ -300,13 +367,19 @@ const FixedPointScheduleManagement = ({ ...props }) => {
                   fixedPointCode: fixedPoint?.value === "all" ? "" : fixedPoint?.value,
                   day: day?.value === "all" ? "" : day?.value?.toUpperCase(),
                   status: val?.value === "all" ? "" : val?.value,
-                  vehicleId: vehicle?.value === "all" ? "" : vehicle?.value,
                 });
               }}
               placeholder="All Status"
             />
           </div>
-          <div className="finance-mainlayout-col1" style={{ alignSelf: "flex-end" }}>
+          <div className="finance-mainlayout-col1">
+            <Label>&nbsp;</Label>
+            <span className="generic-button clear-search" onClick={clearSearch} style={{ alignSelf: "center" }}>
+              {t("ES_COMMON_CLEAR_SEARCH")}
+            </span>
+          </div>
+          <div className="finance-mainlayout-col1">
+            <Label>&nbsp;</Label>
             <SubmitBar label={t("ES_COMMON_SEARCH")} onSubmit={() => handleSearch()} />
           </div>
         </div>
@@ -323,7 +396,6 @@ const FixedPointScheduleManagement = ({ ...props }) => {
                   fixedPointCode: fixedPoint?.value === "all" ? "" : fixedPoint?.value,
                   day: dayItem.toUpperCase(),
                   status: status?.value === "all" ? "" : status?.value,
-                  vehicleId: vehicle?.value === "all" ? "" : vehicle?.value,
                 });
               }}
               style={{
@@ -357,6 +429,10 @@ const FixedPointScheduleManagement = ({ ...props }) => {
             disableSort={props.disableSort}
             sortParams={props.sortParams}
             totalRecords={scheduleData?.count || scheduleData?.totalCount || data?.[0]?.totalCount}
+            showCSVExport={true}
+            getCSVExportData={getCSVExportData}
+            csvExportColumns={csvExportColumns}
+            csvExportFileName="wt-fixed-point-schedule"
           />
         </div>
         <span>
@@ -419,14 +495,19 @@ const FixedPointScheduleManagement = ({ ...props }) => {
                 .map((d) => (typeof d === "string" ? d : d?.value || (Array.isArray(d) ? d[1] : d)))
                 .filter((d) => typeof d === "string" && d !== "WT_SELECT_ALL");
 
+              // Handle "Select All" case specifically if nothing remains after filter but it was present
               if (
                 daysArr.length === 0 &&
-                formDataDay.some((d) => (typeof d === "string" ? d : d?.value || (Array.isArray(d) ? d[1] : d)) === "WT_SELECT_ALL")
+                formDataDay.some((d) => {
+                  const val = typeof d === "string" ? d : d?.value || (Array.isArray(d) ? d[1] : d);
+                  return val === "WT_SELECT_ALL";
+                })
               ) {
                 daysArr = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"];
               }
             } else if (formDataDay) {
-              const dayVal = typeof formDataDay === "string" ? formDataDay : formDataDay?.value;
+              const dayVal =
+                typeof formDataDay === "string" ? formDataDay : formDataDay?.value || (Array.isArray(formDataDay) ? formDataDay[1] : formDataDay);
               if (dayVal && dayVal !== "WT_SELECT_ALL") daysArr = [dayVal];
             }
 
@@ -434,8 +515,8 @@ const FixedPointScheduleManagement = ({ ...props }) => {
               tenantId,
               system_assigned_schedule_id: formData.scheduleId,
               fixed_point_code: formData.fixedPointCode,
-              day: daysArr.map((d) => d.toUpperCase()),
-              trip_no: formData.frequencyNo,
+              day: daysArr.map((d) => d?.toUpperCase?.() || d),
+              trip_no: Number(formData.frequencyNo),
               arrival_time_to_fpl: formData.arrivalTimeFpl,
               departure_time_from_fpl: formData.departureTimeFpl,
               arrival_time_delivery_point: formData.arrivalFixedPoint,
@@ -448,23 +529,44 @@ const FixedPointScheduleManagement = ({ ...props }) => {
               vehicle_id: formData.vehicleId,
             };
 
-            const payload = {
-              fixedPointDetails,
-            };
+            const payload =
+              editingRowIndex !== null
+                ? {
+                    fixedPointDetailsList: [fixedPointDetails],
+                  }
+                : {
+                    fixedPointDetails,
+                  };
 
-            createSchedule(payload, {
-              onError: (error, variables) => {
-                setToast({ key: "error", label: error?.response?.data?.Errors?.[0]?.message || "ERROR_WHILE_CREATING_SCHEDULE" });
-                setTimeout(closeToast, 5000);
-              },
-              onSuccess: (data, variables) => {
-                setToast({ label: t("WT_SCHEDULE_CREATE_SUCCESS") });
-                setTimeout(closeToast, 5000);
-                setShowModal(false);
-                setEditingRowIndex(null);
-                reSearch();
-              },
-            });
+            if (editingRowIndex !== null) {
+              updateSchedule(payload, {
+                onError: (error, variables) => {
+                  setToast({ key: "error", label: error?.response?.data?.Errors?.[0]?.message || "ERROR_WHILE_UPDATING_SCHEDULE" });
+                  setTimeout(closeToast, 5000);
+                },
+                onSuccess: (data, variables) => {
+                  setToast({ label: t("WT_SCHEDULE_UPDATE_SUCCESS") });
+                  setTimeout(closeToast, 5000);
+                  setShowModal(false);
+                  setEditingRowIndex(null);
+                  queryClient.invalidateQueries(["FIXED_POINT_SCHEDULE_SEARCH", tenantId]);
+                },
+              });
+            } else {
+              createSchedule(payload, {
+                onError: (error, variables) => {
+                  setToast({ key: "error", label: error?.response?.data?.Errors?.[0]?.message || "ERROR_WHILE_CREATING_SCHEDULE" });
+                  setTimeout(closeToast, 5000);
+                },
+                onSuccess: (data, variables) => {
+                  setToast({ label: t("WT_SCHEDULE_CREATE_SUCCESS") });
+                  setTimeout(closeToast, 5000);
+                  setShowModal(false);
+                  setEditingRowIndex(null);
+                  queryClient.invalidateQueries(["FIXED_POINT_SCHEDULE_SEARCH", tenantId]);
+                },
+              });
+            }
           }}
         />
       )}

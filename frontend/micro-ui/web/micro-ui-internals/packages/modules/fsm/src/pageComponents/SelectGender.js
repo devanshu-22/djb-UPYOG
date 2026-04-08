@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Dropdown, FormStep, Loader, RadioOrSelect } from "@djb25/digit-ui-react-components";
+import { CardLabel, Dropdown, FormStep, LabelFieldPair, Loader, RadioOrSelect } from "@djb25/digit-ui-react-components";
 import Timeline from "../components/TLTimelineInFSM";
 
 const SelectGender = ({ config, onSelect, t, userType, formData }) => {
@@ -10,9 +10,7 @@ const SelectGender = ({ config, onSelect, t, userType, formData }) => {
 
   useEffect(() => {
     if (!isLoading && GenderData) {
-      const preFilledGenderType = GenderData.filter(
-        (genderType) => genderType.code === (formData?.selectGender?.code || formData?.selectGender)
-      )[0];
+      const preFilledGenderType = GenderData.filter((genderType) => genderType.code === (formData?.selectGender?.code || formData?.selectGender))[0];
       setGenderType(preFilledGenderType);
     }
   }, [formData?.selectGender, GenderData]);
@@ -39,7 +37,8 @@ const SelectGender = ({ config, onSelect, t, userType, formData }) => {
 
   if (userType === "employee") {
     return (
-      <div>
+      <LabelFieldPair>
+        <CardLabel>{t(config.label)}</CardLabel>
         <Dropdown
           className="payment-form-text-input-correction"
           isMandatory={config.isMandatory}
@@ -50,7 +49,7 @@ const SelectGender = ({ config, onSelect, t, userType, formData }) => {
           disable={config.disable}
           t={t}
         />
-      </div>
+      </LabelFieldPair>
     );
   }
   return (

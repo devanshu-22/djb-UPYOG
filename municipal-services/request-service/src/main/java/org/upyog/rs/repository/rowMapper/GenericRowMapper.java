@@ -114,7 +114,7 @@ public class GenericRowMapper<T> implements ResultSetExtractor<List<T>> {
                         bookingDetail.setAddress(address);
                     }
                 }
-                
+
                 if (instance instanceof MobileToiletBookingDetail) {
                     MobileToiletBookingDetail bookingDetail = (MobileToiletBookingDetail) instance;
                     // Audit Details
@@ -240,6 +240,9 @@ public class GenericRowMapper<T> implements ResultSetExtractor<List<T>> {
             address.setLatitude(rs.getString("latitude"));
             address.setLongitude(rs.getString("longitude"));
             address.setPincode(rs.getString("pincode"));
+            address.setWard(rs.getString("ward"));
+            address.setZone(rs.getString("zone"));
+            address.setConstituency(rs.getString("constituency"));
             return address;
         } catch (SQLException e) {
             // Column not found, return null

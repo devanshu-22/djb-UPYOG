@@ -1,6 +1,7 @@
 package org.upyog.rs.web.models.fillingpoint.vendor;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

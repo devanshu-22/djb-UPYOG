@@ -27,10 +27,11 @@ public interface WaterTankerService {
 	public void updateWaterTankerBooking(PaymentRequest paymentRequest, String applicationStatus);
 
 	public WaterTankerBookingDetail updateWaterTankerBooking(WaterTankerBookingRequest waterTankerRequest, String applicationStatus);
-	List<RequestDetailsByDriverId.RequestDetailsInfo> getBookingAndAssignmentDetails(String driverId);
+	List<RequestDetailsByDriverId.RequestDetailsInfo> getBookingAndAssignmentDetails(String driverId, Long fromDate, Long toDate);
 
 	List<WaterTankerBookingDetail> getDriverAssignedBookings(CriteriyaSearchDto criteriyaSearchDto);
 	WaterTankerBookingDetail updateBookingLifecycle(WaterTankerBookingRequest request);
 
 	FixedFillingPointMapping createMapping(FixedFillingPointMappingRequest request);
+	Long getWaterTankerFixedPointCount(WaterTankerFixedPointBookingSearchCriteria criteria);
 }

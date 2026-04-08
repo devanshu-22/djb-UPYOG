@@ -1,9 +1,9 @@
 package org.upyog.rs.web.models.events;
 
+import javax.validation.constraints.NotNull;
 import lombok.*;
 import org.springframework.validation.annotation.Validated;
 
-import javax.validation.constraints.NotNull;
 
 @Validated
 @AllArgsConstructor

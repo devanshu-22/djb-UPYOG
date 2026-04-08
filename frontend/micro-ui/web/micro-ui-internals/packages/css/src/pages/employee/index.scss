@@ -658,6 +658,14 @@
   }
 }
 
+.hover-button:hover {
+  border: 2px solid #a82227 !important;
+}
+
+.hover-button-round:hover {
+  padding: 4px !important;
+}
+
 @media (min-width: 640px) {
   .employee {
     display: flex;
@@ -678,10 +686,22 @@
     .main {
       display: flex;
       flex-direction: column;
-      padding-top: 80px;
+      padding-top: 72px;
       height: 100vh;
       /* margin-left: 72px; */
       /* width: calc(100%-83px); */
+    }
+
+    .add-details-link {
+      color: #a82227;
+      cursor: pointer;
+      text-decoration: underline;
+      display: flex;
+      width: fit-content;
+      &:hover {
+        padding: 0 32px;
+        margin-left: 0;
+      }
     }
 
     .citizen-home-container {

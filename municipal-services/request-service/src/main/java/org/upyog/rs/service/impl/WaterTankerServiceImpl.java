@@ -142,7 +142,7 @@ public class WaterTankerServiceImpl implements WaterTankerService {
 		log.info("Update fixed point water tanker booking for user: "
 				+ waterTankerFixedPointRequest.getRequestInfo().getUserInfo().getUuid()
 				+ " for bookingId: "
-				+ waterTankerFixedPointRequest.getWaterTankerFixedPointDetail().getBookingId());
+				+ waterTankerFixedPointRequest.getWaterTankerFixedPointDetail());
 
 		enrichmentService.enrichUpdateFixedPointWaterTankerRequest(waterTankerFixedPointRequest);
 
@@ -180,14 +180,21 @@ public class WaterTankerServiceImpl implements WaterTankerService {
 	}
 
 	@Override
-	public List<WaterTankerFixedPointDetail> getWaterTankerFixedPointBookingDetails(RequestInfo requestInfo, WaterTankerFixedPointBookingSearchCriteria waterTankerFixedPointBookingSearchCriteria) {
-		List<WaterTankerFixedPointDetail> applications = requestServiceRepository
-				.getWaterTankerFixedPointBookingDetails(waterTankerFixedPointBookingSearchCriteria);
+	public List<WaterTankerFixedPointDetail> getWaterTankerFixedPointBookingDetails(
+			RequestInfo requestInfo,
+			WaterTankerFixedPointBookingSearchCriteria criteria) {
 
-		if (CollectionUtils.isEmpty(applications)) {
-			return new ArrayList<>();
-		}
-		return applications;
+		List<WaterTankerFixedPointDetail> applications =
+				requestServiceRepository.getWaterTankerFixedPointBookingDetails(criteria);
+
+		return CollectionUtils.isEmpty(applications) ? new ArrayList<>() : applications;
+	}
+
+	@Override
+	public Long getWaterTankerFixedPointCount(
+			WaterTankerFixedPointBookingSearchCriteria criteria) {
+
+		return requestServiceRepository.getWaterTankerFixedPointCount(criteria);
 	}
 
 	@Override
@@ -344,8 +351,9 @@ public class WaterTankerServiceImpl implements WaterTankerService {
 
 
 	@Override
-	public List<RequestDetailsByDriverId.RequestDetailsInfo> getBookingAndAssignmentDetails(String driverId) {
-		return requestServiceRepository.getFullBookingDetailsByDriver(driverId);
+	public List<RequestDetailsByDriverId.RequestDetailsInfo> getBookingAndAssignmentDetails(
+			String driverId, Long fromDate, Long toDate) {
+		return requestServiceRepository.getFullBookingDetailsByDriver(driverId, fromDate, toDate);
 	}
 
 	@Override

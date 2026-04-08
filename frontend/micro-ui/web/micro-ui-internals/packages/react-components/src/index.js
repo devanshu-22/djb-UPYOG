@@ -243,7 +243,8 @@ import ExpandedViewPage from "./atoms/ExpandedViewPage";
 import CollapsibleModuleSidebar from "./atoms/CollapsibleModuleSidebar";
 import Tooltip from "./atoms/Tooltip";
 import CollapsibleCardPage from "./hoc/CollapsibleCardPage";
-
+import VerticalTimeline from "./atoms/VerticalTimeline";
+import LayoutWrapper from "./hoc/LayoutWrapper";
 export {
   Phone,
   Body,
@@ -495,4 +496,6 @@ export {
   MdUploadIcon,
   UploadCloudIcon,
   CollapsibleCardPage,
+  VerticalTimeline,
+  LayoutWrapper,
 };

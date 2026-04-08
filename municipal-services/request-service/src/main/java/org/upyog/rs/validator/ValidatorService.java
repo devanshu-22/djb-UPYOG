@@ -1,11 +1,11 @@
 package org.upyog.rs.validator;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.ValidationException;
-import javax.validation.Validator;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.ValidationException;
+import javax.validation.Validator;
 import org.springframework.stereotype.Service;
 
 

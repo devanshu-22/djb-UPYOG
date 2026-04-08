@@ -4,11 +4,19 @@
   padding: 16px;
   background-color: #fff;
   border-radius: 12px;
+  overflow-y: scroll;
+  height: fit-content;
+  @media (min-width: 768px) {
+    max-width: 25%;
+    min-width: 250px;
+    min-height: 500px;
+  }
 }
 
 .vertical-timeline-step {
   display: flex;
   position: relative;
+  gap: 16px;
   @media (min-width: 768px) {
     min-height: 80px;
     padding-bottom: 20px;
@@ -55,7 +63,6 @@
   /* Larger text */
   color: #6b7280;
   z-index: 1;
-  margin-right: 16px;
   flex-shrink: 0;
   transition: all 0.3s ease;
 }
@@ -90,10 +97,7 @@
   color: #4b5563;
   font-weight: 500;
   line-height: normal;
-  /* Reset line height */
-  @media (min-width: 768px) {
-    text-wrap: nowrap;
-  }
+  word-wrap: anywhere;
 }
 
 .vertical-timeline-step.active .vertical-timeline-label {

@@ -1,6 +1,7 @@
 package org.upyog.rs.fixedpoint.web.controller;
 
 import digit.models.coremodels.RequestInfoWrapper;
+import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.egov.common.contract.response.ResponseInfo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +16,6 @@ import org.upyog.rs.fixedpoint.service.FixedPointDetailsService;
 import org.upyog.rs.fixedpoint.web.model.*;
 import org.upyog.rs.util.ResponseInfoFactory;
 
-import javax.validation.Valid;
 import java.util.List;
 
 @RestController

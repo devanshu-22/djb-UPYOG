@@ -23,13 +23,20 @@ public class QueryBuilder {
 	VehicleConfiguration config;
 
 	private static final String PAGINATION_WRAPPER = "{} {orderby} {pagination}";
-	private static final String QUERY = " SELECT count(*) OVER() AS full_count, * FROM eg_vehicle ";
+//	private static final String QUERY = " SELECT count(*) OVER() AS full_count, * FROM eg_vehicle ";
+
+	private static final String QUERY = "SELECT count(*) OVER() AS full_count, " +
+			"veh.*, fp.id as fp_id, fp.filling_point_id as fp_filling_point_id, fp.tenant_id as fp_tenant_id, " +
+			"fp.filling_point_name, fp.emergency_name, fp.ee_name, fp.ee_email, fp.ee_mobile, " +
+			"fp.ae_name, fp.ae_email, fp.ae_mobile, fp.je_name, fp.je_email, fp.je_mobile " +
+			"FROM eg_vehicle veh " +
+			"LEFT JOIN upyog_rs_water_tanker_filling_point fp ON veh.filling_point_id = fp.id ";
 	private static final String VEH_EXISTS_QUERY = " SELECT COUNT(*) FROM eg_vehicle WHERE tenantid=? AND registrationNumber=? AND STATUS= ?";
 
 	private static final String VEHICLE_NO_VENDOR_QUERY = " SELECT DISTINCT (vehicle.id) FROM EG_VEHICLE vehicle LEFT JOIN eg_vendor_vehicle vendor_vehicle ON vehicle.id=vendor_vehicle.vechile_id";
 
 	/**
-	 * 
+	 *
 	 * @param query            prepared Query
 	 * @param preparedStmtList values to be replased on the query
 	 * @param criteria         fsm search criteria
@@ -68,7 +75,7 @@ public class QueryBuilder {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param builder
 	 * @param criteria
 	 */
@@ -85,7 +92,7 @@ public class QueryBuilder {
 
 		else if (criteria.getSortBy() == VehicleSearchCriteria.SortBy.suctionType)
 			builder.append(" ORDER BY  suctionType");
-		
+
 		else if (criteria.getSortBy() == VehicleSearchCriteria.SortBy.registrationNumber)
 			builder.append(" ORDER BY  registrationNumber");
 

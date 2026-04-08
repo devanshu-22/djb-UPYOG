@@ -9,6 +9,9 @@
 .employee-card-input {
   border: 2px solid #e5e5e7;
   @apply pl-sm outline-none block w-full h-10 bg-white leading-10 text-form-field text-text-primary rounded-md;
+  &:hover {
+    border: 2px solid #a1a1aa;
+  }
 }
 
 .employee-card-input:disabled {
@@ -31,7 +34,11 @@
 
 .card-textarea,
 .employee-card-textarea {
-  @apply block outline-none border w-full border-input-border border-solid bg-white h-24 text-form-field text-text-primary p-sm rounded-md;
+  border: 2px solid #e5e5e7;
+  @apply block outline-none w-full bg-white h-24 text-form-field text-text-primary p-sm rounded-md;
+  &:hover {
+    border: 2px solid #a1a1aa;
+  }
 }
 
 .inputWrapper {

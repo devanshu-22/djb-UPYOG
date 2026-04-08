@@ -103,6 +103,10 @@
     color: rgb(244, 119, 56);
     display: flex;
     cursor: pointer;
+
+    @media (max-width: 480px) {
+      padding: 5px;
+    }
   }
 
   .search-add-icon {

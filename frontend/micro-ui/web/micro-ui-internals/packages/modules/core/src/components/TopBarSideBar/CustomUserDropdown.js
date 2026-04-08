@@ -7,16 +7,19 @@ const TextToImg = (props) => (
   </span>
 );
 
-const CustomUserDropdown = ({ userOptions, roleOptions = [], selectedRole, handleRoleChange, profilePic, userName, t }) => {
+const CustomUserDropdown = ({
+  userOptions = [],
+  roleOptions = [],
+  selectedRole,
+  handleRoleChange,
+  profilePic,
+  userName,
+  designation,
+  userCode,
+  t,
+  compact = false,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= (768 || 480 || 320 || 1024));
-
-  React.useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= (768 || 480 || 320 || 1024));
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
 
   const toggleDropdown = () => setIsOpen(!isOpen);
 
@@ -27,22 +30,23 @@ const CustomUserDropdown = ({ userOptions, roleOptions = [], selectedRole, handl
     }
   };
 
-  const handleRoleSelect = (role) => {
-    handleRoleChange(role);
-    setIsRoleDropdownOpen(false);
-    setIsOpen(false);
-  };
-
   return (
     <div style={{ position: "relative" }}>
-      {/* User Avatar */}
-      <div onClick={toggleDropdown} style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}>
+      {/* User Avatar Pill */}
+      <div className="user-profile-pill" onClick={toggleDropdown}>
         {!profilePic ? (
-          <TextToImg name={userName || "Employee"} />
+          <div className="user-profile-avatar">{userName?.[0]?.toUpperCase() || "E"}</div>
         ) : (
-          <img src={profilePic} style={{ height: "48px", width: "60px", borderRadius: "2px" }} />
+          <img className="user-profile-img" src={profilePic} alt={userName} />
         )}
-        <ArrowDown className="icon" style={{ width: "16px", height: "16px" }} />
+        <div className="user-profile-info">
+          <div className="user-profile-name">{userName}</div>
+          <div className="user-profile-details">
+            {designation ? `${designation} · ` : ""}
+            {userCode}
+          </div>
+        </div>
+        <ArrowDown className="chevron-icon" style={{ width: "14px", height: "14px" }} />
       </div>
 
       {/* Dropdown Menu */}
@@ -52,7 +56,6 @@ const CustomUserDropdown = ({ userOptions, roleOptions = [], selectedRole, handl
           <div
             onClick={() => {
               setIsOpen(false);
-              setIsRoleDropdownOpen(false);
             }}
             style={{
               position: "fixed",
@@ -66,6 +69,7 @@ const CustomUserDropdown = ({ userOptions, roleOptions = [], selectedRole, handl
 
           {/* Main Dropdown Content */}
           <div
+            className="user-profile-dropdown"
             style={{
               position: "absolute",
               top: "calc(100% + 8px)",

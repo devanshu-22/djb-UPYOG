@@ -69,6 +69,50 @@ const Icons = {
   ),
 };
 
+const getScopedTenantId = () => {
+  const currentTenantId = Digit.ULBService.getCurrentTenantId();
+  const stateTenantId = Digit.ULBService.getStateId();
+  const roleTenantIds =
+    Digit.UserService.getUser()
+      ?.info?.roles?.map((role) => role?.tenantId)
+      ?.filter(Boolean) || [];
+
+  const fallbackTenantId =
+    roleTenantIds.find((tenantId) => tenantId !== stateTenantId && tenantId?.includes(".")) ||
+    roleTenantIds.find((tenantId) => tenantId !== stateTenantId) ||
+    currentTenantId;
+
+  return currentTenantId === stateTenantId ? fallbackTenantId || currentTenantId : currentTenantId;
+};
+
+const getSkeletonBlockStyle = (width, height = "16px") => ({
+  width,
+  height,
+  borderRadius: "999px",
+  background: "linear-gradient(90deg, #e2e8f0 25%, #f8fafc 50%, #e2e8f0 75%)",
+  backgroundSize: "200% 100%",
+  animation: "newsEventsSkeletonShimmer 1.4s ease-in-out infinite",
+});
+
+const TabListSkeleton = ({ rows = 3, withWrapper = false }) => {
+  const skeletonRows = Array.from({ length: rows }).map((_, index) => (
+    <div key={`news-events-skeleton-${index}`} className="compact-list-item">
+      <div className="dot-indicator" style={{ backgroundColor: "#dbe4f0" }}></div>
+      <div style={{ display: "flex", flexDirection: "column", gap: "8px", flex: 1, minWidth: 0 }}>
+        <div style={getSkeletonBlockStyle(index === 1 ? "48%" : "62%")} />
+        <div style={getSkeletonBlockStyle(index === 2 ? "28%" : "40%", "12px")} />
+      </div>
+      <div style={{ marginLeft: "auto", flexShrink: 0, ...getSkeletonBlockStyle("72px", "14px") }} />
+    </div>
+  ));
+
+  if (withWrapper) {
+    return <div className="compact-list" aria-hidden="true">{skeletonRows}</div>;
+  }
+
+  return <React.Fragment>{skeletonRows}</React.Fragment>;
+};
+
 const NewsAndEvents = () => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("documents");
@@ -80,7 +124,7 @@ const NewsAndEvents = () => {
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [isDocLoading, setIsDocLoading] = useState(false);
 
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = getScopedTenantId();
 
   const handleEventClick = (item) => {
     setSelectedEvent(item);
@@ -106,19 +150,23 @@ const NewsAndEvents = () => {
     }
   };
 
-  const { isLoading: isEventsLoading, data: eventsData } = Digit.Hooks.events.useInbox(tenantId, {}, {});
-
-  const { isLoading: isDocsLoading, data: docsData } = Digit.Hooks.engagement.useDocSearch({ tenantIds: tenantId, offset: 0, limit: 50 }, {});
-
+  const { isLoading: isEventsLoading, data: eventsData } = Digit.Hooks.events.useInbox(
+    tenantId,
+    {},
+    { eventTypes: "EVENTSONGROUND" },
+    { enabled: !!tenantId }
+  );
+  const { isLoading: isDocsLoading, data: docsData } = Digit.Hooks.engagement.useDocSearch(
+    { tenantIds: tenantId, offset: 0, limit: 50 },
+    { enabled: !!tenantId }
+  );
   const { isLoading: isSurveysLoading, data: surveysData } = Digit.Hooks.survey.useCfdefinitionsearch(
     {
       ServiceDefinitionCriteria: { tenantId, code: [], module: ["Engagement"] },
-      Pagination: { limit: 50, offSet: 0, sortBy: "string", order: "asc" },
+      Pagination: { limit: 50, offset: 0, offSet: 0, sortBy: "string", order: "asc" },
     },
-    {}
+    { enabled: !!tenantId }
   );
-
-  const isLoading = isEventsLoading || isDocsLoading || isSurveysLoading;
 
   const formatDate = (epoch, endEpoch) => {
     if (!epoch) return "";
@@ -139,22 +187,30 @@ const NewsAndEvents = () => {
   const colors = ["#3b82f6", "#f59e0b", "#8b5cf6", "#ef4444", "#10b981", "#0ea5e9", "#64748b"];
 
   const tabData = useMemo(() => {
-    const events = (eventsData?.events || [])
-      .filter((e) => e.eventType === "EVENTSONGROUND")
+    const eventList = Array.isArray(eventsData?.events) ? eventsData.events : Array.isArray(eventsData?.Events) ? eventsData.Events : [];
+    const documentList = Array.isArray(docsData?.Documents) ? docsData.Documents : Array.isArray(docsData?.documents) ? docsData.documents : [];
+    const surveyList = Array.isArray(surveysData?.ServiceDefinition)
+      ? surveysData.ServiceDefinition
+      : Array.isArray(surveysData?.serviceDefinition)
+      ? surveysData.serviceDefinition
+      : [];
+
+    const events = eventList
+      .filter((e) => !e?.eventType || e.eventType === "EVENTSONGROUND")
       .map((e, index) => ({
         id: e.id || `event-${index}`,
         title: e.name || e.header,
         description: e.description,
-        location: e.eventDetails?.location,
+        location: e.eventDetails?.address || e.eventDetails?.location,
         category: e.eventCategory,
-        postedBy: e.user?.name,
+        postedBy: e.user?.name || e.eventDetails?.organizer,
         startDate: e.eventDetails?.fromDate,
         endDate: e.eventDetails?.toDate,
         rightText: formatDate(e.eventDetails?.fromDate, e.eventDetails?.toDate) || formatDate(e.auditDetails?.lastModifiedTime),
         color: colors[index % colors.length],
       }));
 
-    const documents = (docsData?.Documents || []).map((d, index) => ({
+    const documents = documentList.map((d, index) => ({
       id: d.id || `doc-${index}`,
       title: d.name,
       category: d.category,
@@ -163,9 +219,9 @@ const NewsAndEvents = () => {
       filestoreId: d.filestoreId,
     }));
 
-    const surveys = (surveysData?.ServiceDefinition || []).map((s, index) => ({
+    const surveys = surveyList.map((s, index) => ({
       id: s.id || s.code || `survey-${index}`,
-      title: s.code || s.additionalDetails?.title,
+      title: s.code || s.additionalDetails?.title || s.additionalDetails?.name,
       count: 0,
       rightText: s.isActive ? "ACTIVE" : "INACTIVE",
       rightTextDanger: !s.isActive,
@@ -176,13 +232,27 @@ const NewsAndEvents = () => {
   }, [eventsData, docsData, surveysData]);
 
   const currentData = tabData[activeTab] || [];
-
-  if (isLoading) {
-    return <Loader />;
-  }
+  const tabLoadingState = {
+    documents: isDocsLoading && !tabData.documents.length,
+    events: isEventsLoading && !tabData.events.length,
+    surveys: isSurveysLoading && !tabData.surveys.length,
+  };
+  const isCurrentTabLoading = tabLoadingState[activeTab];
 
   return (
     <React.Fragment>
+      <style>
+        {`
+          @keyframes newsEventsSkeletonShimmer {
+            0% {
+              background-position: 200% 0;
+            }
+            100% {
+              background-position: -200% 0;
+            }
+          }
+        `}
+      </style>
       <div className="recent-activity-wrapper static-card" style={{ padding: "16px 0 0 0" }}>
         <div className="ra-header" style={{ padding: "0 16px", borderBottom: "none", display: "flex", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
@@ -209,7 +279,9 @@ const NewsAndEvents = () => {
         </div>
 
         <div className="compact-list">
-          {currentData.length === 0 ? (
+          {isCurrentTabLoading ? (
+            <TabListSkeleton />
+          ) : currentData.length === 0 ? (
             <div style={{ padding: "16px", textAlign: "center", color: "#64748b" }}>{t("ES_COMMON_NO_DATA")}</div>
           ) : (
             currentData.slice(0, 3).map((item) => (
@@ -264,7 +336,9 @@ const NewsAndEvents = () => {
               </button>
             </div>
             <div className="custom-modal-body" style={{ padding: 0 }}>
-              {currentData.length === 0 ? (
+              {isCurrentTabLoading ? (
+                <TabListSkeleton withWrapper={true} />
+              ) : currentData.length === 0 ? (
                 <div style={{ padding: "24px", textAlign: "center", color: "#64748b" }}>{t("ES_COMMON_NO_DATA")}</div>
               ) : (
                 currentData.map((item) => (

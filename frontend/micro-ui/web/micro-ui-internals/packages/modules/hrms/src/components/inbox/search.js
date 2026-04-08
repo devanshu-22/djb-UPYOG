@@ -1,4 +1,14 @@
-import { ActionBar, CloseSvg, DatePicker, Label, LinkLabel, MobileNumber, SubmitBar, TextInput } from "@djb25/digit-ui-react-components";
+import {
+  ActionBar,
+  CardLabel,
+  CloseSvg,
+  DatePicker,
+  Label,
+  LabelFieldPair,
+  MobileNumber,
+  SubmitBar,
+  TextInput,
+} from "@djb25/digit-ui-react-components";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -35,7 +45,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmitInput)}>
+    <form id="search-form" onSubmit={handleSubmit(onSubmitInput)}>
       <React.Fragment>
         <div className="search-container" style={{ width: "auto" }}>
           <div className="search-form-wrapper">
@@ -52,14 +62,14 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                 ?.filter((e) => true)
                 ?.map((input, index) =>
                   input.name === "phone" ? (
-                    <span className={"mobile-input"} key={index}>
-                      <Label>{input.label}</Label>
+                    <LabelFieldPair key={index}>
+                      <CardLabel>{input.label}</CardLabel>
                       <MobileNumber {...input} inputRef={register} name={input.label} />
-                    </span>
+                    </LabelFieldPair>
                   ) : (
                     <div key={index} className="input-fields">
-                      <span className={"mobile-input"}>
-                        <Label>{input.label}</Label>
+                      <LabelFieldPair>
+                        <CardLabel>{input.label}</CardLabel>
                         {input.type !== "date" ? (
                           <div className="field-container">
                             {input?.componentInFront ? (
@@ -75,12 +85,18 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                             defaultValue={null}
                           />
                         )}{" "}
-                      </span>
+                      </LabelFieldPair>
                     </div>
                   )
                 )}
             </div>
-            <div className="inbox-action-container">
+            <div className="formcomposer-section-button">
+              <div className="generic-button clear-search">
+                <p onClick={clearSearch}>{t(`HR_COMMON_CLEAR_SEARCH`)}</p>
+              </div>
+              <SubmitBar className="generic-button" label={t("HR_COMMON_SEARCH")} submit={true} form="search-form" />
+            </div>
+            {/* <div className="inbox-action-container">
               {type === "desktop" && !mobileView && (
                 <button onClick={clearSearch} className="clear-search generic-button">
                   {t("HR_COMMON_CLEAR_SEARCH")}
@@ -89,7 +105,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
               {type === "desktop" && !mobileView && (
                 <SubmitBar style={{ marginTop: "unset" }} className="submit-bar-search generic-button" label={t("ES_COMMON_SEARCH")} submit />
               )}
-            </div>
+            </div> */}
           </div>
         </div>
         {(type === "mobile" || mobileView) && (

@@ -32,7 +32,7 @@ export const UserService = {
             data: { access_token: user.access_token },
             auth: true,
             params: {
-              tenantId: user?.info?.type === "CITIZEN" ? Digit.ULBService.getStateId() : Digit.ULBService.getCurrentTenantId(),
+              tenantId: user?.info?.type?.toUpperCase() === "CITIZEN" ? Digit.ULBService.getStateId() : Digit.ULBService.getCurrentTenantId(),
             },
           });
         } catch (e) {
@@ -50,8 +50,9 @@ export const UserService = {
 
       // 3️⃣ Logout from Keycloak (THIS IS IMPORTANT)
       if (kc) {
+        const isCitizen = user?.info?.type?.toUpperCase() === "CITIZEN" || window.location.pathname.includes("/citizen");
         kc.logout({
-          // redirectUri: window.location.origin + "/digit-ui",
+          redirectUri: window.location.origin + (isCitizen ? "/digit-ui/citizen/login" : "/digit-ui/employee/user/login"),
           idTokenHint: kc.idToken,
         });
       }
@@ -80,7 +81,8 @@ export const UserService = {
     } finally {
       window.localStorage.clear();
       window.sessionStorage.clear();
-      if (userType === "citizen") {
+      const isCitizen = userType?.toUpperCase() === "CITIZEN";
+      if (isCitizen) {
         window.location.replace("/digit-ui/citizen/login");
       } else {
         window.location.replace("/digit-ui/employee/user/login");

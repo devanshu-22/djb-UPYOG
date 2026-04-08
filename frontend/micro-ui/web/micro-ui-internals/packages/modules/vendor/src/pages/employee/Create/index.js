@@ -1,5 +1,5 @@
 import { Loader } from "@djb25/digit-ui-react-components";
-import React, { Fragment } from "react";
+import React from "react";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "react-query";
 import { Redirect, Route, Switch, useHistory, useLocation, useRouteMatch } from "react-router-dom";
@@ -86,8 +86,8 @@ const VENDORCreate = ({ parentRoute }) => {
     goNext(skipStep, index, isAddMultiple, key);
   }
 
-  const handleSkip = () => { };
-  const handleMultiple = () => { };
+  const handleSkip = () => {};
+  const handleMultiple = () => {};
 
   const onSuccess = () => {
     clearParams();
@@ -114,38 +114,27 @@ const VENDORCreate = ({ parentRoute }) => {
 
   return (
     <React.Fragment>
-      <div style={{ display: "flex", width: "100%", gap: "24px" }}>
-        <div style={{ flex: "1", overflowY: "auto" }}>
-          <Switch>
-            {config.map((routeObj, index) => {
-              const { component, texts, inputs, key } = routeObj;
-              const Component = typeof component === "string" ? Digit.ComponentRegistryService.getComponent(component) : component;
-              return (
-                <Route path={`${match.path}/${routeObj.route}`} key={index}>
-                  <Component
-                    config={{ texts, inputs, key }}
-                    onSelect={handleSelect}
-                    onSkip={handleSkip}
-                    t={t}
-                    formData={params}
-                    onAdd={handleMultiple}
-                  />
-                </Route>
-              );
-            })}
+      <Switch>
+        {config.map((routeObj, index) => {
+          const { component, texts, inputs, key } = routeObj;
+          const Component = typeof component === "string" ? Digit.ComponentRegistryService.getComponent(component) : component;
+          return (
+            <Route path={`${match.path}/${routeObj.route}`} key={index}>
+              <Component config={{ texts, inputs, key }} onSelect={handleSelect} onSkip={handleSkip} t={t} formData={params} onAdd={handleMultiple} />
+            </Route>
+          );
+        })}
 
-            <Route path={`${match.path}/check`}>
-              <CheckPage onSubmit={vendorcreate} value={params} />
-            </Route>
-            <Route path={`${match.path}/acknowledgement`}>
-              <NewResponse data={params} onSuccess={onSuccess} />
-            </Route>
-            <Route>
-              <Redirect to={`${match.path}/${config.indexRoute}`} />
-            </Route>
-          </Switch>
-        </div>
-      </div>
+        <Route path={`${match.path}/check`}>
+          <CheckPage onSubmit={vendorcreate} value={params} />
+        </Route>
+        <Route path={`${match.path}/acknowledgement`}>
+          <NewResponse data={params} onSuccess={onSuccess} />
+        </Route>
+        <Route>
+          <Redirect to={`${match.path}/${config.indexRoute}`} />
+        </Route>
+      </Switch>
     </React.Fragment>
   );
 };

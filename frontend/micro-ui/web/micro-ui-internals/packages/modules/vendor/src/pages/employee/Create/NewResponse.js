@@ -70,7 +70,7 @@ const NewResponse = ({ data, onSuccess }) => {
   return mutation.isLoading || mutation.isIdle ? (
     <Loader />
   ) : (
-    <Card>
+    <Card className="vehicle-details-card">
       <BannerPicker t={t} data={mutation.data} isSuccess={mutation.isSuccess} isLoading={mutation.isIdle || mutation.isLoading} />
       <StatusTable>
         {mutation.isSuccess && <Row rowContainerStyle={rowContainerStyle} last textStyle={{ whiteSpace: "pre", width: "60%" }} />}

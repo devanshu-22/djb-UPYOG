@@ -27,9 +27,9 @@ public class WaterTankerFixedPointRowMapper
         Map<String, WaterTankerFixedPointDetail> bookingMap = new LinkedHashMap<>();
 
         while (rs.next()) {
-            String bookingId = rs.getString("booking_id");
+            String applicantId = rs.getString("applicant_id");
 
-            bookingMap.computeIfAbsent(bookingId, id -> {
+            bookingMap.computeIfAbsent(applicantId, id -> {
                 try {
                     return buildFixedPointDetail(rs);
                 } catch (SQLException e) {
@@ -37,7 +37,7 @@ public class WaterTankerFixedPointRowMapper
                 }
             });
 
-            WaterTankerFixedPointDetail detail = bookingMap.get(bookingId);
+            WaterTankerFixedPointDetail detail = bookingMap.get(applicantId);
 
             if (detail.getApplicantDetail() == null) {
                 try {
@@ -78,7 +78,6 @@ public class WaterTankerFixedPointRowMapper
                 .build();
 
         return WaterTankerFixedPointDetail.builder()
-                .bookingId(rs.getString("booking_id"))
                 .mobileNumber(rs.getString("applicant_mobile_number"))
                 .auditDetails(auditDetails)
                 .applicantDetail(buildApplicantDetail(rs))
@@ -98,7 +97,6 @@ public class WaterTankerFixedPointRowMapper
 
         return ApplicantDetail.builder()
                 .applicantId(rs.getString("applicant_id"))
-                .bookingId(rs.getString("booking_id"))
                 .name(rs.getString("name"))
                 .mobileNumber(rs.getString("applicant_mobile_number"))
                 .emailId(rs.getString("email_id"))
@@ -127,6 +125,9 @@ public class WaterTankerFixedPointRowMapper
                 .latitude(rs.getString("addr_latitude"))
                 .longitude(rs.getString("addr_longitude"))
                 .type(rs.getString("addr_type"))
+                .ward(rs.getString("ward"))
+                .zone(rs.getString("zone"))
+                .constituency(rs.getString("constituency"))
                 .build();
     }
 

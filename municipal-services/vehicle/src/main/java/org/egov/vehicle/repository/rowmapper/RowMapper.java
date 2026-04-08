@@ -10,6 +10,7 @@ import java.util.Map;
 
 import org.egov.tracer.model.CustomException;
 import org.egov.vehicle.web.model.AuditDetails;
+import org.egov.vehicle.web.model.FillingPoint;
 import org.egov.vehicle.web.model.Vehicle;
 import org.postgresql.util.PGobject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,6 +81,25 @@ public class RowMapper implements ResultSetExtractor<List<Vehicle>> {
 				vehicleMap.put(id, currentVehicle);
 			}
 
+			String fpId = rs.getString("fp_id");
+			if (fpId != null) {
+				FillingPoint fp = new FillingPoint();
+				fp.setId(fpId);
+				fp.setFillingPointId(rs.getString("fp_filling_point_id"));
+				fp.setTenantId(rs.getString("fp_tenant_id"));
+				fp.setFillingPointName(rs.getString("filling_point_name"));
+				fp.setEmergencyName(rs.getString("emergency_name"));
+				fp.setEeName(rs.getString("ee_name"));
+				fp.setEeEmail(rs.getString("ee_email"));
+				fp.setEeMobile(rs.getString("ee_mobile"));
+				fp.setAeName(rs.getString("ae_name"));
+				fp.setAeEmail(rs.getString("ae_email"));
+				fp.setAeMobile(rs.getString("ae_mobile"));
+				fp.setJeName(rs.getString("je_name"));
+				fp.setJeEmail(rs.getString("je_email"));
+				fp.setJeMobile(rs.getString("je_mobile"));
+				currentVehicle.setFillingPoint(fp);
+			}
 			addChildrenToProperty(rs, currentVehicle);
 
 		}

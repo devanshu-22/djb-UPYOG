@@ -1,24 +1,14 @@
 import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
-import {
-  TextInput,
-  Label,
-  SubmitBar,
-  LinkLabel,
-  ActionBar,
-  CloseSvg,
-  DatePicker,
-  CardLabelError,
-  Menu,
-  AddIcon,
-} from "@djb25/digit-ui-react-components";
+import { TextInput, Label, SubmitBar, LinkLabel, CloseSvg, DatePicker, CardLabelError, Menu, AddIcon } from "@djb25/digit-ui-react-components";
 import DropdownStatus from "./inbox/DropdownStatus";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 
 const SearchApplication = ({ onSearch, type, onClose, onTabChange, isFstpOperator, searchFields, searchParams, isInboxPage, selectedTab }) => {
-  const storedSearchParams = isInboxPage ? Digit.SessionStorage.get("vendor/inbox/searchParams") : Digit.SessionStorage.get("vendor/search/searchParams");
-
+  const storedSearchParams = isInboxPage
+    ? Digit.SessionStorage.get("vendor/inbox/searchParams")
+    : Digit.SessionStorage.get("vendor/search/searchParams");
 
   const { t } = useTranslation();
   const history = useHistory();
@@ -53,7 +43,7 @@ const SearchApplication = ({ onSearch, type, onClose, onTabChange, isFstpOperato
   }
 
   const clearAll = (mobileView) => {
-    const mobileViewStyles = mobileView ? { margin: 0, display: "inline" } : { marginTop: "40px", marginLeft: "16px" };
+    const mobileViewStyles = mobileView ? { margin: 0, display: "inline" } : {};
     return (
       <LinkLabel style={{ ...mobileViewStyles }} onClick={clearSearch}>
         {t("ES_COMMON_CLEAR_SEARCH")}
@@ -130,7 +120,6 @@ const SearchApplication = ({ onSearch, type, onClose, onTabChange, isFstpOperato
   };
 
   return (
-    
     <React.Fragment>
       <div className="search-container" style={{ width: "auto" }}>
         <div className="search-complaint-container">
@@ -192,37 +181,23 @@ const SearchApplication = ({ onSearch, type, onClose, onTabChange, isFstpOperato
             </div>
           </div>
 
-
-
-
           <form onSubmit={handleSubmit(onSubmitInput)}>
-            <div
-              className={FSTP ? "complaint-input-container for-pt for-search" : "complaint-input-container"}
-              style={{ display:"grid",width: "100%", gridTemplateColumns: "33.33% 66.66% 0%" }}
-            >
+            <div className={FSTP ? "for-pt for-search flex-box" : "flex-box"} style={{ gap: "16px" }}>
               {searchFields?.map((input, index) => (
-                <span key={index} className={index === 0 ? "complaint-input" : "mobile-input"}>
-                  <Label>{input.label}</Label>
-                  {getFields(input)}{" "}
+                <span key={index} className={index === 0 ? "finance-mainlayout-col2 complaint-input" : "finance-mainlayout-col2 mobile-input"}>
+                  {getFields(input)}
                 </span>
               ))}
-              <div style={{ display: "flex" }}>
+              <div style={{ display: "flex", justifyContent: "end", gap: "16px", alignItems: "center" }}>
+                {type === "desktop" && !mobileView && <span className="clear-search generic-button">{clearAll()}</span>}
                 {type === "desktop" && !mobileView && <SubmitBar className="submit-bar-search" label={t("ES_COMMON_SEARCH")} submit />}
-                {type === "desktop" && !mobileView && <span className="clear-search">{clearAll()}</span>}
               </div>
             </div>
             {error ? <CardLabelError className="search-error-label">{t("ES_SEARCH_APPLICATION_ERROR")}</CardLabelError> : null}
           </form>
-
-
-
-          
         </div>
       </div>
     </React.Fragment>
-
-
-
   );
 };
 

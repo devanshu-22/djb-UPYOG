@@ -304,6 +304,11 @@ input[readonly] {
 }
 
 .disabled {
+  background-color: #eee;
+  @apply border-grey-dark text-grey-dark !important;
+  pointer-events: none !important;
+}
+.disabled-label {
   @apply border-grey-dark text-grey-dark !important;
   pointer-events: none !important;
 }
@@ -341,6 +346,7 @@ input[readonly] {
 .border-none {
   border: none;
   justify-content: space-between;
+  max-width: 600px;
 }
 
 input[type="number"]::-webkit-inner-spin-button,
@@ -487,7 +493,28 @@ input[type="number"] {
   }
 
   input {
-    border: 1px solid #e5e5e7;
+    border: 2px solid #a1a1aa;
+    color: #a1a1aa;
+    &:focus-within {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    }
+  }
+}
+
+.phone-input-wrapper:focus-within {
+  .employee-card-input--front {
+    outline: none;
+    border-color: #007bff;
+    border-right: 0;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    z-index: 1;
+  }
+  input {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
   }
 }
 
@@ -519,8 +546,6 @@ input[type="number"] {
 }
 
 .submit-bar-search {
-  margin-top: 32px;
-  margin-left: 16px;
   max-width: 256px;
 }
 
@@ -567,7 +592,7 @@ input[type="number"] {
   display: flex;
   flex-direction: column;
   overflow-x: scroll;
-  border-radius: 6px;
+  border-radius: 12px;
   flex: 1 1 0%;
   scrollbar-width: none;
 }
@@ -740,7 +765,7 @@ input[type="number"] {
 
 .employee-app-wrapper {
   min-height: calc(100vh - 8em);
-  height: calc(100vh - 110px);
+  height: calc(100vh - 102px);
 }
 
 .ws-custom-wrapper {

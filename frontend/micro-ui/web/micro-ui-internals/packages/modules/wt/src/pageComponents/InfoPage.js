@@ -29,12 +29,12 @@ const InfoPage = ({ t, onSelect, formData, config, userType }) => {
 
   return (
     <React.Fragment>
-      <Card className="search-form-wrapper" style={{ flexDirection: "column", gap: "12px" }}>
+      <Card className="search-form-wrapper" style={{ flexDirection: "column", gap: "12px", justifyContent: "flex-start" }}>
         {moduleKey && <CardHeader>{t(moduleKey)}</CardHeader>}
         <div>
-          <CardText className="primaryColor">{t("SV_DOC_REQ_SCREEN_SUB_HEADER")}</CardText>
-          <CardText className="primaryColor">{t("SV_DOC_REQ_SCREEN_TEXT")}</CardText>
-          <CardText className="primaryColor">{t("SV_DOC_REQ_SCREEN_SUB_TEXT")}</CardText>
+          <p className="primaryColor">{t("SV_DOC_REQ_SCREEN_SUB_HEADER")}</p>
+          <p className="primaryColor">{t("SV_DOC_REQ_SCREEN_TEXT")}</p>
+          <p className="primaryColor">{t("SV_DOC_REQ_SCREEN_SUB_TEXT")}</p>
         </div>
         <span>
           <SubmitBar label={t("COMMON_NEXT")} onSubmit={handleOpenModal} />

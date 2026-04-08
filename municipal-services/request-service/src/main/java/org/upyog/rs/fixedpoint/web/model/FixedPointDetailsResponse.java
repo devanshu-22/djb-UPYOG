@@ -1,8 +1,8 @@
 package org.upyog.rs.fixedpoint.web.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
 import javax.validation.Valid;
+import lombok.*;
 import java.util.List;
 import org.egov.common.contract.response.ResponseInfo;
 

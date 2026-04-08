@@ -14,10 +14,7 @@ const Stepper = ({ customSteps, currentStep, onStepClick, t }) => {
         return (
           <div className="stepper-item" key={index}>
             <div className="stepper-row">
-              <div
-                className={`stepper-circle ${isCompleted ? "completed" : isActive ? "active" : ""
-                  }`}
-              >
+              <div className={`stepper-circle ${isCompleted ? "completed" : isActive ? "active" : ""}`}>
                 {isCompleted ? (
                   <svg width="14" height="10" viewBox="0 0 14 10">
                     <path
@@ -30,20 +27,12 @@ const Stepper = ({ customSteps, currentStep, onStepClick, t }) => {
                 )}
               </div>
 
-              <div
-                className={`stepper-label ${isActive ? "active" : ""}`}
-                onClick={() => isCompleted && onStepClick(index)}
-              >
+              <div className={`stepper-label ${isActive ? "active" : ""}`} onClick={() => isCompleted && onStepClick(index)}>
                 {t(stepObj.head)}
               </div>
             </div>
 
-            {index !== customSteps.length - 1 && (
-              <div
-                className={`stepper-line ${isCompleted ? "completed" : ""
-                  }`}
-              />
-            )}
+            {index !== customSteps.length - 1 && <div className={`stepper-line ${isCompleted ? "completed" : ""}`} />}
           </div>
         );
       })}
@@ -61,7 +50,7 @@ const CreateEmployee = () => {
   const history = useHistory();
   const isMobile = window.Digit.Utils.browser.isMobile();
   // const [activeStep, setActiveStep] = useState(0); Commented for development by Avinash
-  const [activeStep, setActiveStep] = useState(0);  // Only used during development
+  const [activeStep, setActiveStep] = useState(0); // Only used during development
 
   const defaultValues = {
     Jurisdictions: [
@@ -123,7 +112,6 @@ const CreateEmployee = () => {
 
   const config = mdmsData?.config ? mdmsData.config : newConfig;
   const formDataRef = React.useRef(sessionFormData);
-
 
   const validate = (currentData, currentPhoneCheck, step) => {
     let isValid = true;
@@ -299,25 +287,28 @@ const CreateEmployee = () => {
   }
 
   return (
-
-    <div className={`employee-form ${isMobile ? "mobile-view" : ""}`}>
-      <Stepper customSteps={config} currentStep={activeStep} onStepClick={handleStepClick} t={t} />
-      <div className="employee-form-content">
-        <FormComposer
-          key={activeStep}
-          defaultValues={sessionFormData}
-          heading={t("")}
-          config={activeConfig}
-          onSubmit={onSubmit}
-          onFormValueChange={onFormValueChange}
-          isDisabled={!canSubmit}
-          label={isFinalStep ? t("HR_COMMON_BUTTON_SUBMIT") : t("CS_COMMON_NEXT")}
-          // secondaryActionLabel={activeStep !== 0 ? t("CS_COMMON_BACK") : null}
-          onSecondayActionClick={handleSecondaryAction}
-          cardClassName=""
-          sectionHeadStyle={{ gridColumn: "span 2" }}
-        />
-      </div>{showToast && (
+    <div className={`employee-form-content ${isMobile ? "mobile-view" : ""}`}>
+      <div className="employee-form-section-wrapper">
+        <Stepper customSteps={config} currentStep={activeStep} onStepClick={handleStepClick} t={t} />
+        <div className="employee-form-section">
+          <FormComposer
+            key={activeStep}
+            defaultValues={sessionFormData}
+            heading={t("")}
+            config={activeConfig}
+            onSubmit={onSubmit}
+            onFormValueChange={onFormValueChange}
+            isDisabled={!canSubmit}
+            label={isFinalStep ? t("HR_COMMON_BUTTON_SUBMIT") : t("CS_COMMON_NEXT")}
+            // secondaryActionLabel={activeStep !== 0 ? t("CS_COMMON_BACK") : null}
+            onSecondayActionClick={handleSecondaryAction}
+            cardClassName=""
+            formClassName=""
+            sectionHeadStyle={{ gridColumn: "span 2" }}
+          />
+        </div>
+      </div>
+      {showToast && (
         <Toast
           error={showToast.key}
           label={t(showToast.label)}
@@ -327,7 +318,6 @@ const CreateEmployee = () => {
         />
       )}
     </div>
-
   );
 };
 export default CreateEmployee;

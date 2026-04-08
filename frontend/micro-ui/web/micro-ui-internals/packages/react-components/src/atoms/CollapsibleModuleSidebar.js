@@ -1,6 +1,9 @@
 import React, { Fragment, useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
+const getLinkLabelText = (linkItem) => String(linkItem?.label || "");
+const shouldRenderLinkCount = (count) => count !== undefined && count !== null && count !== "";
+
 const CollapsibleModuleSidebar = ({ links = [], moduleName = "Dashboard", Icon }) => {
     const [isCollapsed, setIsCollapsed] = useState(true);
     const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -12,21 +15,24 @@ const CollapsibleModuleSidebar = ({ links = [], moduleName = "Dashboard", Icon }
 
     const renderNavLink = (linkItem, index, extraClass = "") => {
         const isActive = location.pathname === linkItem.link;
-        const initials = linkItem.label.substring(0, 2).toUpperCase();
+        const labelText = getLinkLabelText(linkItem);
+        const initials = labelText.substring(0, 2).toUpperCase();
 
         const LinkContent = (
             <div className="nav-item-content">
                 <div className="nav-icon-wrapper">
                     {linkItem.icon ? linkItem.icon : <span className="fallback-initial">{initials}</span>}
                 </div>
-                <span className="nav-text">{linkItem.label}</span>
+                    <span className="nav-text">{labelText}</span>
+                    {linkItem.subLabel ? <span className="nav-subtext">{linkItem.subLabel}</span> : null}
+                {shouldRenderLinkCount(linkItem.count) ? <span className="nav-count">{linkItem.count}</span> : null}
             </div>
         );
 
         const className = `nav-item ${isActive ? "active" : ""} ${extraClass}`;
 
         return (
-            <div key={index} className={className} title={isCollapsed ? linkItem.label : ""}>
+            <div key={index} className={className} title={isCollapsed ? labelText : ""}>
                 {linkItem.link ? (
                     linkItem.link.includes("digit-ui") ? (
                         <Link to={linkItem.link} className="nav-link">{LinkContent}</Link>
@@ -43,14 +49,19 @@ const CollapsibleModuleSidebar = ({ links = [], moduleName = "Dashboard", Icon }
     // Mobile horizontal tab bar
     const renderMobileTab = (linkItem, index) => {
         const isActive = location.pathname === linkItem.link;
-        const initials = linkItem.label.substring(0, 2).toUpperCase();
+        const labelText = getLinkLabelText(linkItem);
+        const initials = labelText.substring(0, 2).toUpperCase();
 
         const content = (
             <div className={`mobile-tab-item ${isActive ? "active" : ""}`}>
                 <div className="mobile-tab-icon">
                     {linkItem.icon ? linkItem.icon : <span className="mobile-tab-initial">{initials}</span>}
                 </div>
-                <span className="mobile-tab-label">{linkItem.label}</span>
+                <div className="mobile-tab-copy">
+                    <span className="mobile-tab-label">{labelText}</span>
+                    {linkItem.subLabel ? <span className="mobile-tab-sublabel">{linkItem.subLabel}</span> : null}
+                </div>
+                {shouldRenderLinkCount(linkItem.count) ? <span className="mobile-tab-count">{linkItem.count}</span> : null}
             </div>
         );
 

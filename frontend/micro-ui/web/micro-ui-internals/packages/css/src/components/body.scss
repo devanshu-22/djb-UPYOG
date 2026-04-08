@@ -1,9 +1,9 @@
 body {
-  @apply bg-grey-bg;
+  background-color: #e7e7e7;
 }
 
 .body-container {
-  @apply bg-grey-bg h-full min-h-screen overflow-x-hidden;
+  @apply  h-full min-h-screen overflow-x-hidden;
 }
 
 .navbar {
@@ -27,7 +27,7 @@ body {
 }
 
 .link-label {
-  @apply block text-link text-primary-main mb-md ml-md cursor-pointer;
+  @apply block text-link text-primary-main cursor-pointer;
 
   &:hover {
     @apply text-primary-main;
@@ -267,10 +267,6 @@ body {
     @apply text-heading-l-dt;
   }
 
-  .link-label {
-    margin-left: 0;
-  }
-
   .back-btn {
     margin-left: 0;
   }
@@ -304,17 +300,6 @@ body {
   font-weight: 600;
   color: #ffffff;
   margin: 0;
-}
-
-.module-carousel-header h3::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 4px;
-  height: 16px;
-  width: 4px;
-  background: #3b82f6;
-  border-radius: 4px;
 }
 
 .module-carousel-header {

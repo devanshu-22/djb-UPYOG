@@ -124,11 +124,11 @@ const EditVehicle = ({ parentUrl, heading }) => {
         },
         owner: {
           ...vehicleDetails.owner,
-          gender: gender || vehicleDetails.owner?.gender || "OTHER",
-          dob: dob,
-          emailId: emailId || "abc@egov.com",
-          name: vehicleOwnerName,
-          mobileNumber: phone,
+          gender: data?.selectGender || vehicleDetails.owner?.gender || "OTHER",
+          dob: data?.dob || vehicleDetails.owner?.dob,
+          emailId: data?.emailId || "abc@egov.com",
+          name: data?.ownerName || vehicleDetails.owner?.name,
+          mobileNumber: data?.phone || vehicleDetails.owner?.mobileNumber,
         },
       },
     };

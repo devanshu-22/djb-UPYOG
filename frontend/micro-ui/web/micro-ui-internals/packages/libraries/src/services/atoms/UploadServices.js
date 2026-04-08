@@ -7,12 +7,12 @@ export const UploadServices = {
     formData.append("file", filedata, filedata.name);
     formData.append("tenantId", tenantId);
     formData.append("module", module);
-    let tenantInfo=window?.globalConfigs?.getConfig("ENABLE_SINGLEINSTANCE")?`?tenantId=${tenantId}`:"";
+    let tenantInfo = window?.globalConfigs?.getConfig("ENABLE_SINGLEINSTANCE") ? `?tenantId=${tenantId}` : "";
     var config = {
       method: "post",
-      url:`${Urls.FileStore}${tenantInfo}`,   
+      url: `${Urls.FileStore}${tenantInfo}`,
       data: formData,
-      headers: { "auth-token": Digit.UserService.getUser() ? Digit.UserService.getUser()?.access_token : null},
+      headers: { "auth-token": Digit.UserService.getUser() ? Digit.UserService.getUser()?.access_token : null },
     };
 
     return Axios(config);
@@ -20,32 +20,47 @@ export const UploadServices = {
 
   MultipleFilesStorage: async (module, filesData, tenantId) => {
     const formData = new FormData();
-    const filesArray = Array.from(filesData)
-    filesArray?.forEach((fileData, index) => fileData ? formData.append("file", fileData, fileData.name) : null);
+    const filesArray = Array.from(filesData);
+    filesArray?.forEach((fileData, index) => (fileData ? formData.append("file", fileData, fileData.name) : null));
     formData.append("tenantId", tenantId);
     formData.append("module", module);
-    let tenantInfo=window?.globalConfigs?.getConfig("ENABLE_SINGLEINSTANCE")?`?tenantId=${tenantId}`:"";
+    let tenantInfo = window?.globalConfigs?.getConfig("ENABLE_SINGLEINSTANCE") ? `?tenantId=${tenantId}` : "";
     var config = {
       method: "post",
-      url:`${Urls.FileStore}${tenantInfo}`, 
+      url: `${Urls.FileStore}${tenantInfo}`,
       data: formData,
-      headers: { 'Content-Type': 'multipart/form-data',"auth-token": Digit.UserService.getUser().access_token },
+      headers: { "Content-Type": "multipart/form-data", "auth-token": Digit.UserService.getUser().access_token },
     };
 
     return Axios(config);
   },
 
   Filefetch: async (filesArray, tenantId) => {
-    let tenantInfo=window?.globalConfigs?.getConfig("ENABLE_SINGLEINSTANCE")?`?tenantId=${tenantId}`:"";
+    let tenantInfo = window?.globalConfigs?.getConfig("ENABLE_SINGLEINSTANCE") ? `?tenantId=${tenantId}` : "";
     var config = {
       method: "get",
-      url:`${Urls.FileFetch}${tenantInfo}`, 
+      url: `${Urls.FileFetch}${tenantInfo}`,
       params: {
         tenantId: tenantId,
         fileStoreIds: filesArray?.join(","),
       },
     };
-    const res = await Axios(config);
-    return res;
+    try {
+      // ✅ TRY: attempt API call
+      const res = await Axios(config);
+
+      return res;
+    } catch (error) {
+      // ❌ CATCH: handle ALL failures (400, 503, network, etc.)
+
+      console.error("🚨 FileFetch Error:", error?.response || error);
+
+      return {
+        success: false, // 🔥 important flag
+        status: error?.response?.status || 500,
+        data: error?.response?.data || null,
+        message: error?.response?.data?.message || error.message || "File fetch failed",
+      };
+    }
   },
 };
