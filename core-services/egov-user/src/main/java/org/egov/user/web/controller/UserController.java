@@ -80,7 +80,7 @@ public class UserController {
      */
     @PostMapping("/citizen/_create")
     public Object createCitizen(@RequestBody @Valid CreateUserRequest createUserRequest) {
-        log.info("Received Citizen Registration Request  " + createUserRequest.toString());
+        log.info("Received Citizen Registration Request: {}", createUserRequest);
         User user = createUserRequest.toDomain(true);
         user.setOtpValidationMandatory(IsValidationMandatory);
         if (isRegWithLoginEnabled) {
