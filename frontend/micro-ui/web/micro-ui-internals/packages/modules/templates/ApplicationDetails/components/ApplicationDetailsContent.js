@@ -211,9 +211,9 @@ function ApplicationDetailsContent({
       window.location.href.includes("employee/noc") ||
       window.location.href.includes("employee/ws")
     ) {
-      return { lineHeight: "19px", maxWidth: "950px", minWidth: "280px" };
+      return { lineHeight: "19px", maxWidth: "100%", minWidth: "280px" };
     } else if (checkLocation) {
-      return { lineHeight: "19px", maxWidth: "600px", minWidth: "280px" };
+      return { lineHeight: "19px", maxWidth: "100%", minWidth: "280px" };
     } else {
       return {};
     }
@@ -459,8 +459,7 @@ function ApplicationDetailsContent({
                           text={getTextValue(value)}
                           last={index === detail?.values?.length - 1}
                           caption={value.caption}
-                          className="border-none"
-                          /* privacy object set to the Row Component */
+                          className="border-none" // privacy object set to the Row Component
                           privacy={value?.privacy}
                           // TODO, Later will move to classes
                           rowContainerStyle={getRowStyles()}
@@ -541,13 +540,9 @@ function ApplicationDetailsContent({
           {detail?.isWaterConnectionDetails && <WSAdditonalDetails wsAdditionalDetails={detail} oldValue={oldValue} />}
           {/* {detail?.isLabelShow ? <WSInfoLabel t={t} /> : null} */}
           {detail?.additionalDetails?.redirectUrl && (
-            <div style={{ fontSize: "16px", lineHeight: "24px", fontWeight: "400", padding: "10px 0px" }}>
-              <Link to={detail?.additionalDetails?.redirectUrl?.url}>
-                <span className="link" style={{ color: "#a82227" }}>
-                  {detail?.additionalDetails?.redirectUrl?.title}
-                </span>
-              </Link>
-            </div>
+            <Link to={detail?.additionalDetails?.redirectUrl?.url}>
+              <span className="add-details-link hover-button">{detail?.additionalDetails?.redirectUrl?.title}</span>
+            </Link>
           )}
           {detail?.additionalDetails?.estimationDetails && <WSFeeEstimation wsAdditionalDetails={detail} workflowDetails={workflowDetails} />}
           {detail?.additionalDetails?.estimationDetails && <ViewBreakup wsAdditionalDetails={detail} workflowDetails={workflowDetails} />}

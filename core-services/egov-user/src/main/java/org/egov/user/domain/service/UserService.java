@@ -360,23 +360,28 @@ public class UserService {
      */
     public User createUser(User user, RequestInfo requestInfo) {
         user.setUuid(UUID.randomUUID().toString());
-        log.info("validateNewUser before user object created: {}", user);
+        log.debug("validateNewUser before user object created: {}", user);
         user.validateNewUser(createUserValidateName);
         conditionallyValidateOtp(user);
+        String username = user.getUsername();
         /* encrypt here */
         user = encryptionDecryptionUtil.encryptObject(user, "User", User.class);
         validateUserUniqueness(user);
         if (isEmpty(user.getPassword())) {
             if (defaultPasswordEnabled) {
-                String username = user.getUsername();
-                if (isEmpty(username)) {
+                String usernameEncrypted = user.getUsername();
+                if (isEmpty(usernameEncrypted)) {
                     throw new IllegalArgumentException("Username is required to generate default password");
                 }
                 String generatedPassword = defaultPasswordPattern.replace("{username}", username);
+                log.info("/_createCitizen endpoint called with default password enabled");
+                log.debug("Default password set is {}", generatedPassword);
                 user.setPassword(generatedPassword);
             }
             else{
+                log.info("/_createCitizen endpoint called with default password disabled with reandon uuid");
                 user.setPassword(UUID.randomUUID().toString());
+                log.debug("Generated password is {}",user.getCreatedBy());
             }
         } else {
             validatePassword(user.getPassword());

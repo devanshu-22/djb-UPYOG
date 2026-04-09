@@ -151,9 +151,9 @@ const getBillsGenieKey = (tenantId, moduleCode) => ({
         masterDetails: [{ name: "tenants" }, { name: "citymodule" }],
       },
       {
-      moduleName: "common-masters",
-      masterDetails: [{name: "uiCommonPay"}]
-      }
+        moduleName: "common-masters",
+        masterDetails: [{ name: "uiCommonPay" }],
+      },
     ],
   },
 });
@@ -647,32 +647,31 @@ const getGenderTypeList = (tenantId, moduleCode, type) => ({
 });
 
 const getMeterStatusTypeList = (tenantId) => ({
-    moduleDetails: [
-      {
-        moduleName: "ws-services-calculation",
-        masterDetails: [
-          {
-            name: "MeterStatus",
-            filter: `$.*.name`
-          },
-        ],
-      },
-    ],
-
+  moduleDetails: [
+    {
+      moduleName: "ws-services-calculation",
+      masterDetails: [
+        {
+          name: "MeterStatus",
+          filter: `$.*.name`,
+        },
+      ],
+    },
+  ],
 });
 
 const getBillingPeriodValidation = (tenantId) => ({
-    moduleDetails: [
-      {
-        moduleName: "ws-services-masters",
-        masterDetails: [
-          {
-            name: "billingPeriod",
-            filter: "*"
-          },
-        ],
-      },
-    ],
+  moduleDetails: [
+    {
+      moduleName: "ws-services-masters",
+      masterDetails: [
+        {
+          name: "billingPeriod",
+          filter: "*",
+        },
+      ],
+    },
+  ],
 });
 
 const getDssDashboardCriteria = (tenantId, moduleCode) => ({
@@ -941,53 +940,53 @@ const getMasterDataCategory = (tenantId, moduleCode, masterName, type) => ({
 });
 
 const getHowItWorksJSON = (tenantId) => ({
-      moduleDetails: [
-      {
-        moduleName: "common-masters",
-        masterDetails: [
-          {
-            name: "howItWorks",
-          },
-        ],
-      },
-    ],
+  moduleDetails: [
+    {
+      moduleName: "common-masters",
+      masterDetails: [
+        {
+          name: "howItWorks",
+        },
+      ],
+    },
+  ],
 });
 
 const getFAQsJSON = (tenantId) => ({
   moduleDetails: [
-  {
-    moduleName: "common-masters",
-    masterDetails: [
-      {
-        name: "faqs",
-      },
-    ],
-  },
-],
+    {
+      moduleName: "common-masters",
+      masterDetails: [
+        {
+          name: "faqs",
+        },
+      ],
+    },
+  ],
 });
 const getDSSFAQsJSON = (tenantId) => ({
   moduleDetails: [
-  {
-    moduleName: "dss-dashboard",
-    masterDetails: [
-      {
-        name: "FAQs",
-      },
-    ],
-  },
-],
+    {
+      moduleName: "dss-dashboard",
+      masterDetails: [
+        {
+          name: "FAQs",
+        },
+      ],
+    },
+  ],
 });
 const getDSSAboutJSON = (tenantId) => ({
   moduleDetails: [
-  {
-    moduleName: "dss-dashboard",
-    masterDetails: [
-      {
-        name: "About",
-      },
-    ],
-  },
-],
+    {
+      moduleName: "dss-dashboard",
+      masterDetails: [
+        {
+          name: "About",
+        },
+      ],
+    },
+  ],
 });
 
 const getStaticData = () => ({
@@ -1010,24 +1009,27 @@ const GetEgovLocations = (MdmsRes) => {
   }));
 };
 
-
 const getDataWithi18nkey = (MdmsRes, moduleName, masterName, i18nKeyString) => {
-  return MdmsRes[moduleName][masterName].filter((row) => row.active).map((item) => {
-    return {
-      ...item,
-      i18nKey: `${i18nKeyString + item.name}`,
-    };
-  });
+  return MdmsRes[moduleName][masterName]
+    .filter((row) => row.active)
+    .map((item) => {
+      return {
+        ...item,
+        i18nKey: `${i18nKeyString + item.name}`,
+      };
+    });
 };
 
 const getDataWithi18nkeyandCode = (MdmsRes, moduleName, masterName, i18nKeyString) => {
-  return MdmsRes[moduleName][masterName].filter((row) => row.active).map((item) => {
-    return {
-      ...item,
-      i18nKey: `${i18nKeyString + item.name}`,
-      code: item.code
-    };
-  });
+  return MdmsRes[moduleName][masterName]
+    .filter((row) => row.active)
+    .map((item) => {
+      return {
+        ...item,
+        i18nKey: `${i18nKeyString + item.name}`,
+        code: item.code,
+      };
+    });
 };
 
 const GetServiceDefs = (MdmsRes, moduleCode) => MdmsRes[`RAINMAKER-${moduleCode}`].ServiceDefs.filter((def) => def.active);
@@ -1068,12 +1070,11 @@ const GetVehicleType = (MdmsRes) =>
     });
 
 const GetVehicleMakeModel = (MdmsRes) =>
-  MdmsRes["Vehicle"].VehicleMakeModel.filter((vehicle) => vehicle.active)
-    .map((vehicleDetails) => {
-      return {
-        ...vehicleDetails,
-        i18nKey: `COMMON_MASTER_VEHICLE_${vehicleDetails.code}`,
-      };
+  MdmsRes["Vehicle"].VehicleMakeModel.filter((vehicle) => vehicle.active).map((vehicleDetails) => {
+    return {
+      ...vehicleDetails,
+      i18nKey: `COMMON_MASTER_VEHICLE_${vehicleDetails.code}`,
+    };
   });
 
 const GetSlumLocalityMapping = (MdmsRes, tenantId) =>
@@ -1117,7 +1118,7 @@ const GetTradeOwnerShipCategory = (MdmsRes) =>
   });
 
 const GetPropertyOwnerType = (MdmsRes) =>
-  MdmsRes["PropertyTax"].OwnerType.filter((owner) => owner.active).map((ownerDetails) => {
+  MdmsRes["PropertyTax"]?.OwnerType?.filter((owner) => owner.active).map((ownerDetails) => {
     return {
       ...ownerDetails,
       i18nKey: `PROPERTYTAX_OWNERTYPE_${ownerDetails.code}`,
@@ -1772,7 +1773,7 @@ export const MdmsServiceV2 = {
   getDSSFAQsJSONData: (tenantId) => {
     return MdmsServiceV2.call(tenantId, getDSSFAQsJSON(tenantId));
   },
-  
+
   getDSSAboutJSONData: (tenantId) => {
     return MdmsServiceV2.call(tenantId, getDSSAboutJSON(tenantId));
   },
@@ -1780,21 +1781,26 @@ export const MdmsServiceV2 = {
     return MdmsServiceV2.call(tenantId, getStaticData());
   },
 
-
-/**
- * getMasterData - Fetches master data based on the provided criteria.
- * 
- * @param {string} tenantId - The ID of the tenant for which the data is being fetched.
- * @param {string} moduleCode - The module code associated with the master data.
- * @param {string} masterName - The name of the master data to be fetched.
- * @param {string} type - The type to be passed in switch case for fetching filtered data.
- * 
- * @description
- * This function retrieves master data by calling the `MdmsServiceV2.getDataByCriteria` method.
- * It constructs the criteria for fetching the data using the `getMasterDataCategory` function,
- * which is passed the tenantId, moduleCode, masterName, and type as parameters.
- */
+  /**
+   * getMasterData - Fetches master data based on the provided criteria.
+   *
+   * @param {string} tenantId - The ID of the tenant for which the data is being fetched.
+   * @param {string} moduleCode - The module code associated with the master data.
+   * @param {string} masterName - The name of the master data to be fetched.
+   * @param {string} type - The type to be passed in switch case for fetching filtered data.
+   *
+   * @description
+   * This function retrieves master data by calling the `MdmsServiceV2.getDataByCriteria` method.
+   * It constructs the criteria for fetching the data using the `getMasterDataCategory` function,
+   * which is passed the tenantId, moduleCode, masterName, and type as parameters.
+   */
   getMasterData: (tenantId, moduleCode, masterName, i18nKeyString = "", type) => {
-    return MdmsServiceV2.getDataByCriteria(tenantId, getMasterDataCategory(tenantId, moduleCode, masterName, type), moduleCode, masterName, i18nKeyString);
+    return MdmsServiceV2.getDataByCriteria(
+      tenantId,
+      getMasterDataCategory(tenantId, moduleCode, masterName, type),
+      moduleCode,
+      masterName,
+      i18nKeyString
+    );
   },
 };
