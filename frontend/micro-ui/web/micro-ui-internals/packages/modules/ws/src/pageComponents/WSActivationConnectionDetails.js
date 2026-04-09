@@ -46,9 +46,11 @@ const WSActivationConnectionDetails = ({ config, onSelect, userType, formData, s
   ]);
 
   useEffect(() => {
-    const data = connectionDetails.map((e) => {
-      return e;
-    });
+    const data =
+      connectionDetails?.length &&
+      connectionDetails.map((e) => {
+        return e;
+      });
     onSelect(config?.key, data);
   }, [connectionDetails]);
 
@@ -123,9 +125,10 @@ const WSActivationConnectionDetails = ({ config, onSelect, userType, formData, s
 
   return (
     <React.Fragment>
-      {connectionDetails.map((connectionDetail, index) => (
-        <ConnectionDetails key={connectionDetail.key || index} index={index} connectionDetail={connectionDetail} {...commonProps} />
-      ))}
+      {connectionDetails?.length &&
+        connectionDetails?.map((connectionDetail, index) => (
+          <ConnectionDetails key={connectionDetail.key || index} index={index} connectionDetail={connectionDetail} {...commonProps} />
+        ))}
     </React.Fragment>
   );
 };

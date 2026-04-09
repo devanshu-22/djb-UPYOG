@@ -913,6 +913,20 @@ input[type="number"] {
   height: 100%;
 }
 
+.flex-gap-1 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+}
+
+.flex-gap-2 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
 .bc-white {
   background-color: #fff;
 }

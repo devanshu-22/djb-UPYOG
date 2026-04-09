@@ -22,6 +22,80 @@ const parseAdditionalDetails = (additionalDetails) => {
   }
 };
 
+const getFillingPointIdentifiers = (fillingPoint) => {
+  if (!fillingPoint) return [];
+  if (typeof fillingPoint === "string" || typeof fillingPoint === "number") return [String(fillingPoint)];
+
+  return [
+    fillingPoint?.id,
+    fillingPoint?.fillingStationId,
+    fillingPoint?.bookingId,
+    fillingPoint?.fillingPointId,
+    fillingPoint?.uuid,
+    fillingPoint?.fillingpointmetadata?.fillingPointId,
+  ]
+    .filter((value) => value !== undefined && value !== null && value !== "")
+    .map(String);
+};
+
+const getRowFillingPointIdentifiers = (row = {}) => {
+  return Array.from(
+    new Set([
+      ...[
+        row?.fillingPointId,
+        row?.dsoDetails?.fillingPointId,
+        row?.fillingpointmetadata?.fillingPointId,
+        row?.fillingPtName,
+        row?.filling_pt_name,
+      ]
+        .filter((value) => value !== undefined && value !== null && value !== "")
+        .map(String),
+      ...getFillingPointIdentifiers(row?.fillingPoint),
+      ...getFillingPointIdentifiers(row?.dsoDetails?.fillingPoint),
+      ...getFillingPointIdentifiers(row?.fillingPointDetail),
+    ])
+  );
+};
+
+const getSelectedFillingPointOption = (row, fillingPoints = []) => {
+  const rowFillingPointIdentifiers = getRowFillingPointIdentifiers(row);
+  if (!rowFillingPointIdentifiers.length) return null;
+
+  return (
+    fillingPoints.find((fillingPoint) =>
+      getFillingPointIdentifiers(fillingPoint).some((identifier) => rowFillingPointIdentifiers.includes(identifier))
+    ) || null
+  );
+};
+
+const getFillingPointDisplayValue = (row = {}) => {
+  return (
+    row?.fillingPoint?.fillingPointName ||
+    row?.dsoDetails?.fillingPoint?.fillingPointName ||
+    row?.fillingPointName ||
+    row?.dsoDetails?.fillingPointName ||
+    row?.fillingPointId ||
+    row?.dsoDetails?.fillingPointId ||
+    (typeof row?.fillingPoint === "string" ? row?.fillingPoint : null) ||
+    (typeof row?.dsoDetails?.fillingPoint === "string" ? row?.dsoDetails?.fillingPoint : null) ||
+    row?.fillingpointmetadata?.fillingPointId ||
+    row?.filling_pt_name ||
+    row?.fillingPtName ||
+    "NA"
+  );
+};
+
+const normalizeFillingPointForVehicleUpdate = (fillingPoint) => {
+  if (!fillingPoint || typeof fillingPoint !== "object") return fillingPoint;
+
+  const { id, ...rest } = fillingPoint;
+
+  return {
+    ...rest,
+    fillingStationId: fillingPoint?.fillingStationId || id || fillingPoint?.bookingId || fillingPoint?.uuid || fillingPoint?.fillingPointId,
+  };
+};
+
 const VendorInbox = (props) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const { t } = useTranslation();
@@ -34,7 +108,6 @@ const VendorInbox = (props) => {
   const [vendors, setVendors] = useState([]);
   const [drivers, setDrivers] = useState([]);
   const queryClient = useQueryClient();
-  const [toast, setToast] = useState(null);
 
   const {
     data: vendorData,
@@ -105,6 +178,25 @@ const VendorInbox = (props) => {
     setShowToast(null);
   };
 
+  const getVehicleUpdatePayload = (vehicle, overrides = {}) => {
+    const normalizedVehicle = {
+      ...vehicle,
+      ...overrides,
+      driverData: overrides?.driverData || vehicle?.driverData || vehicle?.driver,
+      fillingPoint: normalizeFillingPointForVehicleUpdate(
+        Object.prototype.hasOwnProperty.call(overrides, "fillingPoint") ? overrides.fillingPoint : vehicle?.fillingPoint
+      ),
+    };
+
+    delete normalizedVehicle.vendor;
+    delete normalizedVehicle.popup;
+    delete normalizedVehicle.driver;
+
+    return {
+      vehicle: normalizedVehicle,
+    };
+  };
+
   const onVendorUpdate = (row) => {
     let formDetails = row.original.dsoDetails;
     const formData = {
@@ -136,14 +228,9 @@ const VendorInbox = (props) => {
   };
 
   const onVehicleUpdate = (row) => {
-    let formDetails = row.original;
-    delete formDetails.vendor;
-    const formData = {
-      vehicle: {
-        ...formDetails,
-        status: formDetails?.status === "ACTIVE" ? "DISABLED" : "ACTIVE",
-      },
-    };
+    const formData = getVehicleUpdatePayload(row.original, {
+      status: row.original?.status === "ACTIVE" ? "DISABLED" : "ACTIVE",
+    });
 
     mutateVehicle(formData, {
       onError: (error, variables) => {
@@ -236,15 +323,9 @@ const VendorInbox = (props) => {
   };
 
   const onDriverSelect = (row, selectedOption) => {
-    let vehicleData = row.original;
-    let selectedDriver = selectedOption;
-
-    const formData = {
-      vehicle: {
-        ...vehicleData,
-        driverData: selectedDriver,
-      },
-    };
+    const formData = getVehicleUpdatePayload(row.original, {
+      driverData: selectedOption,
+    });
 
     mutateVehicle(formData, {
       onError: (error, variables) => {
@@ -262,7 +343,48 @@ const VendorInbox = (props) => {
       },
     });
   };
-  6;
+
+  const onVehicleFillingPointSelect = (row, selectedOption) => {
+    const formData = getVehicleUpdatePayload(row.original, {
+      fillingPoint: selectedOption,
+    });
+
+    mutateVehicle(formData, {
+      onError: (error) => {
+        setShowToast({
+          key: "error",
+          label: error?.message || error?.response?.data?.Errors?.[0]?.message || "Failed to map filling point",
+        });
+        setTimeout(closeToast, 5000);
+      },
+      onSuccess: () => {
+        setTableData((currentTableData) =>
+          currentTableData.map((vehicle) =>
+            vehicle?.id === row.original?.id
+              ? {
+                  ...vehicle,
+                  fillingPoint: {
+                    ...selectedOption,
+                    fillingStationId:
+                      selectedOption?.fillingStationId ||
+                      selectedOption?.id ||
+                      selectedOption?.bookingId ||
+                      selectedOption?.uuid ||
+                      selectedOption?.fillingPointId,
+                  },
+                }
+              : vehicle
+          )
+        );
+        setShowToast({ key: "success", label: "Filling point mapped successfully" });
+        queryClient.invalidateQueries("FSM_VEICLES_SEARCH");
+        queryClient.invalidateQueries("DSO_SEARCH");
+        props.refetchData();
+        props.refetchVendor && props.refetchVendor();
+        setTimeout(closeToast, 3000);
+      },
+    });
+  };
 
   const onCellClick = (row, column, length) => {
     setTableData((old) =>
@@ -347,15 +469,15 @@ const VendorInbox = (props) => {
 
     mapFixedFilling(payload, {
       onSuccess: () => {
-        setToast({ label: t("WT_FIXED_FILLING_MAPPING_SUCCESS") });
+        setShowToast({ key: "success", label: "WT_FIXED_FILLING_MAPPING_SUCCESS" });
         props.refetchData();
         props.refetchVendor && props.refetchVendor();
         setTimeout(closeToast, 5000);
       },
       onError: (err) => {
-        setToast({
-          label: err?.response?.data?.Errors?.[0]?.message || t("WT_FIXED_FILLING_MAPPING_FAIL"),
-          error: true,
+        setShowToast({
+          key: "error",
+          label: err?.response?.data?.Errors?.[0]?.message || "WT_FIXED_FILLING_MAPPING_FAIL",
         });
         setTimeout(closeToast, 5000);
       },
@@ -426,27 +548,13 @@ const VendorInbox = (props) => {
           // },
           {
             Header: t("WT_FILLING_POINT"),
-            accessor: (row) => row?.fillingPointId || row.dsoDetails?.fillingPointId || (row.dsoDetails?.fillingPoint && typeof row.dsoDetails.fillingPoint === "object" ? row.dsoDetails.fillingPoint?.fillingPointName : row.dsoDetails?.fillingPoint) || row?.fillingpointmetadata?.fillingPointId || row?.filling_pt_name || row?.fillingPoint || "NA",
+            accessor: (row) => getFillingPointDisplayValue(row),
             id: "fillingPoint",
             Cell: ({ row }) => {
               return (
                 <Dropdown
                   className="fsm-registry-dropdown"
-                  selected={allFillingPoints?.find((fp) => {
-                    const fpId = String(fp.id || fp.bookingId || fp.fillingPointId || fp.uuid || fp.fillingpointmetadata?.fillingPointId);
-                    const rowFpId = String(
-                      row.original.fillingPointId ||
-                        row.original.dsoDetails?.fillingPointId ||
-                        row.original.dsoDetails?.fillingPoint?.id ||
-                        row.original.fillingpointmetadata?.fillingPointId ||
-                        row.original.filling_pt_name ||
-                        (row.original.fillingPoint && typeof row.original.fillingPoint === "object" ? row.original.fillingPoint?.id : row.original.fillingPoint) ||
-                        row.original.fillingPointDetail?.id ||
-                        row.original.fillingPointDetail?.bookingId ||
-                        ""
-                    );
-                    return fpId === rowFpId && rowFpId !== "undefined" && rowFpId !== "null" && rowFpId !== "";
-                  })}
+                  selected={getSelectedFillingPointOption(row.original, allFillingPoints)}
                   option={allFillingPoints}
                   select={(value) => onFillingPointSelect(row, value)}
                   style={{ textAlign: "left" }}
@@ -803,6 +911,25 @@ const VendorInbox = (props) => {
           },
 
           {
+            Header: t("WT_FILLING_POINT"),
+            accessor: (row) => getFillingPointDisplayValue(row),
+            id: "fillingPoint",
+            Cell: ({ row }) => {
+              return (
+                <Dropdown
+                  className="fsm-registry-dropdown"
+                  selected={getSelectedFillingPointOption(row.original, allFillingPoints)}
+                  option={allFillingPoints}
+                  select={(value) => onVehicleFillingPointSelect(row, value)}
+                  style={{ textAlign: "left" }}
+                  optionKey="fillingPointName"
+                  t={t}
+                />
+              );
+            },
+          },
+
+          {
             Header: t("ES_FSM_REGISTRY_SELECT_DRIVER"),
             id: "driver",
             accessor: (row) => (row.driverData?.name || row.driver?.name || "NA"),
@@ -955,13 +1082,7 @@ const VendorInbox = (props) => {
           },
           {
             Header: t("WT_FILLING_POINT"),
-            exportAccessor: (row) =>
-              row?.dsoDetails?.fillingPoint?.fillingPointName ||
-              row?.dsoDetails?.fillingPoint ||
-              row?.fillingPoint ||
-              row?.dsoDetails?.fillingPointId ||
-              row?.fillingPointId ||
-              "NA",
+            exportAccessor: (row) => getFillingPointDisplayValue(row),
           },
           {
             Header: t("ES_VENDOR_INBOX_SERVICE_TYPE"),
@@ -990,6 +1111,10 @@ const VendorInbox = (props) => {
           {
             Header: t("ES_VENDOR_INBOX_SERVICE_TYPE"),
             exportAccessor: (row) => parseAdditionalDetails(row?.additionalDetails)?.serviceType || "N/A",
+          },
+          {
+            Header: t("WT_FILLING_POINT"),
+            exportAccessor: (row) => getFillingPointDisplayValue(row),
           },
           {
             Header: t("ES_FSM_REGISTRY_SELECT_DRIVER"),
@@ -1123,7 +1248,7 @@ const VendorInbox = (props) => {
       {showToast && (
         <Toast
           error={showToast.key === "error" ? true : false}
-          label={t(showToast.key === "success" ? `ES_FSM_REGISTRY_${showToast.action}_DISABLE_SUCCESS` : showToast.action)}
+          label={showToast.label ? t(showToast.label) : t(showToast.key === "success" ? `ES_FSM_REGISTRY_${showToast.action}_DISABLE_SUCCESS` : showToast.action)}
           onClose={closeToast}
         />
       )}
