@@ -1,7 +1,6 @@
 import React from "react";
 import { TextInput, Dropdown, MultiSelectDropdown, CustomNameDropdown, CardLabel, Loader } from "@djb25/digit-ui-react-components";
 import { useForm, Controller } from "react-hook-form";
-import { useTranslation } from "react-i18next";
 
 const AddTripModal = ({ t, closeModal, onSubmit, initialValues }) => {
   const now = new Date();
@@ -9,22 +8,33 @@ const AddTripModal = ({ t, closeModal, onSubmit, initialValues }) => {
 
   const defaultValues = initialValues
     ? {
-        ...initialValues,
-        arrivalTimeFpl: initialValues.arrivalTimeFpl || currentTime,
-        departureTimeFpl: initialValues.departureTimeFpl || currentTime,
-        arrivalFixedPoint: initialValues.arrivalFixedPoint || currentTime,
-        departureFixedPoint: initialValues.departureFixedPoint || currentTime,
-        returnFpl: initialValues.returnFpl || currentTime,
-        frequencyNo: initialValues.frequencyNo,
-        vehicleId: initialValues.vehicleId,
-      }
+      ...initialValues,
+      arrivalTimeFpl: initialValues.arrivalTimeFpl || currentTime,
+      departureTimeFpl: initialValues.departureTimeFpl || currentTime,
+      arrivalFixedPoint: initialValues.arrivalFixedPoint || currentTime,
+      departureFixedPoint: initialValues.departureFixedPoint || currentTime,
+      returnFpl: initialValues.returnFpl || currentTime,
+      frequencyNo: initialValues.frequencyNo,
+      vehicleId: initialValues.vehicleId,
+      fixedPointCode: initialValues.fixedPointCode,
+      day: initialValues.day || [],
+      volume: initialValues.volume || "",
+      active: initialValues.active || null,
+      remarks: initialValues.remarks || "",
+    }
     : {
-        arrivalTimeFpl: currentTime,
-        departureTimeFpl: currentTime,
-        arrivalFixedPoint: currentTime,
-        departureFixedPoint: currentTime,
-        returnFpl: currentTime,
-      };
+      fixedPointCode: "",
+      day: [],
+      arrivalTimeFpl: currentTime,
+      departureTimeFpl: currentTime,
+      arrivalFixedPoint: currentTime,
+      departureFixedPoint: currentTime,
+      returnFpl: currentTime,
+      volume: "",
+      active: null,
+      remarks: "",
+      frequencyNo: 1,
+    };
 
   const {
     register,
@@ -50,7 +60,7 @@ const AddTripModal = ({ t, closeModal, onSubmit, initialValues }) => {
     mobileNumber: fp?.applicantDetail?.mobileNumber || "NA",
     locality: fp?.address?.locality || "NA",
     displayLabel: `${fp?.applicantDetail?.name || "NA"} | ${fp?.applicantDetail?.mobileNumber || "NA"} | ${fp?.address?.locality || "NA"}`,
-    value: fp.bookingId,
+    value: fp.fixedPointCode || fp?.applicantDetail?.fixedPointId || fp.bookingId,
     fullAddress: [
       fp?.address?.houseNo && `${t("WT_HOUSE_NO")} = ${fp.address.houseNo}`,
       fp?.address?.streetName && `${t("WT_STREET_NAME")} = ${fp.address.streetName}`,
@@ -82,22 +92,24 @@ const AddTripModal = ({ t, closeModal, onSubmit, initialValues }) => {
 
   const formData = watch();
 
-  const isFormDisabled =
-    !formData?.fixedPointCode ||
-    !formData?.day ||
-    formData?.day?.length === 0 ||
-    !formData?.arrivalTimeFpl ||
-    !formData?.departureTimeFpl ||
-    !formData?.arrivalFixedPoint ||
-    !formData?.departureFixedPoint ||
-    !formData?.returnFpl ||
-    !formData?.volume ||
-    !formData?.active;
+  const isFormValid =
+    formData?.fixedPointCode &&
+    formData?.day &&
+    (Array.isArray(formData?.day) && formData?.day?.length > 0) &&
+    formData?.arrivalTimeFpl &&
+    formData?.departureTimeFpl &&
+    formData?.arrivalFixedPoint &&
+    formData?.departureFixedPoint &&
+    formData?.returnFpl &&
+    formData?.volume !== "" &&
+    formData?.volume !== undefined &&
+    formData?.volume !== null &&
+    formData?.active;
 
   const onFormSubmit = (data) => {
-    if (isFormDisabled) return;
     onSubmit({ ...initialValues, ...data });
   };
+
 
   return (
     <div
@@ -218,6 +230,7 @@ const AddTripModal = ({ t, closeModal, onSubmit, initialValues }) => {
                 <Controller
                   control={control}
                   name="fixedPointCode"
+                  defaultValue={defaultValues.fixedPointCode}
                   render={(props) => (
                     <CustomNameDropdown
                       option={fixedPointOptions}
@@ -291,7 +304,9 @@ const AddTripModal = ({ t, closeModal, onSubmit, initialValues }) => {
                 control={control}
                 name="arrivalTimeFpl"
                 defaultValue={defaultValues.arrivalTimeFpl}
-                render={(props) => <TextInput type="time" value={props.value} onChange={props.onChange} onBlur={props.onBlur} />}
+                render={(props) => (
+                  <TextInput type="time" value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={props.onBlur} />
+                )}
               />
             </div>
             <div className="field-group">
@@ -300,7 +315,9 @@ const AddTripModal = ({ t, closeModal, onSubmit, initialValues }) => {
                 control={control}
                 name="departureTimeFpl"
                 defaultValue={defaultValues.departureTimeFpl}
-                render={(props) => <TextInput type="time" value={props.value} onChange={props.onChange} onBlur={props.onBlur} />}
+                render={(props) => (
+                  <TextInput type="time" value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={props.onBlur} />
+                )}
               />
             </div>
             <div className="field-group">
@@ -309,7 +326,9 @@ const AddTripModal = ({ t, closeModal, onSubmit, initialValues }) => {
                 control={control}
                 name="arrivalFixedPoint"
                 defaultValue={defaultValues.arrivalFixedPoint}
-                render={(props) => <TextInput type="time" value={props.value} onChange={props.onChange} onBlur={props.onBlur} />}
+                render={(props) => (
+                  <TextInput type="time" value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={props.onBlur} />
+                )}
               />
             </div>
 
@@ -319,7 +338,9 @@ const AddTripModal = ({ t, closeModal, onSubmit, initialValues }) => {
                 control={control}
                 name="departureFixedPoint"
                 defaultValue={defaultValues.departureFixedPoint}
-                render={(props) => <TextInput type="time" value={props.value} onChange={props.onChange} onBlur={props.onBlur} />}
+                render={(props) => (
+                  <TextInput type="time" value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={props.onBlur} />
+                )}
               />
             </div>
             <div className="field-group">
@@ -328,7 +349,9 @@ const AddTripModal = ({ t, closeModal, onSubmit, initialValues }) => {
                 control={control}
                 name="returnFpl"
                 defaultValue={defaultValues.returnFpl}
-                render={(props) => <TextInput type="time" value={props.value} onChange={props.onChange} onBlur={props.onBlur} />}
+                render={(props) => (
+                  <TextInput type="time" value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={props.onBlur} />
+                )}
               />
             </div>
             <div className="field-group">
@@ -337,7 +360,7 @@ const AddTripModal = ({ t, closeModal, onSubmit, initialValues }) => {
                 control={control}
                 name="volume"
                 defaultValue={defaultValues.volume}
-                render={(props) => <TextInput value={props.value} onChange={props.onChange} onBlur={props.onBlur} />}
+                render={(props) => <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={props.onBlur} />}
               />
             </div>
             <div className="field-group">
@@ -355,7 +378,7 @@ const AddTripModal = ({ t, closeModal, onSubmit, initialValues }) => {
                 control={control}
                 name="remarks"
                 defaultValue={defaultValues.remarks}
-                render={(props) => <TextInput value={props.value} onChange={props.onChange} onBlur={props.onBlur} />}
+                render={(props) => <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={props.onBlur} />}
               />
             </div>
           </div>
@@ -387,16 +410,16 @@ const AddTripModal = ({ t, closeModal, onSubmit, initialValues }) => {
           </button>
           <button
             className="button-save"
-            disabled={isFormDisabled}
+            disabled={!isFormValid}
             onClick={handleSubmit(onFormSubmit)}
             style={{
               padding: "8px 20px",
-              background: isFormDisabled ? "#ccc" : "#1D4E7F",
+              background: !isFormValid ? "#ccc" : "#1D4E7F",
               color: "#fff",
               border: "none",
               borderRadius: "4px",
-              cursor: isFormDisabled ? "not-allowed" : "pointer",
-              opacity: isFormDisabled ? 0.7 : 1,
+              cursor: !isFormValid ? "not-allowed" : "pointer",
+              opacity: !isFormValid ? 0.7 : 1,
             }}
           >
             {initialValues ? t("WT_UPDATE") : t("CS_COMMON_SAVE")}

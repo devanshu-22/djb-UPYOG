@@ -1,5 +1,5 @@
 import React from "react";
-import { LabelFieldPair, CardLabel, TextInput, Card, CardSubHeader } from "@djb25/digit-ui-react-components";
+import { LabelFieldPair, CardLabel, TextInput, CollapsibleCardPage } from "@djb25/digit-ui-react-components";
 
 const AddFillingPointMetaData = ({
   t,
@@ -123,33 +123,32 @@ const AddFillingPointMetaData = ({
     });
   };
 
-  const isMobile = window.Digit.Utils.browser.isMobile();
-
   return (
-    <Card className="formcomposer-section-grid">
-      <CardSubHeader style={{ gridColumn: "span 2" , marginBottom: isMobile ? "0px" : "10px"}}>{t("WT_FILLING_POINT_APPLICANT_DETAILS")}</CardSubHeader>
-      {filteredInputs.map((input) => (
-        <div key={input.name}>
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">
-              {t(input.label)}
-              {input.isMandatory ? " *" : ""}
-            </CardLabel>
+    <CollapsibleCardPage title={t("WT_FILLING_POINT_APPLICANT_DETAILS")} defaultOpen={true}>
+      <div className="formcomposer-section-grid">
+        {filteredInputs.map((input) => (
+          <div key={input.name}>
+            <LabelFieldPair>
+              <CardLabel className="card-label-smaller">
+                {t(input.label)}
+                {input.isMandatory ? " *" : ""}
+              </CardLabel>
 
-            <div style={{ display: "flex" }}>
-              {input.componentInFront || null}
+              <div style={{ display: "flex" }}>
+                {input.componentInFront || null}
 
-              <TextInput
-                value={formData?.[sectionKey]?.[input.name] || ""}
-                onChange={(e) => handleChange(e.target.value, input.name)}
-                maxLength={input.validation?.maxLength}
-                {...input.validation}
-              />
-            </div>
-          </LabelFieldPair>
-        </div>
-      ))}
-    </Card>
+                <TextInput
+                  value={formData?.[sectionKey]?.[input.name] || ""}
+                  onChange={(e) => handleChange(e.target.value, input.name)}
+                  maxLength={input.validation?.maxLength}
+                  {...input.validation}
+                />
+              </div>
+            </LabelFieldPair>
+          </div>
+        ))}
+      </div>
+    </CollapsibleCardPage>
   );
 };
 
