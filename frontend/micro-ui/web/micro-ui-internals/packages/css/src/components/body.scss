@@ -140,9 +140,14 @@ body {
   .form-container {
     display: flex;
     flex-direction: column;
-    padding: 20px;
+    padding: 26px;
     width: 100%;
     gap: 12px;
+
+    @media (min-width: 768px) {
+      padding-right: 75px;
+      padding-top: 33px;
+    }
 
     .header {
       font-size: 18px;
