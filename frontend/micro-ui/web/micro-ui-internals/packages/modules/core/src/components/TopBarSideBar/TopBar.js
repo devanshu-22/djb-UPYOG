@@ -117,11 +117,7 @@ const TopBar = ({
       <div className="topbar" style={CITIZEN ? { left: "0px", width: "100%", backgroundColor: "#FFFFFF" } : { backgroundColor: "#FFFFFF" }}>
         {mobileView ? <Hamburger handleClick={updateSidebar} color="#9E9E9E" /> : null}
         <span style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
-          <div
-            className="brand"
-            style={{ display: "flex", alignItems: "center", gap: "12px", cursor: "pointer" }}
-            onClick={() => (window.location.href = "/digit-ui/citizen")}
-          >
+          <div className="brand flex-center flex-gap-3" style={{ cursor: "pointer" }} onClick={() => (window.location.href = "/digit-ui/citizen")}>
             <div
               className="brand-mark"
               style={{
@@ -154,7 +150,7 @@ const TopBar = ({
               <div className="vertical-divider"></div>
 
               {loggedIn && (
-                <div className="left" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <div className="left flex-center flex-gap-3">
                   <CustomUserDropdown
                     userOptions={userOptions}
                     roleOptions={[]}
@@ -207,8 +203,8 @@ const TopBar = ({
             <img src="https://objectstorage.ap-hyderabad-1.oraclecloud.com/n/axn3czn1s06y/b/djb-dev-asset-bucket/o/djb_logo.png" alt="DJB Logo" />
           </div>
           <div className="btx">
-            <h1 style={{ fontFamily: "'Crimson Pro', serif", fontSize: "29px", fontWeight: "700", color: "#003366"}}>Delhi Jal Board</h1>
-            <p style={{ fontSize: "10.5px", fontWeight: "500", color: "#0070B4"}}>Integrated Enterprise Management System</p>
+            <h1 style={{ fontFamily: "'Crimson Pro', serif", fontSize: "29px", fontWeight: "700", color: "#003366" }}>Delhi Jal Board</h1>
+            <p style={{ fontSize: "10.5px", fontWeight: "500", color: "#0070B4" }}>Integrated Enterprise Management System</p>
           </div>
         </div>
 
