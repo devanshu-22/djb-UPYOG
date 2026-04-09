@@ -1,12 +1,4 @@
-import {
-  BackButton,
-  WhatsappIcon,
-  Card,
-  CitizenHomeCard,
-  CitizenInfoLabel,
-  PrivateRoute,
-  AdvertisementModuleCard,
-} from "@djb25/digit-ui-react-components";
+import { BackButton, CitizenHomeCard, CitizenInfoLabel, PrivateRoute, AdvertisementModuleCard } from "@djb25/digit-ui-react-components";
 import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Route, Switch, useRouteMatch, useHistory } from "react-router-dom";
@@ -149,7 +141,7 @@ const Home = ({
       });
     // }
     return (
-      <React.Fragment>
+      <React.Fragment key={index}>
         <Route key={index} path={`${path}/${code.toLowerCase()}-home`}>
           <div className="moduleLinkHomePage">
             <img src={stateInfo?.bannerUrl} alt="noimagefound" />
@@ -195,8 +187,9 @@ const Home = ({
             </div>
             {code?.toUpperCase() === "ADS" && (
               <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between" }}>
-                {Advertisement.map((ad) => (
+                {Advertisement.map((ad, index) => (
                   <AdvertisementModuleCard
+                    key={index}
                     imageSrc={ad.imageSrc}
                     poleNo={ad.poleNo}
                     light={ad.light}
