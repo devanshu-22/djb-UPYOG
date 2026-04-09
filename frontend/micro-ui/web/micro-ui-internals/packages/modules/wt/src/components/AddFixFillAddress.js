@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { useForm, Controller } from "react-hook-form";
-import { CardLabel, TextInput, Dropdown, Card, CardSubHeader } from "@djb25/digit-ui-react-components";
-
+import { CardLabel, TextInput, Dropdown, Card, CardSubHeader, CollapsibleCardPage } from "@djb25/digit-ui-react-components";
 import { useLocation } from "react-router-dom";
 
 const allOptions = [
@@ -12,12 +10,9 @@ const allOptions = [
 
 const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails }) => {
   const { data: allCities } = Digit.Hooks.useTenants();
-  const { control } = useForm();
   const location = useLocation();
-
+  const tenantId = Digit.ULBService.getCurrentTenantId();
   const usedAddressTypes = location.state?.usedAddressTypes || [];
-
-  // ✅ STATES
   const [pincode, setPincode] = useState(formData?.address?.pincode || "");
   const [city, setCity] = useState(formData?.address?.city || null);
   const [locality, setLocality] = useState(formData?.address?.locality || null);
@@ -27,6 +22,8 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
   const [addressLine1, setAddressLine1] = useState(formData?.address?.addressLine1 || "");
   const [addressLine2, setAddressLine2] = useState(formData?.address?.addressLine2 || "");
   const [addressType, setAddressType] = useState(formData?.address?.addressType || null);
+  const [zone, setZone] = useState(formData?.address?.zone || "");
+  const [block, setBlock] = useState(formData?.address?.block || "");
   const [latitude, setLatitude] = useState(formData?.address?.latitude || "");
   const [longitude, setLongitude] = useState(formData?.address?.longitude || "");
   const [selectedAddress, setSelectedAddress] = useState("");
@@ -42,15 +39,97 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
     return allOptions.filter((opt) => !usedAddressTypes.includes(opt.code));
   }, [usedAddressTypes]);
 
-  // ✅ Fetch localities
-  const { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(city?.code, "revenue", { enabled: !!city }, t);
+  const { data: egovLocationData } = Digit.Hooks.useCommonMDMS(tenantId, "egov-location", ["TenantBoundary"]);
 
-  const structuredLocality =
-    fetchedLocalities?.map((local) => ({
-      i18nKey: local.i18nkey,
-      code: local.code,
-      label: local.label,
-    })) || [];
+  useEffect(() => {
+    if (!city && allCities && allCities.length > 0) {
+      const defaultCity = allCities.find((c) => c.code === tenantId) || allCities[0];
+      setCity(defaultCity);
+    }
+  }, [allCities, city, tenantId]);
+
+  const boundaryData = useMemo(() => {
+    const tenantBoundary = egovLocationData?.["egov-location"]?.TenantBoundary || [];
+
+    const revenueData = tenantBoundary.find((item) => item?.hierarchyType?.code === "REVENUE");
+
+    return revenueData?.boundary || [];
+  }, [egovLocationData]);
+
+  const structuredLocality = useMemo(() => {
+    let localities = [];
+    const boundaries = Array.isArray(boundaryData) ? boundaryData : boundaryData ? [boundaryData] : [];
+
+    const extractLocalities = (node, zone = null, ward = null) => {
+      if (!node) return;
+
+      let currentZone = zone;
+      let currentWard = ward;
+
+      if (node.label === "Zone" || node.label === "ZONE") {
+        currentZone = node.localname || node.code || node.name;
+      }
+      if (node.label === "Ward" || node.label === "WARD" || node.label === "Block" || node.label === "BLOCK") {
+        currentWard = node.code || node.localname || node.name;
+      }
+
+      // Specifically target nodes that are officially labeled as Locality
+      if (node.label === "Locality" || node.label === "LOCALITY") {
+        localities.push({
+          ...node,
+          name: node.localname || node.name || node.code,
+          i18nkey: node.i18nkey || `${tenantId.replace(".", "_")}_REVENUE_${node.code}`.toUpperCase(),
+          zone: currentZone,
+          ward: currentWard,
+        });
+      }
+      // Always traverse down in case there are nested boundaries underneath
+      if (node.children && node.children.length > 0) {
+        node.children.forEach((child) => extractLocalities(child, currentZone, currentWard));
+      }
+    };
+
+    boundaries.forEach((rootNode) => extractLocalities(rootNode));
+
+    return localities;
+  }, [boundaryData, tenantId]);
+
+  // ✅ Extract Pincodes from ALL structured localities
+  const fetchedPincodes = useMemo(() => {
+    const pinSet = new Set();
+
+    // First, scan all structured localities to find every valid pincode
+    structuredLocality.forEach((loc) => {
+      if (loc.pincode) {
+        const pins = Array.isArray(loc.pincode) ? loc.pincode : [loc.pincode];
+        pins.forEach((p) => pinSet.add(p.toString()));
+      }
+    });
+
+    // Fallback to city defaults if no pincodes found in localities
+    if (pinSet.size === 0 && city?.pincode) {
+      const pins = Array.isArray(city.pincode) ? city.pincode : [city.pincode];
+      pins.forEach((p) => pinSet.add(p.toString()));
+    }
+
+    return Array.from(pinSet)
+      .sort()
+      .map((pin) => ({
+        code: pin,
+        name: pin,
+        i18nKey: pin,
+      }));
+  }, [structuredLocality, city]);
+
+  // ✅ Filter Localities based on selected Pincode
+  const filteredLocalities = useMemo(() => {
+    if (!pincode) return structuredLocality;
+    return structuredLocality.filter((loc) => {
+      if (!loc.pincode) return false;
+      const pins = Array.isArray(loc.pincode) ? loc.pincode : [loc.pincode];
+      return pins.some((p) => p.toString() === pincode);
+    });
+  }, [structuredLocality, pincode]);
 
   // ✅ Sync with formData if it changes (edit mode) - only run once or when externally changed
   useEffect(() => {
@@ -64,7 +143,7 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
     if (formData?.address && !isInitialized.current && allCities) {
       const addressData = formData.address;
 
-      // Phase 1: Sync basic fields (City must be set for fetchedLocalities to trigger)
+      // Phase 1: Sync basic fields (City must be set for boundaryData to trigger)
       const cityObj =
         allCities.find((c) => c.code === addressData.cityCode || c.code === addressData.city || c.name === addressData.city) || addressData.city;
 
@@ -79,13 +158,15 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
       setAddressLine1(addressData.addressLine1 || "");
       setAddressLine2(addressData.addressLine2 || "");
       setAddressType(allOptions.find((a) => a.code === addressData.addressType) || addressData.addressType || null);
+      setZone(addressData.zone || "");
+      setBlock(addressData.block || "");
       setLatitude(addressData.latitude || "");
       setLongitude(addressData.longitude || "");
 
-      // Phase 2: Wait for fetchedLocalities or if there is no cityCode to wait for
-      if (fetchedLocalities || !addressData.cityCode) {
-        if (fetchedLocalities) {
-          const localityObj = fetchedLocalities.find(
+      // Phase 2: Wait for boundaryData or if there is no cityCode to wait for
+      if (boundaryData || !addressData.cityCode) {
+        if (boundaryData) {
+          const localityObj = boundaryData.find(
             (l) => l.code === addressData.localityCode || l.code === addressData.locality || l.i18nkey === addressData.locality
           );
           setLocality(localityObj || addressData.locality || null);
@@ -96,11 +177,9 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
         // Only mark as fully initialized once everything (locality included) is ready
         isInitialized.current = true;
         lastSyncedAddress.current = JSON.stringify(addressData);
-      } else {
-        console.log("AddFixFillAddress: Waiting for localities to load for city:", cityObj?.code);
       }
     }
-  }, [formData?.address, city, allCities, fetchedLocalities]);
+  }, [formData?.address, city, allCities, boundaryData]);
 
   // ✅ Get current location
   useEffect(() => {
@@ -111,7 +190,7 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
         setLatitude(pos.coords.latitude);
         setLongitude(pos.coords.longitude);
       },
-      () => console.log("Location blocked")
+      () => {}
     );
   }, []);
 
@@ -120,12 +199,14 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
     if (selectedAddress && Object.keys(selectedAddress).length) {
       setPincode(selectedAddress.pinCode);
       setCity(allCities?.find((c) => c.name === selectedAddress.city));
-      setLocality(fetchedLocalities?.find((l) => l.i18nkey === selectedAddress.locality));
+      setLocality(boundaryData?.find((l) => l.i18nkey === selectedAddress.locality));
       setHouseNo(selectedAddress.houseNumber);
       setStreetName(selectedAddress.streetName);
       setLandmark(selectedAddress.landmark);
       setAddressLine1(selectedAddress.address);
       setAddressLine2(selectedAddress.address2);
+      setZone(selectedAddress.zone);
+      setBlock(selectedAddress.block);
       setLatitude(selectedAddress.latitude);
       setLongitude(selectedAddress.longitude);
       setAddressType(allOptions.find((a) => a.code === selectedAddress.addressType));
@@ -146,6 +227,8 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
       addressLine2: addressLine2 || "",
       streetName: streetName || "",
       addressType: addressType?.code || addressType || null,
+      zone: zone || "",
+      block: block || "",
       latitude: latitude || "",
       longitude: longitude || "",
     };
@@ -156,128 +239,167 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
       lastSyncedAddress.current = addressString;
       onSelect(config?.key || "address", currentAddress);
     }
-  }, [pincode, city, locality, houseNo, landmark, addressLine1, addressLine2, streetName, addressType, latitude, longitude]);
-
-  const isMobile = window.Digit.Utils.browser.isMobile();
+  }, [pincode, city, locality, houseNo, landmark, addressLine1, addressLine2, streetName, addressType, zone, block, latitude, longitude]);
 
   return (
-    <Card className="formcomposer-section-grid">
-      <CardSubHeader style={{ gridColumn: "span 2", marginBottom: isMobile ? "0px" : "10px" }}>{t("WT_ADDRESS_DETAILS")}</CardSubHeader>
-      {/* Existing Address */}
-      {userDetails?.addresses?.length > 0 && (
-        <div style={{ gridColumn: "span 2" }}>
+    <CollapsibleCardPage title={t("WT_ADDRESS_DETAILS")} defaultOpen={true}>
+      <div className="formcomposer-section-grid">
+        {/* Existing Address */}
+        {userDetails?.addresses?.length > 0 && (
+          <div>
+            <CardLabel>{t("COMMON_ADDRESS_TYPE")}</CardLabel>
+            <Dropdown
+              selected={selectedAddress}
+              select={setSelectedAddress}
+              option={userDetails.addresses || []}
+              optionKey="address"
+              t={t}
+              style={{ width: "100%" }}
+            />
+          </div>
+        )}
+
+        {/* Address Type */}
+        <div>
           <CardLabel>{t("COMMON_ADDRESS_TYPE")}</CardLabel>
           <Dropdown
-            selected={selectedAddress}
-            select={setSelectedAddress}
-            option={userDetails.addresses}
-            optionKey="address"
+            selected={addressType}
+            select={setAddressType}
+            option={availableAddressTypeOptions || []}
+            optionKey="i18nKey"
             t={t}
             style={{ width: "100%" }}
           />
         </div>
-      )}
 
-      {/* Address Type */}
-      <div>
-        <CardLabel>{t("COMMON_ADDRESS_TYPE")}</CardLabel>
-        <Dropdown
-          selected={addressType}
-          select={setAddressType}
-          option={availableAddressTypeOptions}
-          optionKey="i18nKey"
-          t={t}
-          style={{ width: "100%" }}
-        />
-      </div>
+        <div>
+          <CardLabel>
+            {t("CITY")} <span className="astericColor">*</span>
+          </CardLabel>
+          <Dropdown selected={city} select={setCity} option={allCities || []} optionKey="i18nKey" t={t} disable={true} />
+        </div>
 
-      {/* House No */}
-      <div>
-        <CardLabel>
-          {t("HOUSE_NO")}
-          <span className="check-page-link-button">*</span>
-        </CardLabel>
-        <TextInput value={houseNo} onChange={(e) => setHouseNo(e.target.value)} />
-      </div>
+        <div>
+          <CardLabel>
+            {t("PINCODE")} <span className="astericColor">*</span>
+          </CardLabel>
+          <Dropdown
+            selected={fetchedPincodes?.find((p) => p.code === pincode) || (pincode ? { code: pincode, name: pincode, i18nKey: pincode } : null)}
+            select={(val) => {
+              const newPin = val?.code;
+              if (newPin !== pincode) {
+                setLocality(null);
+                setZone("");
+                setBlock("");
+                setLatitude("");
+                setLongitude("");
+                setAddressLine1("");
+                setAddressLine2("");
+              }
+              setPincode(newPin);
+            }}
+            option={fetchedPincodes || []}
+            optionKey="i18nKey"
+            t={t}
+            style={{ width: "100%" }}
+          />
+        </div>
 
-      {/* Street */}
-      <div>
-        <CardLabel>
-          {t("STREET_NAME")} <span className="check-page-link-button">*</span>
-        </CardLabel>
-        <TextInput value={streetName} onChange={(e) => setStreetName(e.target.value)} />
-      </div>
+        <div>
+          <CardLabel>
+            {t("LOCALITY")} <span className="astericColor">*</span>
+          </CardLabel>
+          <Dropdown
+            selected={locality}
+            select={(val) => {
+              setLocality(val);
+              if (val?.latitude) setLatitude(val.latitude);
+              if (val?.longitude) setLongitude(val.longitude);
+              if (val?.localname) setAddressLine1(val.localname);
+              if (val?.name) setAddressLine2(val.name);
+              if (val?.zone) setZone(val.zone);
+              if (val?.ward) setBlock(val.ward);
+              if (val?.pincode) {
+                const p = Array.isArray(val.pincode) ? val.pincode[0] : val.pincode;
+                if (p) setPincode(p.toString());
+              }
+            }}
+            option={filteredLocalities}
+            optionKey="i18nkey"
+            t={t}
+            style={{ width: "100%" }}
+          />
+        </div>
 
-      {/* Address Line 1 */}
-      <div>
-        <CardLabel>
-          {t("ADDRESS_LINE1")} <span className="check-page-link-button">*</span>
-        </CardLabel>
-        <TextInput value={addressLine1} onChange={(e) => setAddressLine1(e.target.value)} />
-      </div>
+        {/* House No */}
+        <div>
+          <CardLabel>
+            {t("HOUSE_NO")}
+            <span className="astericColor">*</span>
+          </CardLabel>
+          <TextInput value={houseNo} onChange={(e) => setHouseNo(e.target.value)} style={{ width: "100%" }} />
+        </div>
 
-      {/* Address Line 2 */}
-      <div>
-        <CardLabel>
-          {t("ADDRESS_LINE2")} <span className="check-page-link-button">*</span>
-        </CardLabel>
-        <TextInput value={addressLine2} onChange={(e) => setAddressLine2(e.target.value)} />
-      </div>
+        {/* Street */}
+        <div>
+          <CardLabel>
+            {t("STREET_NAME")} <span className="astericColor">*</span>
+          </CardLabel>
+          <TextInput value={streetName} onChange={(e) => setStreetName(e.target.value)} style={{ width: "100%" }} />
+        </div>
 
-      {/* Landmark */}
-      <div>
-        <CardLabel>{t("LANDMARK")}</CardLabel>
-        <TextInput value={landmark} onChange={(e) => setLandmark(e.target.value)} />
-      </div>
+        {/* Address Line 1 */}
+        <div>
+          <CardLabel>
+            {t("ADDRESS_LINE1")} <span className="astericColor">*</span>
+          </CardLabel>
+          <TextInput value={addressLine1} onChange={(e) => setAddressLine1(e.target.value)} style={{ width: "100%" }} />
+        </div>
 
-      {/* City */}
-      <div>
-        <CardLabel>
-          {t("CITY")} <span className="check-page-link-button">*</span>
-        </CardLabel>
-        <Controller
-          control={control}
-          name="city"
-          render={() => <Dropdown selected={city} select={setCity} option={allCities} optionKey="i18nKey" t={t} />}
-        />
-      </div>
+        {/* Address Line 2 */}
+        <div>
+          <CardLabel>
+            {t("ADDRESS_LINE2")} <span className="astericColor">*</span>
+          </CardLabel>
+          <TextInput value={addressLine2} onChange={(e) => setAddressLine2(e.target.value)} style={{ width: "100%" }} />
+        </div>
 
-      {/* Locality */}
-      <div>
-        <CardLabel>
-          {t("LOCALITY")} <span className="check-page-link-button">*</span>
-        </CardLabel>
-        <Controller
-          control={control}
-          name="locality"
-          render={() => <Dropdown selected={locality} select={setLocality} option={structuredLocality} optionKey="i18nKey" t={t} />}
-        />
-      </div>
+        <div>
+          <CardLabel>
+            {t("BLOCK")} <span className="astericColor">*</span>
+          </CardLabel>
+          <TextInput value={block} onChange={(e) => setBlock(e.target.value)} style={{ width: "100%" }} />
+        </div>
 
-      {/* Latitude */}
-      <div>
-        <CardLabel>
-          {t("LATITUDE")} <span className="check-page-link-button">*</span>
-        </CardLabel>
-        <TextInput value={latitude} onChange={(e) => setLatitude(e.target.value)} />
-      </div>
+        <div>
+          <CardLabel>
+            {t("ZONE")} <span className="astericColor">*</span>
+          </CardLabel>
+          <TextInput value={zone} onChange={(e) => setZone(e.target.value)} style={{ width: "100%" }} />
+        </div>
 
-      {/* Longitude */}
-      <div>
-        <CardLabel>
-          {t("LONGITUDE")} <span className="check-page-link-button">*</span>
-        </CardLabel>
-        <TextInput value={longitude} onChange={(e) => setLongitude(e.target.value)} />
-      </div>
+        {/* Latitude */}
+        <div>
+          <CardLabel>
+            {t("LATITUDE")} <span className="astericColor">*</span>
+          </CardLabel>
+          <TextInput value={latitude} onChange={(e) => setLatitude(e.target.value)} style={{ width: "100%" }} />
+        </div>
 
-      {/* Pincode */}
-      <div>
-        <CardLabel>
-          {t("PINCODE")} <span className="check-page-link-button">*</span>
-        </CardLabel>
-        <TextInput value={pincode} onChange={(e) => setPincode(e.target.value)} maxLength={6} />
+        {/* Longitude */}
+        <div>
+          <CardLabel>
+            {t("LONGITUDE")} <span className="astericColor">*</span>
+          </CardLabel>
+          <TextInput value={longitude} onChange={(e) => setLongitude(e.target.value)} style={{ width: "100%" }} />
+        </div>
+
+        <div style={{ gridColumn: "span 2" }}>
+          <CardLabel>{t("LANDMARK")}</CardLabel>
+          <TextInput value={landmark} onChange={(e) => setLandmark(e.target.value)} style={{ width: "100%" }} />
+        </div>
       </div>
-    </Card>
+    </CollapsibleCardPage>
   );
 };
 

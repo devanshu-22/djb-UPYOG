@@ -14,6 +14,7 @@ import ActionBar from "../atoms/ActionBar";
 import SubmitBar from "../atoms/SubmitBar";
 import LabelFieldPair from "../atoms/LabelFieldPair";
 import LinkButton from "../atoms/LinkButton";
+import CollapsibleCardPage from "./CollapsibleCardPage";
 
 import { useTranslation } from "react-i18next";
 import MobileNumber from "../atoms/MobileNumber";
@@ -272,115 +273,236 @@ export const FormComposer = (props) => {
               Fields default to 1 column each (side by side).
               Set field.colSpan = "span 2" in config for a full-width single field.
             */}
-            <div className={`formcomposer-section-grid ${props.cardFormWrapperClassName ? props.cardFormWrapperClassName : ""}`}>
-              {section && getCombinedComponent(section)}
+            {section?.isCollapsible ? (
+              <CollapsibleCardPage title={t(section.head)} defaultOpen={section.isDefaultOpen}>
+                <div className={`formcomposer-section-grid ${props.cardFormWrapperClassName ? props.cardFormWrapperClassName : ""}`}>
+                  {section.body.map((field, index) => {
+                    const Component =
+                      typeof field?.component === "string" ? Digit.ComponentRegistryService.getComponent(field?.component) : field?.component;
 
-              {section.body.map((field, index) => {
-                const Component =
-                  typeof field?.component === "string" ? Digit.ComponentRegistryService.getComponent(field?.component) : field?.component;
-
-                if (props.inline) {
-                  return (
-                    <React.Fragment key={index}>
-                      <div
-                        style={{
-                          gridColumn: field?.colSpan ? field.colSpan : "span 1",
-                          ...(field.isInsideBox ? getCombinedStyle(field?.placementinbox) : {}),
-                        }}
-                      >
-                        <LabelFieldPair>
-                          {!field.withoutLabel && (
-                            <CardLabel style={{ color: field.isSectionText ? "#505A5F" : "" }} className={field?.disable ? "disabled-label" : ""}>
-                              {t(field.label)}
-                              {field.isMandatory ? " * " : null}
-                              {field.labelChildren && field.labelChildren}
-                            </CardLabel>
-                          )}
-                          {errors && errors[field.populators?.name] && Object.keys(errors[field.populators?.name]).length ? (
-                            <CardLabelError>{t(field.populators.error || errors[field.populators?.name]?.message)}</CardLabelError>
-                          ) : null}
-                          <div style={field.withoutLabel ? { width: "100%" } : {}} className="field">
-                            {fieldSelector(field.type, field.populators, field.isMandatory, field?.disable, field?.component, field)}
-                            {field?.description && <CardLabel>{t(field.description)}</CardLabel>}
+                    if (props.inline) {
+                      return (
+                        <React.Fragment key={index}>
+                          <div
+                            style={{
+                              gridColumn: field?.colSpan ? field.colSpan : "span 1",
+                              ...(field.isInsideBox ? getCombinedStyle(field?.placementinbox) : {}),
+                            }}
+                          >
+                            <LabelFieldPair>
+                              {!field.withoutLabel && (
+                                <CardLabel
+                                  style={{ color: field.isSectionText ? "#505A5F" : "" }}
+                                  className={field?.disable ? "disabled-label" : ""}
+                                >
+                                  {t(field.label)}
+                                  {field.isMandatory ? " * " : null}
+                                  {field.labelChildren && field.labelChildren}
+                                </CardLabel>
+                              )}
+                              {errors && errors[field.populators?.name] && Object.keys(errors[field.populators?.name]).length ? (
+                                <CardLabelError>{t(field.populators.error || errors[field.populators?.name]?.message)}</CardLabelError>
+                              ) : null}
+                              <div style={field.withoutLabel ? { width: "100%" } : {}} className="field">
+                                {fieldSelector(field.type, field.populators, field.isMandatory, field?.disable, field?.component, field)}
+                                {field?.description && <CardLabel>{t(field.description)}</CardLabel>}
+                              </div>
+                            </LabelFieldPair>
                           </div>
-                        </LabelFieldPair>
-                      </div>
-                    </React.Fragment>
-                  );
-                }
+                        </React.Fragment>
+                      );
+                    }
 
-                return (
-                  <Fragment key={index}>
-                    {field.type === "component" ? (
-                      <Controller
-                        name={field.key}
-                        control={control}
-                        render={(props) => {
-                          return (
-                            <>
-                              <Component
-                                userType={"employee"}
-                                t={t}
-                                setValue={setValue}
-                                onSelect={setValue}
-                                config={field}
-                                data={formData}
-                                formData={{
-                                  ...formData,
-                                  [field.key]: props.value || {}, // ✅ inject latest value
-                                }}
-                                register={register}
-                                errors={errors}
-                                setError={setError}
-                                clearErrors={clearErrors}
-                                formState={formState}
-                                style={{
-                                  gridColumn: field?.colSpan ? field.colSpan : "span 1",
-                                  ...props?.fieldStyle,
-                                }}
-                              />
-                            </>
-                          );
-                        }}
-                      />
-                    ) : (
-                      <div>
-                        <LabelFieldPair
-                          key={index}
-                          style={{
-                            gridColumn: field?.colSpan ? field.colSpan : "span 1",
-                          }}
-                        >
-                          {!field.withoutLabel && (
-                            <CardLabel
+                    return (
+                      <Fragment key={index}>
+                        {field.type === "component" ? (
+                          <Controller
+                            name={field.key}
+                            control={control}
+                            render={(props) => {
+                              return (
+                                <>
+                                  <Component
+                                    userType={"employee"}
+                                    t={t}
+                                    setValue={setValue}
+                                    onSelect={setValue}
+                                    config={field}
+                                    data={formData}
+                                    formData={{
+                                      ...formData,
+                                      [field.key]: props.value || {}, // ✅ inject latest value
+                                    }}
+                                    register={register}
+                                    errors={errors}
+                                    setError={setError}
+                                    clearErrors={clearErrors}
+                                    formState={formState}
+                                    style={{
+                                      gridColumn: field?.colSpan ? field.colSpan : "span 1",
+                                      ...props?.fieldStyle,
+                                    }}
+                                  />
+                                </>
+                              );
+                            }}
+                          />
+                        ) : (
+                          <div>
+                            <LabelFieldPair
+                              key={index}
                               style={{
-                                color: field.isSectionText ? "#505A5F" : "",
+                                gridColumn: field?.colSpan ? field.colSpan : "span 1",
                               }}
                             >
-                              {t(field.label)}
-                              {field.isMandatory ? " * " : null}
-                              {field.labelChildren && field.labelChildren}
-                            </CardLabel>
-                          )}
-                          <div style={field.withoutLabel ? { width: "100%", ...props?.fieldStyle } : {}} className="field">
-                            {fieldSelector(field.type, field.populators, field.isMandatory, field?.disable, field?.component, field)}
-                            {field?.description && <CardText style={{ fontSize: "14px", marginTop: "-24px" }}>{t(field?.description)}</CardText>}
+                              {!field.withoutLabel && (
+                                <CardLabel
+                                  style={{
+                                    color: field.isSectionText ? "#505A5F" : "",
+                                  }}
+                                >
+                                  {t(field.label)}
+                                  {field.isMandatory ? " * " : null}
+                                  {field.labelChildren && field.labelChildren}
+                                </CardLabel>
+                              )}
+                              <div style={field.withoutLabel ? { width: "100%", ...props?.fieldStyle } : {}} className="field">
+                                {fieldSelector(field.type, field.populators, field.isMandatory, field?.disable, field?.component, field)}
+                                {field?.description && (
+                                  <CardText style={{ fontSize: "14px", marginTop: "-24px" }}>{t(field?.description)}</CardText>
+                                )}
+                              </div>
+                            </LabelFieldPair>
+                            {field?.populators?.name &&
+                            errors &&
+                            errors[field?.populators?.name] &&
+                            Object.keys(errors[field?.populators?.name]).length ? (
+                              <CardLabelError
+                                style={{ gridColumn: field?.colSpan ? field.colSpan : "span 1", fontSize: "12px", marginTop: "8px" }}
+                              >
+                                {t(field?.populators?.error || errors[field?.populators?.name]?.message)}
+                              </CardLabelError>
+                            ) : null}
                           </div>
-                        </LabelFieldPair>
-                        {field?.populators?.name &&
-                        errors &&
-                        errors[field?.populators?.name] &&
-                        Object.keys(errors[field?.populators?.name]).length ? (
-                          <CardLabelError style={{ gridColumn: field?.colSpan ? field.colSpan : "span 1", fontSize: "12px", marginTop: "8px" }}>
-                            {t(field?.populators?.error || errors[field?.populators?.name]?.message)}
-                          </CardLabelError>
-                        ) : null}
-                      </div>
-                    )}
-                  </Fragment>
-                );
-              })}
-            </div>
+                        )}
+                      </Fragment>
+                    );
+                  })}
+                </div>
+              </CollapsibleCardPage>
+            ) : (
+              <div className={`formcomposer-section-grid ${props.cardFormWrapperClassName ? props.cardFormWrapperClassName : ""}`}>
+                {section && getCombinedComponent(section)}
+
+                {section.body.map((field, index) => {
+                  const Component =
+                    typeof field?.component === "string" ? Digit.ComponentRegistryService.getComponent(field?.component) : field?.component;
+
+                  if (props.inline) {
+                    return (
+                      <React.Fragment key={index}>
+                        <div
+                          style={{
+                            gridColumn: field?.colSpan ? field.colSpan : "span 1",
+                            ...(field.isInsideBox ? getCombinedStyle(field?.placementinbox) : {}),
+                          }}
+                        >
+                          <LabelFieldPair>
+                            {!field.withoutLabel && (
+                              <CardLabel style={{ color: field.isSectionText ? "#505A5F" : "" }} className={field?.disable ? "disabled-label" : ""}>
+                                {t(field.label)}
+                                {field.isMandatory ? " * " : null}
+                                {field.labelChildren && field.labelChildren}
+                              </CardLabel>
+                            )}
+                            {errors && errors[field.populators?.name] && Object.keys(errors[field.populators?.name]).length ? (
+                              <CardLabelError>{t(field.populators.error || errors[field.populators?.name]?.message)}</CardLabelError>
+                            ) : null}
+                            <div style={field.withoutLabel ? { width: "100%" } : {}} className="field">
+                              {fieldSelector(field.type, field.populators, field.isMandatory, field?.disable, field?.component, field)}
+                              {field?.description && <CardLabel>{t(field.description)}</CardLabel>}
+                            </div>
+                          </LabelFieldPair>
+                        </div>
+                      </React.Fragment>
+                    );
+                  }
+
+                  return (
+                    <Fragment key={index}>
+                      {field.type === "component" ? (
+                        <Controller
+                          name={field.key}
+                          control={control}
+                          render={(props) => {
+                            return (
+                              <>
+                                <Component
+                                  userType={"employee"}
+                                  t={t}
+                                  setValue={setValue}
+                                  onSelect={setValue}
+                                  config={field}
+                                  data={formData}
+                                  formData={{
+                                    ...formData,
+                                    [field.key]: props.value || {}, // ✅ inject latest value
+                                  }}
+                                  register={register}
+                                  errors={errors}
+                                  setError={setError}
+                                  clearErrors={clearErrors}
+                                  formState={formState}
+                                  style={{
+                                    gridColumn: field?.colSpan ? field.colSpan : "span 1",
+                                    ...props?.fieldStyle,
+                                  }}
+                                />
+                              </>
+                            );
+                          }}
+                        />
+                      ) : (
+                        <div>
+                          <LabelFieldPair
+                            key={index}
+                            style={{
+                              gridColumn: field?.colSpan ? field.colSpan : "span 1",
+                            }}
+                          >
+                            {!field.withoutLabel && (
+                              <CardLabel
+                                style={{
+                                  color: field.isSectionText ? "#505A5F" : "",
+                                }}
+                              >
+                                {t(field.label)}
+                                {field.isMandatory ? " * " : null}
+                                {field.labelChildren && field.labelChildren}
+                              </CardLabel>
+                            )}
+                            <div style={field.withoutLabel ? { width: "100%", ...props?.fieldStyle } : {}} className="field">
+                              {fieldSelector(field.type, field.populators, field.isMandatory, field?.disable, field?.component, field)}
+                              {field?.description && <CardText style={{ fontSize: "14px", marginTop: "-24px" }}>{t(field?.description)}</CardText>}
+                            </div>
+                          </LabelFieldPair>
+                          {field?.populators?.name &&
+                          errors &&
+                          errors[field?.populators?.name] &&
+                          Object.keys(errors[field?.populators?.name]).length ? (
+                            <CardLabelError
+                              style={{ gridColumn: field?.colSpan ? field.colSpan : "span 1", fontSize: "12px", marginTop: "8px" }}
+                            >
+                              {t(field?.populators?.error || errors[field?.populators?.name]?.message)}
+                            </CardLabelError>
+                          ) : null}
+                        </div>
+                      )}
+                    </Fragment>
+                  );
+                })}
+              </div>
+            )}
 
             {!props.noBreakLine && (array.length - 1 === index ? null : <BreakLine style={props?.breaklineStyle ? props?.breaklineStyle : {}} />)}
           </React.Fragment>
@@ -403,38 +525,96 @@ export const FormComposer = (props) => {
     }
   };
 
+  const cardContent = (
+    <React.Fragment>
+      {props.isCollapsible ? (
+        <CollapsibleCardPage title={props.heading} defaultOpen={props.isDefaultOpen}>
+          {!props.childrenAtTheBottom && props.children}
+          {props.description && <CardLabelDesc className={"repos"}> {props.description} </CardLabelDesc>}
+          {props.text && <CardText>{props.text}</CardText>}
+          <div
+            className={`formcomposer-grid-container-form ${props?.cardFormWrapperClassName ? props.cardFormWrapperClassName : ""}`}
+          >
+            {formFields}
+          </div>
+          {props.childrenAtTheBottom && props.children}
+          {props.submitInForm && (
+            <SubmitBar
+              label={t(props.label)}
+              style={{ ...props?.buttonStyle }}
+              submit="submit"
+              disabled={isDisabled}
+              className="w-full"
+            />
+          )}
+          {props.secondaryActionLabel && (
+            <div className="primary-label-btn" style={{ margin: "20px auto 0 auto" }} onClick={onSecondayActionClick}>
+              {props.secondaryActionLabel}
+            </div>
+          )}
+          {!props.submitInForm && props.label && (
+            <ActionBar>
+              <SubmitBar label={t(props.label)} submit="submit" disabled={isDisabled} />
+              {props.onSkip && props.showSkip && (
+                <LinkButton style={props?.skipStyle} label={t(`CS_SKIP_CONTINUE`)} onClick={props.onSkip} />
+              )}
+            </ActionBar>
+          )}
+        </CollapsibleCardPage>
+      ) : (
+        <React.Fragment>
+          {!props.childrenAtTheBottom && props.children}
+          {props.heading && <CardSubHeader style={{ ...props.headingStyle }}> {props.heading} </CardSubHeader>}
+          {props.description && <CardLabelDesc className={"repos"}> {props.description} </CardLabelDesc>}
+          {props.text && <CardText>{props.text}</CardText>}
+          <div
+            className={`formcomposer-grid-container-form ${props?.cardFormWrapperClassName ? props.cardFormWrapperClassName : ""}`}
+          >
+            {formFields}
+          </div>
+          {props.childrenAtTheBottom && props.children}
+          {props.submitInForm && (
+            <SubmitBar
+              label={t(props.label)}
+              style={{ ...props?.buttonStyle }}
+              submit="submit"
+              disabled={isDisabled}
+              className="w-full"
+            />
+          )}
+          {props.secondaryActionLabel && (
+            <div className="primary-label-btn" style={{ margin: "20px auto 0 auto" }} onClick={onSecondayActionClick}>
+              {props.secondaryActionLabel}
+            </div>
+          )}
+          {!props.submitInForm && props.label && (
+            <ActionBar>
+              <SubmitBar label={t(props.label)} submit="submit" disabled={isDisabled} />
+              {props.onSkip && props.showSkip && (
+                <LinkButton style={props?.skipStyle} label={t(`CS_SKIP_CONTINUE`)} onClick={props.onSkip} />
+              )}
+            </ActionBar>
+          )}
+        </React.Fragment>
+      )}
+    </React.Fragment>
+  );
+
   return (
     <form
       style={{ minHeight: "100%", height: "100%", overflowY: "scroll", flex: "1" }}
       onSubmit={handleSubmit(onSubmit)}
       onKeyDown={(e) => checkKeyDown(e)}
       id={props.formId}
-      className={props.formClassName}
+      className={`${props.formClassName} no-scrollbar`}
     >
-      <Card className={`form-composer-card ${className ? props.cardClassName : ""}`} style={getCardStyles()}>
-        {!props.childrenAtTheBottom && props.children}
-        {props.heading && <CardSubHeader style={{ ...props.headingStyle }}> {props.heading} </CardSubHeader>}
-        {props.description && <CardLabelDesc className={"repos"}> {props.description} </CardLabelDesc>}
-        {props.text && <CardText>{props.text}</CardText>}
-        <div className={`formcomposer-grid-container-form ${props?.cardFormWrapperClassName ? props.cardFormWrapperClassName : ""}`}>
-          {formFields}
-        </div>
-        {props.childrenAtTheBottom && props.children}
-        {props.submitInForm && (
-          <SubmitBar label={t(props.label)} style={{ ...props?.buttonStyle }} submit="submit" disabled={isDisabled} className="w-full" />
-        )}
-        {props.secondaryActionLabel && (
-          <div className="primary-label-btn" style={{ margin: "20px auto 0 auto" }} onClick={onSecondayActionClick}>
-            {props.secondaryActionLabel}
-          </div>
-        )}
-        {!props.submitInForm && props.label && (
-          <ActionBar>
-            <SubmitBar label={t(props.label)} submit="submit" disabled={isDisabled} />
-            {props.onSkip && props.showSkip && <LinkButton style={props?.skipStyle} label={t(`CS_SKIP_CONTINUE`)} onClick={props.onSkip} />}
-          </ActionBar>
-        )}
-      </Card>
+      {props.noCard ? (
+        cardContent
+      ) : (
+        <Card className={`form-composer-card ${className ? props.cardClassName : ""}`} style={getCardStyles()}>
+          {cardContent}
+        </Card>
+      )}
     </form>
   );
 };
