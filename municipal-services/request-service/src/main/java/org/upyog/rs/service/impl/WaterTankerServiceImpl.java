@@ -63,7 +63,6 @@ public class WaterTankerServiceImpl implements WaterTankerService {
 
 		workflowService.updateWorkflowStatus(null, waterTankerRequest);
 
-		// Get the uuid of User from user registry
 		try {
 			RequestInfo requestInfo = waterTankerRequest.getRequestInfo();
 			ApplicantDetail applicantDetail = waterTankerRequest.getWaterTankerBookingDetail().getApplicantDetail();
@@ -73,13 +72,12 @@ public class WaterTankerServiceImpl implements WaterTankerService {
 				throw new RuntimeException("User not found for this mobile number: " +
 						applicantDetail.getMobileNumber());
 			}
-			if(config.getIsUserProfileEnabled()) {
-				waterTankerRequest.getWaterTankerBookingDetail().setApplicantUuid(user.getUuid());
-			} else{
-				// If user profile is not enabled, set the applicantUuid null
-				waterTankerRequest.getWaterTankerBookingDetail().setApplicantUuid(null);
-			}
+
 			log.info("Applicant or User Uuid: " + user.getUuid());
+			String finalApplicantUuid = user.getUuid();
+			waterTankerRequest.getWaterTankerBookingDetail().setApplicantUuid(finalApplicantUuid);          // booking_details.applicant_uuid
+			waterTankerRequest.getWaterTankerBookingDetail().getApplicantDetail().setApplicantId(finalApplicantUuid); // applicant_details.applicant_id
+			waterTankerRequest.getWaterTankerBookingDetail().getAddress().setApplicantId(finalApplicantUuid);         // address_details.applicant_id
 		} catch (Exception e) {
 			log.error("Error fetching or creating user: " + e.getMessage(), e);
 			throw new RuntimeException("Failed to fetch/create user: " + e.getMessage(), e);
@@ -87,9 +85,8 @@ public class WaterTankerServiceImpl implements WaterTankerService {
 
 		requestServiceRepository.saveWaterTankerBooking(waterTankerRequest);
 
-		WaterTankerBookingDetail waterTankerDetail = waterTankerRequest.getWaterTankerBookingDetail();
+		return waterTankerRequest.getWaterTankerBookingDetail();
 
-		return waterTankerDetail;
 	}
 
 
