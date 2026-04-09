@@ -51,6 +51,8 @@ const CreateEmployee = () => {
   const isMobile = window.Digit.Utils.browser.isMobile();
   // const [activeStep, setActiveStep] = useState(0); Commented for development by Avinash
   const [activeStep, setActiveStep] = useState(0); // Only used during development
+  const isAutoAdvancing = React.useRef(false);
+  const previouslyValidSteps = React.useRef({ 0: false, 1: false, 2: false });
 
   const defaultValues = {
     Jurisdictions: [
@@ -110,77 +112,134 @@ const CreateEmployee = () => {
     }
   }, [mobileNumber]);
 
+  const checkPersonalDetails = (currentData, currentPhoneCheck) => {
+    const email = currentData?.SelectEmployeeEmailId?.emailId || "";
+    const name = currentData?.SelectEmployeeName?.employeeName || "";
+    const address = currentData?.SelectEmployeeCorrespondenceAddress?.correspondenceAddress || "";
+    const dob = currentData?.SelectDateofBirthEmployment?.dob;
+    const validEmail = email.length === 0 ? true : Boolean(email.match(Digit.Utils.getPattern("Email")));
+    const isMailNameNumValid = Boolean(validEmail && name.match(Digit.Utils.getPattern("Name")) && address.match(Digit.Utils.getPattern("Address")));
+
+    let isAgeValid = true;
+    if (dob) {
+      const birthDate = new Date(dob);
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      isAgeValid = age >= 18;
+    } else {
+      isAgeValid = false;
+    }
+
+    return !!(
+      currentData?.SelectEmployeeName?.employeeName &&
+      currentData?.SelectEmployeePhoneNumber?.mobileNumber &&
+      currentData?.SelectEmployeeGender?.gender?.code &&
+      isAgeValid &&
+      currentPhoneCheck &&
+      isMailNameNumValid
+    );
+  };
+
+  const checkEmployeeDetails = (currentData) => {
+    return !!(currentData?.SelectEmployeeType?.code && currentData?.SelectDateofEmployment?.dateOfAppointment);
+  };
+
+  const checkJurisdictionDetails = (currentData) => {
+    if (!currentData?.Jurisdictions || currentData.Jurisdictions.length === 0) return false;
+    return currentData.Jurisdictions.every((key) => {
+      return !!(key?.boundary && key?.boundaryType && key?.hierarchy && key?.tenantId && key?.roles?.length > 0);
+    });
+  };
+
+  const checkAssignmentDetails = (currentData) => {
+    if (!currentData?.Assignments || currentData.Assignments.length === 0) return false;
+    return currentData.Assignments.every((key) => {
+      return !!(key.department && key.designation && key.fromDate && (key.toDate || key.isCurrentAssignment));
+    });
+  };
+
   const config = mdmsData?.config ? mdmsData.config : newConfig;
   const formDataRef = React.useRef(sessionFormData);
 
-  const validate = (currentData, currentPhoneCheck, step) => {
+  const validate = (currentData, currentPhoneCheck) => {
     let isValid = true;
-    const currentConfig = config[step];
-    const stepHead = currentConfig?.head;
 
-    if (stepHead === "Personal Details") {
-      isValid =
-        currentData?.SelectEmployeeName?.employeeName &&
-        currentData?.SelectEmployeePhoneNumber?.mobileNumber &&
-        currentData?.SelectEmployeeGender?.gender?.code &&
-        currentPhoneCheck &&
-        checkMailNameNum(currentData);
-    } else if (stepHead === "HR_NEW_EMPLOYEE_FORM_HEADER") {
-      isValid = currentData?.SelectEmployeeType?.code && currentData?.SelectDateofEmployment?.dateOfAppointment;
-    } else if (stepHead === "HR_JURISDICTION_DETAILS_HEADER") {
-      let check = false;
-      for (let i = 0; i < currentData?.Jurisdictions?.length; i++) {
-        let key = currentData?.Jurisdictions[i];
-        if (!(key?.boundary && key?.boundaryType && key?.hierarchy && key?.tenantId && key?.roles?.length > 0)) {
-          check = false;
-          break;
-        } else {
-          check = true;
-        }
-      }
-      isValid = check;
-    } else if (stepHead === "HR_ASSIGN_DET_HEADER") {
-      let setassigncheck = false;
-      for (let i = 0; i < currentData?.Assignments?.length; i++) {
-        let key = currentData?.Assignments[i];
-        if (
-          !(
-            key.department &&
-            key.designation &&
-            key.fromDate &&
-            (currentData?.Assignments[i].toDate || currentData?.Assignments[i]?.isCurrentAssignment)
-          )
-        ) {
-          setassigncheck = false;
-          break;
-        } else if (currentData?.Assignments[i].toDate == null && currentData?.Assignments[i]?.isCurrentAssignment == false) {
-          setassigncheck = false;
-          break;
-        } else {
-          setassigncheck = true;
-        }
-      }
-      isValid = setassigncheck;
-    } else {
-      isValid = true;
-    }
+    isValid =
+      checkPersonalDetails(currentData, currentPhoneCheck) &&
+      checkEmployeeDetails(currentData) &&
+      checkJurisdictionDetails(currentData) &&
+      checkAssignmentDetails(currentData);
 
-    let isFormValid = Boolean(isValid);
-    if (isFormValid !== canSubmit) {
-      setSubmitValve(isFormValid);
+    if (isValid !== canSubmit) {
+      setSubmitValve(isValid);
     }
   };
 
   useEffect(() => {
-    validate(formDataRef.current, phonecheck, activeStep);
-  }, [phonecheck, activeStep, config, canSubmit]);
+    validate(formDataRef.current, phonecheck);
+  }, [phonecheck, config, canSubmit]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (isAutoAdvancing.current) return;
+      const sections = document.querySelectorAll(".employee-form-section .card-header");
+      let currentStep = activeStep;
+      sections.forEach((section, index) => {
+        const rect = section.getBoundingClientRect();
+        if (rect.top >= 0 && rect.top <= window.innerHeight / 2) {
+          currentStep = index;
+        }
+      });
+      if (currentStep !== activeStep) {
+        setActiveStep(currentStep);
+      }
+    };
+
+    const scrollContainer = document.querySelector(".employee-form-section");
+    if (scrollContainer) {
+      scrollContainer.addEventListener("scroll", handleScroll);
+      return () => scrollContainer.removeEventListener("scroll", handleScroll);
+    }
+  }, [activeStep]);
 
   const onFormValueChange = (setValue = true, formData) => {
-    formDataRef.current = { ...sessionFormData, ...formData };
+    const updatedData = { ...sessionFormData, ...formData };
+    formDataRef.current = updatedData;
     if (formData?.SelectEmployeePhoneNumber?.mobileNumber !== mobileNumber) {
       setMobileNumber(formData?.SelectEmployeePhoneNumber?.mobileNumber);
     }
-    validate(formDataRef.current, phonecheck, activeStep);
+    validate(updatedData, phonecheck);
+
+    // Auto-advance logic
+    const sectionsStatus = [
+      { isValid: checkPersonalDetails(updatedData, phonecheck), lastField: updatedData?.SelectEmployeeCorrespondenceAddress?.correspondenceAddress },
+      { isValid: checkEmployeeDetails(updatedData), lastField: updatedData?.SelectEmployeeId?.code },
+      { isValid: checkJurisdictionDetails(updatedData), lastField: true }, // Jurisdictions is non-empty and valid
+    ];
+
+    if (activeStep < sectionsStatus.length) {
+      const currentSection = sectionsStatus[activeStep];
+      if (currentSection.isValid && currentSection.lastField && !previouslyValidSteps.current[activeStep]) {
+        previouslyValidSteps.current[activeStep] = true;
+        setTimeout(() => {
+          handleStepClick(activeStep + 1);
+        }, 600);
+      } else if (!currentSection.isValid) {
+        previouslyValidSteps.current[activeStep] = false;
+      }
+    }
+
+    // Auto-reverse logic: If any previous section becomes invalid, jump back to it
+    for (let i = 0; i < activeStep; i++) {
+      if (!sectionsStatus[i].isValid) {
+        handleStepClick(i);
+        break;
+      }
+    }
   };
 
   const navigateToAcknowledgement = (Employees) => {
@@ -188,15 +247,9 @@ const CreateEmployee = () => {
   };
 
   const onSubmit = (data) => {
-    const isFinalStep = activeStep === config.length - 1;
     const finalData = { ...sessionFormData, ...data };
     formDataRef.current = finalData;
     setSessionFormData(finalData);
-
-    if (!isFinalStep) {
-      setActiveStep(activeStep + 1);
-      return;
-    }
 
     // Final submit logic
     if (finalData.Jurisdictions.filter((juris) => juris.tenantId == tenantId).length == 0) {
@@ -268,19 +321,20 @@ const CreateEmployee = () => {
   };
 
   const handleSecondaryAction = () => {
-    setSessionFormData(formDataRef.current);
-    if (activeStep > 0) setActiveStep(activeStep - 1);
+    history.goBack();
   };
 
   const handleStepClick = (index) => {
-    if (index < activeStep) {
-      setSessionFormData(formDataRef.current);
-      setActiveStep(index);
+    isAutoAdvancing.current = true;
+    setActiveStep(index);
+    const sections = document.querySelectorAll(".employee-form-section .card-header");
+    if (sections[index]) {
+      sections[index].scrollIntoView({ behavior: "smooth" });
     }
+    setTimeout(() => {
+      isAutoAdvancing.current = false;
+    }, 1000);
   };
-
-  const isFinalStep = activeStep === config.length - 1;
-  const activeConfig = React.useMemo(() => [config[activeStep]], [config, activeStep]);
 
   if (isLoading) {
     return <Loader />;
@@ -292,18 +346,26 @@ const CreateEmployee = () => {
         <Stepper customSteps={config} currentStep={activeStep} onStepClick={handleStepClick} t={t} />
         <div className="employee-form-section">
           <FormComposer
-            key={activeStep}
             defaultValues={sessionFormData}
             heading={t("")}
-            config={activeConfig}
+            config={config.map((config) => {
+              return {
+                ...config,
+                isCollapsible: true,
+                isDefaultOpen: true,
+                body: config.body,
+              };
+            })}
+            t={t}
             onSubmit={onSubmit}
             onFormValueChange={onFormValueChange}
             isDisabled={!canSubmit}
-            label={isFinalStep ? t("HR_COMMON_BUTTON_SUBMIT") : t("CS_COMMON_NEXT")}
-            // secondaryActionLabel={activeStep !== 0 ? t("CS_COMMON_BACK") : null}
+            label={t("HR_COMMON_BUTTON_SUBMIT")}
             onSecondayActionClick={handleSecondaryAction}
             cardClassName=""
             formClassName=""
+            noCard={true}
+            noBreakLine={true}
             sectionHeadStyle={{ gridColumn: "span 2" }}
           />
         </div>

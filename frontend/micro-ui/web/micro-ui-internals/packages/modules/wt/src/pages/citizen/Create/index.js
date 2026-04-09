@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "react-query";
 import { Redirect, Route, Switch, useHistory, useLocation, useRouteMatch } from "react-router-dom";
@@ -162,27 +162,26 @@ const WTCreate = () => {
   const MTAcknowledgement = Digit?.ComponentRegistryService?.getComponent("MTAcknowledgement");
   const TPAcknowledgement = Digit?.ComponentRegistryService?.getComponent("TPAcknowledgement");
 
+  const formStepRoutes = ["applicant-details", "address-details", "request-details", "toiletRequest-details", "treePruningRequest-details"];
+  const isFormStep = formStepRoutes.some((route) => pathname.includes(route));
+
+  const sectionRefs = useRef({});
+
+  useEffect(() => {
+    if (isFormStep) {
+      const currentRoute = pathname.split("/").pop();
+      if (sectionRefs.current[currentRoute]) {
+        sectionRefs.current[currentRoute].scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+  }, [pathname, isFormStep]);
+
   return (
     <React.Fragment>
       <div className="employee-form-section-wrapper">
         {!pathname.includes("/info") && <VerticalTimeline config={config} showFinalStep={true} />}
         <div className="employee-form-section">
           <Switch>
-            {config.map((routeObj, index) => {
-              const { component, texts, inputs, key, additionaFields } = routeObj;
-              const Component = typeof component === "string" ? Digit.ComponentRegistryService.getComponent(component) : component;
-              return (
-                <Route path={`${match.path}/${routeObj.route}`} key={index}>
-                  <Component
-                    config={{ texts, inputs, key, additionaFields }}
-                    onSelect={handleSelect}
-                    t={t}
-                    formData={params}
-                    userDetails={userDetails?.user?.[0]}
-                  />
-                </Route>
-              );
-            })}
             <Route path={`${match.path}/check`}>
               <CheckPage onSubmit={wt_create} value={params} />
             </Route>
@@ -194,6 +193,52 @@ const WTCreate = () => {
             </Route>
             <Route path={`${match.path}/tp-acknowledgement`}>
               <TPAcknowledgement data={params} onSuccess={onSuccess} />
+            </Route>
+            {config.map((routeObj, index) => {
+              if (!formStepRoutes.includes(routeObj.route)) {
+                const { component, texts, inputs, key, additionaFields } = routeObj;
+                const Component = typeof component === "string" ? Digit.ComponentRegistryService.getComponent(component) : component;
+                return (
+                  <Route path={`${match.path}/${routeObj.route}`} key={index}>
+                    <Component
+                      config={{ texts, inputs, key, additionaFields }}
+                      onSelect={handleSelect}
+                      t={t}
+                      formData={params}
+                      userDetails={userDetails?.user?.[0]}
+                    />
+                  </Route>
+                );
+              }
+              return null;
+            })}
+            <Route path={formStepRoutes.map((route) => `${match.path}/${route}`)}>
+              <div className="single-page-form-container">
+                {config
+                  .filter((routeObj) => formStepRoutes.includes(routeObj.route))
+                  .map((routeObj, index) => {
+                    const { component, texts, inputs, key, additionaFields } = routeObj;
+                    const Component = typeof component === "string" ? Digit.ComponentRegistryService.getComponent(component) : component;
+                    
+                    // Hide request-details variants that don't match the current service type
+                    const code = params?.serviceType?.serviceType?.code;
+                    if (routeObj.route === "request-details" && code !== "WT") return null;
+                    if (routeObj.route === "toiletRequest-details" && code !== "MobileToilet") return null;
+                    if (routeObj.route === "treePruningRequest-details" && code !== "TREE_PRUNING") return null;
+
+                    return (
+                      <div key={index} ref={(el) => (sectionRefs.current[routeObj.route] = el)} className="form-section-unit">
+                        <Component
+                          config={{ ...routeObj, isCollapsible: true, defaultOpen: true }}
+                          onSelect={handleSelect}
+                          t={t}
+                          formData={params}
+                          userDetails={userDetails?.user?.[0]}
+                        />
+                      </div>
+                    );
+                  })}
+              </div>
             </Route>
             <Route>
               <Redirect to={`${match.path}/${config.indexRoute}`} />
