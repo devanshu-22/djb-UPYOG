@@ -43,6 +43,12 @@ const SelectDateofBirthEmployment = ({ t, config, onSelect, formData = {}, userT
                 defaultValue={undefined}
                 {...input.validation}
               />
+              {formData?.[config.key]?.[input.name] &&
+                new Date(formData[config.key][input.name]) > new Date(new Date().setFullYear(new Date().getFullYear() - 18)) && (
+                  <CardLabelError>
+                    {t("HR_ERROR_AGE_VALIDATION_18") === "HR_ERROR_AGE_VALIDATION_18" ? "Age must be 18 years or above" : t("HR_ERROR_AGE_VALIDATION_18")}
+                  </CardLabelError>
+                )}
             </div>
           </LabelFieldPair>
         </React.Fragment>
