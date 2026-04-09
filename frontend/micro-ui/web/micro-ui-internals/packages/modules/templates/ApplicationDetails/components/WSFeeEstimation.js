@@ -1,7 +1,18 @@
 import React, { useState, Fragment, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Card, CardSectionHeader, CardLabel } from "@djb25/digit-ui-react-components";
-import { Modal, Dropdown, Row, StatusTable, TextInput, Toast } from "@djb25/digit-ui-react-components";
+import {
+  Card,
+  CardSectionHeader,
+  CardLabel,
+  LabelFieldPair,
+  Modal,
+  Dropdown,
+  Row,
+  StatusTable,
+  TextInput,
+  Toast,
+  BreakLine,
+} from "@djb25/digit-ui-react-components";
 import cloneDeep from "lodash/cloneDeep";
 
 const Penality_menu = [
@@ -187,7 +198,7 @@ const WSFeeEstimation = ({ wsAdditionalDetails, workflowDetails }) => {
 
   return (
     <Fragment>
-      <div style={{ lineHeight: "19px", maxWidth: "950px", minWidth: "280px" }}>
+      <div style={{ lineHeight: "19px", maxWidth: "100%", minWidth: "280px" }}>
         {values && (
           <StatusTable>
             <div>
@@ -197,7 +208,7 @@ const WSFeeEstimation = ({ wsAdditionalDetails, workflowDetails }) => {
                 );
               })}
             </div>
-            <hr style={{ border: "1px solid #D6D5D4", color: "#D6D5D4", margin: "16px 0px" }}></hr>
+            <hr style={{ border: "1px solid #D6D5D4", color: "#D6D5D4", margin: "16px 0px" }} />
             <div>
               <Row
                 className="border-none"
@@ -222,7 +233,9 @@ const WSFeeEstimation = ({ wsAdditionalDetails, workflowDetails }) => {
               showPopUp(true);
             }}
           >
-            <span style={{ cursor: "pointer", color: "#a82227" }}>{t("WS_PAYMENT_ADD_REBATE_PENALTY")}</span>
+            <span className="add-details-link hover-button" style={{ cursor: "pointer", color: "#a82227" }}>
+              {t("WS_PAYMENT_ADD_REBATE_PENALTY")}
+            </span>
           </div>
         ) : null}
         {popup && (
@@ -244,29 +257,31 @@ const WSFeeEstimation = ({ wsAdditionalDetails, workflowDetails }) => {
             actionSaveLabel={t("PT_ADD")}
             actionSaveOnSubmit={(e) => addAdhocRebatePenality(e)}
             hideSubmit={false}
-            popupStyles={{ overflowY: "auto" }}
+            popupStyles={{ overflowY: "auto", background: "#f0f3f7" }}
           >
             {
-              <div>
-                <Card style={{ padding: "10px 10px 1px 10px", margin: "0px 0px 15px 0px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                <Card>
                   <CardSectionHeader style={{ fontSize: "16px", fontWeight: "700", lineHeight: "18px", padding: "0px", margin: "0px 0px 10px 0px" }}>
                     {t("PT_AD_PENALTY")}
                   </CardSectionHeader>
-                  <CardLabel>{t("PT_TX_HEADS")}</CardLabel>
-                  <div className="field">
-                    <Dropdown
-                      isMandatory
-                      option={Penality_menu}
-                      optionKey="title"
-                      select={(e) => selectedValuesData("adhocPenaltyReason", true, e)}
-                      selected={fields?.adhocPenaltyReason_data || ""}
-                      isPropertyAssess={true}
-                      name={"adhocPenaltyReason_data"}
-                      t={t}
-                    />
-                  </div>
-                  {fields?.adhocPenaltyReason_data?.title === "PT_OTHERS" && (
+                  <LabelFieldPair>
+                    <CardLabel>{t("PT_TX_HEADS")}</CardLabel>
                     <div className="field">
+                      <Dropdown
+                        isMandatory
+                        option={Penality_menu}
+                        optionKey="title"
+                        select={(e) => selectedValuesData("adhocPenaltyReason", true, e)}
+                        selected={fields?.adhocPenaltyReason_data || ""}
+                        isPropertyAssess={true}
+                        name={"adhocPenaltyReason_data"}
+                        t={t}
+                      />
+                    </div>
+                  </LabelFieldPair>
+                  {fields?.adhocPenaltyReason_data?.title === "PT_OTHERS" && (
+                    <LabelFieldPair>
                       <CardLabel>{t("PT_REASON")}</CardLabel>
                       <div className="field">
                         <TextInput
@@ -285,45 +300,50 @@ const WSFeeEstimation = ({ wsAdditionalDetails, workflowDetails }) => {
                           })}
                         />
                       </div>
-                    </div>
+                    </LabelFieldPair>
                   )}
-                  <CardLabel>{t("PT_HEAD_AMT")}</CardLabel>
-                  <div className="field">
-                    <TextInput
-                      style={{ background: "#FAFAFA" }}
-                      t={t}
-                      type={"number"}
-                      isMandatory={false}
-                      name="adhocPenalty"
-                      value={fields?.adhocPenalty || ""}
-                      onChange={(e) => selectedValuesData("adhocPenalty", false, e)}
-                      {...(validation = {
-                        isRequired: true,
-                        pattern: "^[1-9]+[0-9]*$",
-                        title: t("ERR_DEFAULT_INPUT_FIELD_MSG"),
-                      })}
-                    />
-                  </div>
+                  <LabelFieldPair>
+                    <CardLabel>{t("PT_HEAD_AMT")}</CardLabel>
+                    <div className="field">
+                      <TextInput
+                        style={{ background: "#FAFAFA" }}
+                        t={t}
+                        type={"number"}
+                        isMandatory={false}
+                        name="adhocPenalty"
+                        value={fields?.adhocPenalty || ""}
+                        onChange={(e) => selectedValuesData("adhocPenalty", false, e)}
+                        {...(validation = {
+                          isRequired: true,
+                          pattern: "^[1-9]+[0-9]*$",
+                          title: t("ERR_DEFAULT_INPUT_FIELD_MSG"),
+                        })}
+                      />
+                    </div>
+                  </LabelFieldPair>
                 </Card>
-                <Card style={{ padding: "10px 10px 1px 10px", margin: "0px 0px 15px 0px" }}>
+
+                <Card>
                   <CardSectionHeader style={{ fontSize: "16px", fontWeight: "700", lineHeight: "18px", padding: "0px", margin: "0px 0px 10px 0px" }}>
                     {t("PT_AD_REBATE")}
                   </CardSectionHeader>
-                  <CardLabel>{t("PT_TX_HEADS")}</CardLabel>
-                  <div className="field">
-                    <Dropdown
-                      isMandatory
-                      option={Rebate_menu}
-                      optionKey="title"
-                      select={(e) => selectedValuesData("adhocRebateReason", true, e)}
-                      selected={fields?.adhocRebateReason_data || ""}
-                      name={"adhocRebateReason_data"}
-                      isPropertyAssess={true}
-                      t={t}
-                    />
-                  </div>
-                  {fields?.adhocRebateReason_data?.title === "PT_OTHERS" && (
+                  <LabelFieldPair>
+                    <CardLabel>{t("PT_TX_HEADS")}</CardLabel>
                     <div className="field">
+                      <Dropdown
+                        isMandatory
+                        option={Rebate_menu}
+                        optionKey="title"
+                        select={(e) => selectedValuesData("adhocRebateReason", true, e)}
+                        selected={fields?.adhocRebateReason_data || ""}
+                        name={"adhocRebateReason_data"}
+                        isPropertyAssess={true}
+                        t={t}
+                      />
+                    </div>
+                  </LabelFieldPair>
+                  {fields?.adhocRebateReason_data?.title === "PT_OTHERS" && (
+                    <LabelFieldPair>
                       <CardLabel>{t("PT_REASON")}</CardLabel>
                       <TextInput
                         style={{ background: "#FAFAFA" }}
@@ -340,28 +360,30 @@ const WSFeeEstimation = ({ wsAdditionalDetails, workflowDetails }) => {
                           title: t("TL_NAME_ERROR_MESSAGE"),
                         })}
                       />
-                    </div>
+                    </LabelFieldPair>
                   )}
-                  <CardLabel>{t("PT_HEAD_AMT")}</CardLabel>
-                  <div className="field">
-                    <TextInput
-                      style={{ background: "#FAFAFA" }}
-                      t={t}
-                      type={"number"}
-                      isMandatory={false}
-                      name="adhocRebate"
-                      value={fields?.adhocRebate || ""}
-                      onChange={(e) => selectedValuesData("adhocRebate", false, e)}
-                      {...(validation = {
-                        isRequired: true,
-                        pattern: "^[1-9]+[0-9]*$",
-                        title: t("ERR_DEFAULT_INPUT_FIELD_MSG"),
-                      })}
-                    />
-                  </div>
+                  <LabelFieldPair>
+                    <CardLabel>{t("PT_HEAD_AMT")}</CardLabel>
+                    <div className="field">
+                      <TextInput
+                        style={{ background: "#FAFAFA" }}
+                        t={t}
+                        type={"number"}
+                        isMandatory={false}
+                        name="adhocRebate"
+                        value={fields?.adhocRebate || ""}
+                        onChange={(e) => selectedValuesData("adhocRebate", false, e)}
+                        {...(validation = {
+                          isRequired: true,
+                          pattern: "^[1-9]+[0-9]*$",
+                          title: t("ERR_DEFAULT_INPUT_FIELD_MSG"),
+                        })}
+                      />
+                    </div>
+                  </LabelFieldPair>
                 </Card>
               </div>
-            }{" "}
+            }
           </Modal>
         )}
         {showToast && (
@@ -378,5 +400,4 @@ const WSFeeEstimation = ({ wsAdditionalDetails, workflowDetails }) => {
     </Fragment>
   );
 };
-
 export default WSFeeEstimation;

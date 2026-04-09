@@ -262,7 +262,8 @@
 .clear-search .link-label {
   @apply border-focus text-focus;
   cursor: pointer;
-
+  min-width: 110px;
+  text-align: center;
   &:hover {
     color: #3b59df;
     background-color: #bdc7f3;

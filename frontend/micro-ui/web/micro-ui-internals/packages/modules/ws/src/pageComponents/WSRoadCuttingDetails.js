@@ -1,4 +1,4 @@
-import { CardLabel, Dropdown, LabelFieldPair, LinkButton, TextInput, CardLabelError, DeleteIcon } from "@djb25/digit-ui-react-components";
+import { CardLabel, Dropdown, LabelFieldPair, LinkButton, TextInput, CardLabelError, DeleteIcon, Loader } from "@djb25/digit-ui-react-components";
 import _, { filter } from "lodash";
 import React, { useState, useEffect, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
@@ -32,7 +32,7 @@ const WSRoadCuttingDetails = ({ config, onSelect, userType, formData, setError, 
 
   const addroadCutt = () => {
     const newRoadCutting = createRoadCuttingDetails();
-    setRoadCuttingDetails((prev) => [...prev, newRoadCutting]);
+    setRoadCuttingDetails((prev) => [...(Array.isArray(prev) ? prev : []), newRoadCutting]);
   };
 
   const removeroadCutt = (roadCutt) => {
@@ -67,11 +67,10 @@ const WSRoadCuttingDetails = ({ config, onSelect, userType, formData, setError, 
 
   return (
     <React.Fragment>
-      {roadCuttingDetails
-        .filter((o) => o.status !== "INACTIVE")
-        .map((roadCutt, index) => (
-          <RoadCuttForm key={roadCutt.key} index={index} roadCutt={roadCutt} {...commonProps} />
-        ))}
+      {roadCuttingDetails?.length &&
+        roadCuttingDetails
+          .filter((o) => o.status !== "INACTIVE")
+          .map((roadCutt, index) => <RoadCuttForm key={roadCutt.key} index={index} roadCutt={roadCutt} {...commonProps} />)}
       <LinkButton label={t("WS_ADD_ROAD_TYPE")} onClick={addroadCutt} style={{ color: "orange", display: "inline-block" }} />
     </React.Fragment>
   );

@@ -3,7 +3,7 @@ body {
 }
 
 .body-container {
-  @apply  h-full min-h-screen overflow-x-hidden;
+  @apply h-full min-h-screen overflow-x-hidden;
 }
 
 .navbar {
@@ -157,7 +157,9 @@ body {
     }
 
     .ws-docs-container {
-      padding: 8px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
     }
 
     .ws-doc-card {
@@ -165,7 +167,6 @@ body {
       border: 1px solid #e0e0e0;
       border-radius: 8px;
       padding: 20px;
-      margin-bottom: 20px;
       transition: all 0.2s ease;
     }
 
@@ -204,12 +205,14 @@ body {
 
     .ws-doc-options {
       padding-left: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
 
     .ws-doc-option {
       display: flex;
       align-items: flex-start;
-      margin-bottom: 8px;
       font-size: 15px;
       color: #333;
     }
