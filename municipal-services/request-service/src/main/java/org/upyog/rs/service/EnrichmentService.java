@@ -58,14 +58,13 @@ public class EnrichmentService {
 		WaterTankerBookingDetail waterTankerDetail = waterTankerRequest.getWaterTankerBookingDetail();
 		RequestInfo requestInfo = waterTankerRequest.getRequestInfo();
 		String userUuid = requestInfo.getUserInfo().getUuid();
+		String applicantUuid = RequestServiceUtil.getRandonUUID();
+		String bookingCreateBy = waterTankerRequest.getRequestInfo().getUserInfo().getUserName();
 		AuditDetails auditDetails = RequestServiceUtil.getAuditDetails(requestInfo.getUserInfo().getUuid(), true);
-		if(config.getIsUserProfileEnabled()) {
-			// If the mobile number in the request matches the applicant's mobile number, then set the applicantDetailId as userUuid
+		if (config.getIsUserProfileEnabled()) {
 			if (UserUtil.isCurrentUserApplicant(waterTankerRequest)) {
 				waterTankerDetail.setApplicantUuid(userUuid);
 			} else {
-				// If the mobile number does not match, set the applicantDetailId to null and addressDetailId to null
-				// Setting applicantDetailId and addressDetailId to null to ensure new user and address creation
 				waterTankerDetail.setApplicantUuid(null);
 				waterTankerDetail.setAddressDetailId(null);
 			}
@@ -74,11 +73,9 @@ public class EnrichmentService {
 			String addressDetailId = waterTankerDetail.getAddressDetailId();
 
 			if (StringUtils.isBlank(applicantDetailId)) {
-				// Enrich user details for existing user or user details with address for new user
 				enrichUserDetails(waterTankerRequest);
 			}
 			if (StringUtils.isBlank(addressDetailId)) {
-				// Enrich address details only
 				enrichAddressDetails(waterTankerRequest, waterTankerDetail);
 			}
 		}else{
@@ -92,26 +89,28 @@ public class EnrichmentService {
 				// Enrich user details for existing user or user details with address for new user
 				enrichUserDetails(waterTankerRequest);
 			}
-			waterTankerDetail.setApplicantUuid(null);
+			waterTankerDetail.setApplicantUuid(applicantUuid);
 			waterTankerDetail.setAddressDetailId(null);
-			log.info("User profile is not enabled, setting applicantDetailId and addressDetailId to null");
+			log.info("User profile is not enabled, using generated applicantUuid for both tables");
 		}
+		String resolvedApplicantUuid = waterTankerDetail.getApplicantUuid() != null
+				? waterTankerDetail.getApplicantUuid()
+				: applicantUuid;
+
+		waterTankerDetail.setApplicantUuid(resolvedApplicantUuid);
 		waterTankerDetail.setBookingId(bookingId);
 		waterTankerDetail.setApplicationDate(auditDetails.getCreatedTime());
 		waterTankerDetail.setBookingStatus(RequestServiceStatus.valueOf(waterTankerDetail.getBookingStatus()).toString());
 		waterTankerDetail.setAuditDetails(auditDetails);
-		waterTankerDetail.setTenantId(waterTankerRequest.getWaterTankerBookingDetail().getTenantId());	
-		
+		waterTankerDetail.setTenantId(waterTankerRequest.getWaterTankerBookingDetail().getTenantId());
+
 	    List<String> customIds = getIdList(requestInfo, waterTankerDetail.getTenantId(),
 				config.getWaterTankerApplicationKey(), config.getWaterTankerApplicationFormat(), 1);
-
 		log.info("Enriched application request application no :" + customIds.get(0));
+		waterTankerDetail.setBookingNo(customIds.get(0));
 
-		waterTankerDetail.setBookingNo(customIds.get(0)); 
-
-		
-		waterTankerDetail.setTankerType(waterTankerRequest.getWaterTankerBookingDetail().getTankerType());			
-		waterTankerDetail.setTankerQuantity(waterTankerRequest.getWaterTankerBookingDetail().getTankerQuantity());	
+		waterTankerDetail.setTankerType(waterTankerRequest.getWaterTankerBookingDetail().getTankerType());
+		waterTankerDetail.setTankerQuantity(waterTankerRequest.getWaterTankerBookingDetail().getTankerQuantity());
 		waterTankerDetail.setWaterQuantity(waterTankerRequest.getWaterTankerBookingDetail().getWaterQuantity());
 		waterTankerDetail.setDescription(waterTankerRequest.getWaterTankerBookingDetail().getDescription());
 		waterTankerDetail.setDeliveryDate(waterTankerRequest.getWaterTankerBookingDetail().getDeliveryDate());
@@ -122,19 +121,18 @@ public class EnrichmentService {
 		waterTankerDetail.setLongitude(waterTankerRequest.getWaterTankerBookingDetail().getAddress().getLongitude());
 		waterTankerDetail.setWTfileStoreId(waterTankerRequest.getWaterTankerBookingDetail().getWTfileStoreId());
 		String roles = waterTankerRequest.getRequestInfo().getUserInfo().getRoles()
-                .stream()
-                .map(Role::getName)
-                .collect(Collectors.joining(", "));
-		waterTankerDetail.setBookingCreatedBy(roles);
+				.stream()
+				.map(Role::getName)
+				.collect(Collectors.joining(", "));
+		waterTankerDetail.setBookingCreatedBy(bookingCreateBy);
 
 		waterTankerDetail.getApplicantDetail().setBookingId(bookingId);
-		waterTankerDetail.getApplicantDetail().setApplicantId(RequestServiceUtil.getRandonUUID());
+		waterTankerDetail.getApplicantDetail().setApplicantId(resolvedApplicantUuid);
 		waterTankerDetail.getAddress().setAddressId(RequestServiceUtil.getRandonUUID());
+		waterTankerDetail.getAddress().setApplicantId(resolvedApplicantUuid);
 		waterTankerDetail.getApplicantDetail().setAuditDetails(auditDetails);
-		waterTankerDetail.getAddress().setApplicantId(waterTankerDetail.getApplicantDetail().getApplicantId());
-		
-		log.info("Enriched application request data :" + waterTankerDetail);
 
+		log.info("Enriched application request data :" + waterTankerDetail);
 	}
 
 	// Fixed Point Request
