@@ -18,7 +18,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
   const convertToObject = (String) => (String ? { i18nKey: String, code: String, value: String } : null);
   const user = Digit.UserService.getUser().info;
   const [pincode, setPincode] = useState(
-    formData?.pincode || formData?.address?.pincode || formData?.infodetails?.existingDataSet?.address?.pincode || ""
+    (formData?.pincode || formData?.address?.pincode || formData?.infodetails?.existingDataSet?.address?.pincode)?.toString().split(".")[0] || ""
   );
   const [city, setCity] = useState(
     convertToObject(formData?.city) || formData?.address?.city || formData?.infodetails?.existingDataSet?.address?.cityValue || ""
@@ -74,7 +74,8 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
   const boundaryData = useMemo(() => {
     const tenantBoundary = egovLocationData?.["egov-location"]?.TenantBoundary || [];
     const revenueData = tenantBoundary.find((item) => item?.hierarchyType?.code === "REVENUE");
-    return revenueData?.boundary || [];
+    const boundary = revenueData?.boundary || [];
+    return Array.isArray(boundary) ? boundary : [boundary];
   }, [egovLocationData]);
 
   const structuredLocalityData = useMemo(() => {
@@ -121,7 +122,12 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
     structuredLocalityData.forEach((loc) => {
       if (loc.pincode) {
         const pins = Array.isArray(loc.pincode) ? loc.pincode : [loc.pincode];
-        pins.forEach((p) => pinSet.add(p.toString()));
+        pins.forEach((p) => {
+          if (p) {
+            const sanitizedPin = p.toString().split(".")[0];
+            pinSet.add(sanitizedPin);
+          }
+        });
       }
     });
 
@@ -203,9 +209,9 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
 
   useEffect(() => {
     if (selectedAddress && Object.keys(selectedAddress).length) {
-      setPincode(selectedAddress.pinCode);
+      setPincode(selectedAddress.pinCode?.toString().split(".")[0]);
       setCity(allCities?.find((ele) => ele.name === selectedAddress.city));
-      setLocality(fetchedLocalities?.find((ele) => ele.i18nKey === selectedAddress.locality));
+      setLocality(structuredLocalityData?.find((ele) => ele.i18nKey === selectedAddress.locality));
       setHouseNo(selectedAddress.houseNumber);
       setstreetName(selectedAddress.streetName);
       setLandmark(selectedAddress.landmark);
@@ -355,7 +361,10 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
                   if (val?.ward) setBlock(val.ward);
                   if (val?.pincode) {
                     const p = Array.isArray(val.pincode) ? val.pincode[0] : val.pincode;
-                    if (p) setPincode(p.toString());
+                  if (p) {
+                    const sanitizedPin = p.toString().split(".")[0];
+                    setPincode(sanitizedPin);
+                  }
                   }
                 }}
                 option={filteredLocalities}
