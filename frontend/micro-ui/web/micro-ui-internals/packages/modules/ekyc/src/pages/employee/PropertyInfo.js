@@ -1,401 +1,494 @@
-import React, { useState, useRef } from "react";
-import { Header, Card, LabelFieldPair, CardLabel, TextInput, SubmitBar, CardHeader, ActionBar, Dropdown, PropertyHouse, InfoBannerIcon, RemoveableTag, HomeIcon, ConnectingCheckPoints, CheckPoint } from "@djb25/digit-ui-react-components";
+import React, { useState, useRef, Fragment } from "react";
+import {
+    Card,
+    CardLabel,
+    TextInput,
+    SubmitBar,
+    CardHeader,
+    ActionBar,
+    Dropdown,
+    InfoBannerIcon,
+    HomeIcon,
+} from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useHistory, useLocation } from "react-router-dom";
+
+// ─── Icons ────────────────────────────────────────────────────────────────────
+
+const CheckIcon = ({ size = 11, color = "#fff" }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="3" strokeLinecap="round">
+        <polyline points="20 6 9 17 4 12" />
+    </svg>
+);
+
+const BuildingIcon = ({ size = 16 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8V9h8v10zm-2-8h-4v2h4v-2zm0 4h-4v2h4v-2z" />
+    </svg>
+);
+
+const BriefcaseIcon = ({ size = 16 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M20 6H16V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-2 .89-2 2v13c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6-2v2h-4V4h4z" />
+    </svg>
+);
+
+const DocumentIcon = ({ size = 16 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13z" />
+    </svg>
+);
+
+const CameraIcon = ({ size = 24 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M9 2L7.17 4H4C2.9 4 2 4.9 2 6v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L13 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
+    </svg>
+);
+
+const TrashIcon = ({ size = 14 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#D92D20" strokeWidth="2" strokeLinecap="round">
+        <polyline points="3 6 5 6 21 6" />
+        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+        <path d="M10 11v6M14 11v6" />
+        <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+    </svg>
+);
+
+const PidIcon = ({ size = 16 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+        <rect x="3" y="4" width="18" height="16" rx="2" />
+        <path d="M7 8h5M7 12h8M7 16h4" />
+    </svg>
+);
+
+// ─── Reusable: Section heading with inline rule ───────────────────────────────
+
+const SectionHead = ({ icon, label }) => (
+    <div style={{
+        display: "flex", alignItems: "center", gap: "8px",
+        marginBottom: "16px", marginTop: "4px",
+    }}>
+        <div style={{ opacity: 0.5, display: "flex" }}>{icon}</div>
+        <span style={{ fontSize: "15px", fontWeight: "600", color: "#0B0C0C", whiteSpace: "nowrap" }}>
+            {label}
+        </span>
+        <div style={{ flex: 1, height: "1px", background: "#EAECF0" }} />
+    </div>
+);
+
+// ─── Reusable: Icon-prefixed input ────────────────────────────────────────────
+
+const IconInput = ({ icon, ...props }) => (
+    <div style={{ position: "relative", width: "100%" }}>
+        <div style={{
+            position: "absolute", left: "10px",
+            top: "50%", transform: "translateY(-50%)",
+            zIndex: 1, opacity: 0.45, display: "flex", pointerEvents: "none",
+        }}>
+            {icon}
+        </div>
+        <TextInput textInputStyle={{ paddingLeft: "36px", paddingRight: "12px" }} {...props} />
+    </div>
+);
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 const PropertyInfo = () => {
     const { t } = useTranslation();
     const history = useHistory();
     const location = useLocation();
 
-    const { kNumber } = location.state || { kNumber: "EKYC-1234567890" };
+    const flowState = location.state || { kNumber: "EKYC-1234567890" };
+    const { kNumber } = flowState;
+
     const tenantId = Digit.ULBService.getCurrentTenantId();
-    const { data: dataV0, isLoading: isLoadingV0 } = Digit.Hooks.ekyc.useGetPropertyType(tenantId);
-    const { data, isLoading } = Digit.Hooks.ekyc.useGetConnectionTypeV2(tenantId);
-    const { data: dataV1, isLoading: isLoadingV1 } = Digit.Hooks.ekyc.useGetUserType(tenantId);
-    const { data: dataV2, isLoading: isLoadingV2 } = Digit.Hooks.ekyc.useGetFloorCount(tenantId);
+    const { data: dataV0 } = Digit.Hooks.ekyc.useGetPropertyType(tenantId);
+    const { data: dataConn } = Digit.Hooks.ekyc.useGetConnectionTypeV2(tenantId);
+    const { data: dataV1 } = Digit.Hooks.ekyc.useGetUserType(tenantId);
+    const { data: dataV2 } = Digit.Hooks.ekyc.useGetFloorCount(tenantId);
 
     const [ownerType, setOwnerType] = useState("OWNER");
     const [pidNumber, setPidNumber] = useState("");
-    const [connectionType, setConnectionType] = useState(null);
     const [connectionCategory, setConnectionCategory] = useState(null);
+    const [connectionType, setConnectionType] = useState(null);
     const [userType, setUserType] = useState(null);
     const [noOfFloors, setNoOfFloors] = useState(null);
     const [propertyDocument, setPropertyDocument] = useState(null);
     const [buildingPhoto, setBuildingPhoto] = useState(null);
+
     const fileRef = useRef(null);
     const cameraRef = useRef(null);
 
     const handleSaveAndContinue = () => {
         history.push("/digit-ui/employee/ekyc/review", {
-            ...location.state,
+            ...flowState,
             propertyDetails: {
-                ownerType,
-                pidNumber,
-                connectionType,
-                connectionCategory,
-                userType,
-                noOfFloors,
-                propertyDocument,
-                buildingPhoto
-            }
+                ownerType, pidNumber, connectionType,
+                connectionCategory, userType, noOfFloors,
+                propertyDocument, buildingPhoto,
+            },
         });
     };
 
-    const SuitcaseIcon = () => (
-        <div style={{ backgroundColor: "#E8EAF6", padding: "8px", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M20 6H16V4C16 2.89 15.11 2 14 2H10C8.89 2 8 2.89 8 4V6H4C2.89 6 2 6.89 2 8V19C2 20.11 2.89 21 4 21H20C21.11 21 22 20.11 22 19V8C22 6.89 21.11 6 20 6ZM10 4H14V6H10V4ZM20 19H4V8H20V19ZM13 13V10H11V13H8L12 17L16 13H13Z" fill="#3D51B0" />
-            </svg>
-        </div>
-    );
+    const handleFileUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        setPropertyDocument(file);
+    };
 
-    const BuildingIcon = () => (
-        <div style={{ backgroundColor: "#E8EAF6", padding: "8px", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 7V3H2V21H22V7H12ZM6 19H4V17H6V19ZM6 15H4V13H6V15ZM6 11H4V9H6V11ZM6 7H4V5H6V7ZM10 19H8V17H10V19ZM10 15H8V13H10V15ZM10 11H8V9H10V11ZM10 7H8V5H10V7ZM20 19H12V9H20V19ZM18 11H14V13H18V11ZM18 15H14V17H18V15Z" fill="#3D51B0" />
-            </svg>
-        </div>
-    );
+    const handlePhotoCapture = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onloadend = () => setBuildingPhoto(reader.result);
+        reader.readAsDataURL(file);
+    };
 
-    const PdfIcon = () => (
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2ZM13 9V3.5L18.5 9H13Z" fill="#1976D2" />
-            <path d="M11 14H13V18H11V14ZM11 12H13V13H11V12Z" fill="white" />
-            <path d="M8 16H9V17H8V16Z" fill="white" />
-            <path d="M15 16H16V17H15V16Z" fill="white" />
-            <path d="M12 15.5L14 13.5H10L12 15.5Z" fill="white" />
-            {/* Simple representation of upload arrow on document */}
-            <path d="M12 18V14M12 14L10 16M12 14L14 16" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-    );
+    const connectionCategoryOptions =
+        dataV0?.["ws-services-calculation"]?.propertyTypeV2?.map((item) => ({
+            label: t(item.code), value: item.code,
+        })) || [];
 
-    const CameraIcon = () => (
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M9 2L7.17 4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4H16.83L15 2H9ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17ZM12 9C10.34 9 9 10.34 9 12C9 13.66 10.34 15 12 15C13.66 15 15 13.66 15 12C15 10.34 13.66 9 12 9Z" fill="#3D51B0" />
-        </svg>
-    );
+    const connectionTypeOptions =
+        dataConn?.["ws-services-calculation"]?.connectionTypeV2?.map((item) => ({
+            label: t(item.code), value: item.code,
+        })) || [];
+
+    const userTypeOptions =
+        dataV1?.["ws-services-calculation"]?.userTypeV2?.map((item) => ({
+            label: t(item.code), value: item.code,
+        })) || [];
+
+    const floorOptions =
+        dataV2?.["ws-services-calculation"]?.floorCount?.map((item) => ({
+            label: t(item.code), value: item.code,
+        })) || [];
 
     return (
         <div className="inbox-container">
+            <style>{`
+        @keyframes fadeSlideIn {
+          from { opacity: 0; transform: translateY(8px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+
+            {/* ── Sidebar ── */}
             <div className="filters-container">
-                {/* Sidebar Title Card */}
-                <Card className="sidebar-title-card" style={{ display: "flex", alignItems: "center", padding: "16px", marginBottom: "16px", borderRadius: "4px" }}>
-                    <div className="icon-container" style={{ color: "#0068faff", marginRight: "12px" }}>
-                        <HomeIcon style={{ width: "24px", height: "24px" }} />
+                <Card style={{ display: "flex", alignItems: "center", padding: "12px 16px", marginBottom: "12px", borderRadius: "8px" }}>
+                    <div style={{ color: "#185FA5", marginRight: "10px", display: "flex" }}>
+                        <HomeIcon style={{ width: "20px", height: "20px" }} />
                     </div>
-                    <div style={{ fontWeight: "700", fontSize: "18px", color: "#0B0C0C" }}>
-                        {t("EKYC_PROCESS")}
+                    <div style={{ fontWeight: "600", fontSize: "15px", color: "#0B0C0C" }}>
+                        {t("EKYC_PROCESS") || "eKYC Process"}
                     </div>
                 </Card>
 
-                {/* Progress Steps Sidebar */}
-                <div style={{ backgroundColor: "#FFFFFF", padding: "16px", borderRadius: "8px", border: "1px solid #EAECF0", boxShadow: "0 2px 4px rgba(0,0,0,0.02)" }}>
-                    <ConnectingCheckPoints>
-                        <CheckPoint label={t("EKYC_STEP_AADHAAR") || "Aadhaar"} isCompleted={true} />
-                        <CheckPoint label={t("EKYC_STEP_ADDRESS") || "Address"} isCompleted={true} />
-                        <CheckPoint label={t("EKYC_STEP_PROPERTY") || "Property"} isCompleted={false} />
-                        <CheckPoint label={t("EKYC_STEP_REVIEW") || "Review"} />
-                    </ConnectingCheckPoints>
+                <div style={{ background: "#fff", padding: "16px 14px", borderRadius: "8px", border: "1px solid #EAECF0" }}>
+                    {[
+                        { label: t("EKYC_STEP_AADHAAR") || "Aadhaar", done: true, active: false },
+                        { label: t("EKYC_STEP_ADDRESS") || "Address", done: true, active: false },
+                        { label: t("EKYC_STEP_PROPERTY") || "Property", done: false, active: true },
+                        { label: t("EKYC_STEP_REVIEW") || "Review", done: false, active: false },
+                    ].map((step, i) => (
+                        <div key={i} style={{ display: "flex", gap: "10px", alignItems: "flex-start", position: "relative", paddingBottom: i < 3 ? "18px" : 0 }}>
+                            {i < 3 && (
+                                <div style={{ position: "absolute", left: "10px", top: "22px", width: "1px", height: "calc(100% - 10px)", background: "#EAECF0" }} />
+                            )}
+                            <div style={{
+                                width: "20px", height: "20px", borderRadius: "50%", flexShrink: 0, marginTop: "1px",
+                                border: step.done ? "none" : step.active ? "1.5px solid #185FA5" : "1.5px solid #D0D5DD",
+                                background: step.done ? "#0F6E56" : step.active ? "#E6F1FB" : "#fff",
+                                display: "flex", alignItems: "center", justifyContent: "center",
+                                fontSize: "10px", fontWeight: "500",
+                                color: step.done ? "#fff" : step.active ? "#185FA5" : "#98A2B3",
+                            }}>
+                                {step.done ? <CheckIcon size={11} color="#fff" /> : i + 1}
+                            </div>
+                            <div style={{
+                                fontSize: "12px", paddingTop: "2px",
+                                color: step.done ? "#0F6E56" : step.active ? "#0B0C0C" : "#667085",
+                                fontWeight: step.done || step.active ? "600" : "400",
+                            }}>
+                                {step.label}
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </div>
 
+            {/* ── Main Content ── */}
             <div style={{ flex: 1, marginLeft: "16px" }}>
                 <Card>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-                        <Header>{t("Property Details")}</Header>
-                        <div style={{ fontSize: "14px", fontWeight: "700", color: "#505A5F" }}>
-                            {t("EKYC_K_NUMBER")}: <span style={{ color: "#0B0C0C" }}>{kNumber}</span>
+                    {/* Header */}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+                        <CardHeader style={{ margin: 0, fontSize: "18px" }}>
+                            {t("EKYC_PROPERTY_DETAILS_HEADER") || "Property Details"}
+                        </CardHeader>
+                        <div style={{
+                            background: "#F9FAFB", border: "0.5px solid #EAECF0",
+                            borderRadius: "20px", padding: "4px 14px",
+                            fontSize: "12px", color: "#667085",
+                        }}>
+                            {t("EKYC_K_NUMBER") || "K Number"}:{" "}
+                            <span style={{ color: "#0B0C0C", fontWeight: "600" }}>{kNumber}</span>
                         </div>
                     </div>
 
-                    <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "24px" }}>
-                        <SuitcaseIcon />
-                        <span style={{ fontSize: "20px", fontWeight: "700", color: "#101828" }}>{t("Property Details")}</span>
-                    </div>
+                    <div style={{ animation: "fadeSlideIn 0.3s ease" }}>
 
-                    <Card style={{ padding: "20px", borderRadius: "16px", border: "1px solid #EAECF0", marginBottom: "24px" }}>
-                        {/* Property Owner Selection */}
-                        <div style={{ marginBottom: "24px" }}>
-                            <CardLabel style={{ fontSize: "14px", fontWeight: "600", color: "#667085", marginBottom: "12px" }}>{t("Property_Owner")}</CardLabel>
-                            <div style={{ display: "flex", backgroundColor: "#F2F4F7", padding: "4px", borderRadius: "12px" }}>
-                                <button
-                                    onClick={() => setOwnerType("OWNER")}
-                                    style={{
-                                        flex: 1,
-                                        padding: "10px",
-                                        borderRadius: "10px",
-                                        border: "none",
-                                        backgroundColor: ownerType === "OWNER" ? "#3D51B0" : "transparent",
-                                        color: ownerType === "OWNER" ? "#FFFFFF" : "#667085",
-                                        fontWeight: "600",
-                                        cursor: "pointer",
-                                        transition: "all 0.2s"
-                                    }}
-                                >
-                                    {t("Owner")}
-                                </button>
-                                <button
-                                    onClick={() => setOwnerType("TENANT")}
-                                    style={{
-                                        flex: 1,
-                                        padding: "10px",
-                                        borderRadius: "10px",
-                                        border: "none",
-                                        backgroundColor: ownerType === "TENANT" ? "#3D51B0" : "transparent",
-                                        color: ownerType === "TENANT" ? "#FFFFFF" : "#667085",
-                                        fontWeight: "600",
-                                        cursor: "pointer",
-                                        transition: "all 0.2s"
-                                    }}
-                                >
-                                    {t("Tenant")}
-                                </button>
+                        {/* ── Property Details Section ── */}
+                        <SectionHead
+                            icon={<BriefcaseIcon size={16} />}
+                            label={t("EKYC_PROPERTY_DETAILS") || "Property details"}
+                        />
+
+                        {/* Owner / Tenant Toggle */}
+                        <div style={{ marginBottom: "20px" }}>
+                            <div style={{ fontSize: "11px", fontWeight: "600", color: "#667085", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "8px" }}>
+                                {t("EKYC_PROPERTY_OWNER") || "Property owner"}
                             </div>
-                        </div>
-
-                        {/* PID Number Section */}
-                        <div style={{ marginBottom: "8px" }}>
-                            <CardLabel style={{ fontSize: "14px", fontWeight: "600", color: "#667085", marginBottom: "12px" }}>
-                                {t("PID_Number")} <span style={{ fontStyle: "italic", fontWeight: "400", color: "#98A2B3" }}>{t("Optional")}</span>
-                            </CardLabel>
-                            <div className="field" style={{ position: "relative" }}>
-                                <TextInput
-                                    value={pidNumber}
-                                    onChange={(e) => setPidNumber(e.target.value)}
-                                    placeholder={t("Enter_PID_Number")}
-                                    textInputStyle={{ paddingLeft: "44px", borderRadius: "12px", border: "1px solid #D0D5DD", height: "56px" }}
-                                />
-                                <div style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "#3D51B0", fontSize: "20px", fontWeight: "600" }}>#</div>
-                            </div>
-                        </div>
-                    </Card>
-
-                    {/* Building Info Section */}
-                    <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "24px" }}>
-                        <BuildingIcon />
-                        <span style={{ fontSize: "20px", fontWeight: "700", color: "#101828" }}>{t("Building_Info")}</span>
-                    </div>
-
-                    <Card style={{ padding: "20px", borderRadius: "16px", border: "1px solid #EAECF0", marginBottom: "24px" }}>
-
-                        {/* Dropdowns */}
-                        {[
-                            {
-                                label: "Type_of_Connection",
-                                state: connectionCategory,
-                                setState: setConnectionCategory,
-                                options: dataV0?.["ws-services-calculation"]?.propertyTypeV2?.map(item => ({
-                                    label: t(item.code),
-                                    value: item.code
-                                })) || []
-                            },
-                            {
-                                label: "Connection_Category",
-                                state: connectionType,
-                                setState: setConnectionType,
-                                options: data?.["ws-services-calculation"]?.connectionTypeV2?.map(item => ({
-                                    label: t(item.code),
-                                    value: item.code
-                                })) || []
-                            },
-                            // { label: "User_Type", state: userType, setState: setUserType },
-                            {
-                                label: "User_Type",
-                                state: userType,
-                                setState: setUserType,
-                                options: dataV1?.["ws-services-calculation"]?.userTypeV2?.map(item => ({
-                                    label: t(item.code),
-                                    value: item.code
-                                })) || []
-                            },
-                            {
-                                label: "No_of_Floor",
-                                state: noOfFloors,
-                                setState: setNoOfFloors,
-                                options: dataV2?.["ws-services-calculation"]?.floorCount?.map(item => ({
-                                    label: t(item.code),
-                                    value: item.code
-                                })) || []
-                            }
-                        ].map((item, idx) => (
-                            <div key={idx} style={{ marginBottom: "20px" }}>
-                                <CardLabel style={{ fontSize: "14px", fontWeight: "600", color: "#344054", marginBottom: "8px" }}>{t(item.label)}</CardLabel>
-                                <Dropdown
-                                    selected={item.state}
-                                    select={item.setState}
-                                    option={item.options || [{ label: `Select ${item.label}`, value: "" }]}
-                                    optionKey="label"
-                                    t={t}
-                                    style={{ borderRadius: "12px", border: "1px solid #D0D5DD", height: "48px" }}
-                                />
-                            </div>
-                        ))}
-                        <div
-                            style={{
-                                display: "flex",
-                                gap: "24px",
-                                alignItems: "stretch", // important
-                                flexWrap: "wrap"
-                            }}
-                        >
-                            {/* PDF Upload Box */}
-                            <div
-                                style={{
-                                    flex: 1,
-                                    minWidth: "300px",
-                                    display: "flex",
-                                    flexDirection: "column"
-                                }}
-                            >
-                                <CardLabel
-                                    style={{
-                                        fontSize: "14px",
-                                        fontWeight: "600",
-                                        color: "#344054",
-                                        marginBottom: "8px"
-                                    }}
-                                >
-                                    {t("Upload_Property_Document")}
-                                </CardLabel>
-
-                                <div
-                                    style={{
-                                        flex: 1, // important for equal height
-                                        backgroundColor: "#EBF5FF",
-                                        border: "1px solid #B2DDFF",
-                                        borderRadius: "16px",
-                                        padding: "32px 24px",
-                                        textAlign: "center",
-                                        cursor: "pointer",
-                                        display: "flex",
-                                        flexDirection: "column",
-                                        justifyContent: "center"
-                                    }}
-                                    onClick={() => fileRef.current.click()}
-                                >
-                                    <input type="file" ref={fileRef} style={{ display: "none" }} accept=".pdf" />
-
-                                    <div
+                            <div style={{ display: "flex", backgroundColor: "#F2F4F7", padding: "4px", borderRadius: "10px", gap: "4px" }}>
+                                {["OWNER", "TENANT"].map((type) => (
+                                    <button
+                                        key={type}
+                                        onClick={() => setOwnerType(type)}
                                         style={{
-                                            color: "#1570EF",
-                                            fontWeight: "600",
-                                            fontSize: "16px",
-                                            marginBottom: "20px",
-                                            lineHeight: "1.5"
+                                            flex: 1, padding: "9px 12px", borderRadius: "7px", border: "none", cursor: "pointer",
+                                            fontSize: "13px", fontWeight: "600", transition: "all 0.15s",
+                                            background: ownerType === type ? "#185FA5" : "transparent",
+                                            color: ownerType === type ? "#fff" : "#667085",
                                         }}
                                     >
-                                        {t("Upload_your_property_document_in_PDF_Only")}
-                                    </div>
+                                        {t(`EKYC_${type}`) || (type === "OWNER" ? "Owner" : "Tenant")}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
 
-                                    <div style={{ display: "flex", justifyContent: "center" }}>
-                                        <div
-                                            style={{
-                                                backgroundColor: "#FFFFFF",
-                                                padding: "12px",
-                                                borderRadius: "12px",
-                                                boxShadow: "0px 1px 2px rgba(16, 24, 40, 0.05)"
-                                            }}
-                                        >
-                                            <PdfIcon />
-                                        </div>
+                        {/* PID Number */}
+                        <div style={{ marginBottom: "20px" }}>
+                            <div style={{ fontSize: "11px", fontWeight: "600", color: "#667085", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "6px" }}>
+                                {t("EKYC_PID_NUMBER") || "PID number"}{" "}
+                                <span style={{ fontStyle: "italic", fontWeight: "400", textTransform: "none", color: "#98A2B3" }}>
+                                    — {t("EKYC_OPTIONAL") || "optional"}
+                                </span>
+                            </div>
+                            <IconInput
+                                icon={<PidIcon size={15} />}
+                                value={pidNumber}
+                                onChange={(e) => setPidNumber(e.target.value)}
+                                placeholder={t("EKYC_ENTER_PID_NUMBER") || "Enter PID number"}
+                            />
+                        </div>
+
+                        <hr style={{ margin: "24px 0", border: 0, borderTop: "1px solid #EAECF0" }} />
+
+                        {/* ── Building Info Section ── */}
+                        <SectionHead
+                            icon={<BuildingIcon size={16} />}
+                            label={t("EKYC_BUILDING_INFO") || "Building info"}
+                        />
+
+                        {/* Dropdowns grid */}
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", marginBottom: "14px" }}>
+                            <div>
+                                <div style={{ fontSize: "11px", fontWeight: "600", color: "#667085", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "6px" }}>
+                                    {t("EKYC_TYPE_OF_CONNECTION") || "Type of connection"}
+                                </div>
+                                <Dropdown
+                                    selected={connectionCategory}
+                                    select={setConnectionCategory}
+                                    option={connectionCategoryOptions}
+                                    optionKey="label"
+                                    t={t}
+                                    placeholder={t("EKYC_SELECT") || "Select"}
+                                />
+                            </div>
+                            <div>
+                                <div style={{ fontSize: "11px", fontWeight: "600", color: "#667085", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "6px" }}>
+                                    {t("EKYC_CONNECTION_CATEGORY") || "Connection category"}
+                                </div>
+                                <Dropdown
+                                    selected={connectionType}
+                                    select={setConnectionType}
+                                    option={connectionTypeOptions}
+                                    optionKey="label"
+                                    t={t}
+                                    placeholder={t("EKYC_SELECT") || "Select"}
+                                />
+                            </div>
+                        </div>
+
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", marginBottom: "24px" }}>
+                            <div>
+                                <div style={{ fontSize: "11px", fontWeight: "600", color: "#667085", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "6px" }}>
+                                    {t("EKYC_USER_TYPE") || "User type"}
+                                </div>
+                                <Dropdown
+                                    selected={userType}
+                                    select={setUserType}
+                                    option={userTypeOptions}
+                                    optionKey="label"
+                                    t={t}
+                                    placeholder={t("EKYC_SELECT") || "Select"}
+                                />
+                            </div>
+                            <div>
+                                <div style={{ fontSize: "11px", fontWeight: "600", color: "#667085", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "6px" }}>
+                                    {t("EKYC_NO_OF_FLOORS") || "No. of floors"}
+                                </div>
+                                <Dropdown
+                                    selected={noOfFloors}
+                                    select={setNoOfFloors}
+                                    option={floorOptions}
+                                    optionKey="label"
+                                    t={t}
+                                    placeholder={t("EKYC_SELECT") || "Select"}
+                                />
+                            </div>
+                        </div>
+
+                        <hr style={{ margin: "24px 0", border: 0, borderTop: "1px solid #EAECF0" }} />
+
+                        {/* ── Documents & Photo Section ── */}
+                        <SectionHead
+                            icon={<DocumentIcon size={16} />}
+                            label={t("EKYC_DOCUMENTS_PHOTO") || "Documents & photo"}
+                        />
+
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", marginBottom: "20px" }}>
+
+                            {/* PDF Upload */}
+                            <div>
+                                <div style={{ fontSize: "11px", fontWeight: "600", color: "#667085", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "8px" }}>
+                                    {t("EKYC_UPLOAD_PROPERTY_DOC") || "Upload property document"}
+                                </div>
+                                <input type="file" ref={fileRef} accept=".pdf" style={{ display: "none" }} onChange={handleFileUpload} />
+                                <div
+                                    onClick={() => fileRef.current.click()}
+                                    onMouseOver={(e) => e.currentTarget.style.borderColor = "#185FA5"}
+                                    onMouseOut={(e) => e.currentTarget.style.borderColor = "#B5D4F4"}
+                                    style={{
+                                        border: "1.5px dashed #B5D4F4", borderRadius: "10px",
+                                        padding: "28px 20px", textAlign: "center", cursor: "pointer",
+                                        backgroundColor: "#E6F1FB", minHeight: "160px",
+                                        display: "flex", flexDirection: "column",
+                                        alignItems: "center", justifyContent: "center", gap: "10px",
+                                        transition: "border-color 0.15s",
+                                    }}
+                                >
+                                    <div style={{ background: "#fff", padding: "10px", borderRadius: "10px", display: "flex" }}>
+                                        <svg width="32" height="32" viewBox="0 0 24 24" fill="#185FA5">
+                                            <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13z" />
+                                            <path d="M12 18v-4M12 14l-2 2M12 14l2 2" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" />
+                                        </svg>
                                     </div>
+                                    {propertyDocument ? (
+                                        <div style={{ fontSize: "13px", fontWeight: "600", color: "#0F6E56" }}>
+                                            ✓ {propertyDocument.name}
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <div style={{ fontSize: "13px", fontWeight: "600", color: "#185FA5" }}>
+                                                {t("EKYC_UPLOAD_PROPERTY_DOC_CTA") || "Tap to upload"}
+                                            </div>
+                                            <div style={{ fontSize: "12px", color: "#378ADD" }}>PDF only</div>
+                                        </>
+                                    )}
                                 </div>
                             </div>
 
-                            {/* Capture Building Image */}
-                            <div
-                                style={{
-                                    flex: 1,
-                                    minWidth: "300px",
-                                    display: "flex",
-                                    flexDirection: "column"
-                                }}
-                            >
-                                <CardLabel
-                                    style={{
-                                        fontSize: "14px",
-                                        fontWeight: "600",
-                                        color: "#344054",
-                                        marginBottom: "8px"
-                                    }}
-                                >
-                                    {t("Capture_Building_Image")}
-                                </CardLabel>
-
+                            {/* Camera Capture */}
+                            <div>
+                                <div style={{ fontSize: "11px", fontWeight: "600", color: "#667085", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "8px" }}>
+                                    {t("EKYC_CAPTURE_BUILDING_IMAGE") || "Capture building image"}
+                                </div>
+                                <input type="file" ref={cameraRef} accept="image/*" capture="environment" style={{ display: "none" }} onChange={handlePhotoCapture} />
                                 <div
+                                    onClick={!buildingPhoto ? () => cameraRef.current.click() : undefined}
+                                    onMouseOver={(e) => { if (!buildingPhoto) e.currentTarget.style.borderColor = "#185FA5"; }}
+                                    onMouseOut={(e) => { if (!buildingPhoto) e.currentTarget.style.borderColor = "#D0D5DD"; }}
                                     style={{
-                                        flex: 1, // important
-                                        border: "1px solid #D0D5DD",
-                                        borderRadius: "16px",
-                                        padding: "40px 24px",
-                                        textAlign: "center",
-                                        cursor: "pointer",
-                                        backgroundColor: "#FFFFFF",
-                                        display: "flex",
-                                        flexDirection: "column",
-                                        justifyContent: "center"
+                                        border: "1.5px dashed #D0D5DD", borderRadius: "10px",
+                                        minHeight: "160px", display: "flex", flexDirection: "column",
+                                        alignItems: "center", justifyContent: "center",
+                                        backgroundColor: "#F9FAFB",
+                                        cursor: buildingPhoto ? "default" : "pointer",
+                                        overflow: "hidden", transition: "border-color 0.15s",
+                                        position: "relative",
+                                        padding: buildingPhoto ? "0" : "28px 20px",
                                     }}
-                                    onClick={() => cameraRef.current.click()}
                                 >
-                                    <input
-                                        type="file"
-                                        ref={cameraRef}
-                                        style={{ display: "none" }}
-                                        accept="image/*"
-                                        capture="environment"
-                                    />
-
-                                    <div
-                                        style={{
-                                            backgroundColor: "#EEF4FF",
-                                            width: "56px",
-                                            height: "56px",
-                                            borderRadius: "50%",
-                                            display: "flex",
-                                            alignItems: "center",
-                                            justifyContent: "center",
-                                            margin: "0 auto 16px"
-                                        }}
-                                    >
-                                        <CameraIcon />
-                                    </div>
-
-                                    <div
-                                        style={{
-                                            fontWeight: "600",
-                                            color: "#101828",
-                                            fontSize: "16px",
-                                            marginBottom: "4px"
-                                        }}
-                                    >
-                                        {t("Tap_to_Capture")}
-                                    </div>
-
-                                    <div style={{ color: "#667085", fontSize: "14px" }}>
-                                        {t("Building_Photo")}
-                                    </div>
+                                    {!buildingPhoto ? (
+                                        <>
+                                            <div style={{ background: "#E6F1FB", width: "52px", height: "52px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "10px" }}>
+                                                <CameraIcon size={26} />
+                                            </div>
+                                            <div style={{ fontSize: "13px", fontWeight: "600", color: "#101828" }}>
+                                                {t("EKYC_TAP_TO_CAPTURE") || "Tap to capture"}
+                                            </div>
+                                            <div style={{ fontSize: "12px", color: "#667085", marginTop: "2px" }}>
+                                                {t("EKYC_BUILDING_PHOTO") || "Building photo with GPS"}
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <img src={buildingPhoto} alt="Building" style={{ width: "100%", maxHeight: "200px", objectFit: "cover", display: "block" }} />
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); setBuildingPhoto(null); if (cameraRef.current) cameraRef.current.value = ""; }}
+                                                style={{
+                                                    position: "absolute", top: "8px", right: "8px",
+                                                    background: "#fff", border: "0.5px solid #EAECF0",
+                                                    borderRadius: "7px", padding: "5px 10px",
+                                                    display: "flex", alignItems: "center", gap: "5px",
+                                                    cursor: "pointer", fontSize: "12px", color: "#D92D20", fontWeight: "500",
+                                                }}
+                                            >
+                                                <TrashIcon size={13} /> {t("EKYC_REMOVE") || "Remove"}
+                                            </button>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         </div>
 
                         {/* Info Banner */}
-                        <div style={{ marginTop: "24px", backgroundColor: "#EFF8FF", padding: "16px", borderRadius: "12px", display: "flex", gap: "12px", border: "1px solid #B2DDFF" }}>
-                            <div style={{ color: "#1570EF" }}>
-                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM11 15H9V9H11V15ZM11 7H9V5H11V7Z" fill="currentColor" />
-                                </svg>
+                        <div style={{
+                            backgroundColor: "#E6F1FB", border: "0.5px solid #B5D4F4",
+                            borderRadius: "8px", padding: "12px 14px",
+                            display: "flex", alignItems: "flex-start", gap: "10px", marginBottom: "4px",
+                        }}>
+                            <div style={{ flexShrink: 0, marginTop: "1px" }}>
+                                <InfoBannerIcon fill="#185FA5" />
                             </div>
-                            <div style={{ color: "#175CD3", fontSize: "14px", fontWeight: "500", lineHeight: "1.4" }}>
-                                {t("This_section_is_enabled_only_if_user_is_not_the_owner.")}
+                            <div style={{ fontSize: "13px", color: "#185FA5", lineHeight: "1.5" }}>
+                                {t("EKYC_TENANT_INFO_NOTICE") || "This section is enabled only if the user is not the owner. Tenant details will be required if tenant is selected."}
                             </div>
                         </div>
-                        <div style={{ display: "flex", justifyContent: "flex-start", marginTop: "24px" }}>
-                            <SubmitBar label={t("Save_&_Continue")} onSubmit={handleSaveAndContinue} style={{ borderRadius: "8px", height: "48px", margin: 0 }} />
-                        </div>
-                    </Card>
 
+                    </div>
 
+                    {/* Submit (Non-sticky, at form end) */}
+                    <div style={{ marginTop: "24px" }}>
+                        <SubmitBar
+                            label={t("EKYC_SAVE_AND_CONTINUE") || "Save & Continue"}
+                            onSubmit={handleSaveAndContinue}
+                        />
+                    </div>
+
+                    {/* Secure notice */}
+                    <div style={{
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        gap: "5px", marginTop: "16px",
+                        fontSize: "11px", color: "#98A2B3",
+                    }}>
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" />
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        </svg>
+                        {t("EKYC_SECURE_DATA_NOTICE") || "Your data is encrypted and secure"}
+                    </div>
                 </Card>
             </div>
         </div>

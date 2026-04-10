@@ -324,8 +324,7 @@ const Urls = {
   billgenie: "/egov-searcher",
   ekyc: {
     create: "/ekyc-services/ekyc/v1/_create",
-    get_connection: "/ekyc-service/user/get/_connection",
-    validate_user: "/ekyc-service/user/_validate",
+    application_search: "/ekyc-service/user/application/_search",
     connection_type: "/egov-mdms-service/v1/_search",
   },
   audit: "/inbox/v1/elastic/_search",

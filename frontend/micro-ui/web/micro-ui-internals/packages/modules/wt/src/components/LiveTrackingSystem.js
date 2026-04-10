@@ -96,6 +96,7 @@ const MapController = ({ selectedDriver, mapZoom, mapCenter }) => {
 
 // Custom hook for route fetching
 const useRoute = (start, end) => {
+  const { t } = useTranslation();
   const [routeData, setRouteData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -143,6 +144,7 @@ const useRoute = (start, end) => {
 
 // Component to display route on map
 const RouteLayer = ({ start, end, color = "#2196f3", weight = 6 }) => {
+  const { t } = useTranslation();
   const { routeData, loading, error } = useRoute(start, end);
   const [showSteps, setShowSteps] = useState(false);
   const [selectedStep, setSelectedStep] = useState(null);
@@ -803,6 +805,7 @@ export default function LiveTrackingSystem() {
         flexDirection: "column",
         height: "100vh",
         width: "100%",
+        overflow: "hidden",
         fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
         background: "#f0f2f5",
         padding: "16px",
@@ -851,7 +854,7 @@ export default function LiveTrackingSystem() {
                   boxShadow: isConnected ? "0 0 8px #4caf50" : "none",
                 }}
               />
-              {isConnected ? "CONNECTED" : "DISCONNECTED"}
+              {/* {isConnected ? "CONNECTED" : "DISCONNECTED"} */}
             </div>
           </div>
           <p style={{ margin: "4px 0 0 0", fontSize: "14px", color: "#666" }}>
@@ -1097,6 +1100,8 @@ export default function LiveTrackingSystem() {
         <div
           style={{
             flex: 1,
+            height: "100%",
+            minHeight: 0,
             position: "relative",
             background: "white",
             borderRadius: "12px",
