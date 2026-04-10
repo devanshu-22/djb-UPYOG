@@ -75,7 +75,9 @@ const WTCreate = () => {
     if (!isNaN(lastchar)) {
       isMultiple = true;
     }
-    let { nextStep = {} } = config.find((routeObj) => routeObj.route === currentPath);
+    let routeObj = config.find((routeObj) => (key ? routeObj.key === key : routeObj.route === currentPath));
+    if (!routeObj) routeObj = config.find((routeObj) => routeObj.route === currentPath);
+    let { nextStep = {} } = routeObj || {};
 
     let redirectWithHistory = history.push;
     if (skipStep) {

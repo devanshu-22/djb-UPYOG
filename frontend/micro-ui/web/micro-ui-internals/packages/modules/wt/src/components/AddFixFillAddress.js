@@ -53,7 +53,8 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
 
     const revenueData = tenantBoundary.find((item) => item?.hierarchyType?.code === "REVENUE");
 
-    return revenueData?.boundary || [];
+    const boundary = revenueData?.boundary || [];
+    return Array.isArray(boundary) ? boundary : [boundary];
   }, [egovLocationData]);
 
   const structuredLocality = useMemo(() => {
@@ -102,14 +103,24 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
     structuredLocality.forEach((loc) => {
       if (loc.pincode) {
         const pins = Array.isArray(loc.pincode) ? loc.pincode : [loc.pincode];
-        pins.forEach((p) => pinSet.add(p.toString()));
+        pins.forEach((p) => {
+          if (p) {
+            const sanitizedPin = p.toString().split(".")[0];
+            pinSet.add(sanitizedPin);
+          }
+        });
       }
     });
 
     // Fallback to city defaults if no pincodes found in localities
     if (pinSet.size === 0 && city?.pincode) {
       const pins = Array.isArray(city.pincode) ? city.pincode : [city.pincode];
-      pins.forEach((p) => pinSet.add(p.toString()));
+      pins.forEach((p) => {
+        if (p) {
+          const sanitizedPin = p.toString().split(".")[0];
+          pinSet.add(sanitizedPin);
+        }
+      });
     }
 
     return Array.from(pinSet)
@@ -151,7 +162,7 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
         setCity(cityObj || null);
       }
 
-      setPincode(addressData.pincode || "");
+      setPincode(addressData.pincode?.toString().split(".")[0] || "");
       setHouseNo(addressData.houseNo || "");
       setStreetName(addressData.streetName || "");
       setLandmark(addressData.landmark || "");
@@ -165,11 +176,18 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
 
       // Phase 2: Wait for boundaryData or if there is no cityCode to wait for
       if (boundaryData || !addressData.cityCode) {
-        if (boundaryData) {
+        if (Array.isArray(boundaryData)) {
           const localityObj = boundaryData.find(
             (l) => l.code === addressData.localityCode || l.code === addressData.locality || l.i18nkey === addressData.locality
           );
           setLocality(localityObj || addressData.locality || null);
+        } else if (boundaryData && typeof boundaryData === "object") {
+          // If it's a single object, check if it matches
+          const match =
+            boundaryData.code === addressData.localityCode ||
+            boundaryData.code === addressData.locality ||
+            boundaryData.i18nkey === addressData.locality;
+          setLocality(match ? boundaryData : addressData.locality || null);
         } else {
           setLocality(addressData.locality || null);
         }
@@ -199,7 +217,7 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
     if (selectedAddress && Object.keys(selectedAddress).length) {
       setPincode(selectedAddress.pinCode);
       setCity(allCities?.find((c) => c.name === selectedAddress.city));
-      setLocality(boundaryData?.find((l) => l.i18nkey === selectedAddress.locality));
+      setLocality(Array.isArray(boundaryData) ? boundaryData.find((l) => l.i18nkey === selectedAddress.locality) : null);
       setHouseNo(selectedAddress.houseNumber);
       setStreetName(selectedAddress.streetName);
       setLandmark(selectedAddress.landmark);
@@ -321,7 +339,10 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
               if (val?.ward) setBlock(val.ward);
               if (val?.pincode) {
                 const p = Array.isArray(val.pincode) ? val.pincode[0] : val.pincode;
-                if (p) setPincode(p.toString());
+                if (p) {
+                  const sanitizedPin = p.toString().split(".")[0];
+                  setPincode(sanitizedPin);
+                }
               }
             }}
             option={filteredLocalities}
