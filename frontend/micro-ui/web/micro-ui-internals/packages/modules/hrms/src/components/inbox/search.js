@@ -57,7 +57,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                 </span>
               </div>
             )}
-            <div className="formcomposer-section-grid">
+            <div style={!mobileView ? { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px", alignItems: "end" } : {}}>
               {searchFields
                 ?.filter((e) => true)
                 ?.map((input, index) =>
@@ -90,12 +90,22 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                   )
                 )}
             </div>
-            <div className="formcomposer-section-button">
-              <div className="generic-button clear-search">
-                <p onClick={clearSearch}>{t(`HR_COMMON_CLEAR_SEARCH`)}</p>
+            {!mobileView && (
+              <div className="formcomposer-section-button" style={{ display: "flex", gap: "10px", justifyContent: "flex-end", marginTop: "24px" }}>
+                <div className="generic-button clear-search">
+                  <p onClick={clearSearch}>{t(`HR_COMMON_CLEAR_SEARCH`)}</p>
+                </div>
+                <SubmitBar className="generic-button" label={t("HR_COMMON_SEARCH")} submit={true} form="search-form" />
               </div>
-              <SubmitBar className="generic-button" label={t("HR_COMMON_SEARCH")} submit={true} form="search-form" />
-            </div>
+            )}
+            {mobileView && (
+              <div className="formcomposer-section-button">
+                <div className="generic-button clear-search">
+                  <p onClick={clearSearch}>{t(`HR_COMMON_CLEAR_SEARCH`)}</p>
+                </div>
+                <SubmitBar className="generic-button" label={t("HR_COMMON_SEARCH")} submit={true} form="search-form" />
+              </div>
+            )}
             {/* <div className="inbox-action-container">
               {type === "desktop" && !mobileView && (
                 <button onClick={clearSearch} className="clear-search generic-button">
