@@ -347,7 +347,7 @@ import useSelectedMDMS from "./useSelectedMDMS";
 import useVendorAdditionaldetailsAPI from "./vendor/useVendorAdditionaldetailsAPI";
 import useCreateDemand from "./sv/useCreateDemand";
 import useEmpvendorCommonSearch from "./vendor/useEmpvendorCommonSearch";
-import { useGetConnection, useValidateUser, useGetConnectionTypeV2, useGetUserType, useGetFloorCount, useGetPropertyType } from "./ekyc/useEkyc";
+import { useSearchConnection, useGetConnectionTypeV2, useGetUserType, useGetFloorCount, useGetPropertyType } from "./ekyc/useEkyc";
 import { useCreateFixedPoint } from "./wt/createFixedPoint";
 import { useCreateFixedPointSchedule } from "./wt/useCreateFixedPointSchedule";
 import { useUpdateFixedPoint } from "./wt/updateFixedPoint";
@@ -516,8 +516,7 @@ const mcollect = {
 };
 
 const ekyc = {
-  useGetConnection,
-  useValidateUser,
+  useSearchConnection,
   useGetPropertyType,
   useGetConnectionTypeV2,
   useGetUserType,

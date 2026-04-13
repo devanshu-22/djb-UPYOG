@@ -49,15 +49,15 @@ const ConnectionDetailsView = ({ kNumber, kName, connectionDetails, isLoading })
         </StatusTable>
 
         <CardHeader style={{ marginTop: "24px" }}>{t("EKYC_CONNECTION_DETAILS")}</CardHeader>
-        {connectionDetails?.connectionDetailsInfo ? (
+        {connectionDetails?.connectionDetails ? (
           <StatusTable>
-            <Row label={t("EKYC_CONSUMER_NAME")} text={connectionDetails.connectionDetailsInfo.consumerName || t("CS_NA")} />
-            <Row label={t("EKYC_ADDRESS")} text={connectionDetails.connectionDetailsInfo.address || t("CS_NA")} />
-            <Row label={t("EKYC_CONNECTION_TYPE")} text={connectionDetails.connectionDetailsInfo.connectionType || t("CS_NA")} />
-            <Row label={t("EKYC_METER_NO")} text={connectionDetails.connectionDetailsInfo.meterNumber || t("CS_NA")} />
-            <Row label={t("EKYC_PHONE_NO")} text={connectionDetails.connectionDetailsInfo.phoneNumber || t("CS_NA")} />
-            <Row label={t("EKYC_EMAIL")} text={connectionDetails.connectionDetailsInfo.email || t("CS_NA")} />
-            <Row label={t("EKYC_STATUS")} text={connectionDetails.connectionDetailsInfo.statusflag || t("CS_NA")} />
+            <Row label={t("EKYC_CONSUMER_NAME")} text={connectionDetails.connectionDetails.consumerName || t("CS_NA")} />
+            <Row label={t("EKYC_ADDRESS")} text={connectionDetails.connectionDetails.address || t("CS_NA")} />
+            <Row label={t("EKYC_CONNECTION_TYPE")} text={connectionDetails.connectionDetails.connectionType || t("CS_NA")} />
+            <Row label={t("EKYC_METER_NO")} text={connectionDetails.connectionDetails.meterNumber || t("CS_NA")} />
+            <Row label={t("EKYC_PHONE_NO")} text={connectionDetails.connectionDetails.phoneNumber || t("CS_NA")} />
+            <Row label={t("EKYC_EMAIL")} text={connectionDetails.connectionDetails.email || t("CS_NA")} />
+            <Row label={t("EKYC_STATUS")} text={connectionDetails.connectionDetails.statusflag || t("CS_NA")} />
           </StatusTable>
         ) : (
           <CardLabel>{t("EKYC_NO_CONNECTION_DETAILS_FOUND")}</CardLabel>
