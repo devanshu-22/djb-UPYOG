@@ -96,14 +96,14 @@ public class RequestServiceQueryBuilder {
             query.append(" ursbd.tenant_id LIKE ? ");
             preparedStmtList.add("%" + criteria.getTenantId() + "%");
         }
-//        if (requestServiceConfiguration.getIsUserProfileEnabled()) {
-//            addClauseIfRequired(query, preparedStmtList);
-//            query.append(" ursbd.applicant_uuid IS NOT NULL ");
-//        } else {
-//            // If user profile is not enabled, we don't need to filter by applicant UUID
-//            addClauseIfRequired(query, preparedStmtList);
-//            query.append(" ursbd.applicant_uuid IS NULL ");
-//        }
+        if (requestServiceConfiguration.getIsUserProfileEnabled()) {
+            addClauseIfRequired(query, preparedStmtList);
+            query.append(" ursbd.applicant_uuid IS NOT NULL ");
+        } else {
+            // If user profile is not enabled, we don't need to filter by applicant UUID
+            addClauseIfRequired(query, preparedStmtList);
+            query.append(" ursbd.applicant_uuid IS NULL ");
+        }
         if (!ObjectUtils.isEmpty(criteria.getBookingNo())) {
             addClauseIfRequired(query, preparedStmtList);
             

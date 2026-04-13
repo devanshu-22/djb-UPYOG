@@ -16,6 +16,7 @@ import org.upyog.rs.repository.querybuilder.WaterTankerFixedPointQueryBuilder;
 import org.upyog.rs.repository.rowMapper.DriverDetailsRowMapper;
 import org.upyog.rs.repository.rowMapper.GenericRowMapper;
 import org.upyog.rs.repository.rowMapper.WaterTankerFixedPointRowMapper;
+import org.upyog.rs.web.models.ApplicantDetail;
 import org.upyog.rs.web.models.PersisterWrapper;
 import org.upyog.rs.web.models.RequestDetailsByDriverId;
 import org.upyog.rs.web.models.mobileToilet.MobileToiletBookingDetail;
@@ -267,6 +268,42 @@ public class RequestServieRepositoryImpl implements RequestServiceRepository {
 				"WHERE mobile_number = ?";
 		Integer count = jdbcTemplate.queryForObject(query, Integer.class, mobileNumber);
 		return count != null && count > 0;
+	}
+
+
+	@Override
+	public ApplicantDetail getApplicantByMobileNumber(String mobileNumber) {
+
+		String query = "SELECT applicant_id, name, mobile_number, email_id " +
+				"FROM public.upyog_rs_water_tanker_applicant_details " +
+				"WHERE mobile_number = ?";
+
+		try {
+			List<ApplicantDetail> list = jdbcTemplate.query(query,
+					new Object[]{mobileNumber},
+					(rs, rowNum) -> {
+						ApplicantDetail applicant = new ApplicantDetail();
+						applicant.setApplicantId(rs.getString("applicant_id"));
+						applicant.setName(rs.getString("name"));
+						applicant.setMobileNumber(rs.getString("mobile_number"));
+						applicant.setEmailId(rs.getString("email_id"));
+						return applicant;
+					});
+
+			if (list.isEmpty()) {
+				return null;
+			}
+
+			if (list.size() > 1) {
+				log.warn("Multiple applicants found for mobile: {}", mobileNumber);
+			}
+
+			return list.get(0); // return first record
+
+		} catch (Exception e) {
+			log.error("Error fetching applicant for mobile: {}", mobileNumber, e);
+			return null;
+		}
 	}
 
 }

@@ -67,7 +67,9 @@ public class WaterTankerBookingDetail {
 	@NotBlank
 	private String description;
 
-	
+	@JsonProperty("applicantId")
+	private String applicantId;
+
 	private String applicantUuid;
 
 	@JsonFormat(pattern = RequestServiceUtil.DATE_FORMAT)

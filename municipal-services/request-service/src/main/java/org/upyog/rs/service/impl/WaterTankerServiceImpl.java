@@ -53,6 +53,7 @@ public class WaterTankerServiceImpl implements WaterTankerService {
 	@Autowired
 	private UserService userService;
 
+
 	@Override
 	public WaterTankerBookingDetail createNewWaterTankerBookingRequest(WaterTankerBookingRequest waterTankerRequest) {
 
@@ -73,11 +74,40 @@ public class WaterTankerServiceImpl implements WaterTankerService {
 						applicantDetail.getMobileNumber());
 			}
 
+
+
+//			//  Fetch existing applicant
+			ApplicantDetail existingApplicant = requestServiceRepository.getApplicantByMobileNumber(applicantDetail.getMobileNumber());
+
+			if (existingApplicant != null) {
+				// EXISTING USER
+				waterTankerRequest.getWaterTankerBookingDetail()
+						.getApplicantDetail()
+						.setApplicantId(existingApplicant.getApplicantId());
+
+				waterTankerRequest.getWaterTankerBookingDetail()
+						.getAddress()
+						.setApplicantId(existingApplicant.getApplicantId());
+				//System.out.println("test11+  EXIST applicant");
+
+			} else {
+
+				waterTankerRequest.getWaterTankerBookingDetail()
+						.setApplicantDetail(applicantDetail);
+				//System.out.println("test13+  keep new applicant");
+
+			}
+
+
+			if(config.getIsUserProfileEnabled()) {
+				waterTankerRequest.getWaterTankerBookingDetail().setApplicantUuid(user.getUuid());
+			} else{
+				// If user profile is not enabled, set the applicantUuid null
+				waterTankerRequest.getWaterTankerBookingDetail().setApplicantUuid(null);
+			}
+
+
 			log.info("Applicant or User Uuid: " + user.getUuid());
-			String finalApplicantUuid = user.getUuid();
-			waterTankerRequest.getWaterTankerBookingDetail().setApplicantUuid(finalApplicantUuid);          // booking_details.applicant_uuid
-			waterTankerRequest.getWaterTankerBookingDetail().getApplicantDetail().setApplicantId(finalApplicantUuid); // applicant_details.applicant_id
-			waterTankerRequest.getWaterTankerBookingDetail().getAddress().setApplicantId(finalApplicantUuid);         // address_details.applicant_id
 		} catch (Exception e) {
 			log.error("Error fetching or creating user: " + e.getMessage(), e);
 			throw new RuntimeException("Failed to fetch/create user: " + e.getMessage(), e);
@@ -85,9 +115,11 @@ public class WaterTankerServiceImpl implements WaterTankerService {
 
 		requestServiceRepository.saveWaterTankerBooking(waterTankerRequest);
 
-		return waterTankerRequest.getWaterTankerBookingDetail();
-
+		WaterTankerBookingDetail waterTankerDetail = waterTankerRequest.getWaterTankerBookingDetail();
+		return waterTankerDetail;
 	}
+
+
 
 
 	@Override
@@ -131,6 +163,8 @@ public class WaterTankerServiceImpl implements WaterTankerService {
 		return waterTankerFixedPointDetail;
 
 	}
+
+
 
 	@Override
 	public WaterTankerFixedPointDetail updateFixedPointWaterTankerBookingRequest(
