@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { ArrowDown } from "../atoms/svgindex";
 
-const CollapsibleCardPage = ({ number, title, children, defaultOpen = false, tabs = null, defaultTab = "", onTabChange = () => {} }) => {
+const CollapsibleCardPage = ({ number, title, children, defaultOpen = false, tabs = null, defaultTab = "", onTabChange = () => {}, style, className }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const [activeTab, setActiveTab] = useState(defaultTab || (tabs && tabs[0]) || "");
 
@@ -11,7 +11,7 @@ const CollapsibleCardPage = ({ number, title, children, defaultOpen = false, tab
   };
 
   return (
-    <div className="collapsible-card">
+    <div className={`collapsible-card ${className ? className : ""}`} style={style}>
       {/* Header */}
       <div className="collapsible-card-header" onClick={() => setIsOpen(!isOpen)}>
         <h3 className="collapsible-card-title">
@@ -43,7 +43,7 @@ const CollapsibleCardPage = ({ number, title, children, defaultOpen = false, tab
 
           {/* Tab content */}
           <div className="collapsible-card-tab-content">
-            {tabs ? <React.Fragment key={activeTab}>{children(activeTab)}</React.Fragment> : { children }}
+            {tabs ? <React.Fragment key={activeTab}>{children(activeTab)}</React.Fragment> : children}
           </div>
         </div>
       )}

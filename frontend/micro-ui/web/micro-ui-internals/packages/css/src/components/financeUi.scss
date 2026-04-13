@@ -10,14 +10,14 @@
   padding: 20px 0;
   -webkit-background-clip: text;
   text-align: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1f5fa8 0%, #0b2e5b 100%);
   border-radius: 10px;
   margin-left: 72px;
   margin-right: 72px;
 }
 
 .modernFinanceUILoginForm {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1f5fa8 0%, #0b2e5b 100%);
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -120,7 +120,7 @@
 
 .modernFinanceUIWelcomeContent {
   flex: 1;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1f5fa8 0%, #0b2e5b 100%);
   padding: 60px 40px;
   display: flex;
   flex-direction: column;
@@ -169,14 +169,14 @@
 
 .modernLoginForm input:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #1f5fa8;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
 .modernLoginButton {
   width: 100%;
   padding: 12px 24px;
-  background: linear-gradient(45deg, #667eea, #764ba2) !important;
+  background: linear-gradient(45deg, #1f5fa8, #0b2e5b) !important;
   border: none !important;
   border-radius: 8px !important;
   color: white !important;
@@ -306,7 +306,7 @@
 }
 
 .custom-sidebar.open .menu-item.active {
-  background-color: #667eea;
+  background-color: #1f5fa8;
   font-weight: bold;
   margin: 10px;
   border-radius: 6px;
@@ -424,9 +424,7 @@
 
 .collapsible-card {
   border-radius: 6px;
-  margin-bottom: 16px;
   background: #fff;
-  overflow: hidden;
 }
 
 .collapsible-card-header {
@@ -446,7 +444,7 @@
   left: 0;
   width: 4px;
   height: 100%;
-  background: #667eea;
+  background: #1f5fa8;
 }
 
 .collapsible-card-title {
@@ -516,7 +514,7 @@
 }
 
 .finance-header {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #1f5fa8, #0b2e5b);
   padding: 16px 24px;
   color: white;
   margin-top: 25px;
@@ -725,13 +723,9 @@
 }
 
 .collapsible-card-tab-button.active {
-  background-color: #667eea;
+  background-color: #1f5fa8;
   color: white;
   box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
-}
-
-.collapsible-card-tab-content {
-  padding: 20px;
 }
 
 /* -------------------------------------------------------------- */

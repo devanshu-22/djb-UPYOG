@@ -16,9 +16,6 @@ const AddVendor = ({ parentUrl, heading }) => {
   const [showToast, setShowToast] = useState(null);
   const [canSubmit, setCanSubmit] = useState(false);
 
-  // 👇 store step data
-  const [step1Data, setStep1Data] = useState({});
-
   const [mutationHappened, setMutationHappened, clear] = Digit.Hooks.useSessionStorage("FSM_MUTATION_HAPPENED", false);
 
   const [errorInfo, setErrorInfo, clearError] = Digit.Hooks.useSessionStorage("FSM_ERROR_DATA", false);
@@ -48,12 +45,6 @@ const AddVendor = ({ parentUrl, heading }) => {
     },
   };
 
-  const vendorStepConfig = Config.filter((config) => config.head === "ES_VRNDOR_NEW_VENDOR_DETAILS");
-
-  const addressStepConfig = Config.filter((config) => config.head === "ES_FSM_REGISTRY_NEW_ADDRESS_DETAILS");
-
-  const steps = [{ label: "ES_VRNDOR_NEW_VENDOR_DETAILS" }, { label: "ES_FSM_REGISTRY_NEW_ADDRESS_DETAILS" }];
-
   const onFormValueChange = (setValue, formData) => {
     if (formData?.vendorName && formData?.phone && formData?.serviceType?.code) {
       setCanSubmit(true);
@@ -67,15 +58,8 @@ const AddVendor = ({ parentUrl, heading }) => {
   };
 
   const onSubmit = (data) => {
-    // STEP 1
-    if (currentStep === 1) {
-      setStep1Data(data); // save step1 data
-      setCurrentStep(2);
-      return;
-    }
-
     // FINAL SUBMIT
-    const mergedData = { ...step1Data, ...data };
+    const mergedData = data;
 
     const name = mergedData?.vendorName;
     const pincode = mergedData?.pincode;
@@ -168,7 +152,7 @@ const AddVendor = ({ parentUrl, heading }) => {
 
   return (
     <React.Fragment>
-      <VerticalTimeline
+       <VerticalTimeline
         config={[
           {
             route: "vendor-details",
@@ -183,47 +167,20 @@ const AddVendor = ({ parentUrl, heading }) => {
         showFinalStep={false}
       />
       <div style={{ flex: "1", overflowY: "auto" }}>
-        {/* STEP 1 */}
-        {currentStep === 1 && (
-          <FormComposer
-            key="step1"
-            isDisabled={!canSubmit}
-            label={t("CS_COMMON_NEXT")}
-            config={vendorStepConfig
-              .filter((i) => !i.hideInEmployee)
-              .map((config) => ({
-                ...config,
-                body: config.body.filter((a) => !a.hideInEmployee),
-              }))}
-            onSubmit={onSubmit}
-            defaultValues={{
-              ...defaultValues,
-              ...step1Data,
-            }}
-            onFormValueChange={onFormValueChange}
-            noBreakLine={true}
-          />
-        )}
-
-        {/* STEP 2 */}
-        {currentStep === 2 && (
-          <FormComposer
-            key="step2"
-            label={t("ES_COMMON_APPLICATION_SUBMIT")}
-            config={addressStepConfig
-              .filter((i) => !i.hideInEmployee)
-              .map((config) => ({
-                ...config,
-                body: config.body.filter((a) => !a.hideInEmployee),
-              }))}
-            onSubmit={onSubmit}
-            defaultValues={{
-              ...defaultValues,
-            }}
-            onFormValueChange={(setValue, formData) => {}}
-            noBreakLine={true}
-          />
-        )}
+        <FormComposer
+          label={t("ES_COMMON_APPLICATION_SUBMIT")}
+          config={Config.filter((i) => !i.hideInEmployee).map((config) => ({
+            ...config,
+            isCollapsible: true,
+            isDefaultOpen: true,
+            body: config.body.filter((a) => !a.hideInEmployee),
+          }))}
+          onSubmit={onSubmit}
+          defaultValues={defaultValues}
+          onFormValueChange={onFormValueChange}
+          noBreakLine={true}
+          noCard={true}
+        />
 
         {showToast && (
           <Toast

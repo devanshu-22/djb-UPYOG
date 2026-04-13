@@ -11,7 +11,7 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
 
   const GetStatusCell = (value) => {
     if (value === "Approved") {
-      return <span style={{ color: "#00703C" }}>{value}</span>;
+      return <span style={{ color: "#2E9E8F" }}>{value}</span>;
     }
     if (value === "Rejected") {
       return <span style={{ color: "#0B0C0C" }}>{value}</span>;

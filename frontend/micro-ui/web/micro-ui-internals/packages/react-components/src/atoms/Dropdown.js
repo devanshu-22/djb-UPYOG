@@ -7,10 +7,11 @@ const TextField = (props) => {
 
   useEffect(() => {
     if (!props.keepNull)
-      if( props.selectedVal)
-        setValue(props.selectedVal)
-      else
-      { setValue(""); props.setFilter("") } 
+      if (props.selectedVal) setValue(props.selectedVal);
+      else {
+        setValue("");
+        props.setFilter("");
+      }
     else setValue("");
   }, [props.selectedVal, props.forceSet]);
 
@@ -77,7 +78,7 @@ const TextField = (props) => {
       autoFocus={props.autoFocus}
       placeholder={props.placeholder}
       autoComplete={"off"}
-      style={{...props.style, zIndex: "auto"}}
+      style={{ ...props.style, zIndex: "auto" }}
     />
   );
 };
@@ -93,6 +94,7 @@ const Dropdown = (props) => {
   const [filterVal, setFilterVal] = useState("");
   const [forceSet, setforceSet] = useState(0);
   const [optionIndex, setOptionIndex] = useState(-1);
+  const [openUpward, setOpenUpward] = useState(false);
   const optionRef = useRef(null);
   const hasCustomSelector = props.customSelector ? true : false;
   const t = props.t || translateDummy;
@@ -101,13 +103,24 @@ const Dropdown = (props) => {
     setSelectedOption(props.selected);
   }, [props.selected]);
 
+  useEffect(() => {
+    if (dropdownStatus && optionRef.current) {
+      const rect = optionRef.current.parentElement.getBoundingClientRect();
+
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceAbove = rect.top;
+
+      if (spaceBelow < 300 && spaceAbove > spaceBelow) {
+        setOpenUpward(true);
+      } else {
+        setOpenUpward(false);
+      }
+    }
+  }, [dropdownStatus]);
+
   function dropdownSwitch() {
     if (!props.disable) {
-      var current = dropdownStatus;
-      if (!current) {
-        document.addEventListener("mousedown", handleClick, false);
-      }
-      setDropdownStatus(!current);
+      setDropdownStatus((prev) => !prev);
       props?.onBlur?.();
     }
   }
@@ -150,10 +163,9 @@ const Dropdown = (props) => {
   // if (props?.option?.[0]?.label == "PropertyType") {
   //   filteredOption = props.option
   // }
-  if(props.isBPAREG && selectedOption)
-  {
+  if (props.isBPAREG && selectedOption) {
     let isSelectedSameAsOptions = props.option?.filter((ob) => ob?.code === selectedOption?.code)?.length > 0;
-    if(!isSelectedSameAsOptions) setSelectedOption(null)
+    if (!isSelectedSameAsOptions) setSelectedOption(null);
   }
 
   return (
@@ -171,6 +183,7 @@ const Dropdown = (props) => {
         <div
           className={`${dropdownStatus ? "select-active" : "select"} ${props.disable && "disabled"}`}
           style={props.errorStyle ? { border: "1px solid red" } : {}}
+          onClick={dropdownSwitch}
         >
           <TextField
             autoComplete={props.autoComplete}
@@ -208,7 +221,7 @@ const Dropdown = (props) => {
         props.optionKey ? (
           <div
             id="jk-dropdown-unique"
-            className={`${hasCustomSelector ? "margin-top-10 display: table" : ""} options-card`}
+            className={`${hasCustomSelector ? "margin-top-10 display: table" : ""} options-card ${openUpward ? "open-up" : ""}`}
             style={{ ...props.optionCardStyles }}
             ref={optionRef}
           >
@@ -229,22 +242,23 @@ const Dropdown = (props) => {
                     onClick={() => onSelect(option)}
                   >
                     {option.icon && <span className="icon"> {option.icon} </span>}
-                    {props.isPropertyAssess? <div>{props.t ? props.t(option[props.optionKey]) : option[props.optionKey]}</div>:
-                    <span> {props.t ? props.t(option[props.optionKey]) : option[props.optionKey]}</span>} 
+                    {props.isPropertyAssess ? (
+                      <div>{props.t ? props.t(option[props.optionKey]) : option[props.optionKey]}</div>
+                    ) : (
+                      <span> {props.t ? props.t(option[props.optionKey]) : option[props.optionKey]}</span>
+                    )}
                   </div>
                 );
               })}
             {filteredOption && filteredOption.length === 0 && (
-              <div className={`cp profile-dropdown--item display: flex `} key={"-1"} onClick={()=>{
-                
-              }}>
+              <div className={`cp profile-dropdown--item display: flex `} key={"-1"} onClick={() => {}}>
                 {<span> {props.t ? props.t("CMN_NOOPTION") : "CMN_NOOPTION"}</span>}
               </div>
             )}
           </div>
         ) : (
           <div
-            className="options-card"
+            className={`options-card ${openUpward ? "open-up" : ""}`}
             style={{ ...props.optionCardStyles, overflow: "scroll", maxHeight: "350px" }}
             id="jk-dropdown-unique"
             ref={optionRef}

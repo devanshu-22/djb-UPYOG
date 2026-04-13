@@ -142,6 +142,8 @@ const AddDriver = ({ parentUrl, heading }) => {
           config={Config.filter((i) => !i.hideInEmployee).map((config) => {
             return {
               ...config,
+              isCollapsible: true,
+              isDefaultOpen: true,
               body: config.body.filter((a) => !a.hideInEmployee),
             };
           })}
@@ -151,6 +153,7 @@ const AddDriver = ({ parentUrl, heading }) => {
           onFormValueChange={onFormValueChange}
           noBreakLine={true}
           mode="onChange"
+          noCard={true}
         />
         {showToast && (
           <Toast

@@ -208,9 +208,9 @@ const BILLSBreadCrumbs = ({ location }) => {
       content: t("ES_COMMON_WS_DOCUMENTS_REQUIRED"),
       show: location.pathname.includes("/create-application") || location.pathname.includes("/new-application"),
       rightContent: location.pathname.includes("/create-application") && (
-        <div onClick={printDiv} style={{ cursor: "pointer", display: "flex" }}>
-          <PrintBtnCommon />
-          <div style={{ fontSize: "24px", fontWeight: "400", color: "#0B0C0C" }}>{"Print"}</div>
+        <div className="flex-center flex-gap-1 .cursorPointer" onClick={printDiv}>
+          <PrintBtnCommon width={24} heigth={24} fill="#fff" />
+          <div className="bread-crumb-item">{"Print"}</div>
         </div>
       ),
     },

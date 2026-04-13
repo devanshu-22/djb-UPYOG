@@ -186,10 +186,12 @@ const SearchFillingPointAddress = () => {
 
   const onLocalityModalSubmit = (data) => {
     const payload = {
-      FillingPointLocality: data.locality.map((loc) => ({
-        fillingPointId: selectedLocalityRow.bookingId || selectedLocalityRow.id,
-        localityCode: loc.code,
-      })),
+      FillingPointLocality: data.locality
+        .filter((loc) => loc.code)
+        .map((loc) => ({
+          fillingPointId: selectedLocalityRow.bookingId || selectedLocalityRow.id,
+          localityCode: loc.code,
+        })),
     };
 
     const mutation = modalMode === "UPDATE" ? updateLocality : linkLocality;

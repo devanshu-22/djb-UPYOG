@@ -6,6 +6,7 @@ import CardLabel from "../atoms/CardLabel";
 import CardLabelError from "../atoms/CardLabelError";
 import TextInput from "../atoms/TextInput";
 import InputCard from "./InputCard";
+import CollapsibleCardPage from "../hoc/CollapsibleCardPage";
 const FormStep = ({
   t,
   children,
@@ -25,6 +26,8 @@ const FormStep = ({
   childrenAtTheBottom = true,
   textInputStyle,
   className,
+  isCollapsible = true,
+  defaultOpen = true,
 }) => {
   const { register, watch, errors, handleSubmit } = useForm({
     defaultValues: _defaultValues,
@@ -98,23 +101,47 @@ const FormStep = ({
     }
   });
 
+  const _isCollapsible = config.isCollapsible !== undefined ? config.isCollapsible : isCollapsible;
+  const _defaultOpen = config.defaultOpen !== undefined ? config.defaultOpen : defaultOpen;
+
   return (
     <form style={{ flex: "1" }} onSubmit={handleSubmit(goNext)}>
-      <InputCard
-        {...{ isDisable: isDisable, isMultipleAllow: isMultipleAllow }}
-        {...config}
-        cardStyle={cardStyle}
-        submit
-        {...{ onSkip: onSkip, onAdd: onAdd }}
-        t={t}
-        className={className || ""}
-      >
-        {!childrenAtTheBottom && children}
-        {inputs}
-        {forcedError && !showErrorBelowChildren && <CardLabelError>{t(forcedError)}</CardLabelError>}
-        {childrenAtTheBottom && children}
-        {forcedError && showErrorBelowChildren && <CardLabelError>{t(forcedError)}</CardLabelError>}
-      </InputCard>
+      {_isCollapsible ? (
+        <CollapsibleCardPage title={t(config?.texts?.header)} defaultOpen={_defaultOpen}>
+          <InputCard
+            {...{ isDisable: isDisable, isMultipleAllow: isMultipleAllow }}
+            {...config}
+            texts={{ ...config.texts, header: null }}
+            cardStyle={cardStyle}
+            submit
+            {...{ onSkip: onSkip, onAdd: onAdd }}
+            t={t}
+            className={className || ""}
+          >
+            {!childrenAtTheBottom && children}
+            {inputs}
+            {forcedError && !showErrorBelowChildren && <CardLabelError>{t(forcedError)}</CardLabelError>}
+            {childrenAtTheBottom && children}
+            {forcedError && showErrorBelowChildren && <CardLabelError>{t(forcedError)}</CardLabelError>}
+          </InputCard>
+        </CollapsibleCardPage>
+      ) : (
+        <InputCard
+          {...{ isDisable: isDisable, isMultipleAllow: isMultipleAllow }}
+          {...config}
+          cardStyle={cardStyle}
+          submit
+          {...{ onSkip: onSkip, onAdd: onAdd }}
+          t={t}
+          className={className || ""}
+        >
+          {!childrenAtTheBottom && children}
+          {inputs}
+          {forcedError && !showErrorBelowChildren && <CardLabelError>{t(forcedError)}</CardLabelError>}
+          {childrenAtTheBottom && children}
+          {forcedError && showErrorBelowChildren && <CardLabelError>{t(forcedError)}</CardLabelError>}
+        </InputCard>
+      )}
     </form>
   );
 };

@@ -28,9 +28,11 @@ const WSActivationPlumberDetails = ({ config, onSelect, userType, formData, setE
   ];
 
   useEffect(() => {
-    const data = plumberDetails.map((e) => {
-      return e;
-    });
+    const data =
+      plumberDetails.length &&
+      plumberDetails.map((e) => {
+        return e;
+      });
     onSelect(config?.key, data);
   }, [plumberDetails, formData?.connectionDetails?.[0]?.connectionType]);
 
@@ -55,9 +57,10 @@ const WSActivationPlumberDetails = ({ config, onSelect, userType, formData, setE
 
   return (
     <React.Fragment>
-      {plumberDetails.map((plumberDetail, index) => (
-        <PlumberDetails key={plumberDetail.key || index} index={index} plumberDetail={plumberDetail} {...commonProps} />
-      ))}
+      {plumberDetails?.length &&
+        plumberDetails.map((plumberDetail, index) => (
+          <PlumberDetails key={plumberDetail.key || index} index={index} plumberDetail={plumberDetail} {...commonProps} />
+        ))}
     </React.Fragment>
   );
 };

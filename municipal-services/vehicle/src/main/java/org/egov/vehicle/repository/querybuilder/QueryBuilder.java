@@ -153,11 +153,11 @@ public class QueryBuilder {
 		if (criteria.getTenantId() != null) {
 			if (criteria.getTenantId().split("\\.").length == 1) {
 				addClauseIfRequired(preparedStmtList, builder);
-				builder.append(" tenantid like ?");
+				builder.append(" veh.tenantid like ?");
 				preparedStmtList.add('%' + criteria.getTenantId() + '%');
 			} else {
 				addClauseIfRequired(preparedStmtList, builder);
-				builder.append(" tenantid=? ");
+				builder.append(" veh.tenantid=? ");
 				preparedStmtList.add(criteria.getTenantId());
 			}
 		}
@@ -228,14 +228,14 @@ public class QueryBuilder {
 		List<String> ids = criteria.getIds();
 		if (!CollectionUtils.isEmpty(ids)) {
 			addClauseIfRequired(preparedStmtList, builder);
-			builder.append(" id IN (").append(createQuery(ids)).append(")");
+			builder.append(" veh.id IN (").append(createQuery(ids)).append(")");
 			addToPreparedStatement(preparedStmtList, ids);
 		}
 		// Added search criteria on status
 		List<String> status = criteria.getStatus();
 		if (!CollectionUtils.isEmpty(status)) {
 			addClauseIfRequired(preparedStmtList, builder);
-			builder.append(" status IN (").append(createQuery(status)).append(")");
+			builder.append(" veh.status IN (").append(createQuery(status)).append(")");
 			addToPreparedStatement(preparedStmtList, status);
 		}
 
@@ -256,7 +256,8 @@ public class QueryBuilder {
 		List<String> ids = criteria.getIds();
 		if (!CollectionUtils.isEmpty(ids)) {
 			addClauseIfRequired(preparedStmtList, builder);
-			builder.append(" id IN (").append(createQuery(ids)).append(")");
+//			builder.append(" id IN (").append(createQuery(ids)).append(")");
+			builder.append(" veh.id IN (").append(createQuery(ids)).append(")");
 			addToPreparedStatement(preparedStmtList, ids);
 		}
 
@@ -264,11 +265,12 @@ public class QueryBuilder {
 	}
 
 	private String addPaginationClause(StringBuilder builder, List<Object> preparedStmtList,
-			VehicleSearchCriteria criteria) {
+									   VehicleSearchCriteria criteria) {
 
 		if (criteria.getLimit() != null && criteria.getLimit() != 0) {
-			builder.append(
-					"and vehicle.id in (select id from eg_vehicle where tenantid= ? order by id offset ? limit ?)");
+//			builder.append(
+//					"and vehicle.id in (select id from eg_vehicle where tenantid= ? order by id offset ? limit ?)");
+			builder.append("and veh.id in (select id from eg_vehicle where tenantid= ? order by id offset ? limit ?)");
 			preparedStmtList.add(criteria.getTenantId());
 			preparedStmtList.add(criteria.getOffset());
 			preparedStmtList.add(criteria.getLimit());

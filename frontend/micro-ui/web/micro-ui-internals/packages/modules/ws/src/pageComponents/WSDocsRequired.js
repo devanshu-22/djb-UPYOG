@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Card,
   CardHeader,
@@ -7,11 +7,16 @@ import {
   CardText,
   Loader,
   CardSubHeader,
-  PrintBtnCommon,
   ActionBar,
+  LabelFieldPair,
+  CardLabel,
+  Dropdown,
+  WrapUnMaskComponent,
+  CardLabelError,
 } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useHistory, useRouteMatch } from "react-router-dom";
+import { Controller, useForm } from "react-hook-form";
 
 const WSDocsRequired = ({ onSelect, userType, onSkip, config }) => {
   const history = useHistory();
@@ -21,6 +26,9 @@ const WSDocsRequired = ({ onSelect, userType, onSkip, config }) => {
   const goNext = () => {
     onSelect("DocsReq", "");
   };
+  const { control, formState: localFormState, getValues } = useForm();
+
+  const [zro, setZro] = useState({ value: "", error: "" });
 
   sessionStorage.removeItem("Digit.PT_CREATE_EMP_WS_NEW_FORM");
   sessionStorage.removeItem("IsDetailsExists");
@@ -74,15 +82,38 @@ const WSDocsRequired = ({ onSelect, userType, onSkip, config }) => {
     );
   }
 
+  const menu = [
+    {
+      i18nKey: "ASHOK VIHAR",
+      code: "ASHOK VIHAR",
+      value: "ASHOK VIHAR",
+    },
+    {
+      i18nKey: "BURARI",
+      code: "BURARI",
+      value: "BURARI",
+    },
+    {
+      i18nKey: "DWARKA",
+      code: "DWARKA",
+      value: "DWARKA",
+    },
+    {
+      i18nKey: "OKHLA",
+      code: "OKHLA",
+      value: "OKHLA",
+    },
+  ];
+
   return (
     <div className="employee-form-content-with-action-bar">
-      <Card className="overflow-y-scroll">
+      <div className="overflow-y-scroll">
         {wsDocsLoading ? (
           <Loader />
         ) : (
           <div id="documents-div" className="ws-docs-container">
             {wsDocs?.Documents?.map((doc, index) => (
-              <div key={index} className="ws-doc-card">
+              <Card key={index} className="ws-doc-card">
                 {/* Header */}
                 <div className="ws-doc-header">
                   <div className="ws-doc-title">
@@ -104,8 +135,45 @@ const WSDocsRequired = ({ onSelect, userType, onSkip, config }) => {
                     </div>
                   ))}
                 </div>
-              </div>
+              </Card>
             ))}
+            <Card className="ws-doc-card">
+              <div>
+                <LabelFieldPair>
+                  <CardLabel className="card-label-smaller">ZRO Location</CardLabel>
+                  <div className="field">
+                    <Controller
+                      control={control}
+                      name={"zro"}
+                      defaultValue={zro}
+                      rules={{ required: t("REQUIRED_FIELD") }}
+                      isMandatory={true}
+                      render={(props) => (
+                        <div>
+                          <Dropdown
+                            className="form-field"
+                            selected={getValues("gender")}
+                            disable={false}
+                            option={menu}
+                            errorStyle={localFormState.touched.gender && zro.error ? true : false}
+                            select={(e) => {
+                              setZro((prev) => ({
+                                ...prev,
+                                value: e,
+                              }));
+                            }}
+                            optionKey="i18nKey"
+                            onBlur={props.onBlur}
+                            t={t}
+                          />
+                        </div>
+                      )}
+                    />
+                  </div>
+                </LabelFieldPair>
+                {localFormState && zro.error && <CardLabelError>{zro.error}</CardLabelError>}
+              </div>
+            </Card>
           </div>
         )}
         <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
@@ -115,11 +183,11 @@ const WSDocsRequired = ({ onSelect, userType, onSkip, config }) => {
               onSubmit={() => {
                 history.push(match.path.replace("create-application", "new-application"));
               }}
-              disabled={wsDocsLoading ? true : false}
+              disabled={wsDocsLoading || !zro.value ? true : false}
             />
           }
         </ActionBar>
-      </Card>
+      </div>
     </div>
   );
 };

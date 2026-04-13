@@ -396,7 +396,7 @@ const WorkerDetails = (props) => {
                                 <span onClick={() => onActionSelect("DELETE_VENDOR")}>
                                   <DeleteIcon
                                     className="delete"
-                                    fill="#f47738"
+                                    fill="#3A8DCC"
                                     style={{
                                       cursor: "pointer",
                                       marginLeft: "20px",

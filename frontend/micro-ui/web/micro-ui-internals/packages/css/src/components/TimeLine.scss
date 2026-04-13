@@ -75,7 +75,7 @@
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
   overflow-y: scroll;
   @media (min-width: 768px) {
-    max-width: 25%;
+    max-width: 100%;
   }
 }
 
@@ -104,12 +104,12 @@
 }
 
 .stepper-circle.active {
-  background: #667eea;
+  background: #1f5fa8;
   color: #fff;
 }
 
 .stepper-circle.completed {
-  background: #667eea;
+  background: #1f5fa8;
   color: #fff;
 }
 
@@ -125,7 +125,7 @@
 
 .stepper-label:hover {
   cursor: pointer;
-  color: #667eea;
+  color: #1f5fa8;
 }
 
 .stepper-line {
@@ -136,7 +136,7 @@
 }
 
 .stepper-line.completed {
-  background: #667eea;
+  background: #1f5fa8;
 }
 
 @media (max-width: 768px) {
@@ -180,7 +180,7 @@
   }
 
   .stepper-line.completed {
-    background: #667eea;
+    background: #1f5fa8;
   }
 
   /* hide line on last step */

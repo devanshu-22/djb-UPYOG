@@ -51,6 +51,8 @@ public class EnrichmentService {
 	@Autowired
 	private IdgenUtil idgenUtil;
 
+
+
 	public void enrichCreateWaterTankerRequest(WaterTankerBookingRequest waterTankerRequest) {
 		String bookingId = RequestServiceUtil.getRandonUUID();
 		log.info("Enriching water tanker booking id :" + bookingId);
@@ -58,14 +60,13 @@ public class EnrichmentService {
 		WaterTankerBookingDetail waterTankerDetail = waterTankerRequest.getWaterTankerBookingDetail();
 		RequestInfo requestInfo = waterTankerRequest.getRequestInfo();
 		String userUuid = requestInfo.getUserInfo().getUuid();
+		String applicantUuid = RequestServiceUtil.getRandonUUID();
+		String bookingCreateBy = waterTankerRequest.getRequestInfo().getUserInfo().getUserName();
 		AuditDetails auditDetails = RequestServiceUtil.getAuditDetails(requestInfo.getUserInfo().getUuid(), true);
-		if(config.getIsUserProfileEnabled()) {
-			// If the mobile number in the request matches the applicant's mobile number, then set the applicantDetailId as userUuid
+		if (config.getIsUserProfileEnabled()) {
 			if (UserUtil.isCurrentUserApplicant(waterTankerRequest)) {
 				waterTankerDetail.setApplicantUuid(userUuid);
 			} else {
-				// If the mobile number does not match, set the applicantDetailId to null and addressDetailId to null
-				// Setting applicantDetailId and addressDetailId to null to ensure new user and address creation
 				waterTankerDetail.setApplicantUuid(null);
 				waterTankerDetail.setAddressDetailId(null);
 			}
@@ -74,11 +75,9 @@ public class EnrichmentService {
 			String addressDetailId = waterTankerDetail.getAddressDetailId();
 
 			if (StringUtils.isBlank(applicantDetailId)) {
-				// Enrich user details for existing user or user details with address for new user
 				enrichUserDetails(waterTankerRequest);
 			}
 			if (StringUtils.isBlank(addressDetailId)) {
-				// Enrich address details only
 				enrichAddressDetails(waterTankerRequest, waterTankerDetail);
 			}
 		}else{
@@ -94,24 +93,22 @@ public class EnrichmentService {
 			}
 			waterTankerDetail.setApplicantUuid(null);
 			waterTankerDetail.setAddressDetailId(null);
-			log.info("User profile is not enabled, setting applicantDetailId and addressDetailId to null");
+			log.info("User profile is not enabled, using generated applicantUuid for both tables");
 		}
+
 		waterTankerDetail.setBookingId(bookingId);
 		waterTankerDetail.setApplicationDate(auditDetails.getCreatedTime());
 		waterTankerDetail.setBookingStatus(RequestServiceStatus.valueOf(waterTankerDetail.getBookingStatus()).toString());
 		waterTankerDetail.setAuditDetails(auditDetails);
-		waterTankerDetail.setTenantId(waterTankerRequest.getWaterTankerBookingDetail().getTenantId());	
-		
-	    List<String> customIds = getIdList(requestInfo, waterTankerDetail.getTenantId(),
+		waterTankerDetail.setTenantId(waterTankerRequest.getWaterTankerBookingDetail().getTenantId());
+
+		List<String> customIds = getIdList(requestInfo, waterTankerDetail.getTenantId(),
 				config.getWaterTankerApplicationKey(), config.getWaterTankerApplicationFormat(), 1);
-
 		log.info("Enriched application request application no :" + customIds.get(0));
+		waterTankerDetail.setBookingNo(customIds.get(0));
 
-		waterTankerDetail.setBookingNo(customIds.get(0)); 
-
-		
-		waterTankerDetail.setTankerType(waterTankerRequest.getWaterTankerBookingDetail().getTankerType());			
-		waterTankerDetail.setTankerQuantity(waterTankerRequest.getWaterTankerBookingDetail().getTankerQuantity());	
+		waterTankerDetail.setTankerType(waterTankerRequest.getWaterTankerBookingDetail().getTankerType());
+		waterTankerDetail.setTankerQuantity(waterTankerRequest.getWaterTankerBookingDetail().getTankerQuantity());
 		waterTankerDetail.setWaterQuantity(waterTankerRequest.getWaterTankerBookingDetail().getWaterQuantity());
 		waterTankerDetail.setDescription(waterTankerRequest.getWaterTankerBookingDetail().getDescription());
 		waterTankerDetail.setDeliveryDate(waterTankerRequest.getWaterTankerBookingDetail().getDeliveryDate());
@@ -122,59 +119,19 @@ public class EnrichmentService {
 		waterTankerDetail.setLongitude(waterTankerRequest.getWaterTankerBookingDetail().getAddress().getLongitude());
 		waterTankerDetail.setWTfileStoreId(waterTankerRequest.getWaterTankerBookingDetail().getWTfileStoreId());
 		String roles = waterTankerRequest.getRequestInfo().getUserInfo().getRoles()
-                .stream()
-                .map(Role::getName)
-                .collect(Collectors.joining(", "));
-		waterTankerDetail.setBookingCreatedBy(roles);
+				.stream()
+				.map(Role::getName)
+				.collect(Collectors.joining(", "));
+		waterTankerDetail.setBookingCreatedBy(bookingCreateBy);
 
 		waterTankerDetail.getApplicantDetail().setBookingId(bookingId);
-		waterTankerDetail.getApplicantDetail().setApplicantId(RequestServiceUtil.getRandonUUID());
+		waterTankerDetail.getApplicantDetail().setApplicantId(applicantUuid);
+		waterTankerDetail.setApplicantId(applicantUuid);
 		waterTankerDetail.getAddress().setAddressId(RequestServiceUtil.getRandonUUID());
-		waterTankerDetail.getApplicantDetail().setAuditDetails(auditDetails);
 		waterTankerDetail.getAddress().setApplicantId(waterTankerDetail.getApplicantDetail().getApplicantId());
-		
+		waterTankerDetail.getApplicantDetail().setAuditDetails(auditDetails);
+
 		log.info("Enriched application request data :" + waterTankerDetail);
-
-	}
-
-	// Fixed Point Request
-	public void enrichCreateFixedPointWaterTankerRequest(WaterTankerFixedPointRequest waterTankerFixedPointRequest) {
-        List<String> referenceList = idgenUtil.getIdList(
-				waterTankerFixedPointRequest.getRequestInfo(),
-				waterTankerFixedPointRequest.getWaterTankerFixedPointDetail().getTenantId(),
-                "djb.fxp.id",
-                null,
-                1);
-		String bookingId = RequestServiceUtil.getRandonUUID();
-		log.info("Enriching water tanker booking id :" + bookingId);
-
-		WaterTankerFixedPointDetail waterTankerFixedPointDetail = waterTankerFixedPointRequest.getWaterTankerFixedPointDetail();
-		RequestInfo requestInfo = waterTankerFixedPointRequest.getRequestInfo();
-		AuditDetails auditDetails = RequestServiceUtil.getAuditDetails(requestInfo.getUserInfo().getUuid(), true);
-
-		waterTankerFixedPointDetail.setAuditDetails(auditDetails);
-		waterTankerFixedPointDetail.setTenantId(waterTankerFixedPointRequest.getWaterTankerFixedPointDetail().getTenantId());
-
-		List<String> customIds = getIdList(requestInfo, waterTankerFixedPointDetail.getTenantId(),
-				config.getWaterTankerApplicationKey(), config.getWaterTankerApplicationFormat(), 1);
-
-		log.info("Enriched application request application no :" + customIds.get(0));
-
-		ApplicantDetail applicantDetail = waterTankerFixedPointDetail.getApplicantDetail();
-		Address address = waterTankerFixedPointDetail.getAddress();
-
-		waterTankerFixedPointDetail.getApplicantDetail().setBookingId(bookingId);
-		waterTankerFixedPointDetail.setMobileNumber(applicantDetail.getMobileNumber());
-
-		waterTankerFixedPointDetail.getApplicantDetail().setType("FIXED-POINT");
-		waterTankerFixedPointDetail.getApplicantDetail().setFixedPointId(referenceList.get(0));
-		waterTankerFixedPointDetail.getApplicantDetail().setApplicantId(RequestServiceUtil.getRandonUUID());
-		waterTankerFixedPointDetail.getAddress().setAddressId(RequestServiceUtil.getRandonUUID());
-		waterTankerFixedPointDetail.getApplicantDetail().setAuditDetails(auditDetails);
-		waterTankerFixedPointDetail.getAddress().setApplicantId(waterTankerFixedPointDetail.getApplicantDetail().getApplicantId());
-
-		log.info("Enriched application request data :" + waterTankerFixedPointDetail);
-
 	}
 
 	public void enrichUpdateFixedPointWaterTankerRequest(
@@ -261,8 +218,9 @@ public class EnrichmentService {
 
 		// Fetch the new address associated with the user's UUID
 		AddressV2 addressDetails = UserService.convertApplicantAddressToUserAddress(waterTankerRequest.getWaterTankerBookingDetail().getAddress(), RequestServiceUtil.extractTenantId(waterTankerRequest.getWaterTankerBookingDetail().getTenantId()));
+		System.out.println("test1       ");
 		AddressV2 address = userService.createNewAddressV2ByUserUuid(addressDetails,waterTankerRequest.getRequestInfo(),waterTankerRequest.getWaterTankerBookingDetail().getApplicantUuid());
-
+System.out.println("test2         ");
 		if (address != null) {
 			// Set the address detail ID in the booking detail
 			waterTankerDetail.setAddressDetailId(String.valueOf(address.getId()));
@@ -541,5 +499,48 @@ public class EnrichmentService {
 			audit.setLastModifiedTime(time);
 			mapping.setAuditDetails(audit);
 		});
+	}
+
+
+
+
+
+	public void enrichCreateFixedPointWaterTankerRequest(WaterTankerFixedPointRequest waterTankerFixedPointRequest) {
+		List<String> referenceList = idgenUtil.getIdList(
+				waterTankerFixedPointRequest.getRequestInfo(),
+				waterTankerFixedPointRequest.getWaterTankerFixedPointDetail().getTenantId(),
+				"djb.fxp.id",
+				null,
+				1);
+		String bookingId = RequestServiceUtil.getRandonUUID();
+		log.info("Enriching water tanker booking id :" + bookingId);
+
+		WaterTankerFixedPointDetail waterTankerFixedPointDetail = waterTankerFixedPointRequest.getWaterTankerFixedPointDetail();
+		RequestInfo requestInfo = waterTankerFixedPointRequest.getRequestInfo();
+		AuditDetails auditDetails = RequestServiceUtil.getAuditDetails(requestInfo.getUserInfo().getUuid(), true);
+
+		waterTankerFixedPointDetail.setAuditDetails(auditDetails);
+		waterTankerFixedPointDetail.setTenantId(waterTankerFixedPointRequest.getWaterTankerFixedPointDetail().getTenantId());
+
+		List<String> customIds = getIdList(requestInfo, waterTankerFixedPointDetail.getTenantId(),
+				config.getWaterTankerApplicationKey(), config.getWaterTankerApplicationFormat(), 1);
+
+		log.info("Enriched application request application no :" + customIds.get(0));
+
+		ApplicantDetail applicantDetail = waterTankerFixedPointDetail.getApplicantDetail();
+		Address address = waterTankerFixedPointDetail.getAddress();
+
+		waterTankerFixedPointDetail.getApplicantDetail().setBookingId(bookingId);
+		waterTankerFixedPointDetail.setMobileNumber(applicantDetail.getMobileNumber());
+
+		waterTankerFixedPointDetail.getApplicantDetail().setType("FIXED-POINT");
+		//waterTankerFixedPointDetail.getApplicantDetail().setFixedPointId(referenceList.get(0));
+		waterTankerFixedPointDetail.getApplicantDetail().setApplicantId(RequestServiceUtil.getRandonUUID());
+		waterTankerFixedPointDetail.getAddress().setAddressId(RequestServiceUtil.getRandonUUID());
+		waterTankerFixedPointDetail.getApplicantDetail().setAuditDetails(auditDetails);
+		waterTankerFixedPointDetail.getAddress().setApplicantId(waterTankerFixedPointDetail.getApplicantDetail().getApplicantId());
+
+		log.info("Enriched application request data :" + waterTankerFixedPointDetail);
+
 	}
 }

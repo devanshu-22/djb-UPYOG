@@ -14,6 +14,6 @@ const LayoutWrapper = ({ layoutClass = "normal", children }) => {
 export default LayoutWrapper;
 
 const layouts = {
-  normal: "employee-form",
-  action: "employee-form employee-form-content-with-action-bar",
+  normal: "employee-form no-scrollbar",
+  action: "employee-form employee-form-content-with-action-bar no-scrollbar",
 };

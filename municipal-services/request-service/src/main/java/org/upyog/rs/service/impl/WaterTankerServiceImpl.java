@@ -53,6 +53,7 @@ public class WaterTankerServiceImpl implements WaterTankerService {
 	@Autowired
 	private UserService userService;
 
+
 	@Override
 	public WaterTankerBookingDetail createNewWaterTankerBookingRequest(WaterTankerBookingRequest waterTankerRequest) {
 
@@ -63,7 +64,6 @@ public class WaterTankerServiceImpl implements WaterTankerService {
 
 		workflowService.updateWorkflowStatus(null, waterTankerRequest);
 
-		// Get the uuid of User from user registry
 		try {
 			RequestInfo requestInfo = waterTankerRequest.getRequestInfo();
 			ApplicantDetail applicantDetail = waterTankerRequest.getWaterTankerBookingDetail().getApplicantDetail();
@@ -73,12 +73,40 @@ public class WaterTankerServiceImpl implements WaterTankerService {
 				throw new RuntimeException("User not found for this mobile number: " +
 						applicantDetail.getMobileNumber());
 			}
+
+
+
+//			//  Fetch existing applicant
+			ApplicantDetail existingApplicant = requestServiceRepository.getApplicantByMobileNumber(applicantDetail.getMobileNumber());
+
+			if (existingApplicant != null) {
+				// EXISTING USER
+				waterTankerRequest.getWaterTankerBookingDetail()
+						.getApplicantDetail()
+						.setApplicantId(existingApplicant.getApplicantId());
+
+				waterTankerRequest.getWaterTankerBookingDetail()
+						.getAddress()
+						.setApplicantId(existingApplicant.getApplicantId());
+				//System.out.println("test11+  EXIST applicant");
+
+			} else {
+
+				waterTankerRequest.getWaterTankerBookingDetail()
+						.setApplicantDetail(applicantDetail);
+				//System.out.println("test13+  keep new applicant");
+
+			}
+
+
 			if(config.getIsUserProfileEnabled()) {
 				waterTankerRequest.getWaterTankerBookingDetail().setApplicantUuid(user.getUuid());
 			} else{
 				// If user profile is not enabled, set the applicantUuid null
 				waterTankerRequest.getWaterTankerBookingDetail().setApplicantUuid(null);
 			}
+
+
 			log.info("Applicant or User Uuid: " + user.getUuid());
 		} catch (Exception e) {
 			log.error("Error fetching or creating user: " + e.getMessage(), e);
@@ -88,9 +116,10 @@ public class WaterTankerServiceImpl implements WaterTankerService {
 		requestServiceRepository.saveWaterTankerBooking(waterTankerRequest);
 
 		WaterTankerBookingDetail waterTankerDetail = waterTankerRequest.getWaterTankerBookingDetail();
-
 		return waterTankerDetail;
 	}
+
+
 
 
 	@Override
@@ -134,6 +163,8 @@ public class WaterTankerServiceImpl implements WaterTankerService {
 		return waterTankerFixedPointDetail;
 
 	}
+
+
 
 	@Override
 	public WaterTankerFixedPointDetail updateFixedPointWaterTankerBookingRequest(

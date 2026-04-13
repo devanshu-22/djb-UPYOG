@@ -2,39 +2,37 @@ import { Loader } from "@djb25/digit-ui-react-components";
 import { getDaysInMonth } from "date-fns";
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Area, AreaChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis ,ComposedChart, Bar} from "recharts";
+import { Area, AreaChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, ComposedChart, Bar } from "recharts";
 import FilterContext from "./FilterContext";
 import NoData from "./NoData";
-const COLORS = ["#048BD0", "#FBC02D", "#8E29BF", "#EA8A3B", "#0BABDE", "#6E8459", "#D4351C", "#0CF7E4", "#F80BF4", "#22F80B"];
+const COLORS = ["#048BD0", "#FBC02D", "#8E29BF", "#EA8A3B", "#0BABDE", "#6E8459", "#D83A2F", "#0CF7E4", "#F80BF4", "#22F80B"];
 const increasedHeightCharts = [
   "nssOBPSTotalPermitsVsTotalOCSubmittedVsTotalOCIssued",
   "nssNOCApplicationVsProvisionalVsActual",
   "nocApplicationVsProvisionalVsActual",
   "permitsandOCissued",
-  "cumulativeCollectionOverview"
+  "cumulativeCollectionOverview",
 ];
 const getColors = (index = 0) => {
   index = COLORS.length > index ? index : 0;
   return COLORS[index];
 };
 
-const getDenominatedValue = (denomination, plotValue,plot) => {
-  if(plot?.COLLECTIONS_NONTAX || plot?.COLLECTIONS_TAX || plot?.COLLECTIONS)
-  {
+const getDenominatedValue = (denomination, plotValue, plot) => {
+  if (plot?.COLLECTIONS_NONTAX || plot?.COLLECTIONS_TAX || plot?.COLLECTIONS) {
     return Number((plotValue / 10000000).toFixed(2));
+  } else {
+    switch (denomination) {
+      case "Unit":
+        return plotValue;
+      case "Lac":
+        return Number((plotValue / 100000).toFixed(2));
+      case "Cr":
+        return Number((plotValue / 10000000).toFixed(2));
+      default:
+        return "";
+    }
   }
-  else {
-  switch (denomination) {
-    case "Unit":
-      return plotValue;
-    case "Lac":
-      return Number((plotValue / 100000).toFixed(2));
-    case "Cr":
-      return Number((plotValue / 10000000).toFixed(2));
-    default:
-      return "";
-  }
-}
 };
 
 const getValue = (plot) => plot.value;
@@ -106,8 +104,10 @@ const CustomAreaChart = ({ xDataKey = "name", yDataKey = getValue, data, setChar
       setmanageChart("Area");
       if (id !== "fsmCapacityUtilization") {
         let data = response?.responseData?.data?.[0]?.plots.map((plot, index) => {
-          return index === 0 ? { ...plot, difference: 0 } : { ...plot, difference: plot.value - response?.responseData?.data?.[0]?.plots[index - 1].value }
-        })
+          return index === 0
+            ? { ...plot, difference: 0 }
+            : { ...plot, difference: plot.value - response?.responseData?.data?.[0]?.plots[index - 1].value };
+        });
         return data;
       }
       return response?.responseData?.data?.[0]?.plots.map((plot) => {
@@ -139,35 +139,28 @@ const CustomAreaChart = ({ xDataKey = "name", yDataKey = getValue, data, setChar
   }, [response, totalCapacity]);
 
   const renderPlot = (plot, key) => {
-
     const plotValue = key ? plot?.[key] : plot?.value || 0;
-    if (id === "fssmCapacityUtilization" || id === "fsmCapacityUtilization" ){
+    if (id === "fssmCapacityUtilization" || id === "fsmCapacityUtilization") {
       return Number(plotValue.toFixed(1));
     }
-    if (key === "Reopened Complaints")
-    {
-      return null
+    if (key === "Reopened Complaints") {
+      return null;
     }
-    if(id === "cumulativeCollectionv3")
-    {
+    if (id === "cumulativeCollectionv3") {
       const { denomination } = value;
-      return getDenominatedValue(denomination, plotValue,plot);
+      return getDenominatedValue(denomination, plotValue, plot);
     }
-   if(id == "cumulativeCollectionOverview")
-    {
-      return getDenominatedValue("Cr", plotValue,plot);
+    if (id == "cumulativeCollectionOverview") {
+      return getDenominatedValue("Cr", plotValue, plot);
     }
-    if(id =="totalApplication&ClosedApplicationOverview")
-    {
-       return Number(plotValue.toFixed(1));
-    }
-    else if (plot?.symbol?.toLowerCase() === "amount") {
+    if (id == "totalApplication&ClosedApplicationOverview") {
+      return Number(plotValue.toFixed(1));
+    } else if (plot?.symbol?.toLowerCase() === "amount") {
       const { denomination } = value;
-      return getDenominatedValue(denomination, plotValue,plot);
+      return getDenominatedValue(denomination, plotValue, plot);
     } else if (plot?.symbol?.toLowerCase() === "number") {
       return Number(plotValue.toFixed(1));
-    } 
-    else {
+    } else {
       return plotValue;
     }
   };
@@ -177,11 +170,11 @@ const CustomAreaChart = ({ xDataKey = "name", yDataKey = getValue, data, setChar
   const renderLegendForLine = (ss, sss, index) => {
     return (
       <ul>
- <span style={{ fontSize: "14px", color: "#505A5F" }}>{keysArr?.[index]}</span>
+        <span style={{ fontSize: "14px", color: "#505A5F" }}>{keysArr?.[index]}</span>
       </ul>
-    )
-  }
-  
+    );
+  };
+
   const tickFormatter = (value) => {
     if (typeof value === "string") {
       return value.replace("-", ", ");
@@ -193,7 +186,7 @@ const CustomAreaChart = ({ xDataKey = "name", yDataKey = getValue, data, setChar
     let formattedLabel = tickFormatter(label);
 
     let payloadObj = payload?.[0] || {};
-    const difference = Object.keys(payloadObj).length !== 0?getDenominatedValue(value.denomination, payloadObj.payload["difference"]):""
+    const difference = Object.keys(payloadObj).length !== 0 ? getDenominatedValue(value.denomination, payloadObj.payload["difference"]) : "";
     return (
       <div
         style={{
@@ -209,9 +202,9 @@ const CustomAreaChart = ({ xDataKey = "name", yDataKey = getValue, data, setChar
             value?.denomination !== "Unit" ? t(Digit.Utils.locale.getTransformedLocale(`ES_DSS_${value?.denomination}`)) : ""
           }`}</p>
         )}
-       {payloadObj?.payload?.symbol?.toLowerCase() === "amount" && (
+        {payloadObj?.payload?.symbol?.toLowerCase() === "amount" && (
           <p>{`Collection Increased: ${value?.denomination === "Unit" ? " ₹" : ""} ${difference}${
-            value?.denomination !== "Unit" ?  t(Digit.Utils.locale.getTransformedLocale(`ES_DSS_${value?.denomination}`)) : ""
+            value?.denomination !== "Unit" ? t(Digit.Utils.locale.getTransformedLocale(`ES_DSS_${value?.denomination}`)) : ""
           }`}</p>
         )}
         {payloadObj?.payload?.symbol?.toLowerCase() === "percentage" && <p>{`${formattedLabel} : ${payloadObj?.value} %`}</p>}
@@ -222,7 +215,7 @@ const CustomAreaChart = ({ xDataKey = "name", yDataKey = getValue, data, setChar
   };
 
   const renderTooltipForLine = ({ payload, label, unit }) => {
-    console.log("payloadpayload",payload)
+    console.log("payloadpayload", payload);
     let payloadObj = payload?.[0] || {};
     let prefix = payloadObj?.payload?.symbol?.toLowerCase() === "amount" && value?.denomination === "Unit" ? " ₹" : " ";
     let postfix =
@@ -237,28 +230,25 @@ const CustomAreaChart = ({ xDataKey = "name", yDataKey = getValue, data, setChar
     delete newPayload?.symbol;
     let newObjArray = [newPayload?.name];
     delete newPayload?.name;
-    console.log("sssssssss",payloadObj)
-if(payloadObj?.payload?.["Non Tax Collection"])
-{
-  Object.keys(newPayload).map((key) => {
-    newObjArray.push(
-      `${key} -${prefix}${ 
-       getDenominatedValue("Cr", newPayload?.[key],payloadObj?.payload)
-      }Cr `
-    );
-  });
-}
-else {
-  Object.keys(newPayload).map((key) => {
-    newObjArray.push(
-      `${key} -${prefix}${ 
-        payloadObj?.payload?.COLLECTIONS_NONTAX ?getDenominatedValue(value?.denomination, newPayload?.[key],payloadObj?.payload):
-        payloadObj?.payload?.symbol?.toLowerCase() === "amount" ? getDenominatedValue(value?.denomination, newPayload?.[key])+": Diiference " : newPayload?.[key]
-      } ${postfix}`
-    );
-  });
-}
-     
+    console.log("sssssssss", payloadObj);
+    if (payloadObj?.payload?.["Non Tax Collection"]) {
+      Object.keys(newPayload).map((key) => {
+        newObjArray.push(`${key} -${prefix}${getDenominatedValue("Cr", newPayload?.[key], payloadObj?.payload)}Cr `);
+      });
+    } else {
+      Object.keys(newPayload).map((key) => {
+        newObjArray.push(
+          `${key} -${prefix}${
+            payloadObj?.payload?.COLLECTIONS_NONTAX
+              ? getDenominatedValue(value?.denomination, newPayload?.[key], payloadObj?.payload)
+              : payloadObj?.payload?.symbol?.toLowerCase() === "amount"
+              ? getDenominatedValue(value?.denomination, newPayload?.[key]) + ": Diiference "
+              : newPayload?.[key]
+          } ${postfix}`
+        );
+      });
+    }
+
     return (
       <div
         style={{
@@ -281,7 +271,7 @@ else {
   }
   return (
     <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", height: "100%" }}>
-      {(id === "fssmCapacityUtilization"  ||id === "fsmCapacityUtilization"  )&& (
+      {(id === "fssmCapacityUtilization" || id === "fsmCapacityUtilization") && (
         <p>
           {t("DSS_FSM_TOTAL_SLUDGE_TREATED")} - {totalWaste} {t("DSS_KL")}
         </p>
@@ -320,8 +310,7 @@ else {
             <Area type="monotone" dataKey={renderPlot} stroke="#048BD0" fill="url(#colorUv)" dot={true} />
           </AreaChart>
         ) : id == "pgrCumulativeClosedCompla" ? (
-      
-              <ComposedChart
+          <ComposedChart
             width="100%"
             height="100%"
             margin={{
@@ -334,33 +323,32 @@ else {
           >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" />
-            <YAxis yAxisId="left"  type={"number"} orientation="left" stroke="black" tickCount={10} />
-            <YAxis yAxisId="right" orientation="right" stroke="#54d140" tickCount={10}/>
+            <YAxis yAxisId="left" type={"number"} orientation="left" stroke="black" tickCount={10} />
+            <YAxis yAxisId="right" orientation="right" stroke="#54d140" tickCount={10} />
             <Tooltip content={renderTooltipForLine} />
-            <Legend
+            <Legend />
+            <Bar yAxisId="right" dataKey="Opened Complaints" fill="#54d140" />
+            <Line
+              yAxisId="left"
+              type="monotone"
+              dataKey={"Closed Complaints"}
+              stroke={getColors(0)}
+              activeDot={{ r: 8 }}
+              strokeWidth={2}
+              key={0}
+              dot={{ stroke: getColors(0), strokeWidth: 1, r: 2, fill: getColors(0) }}
             />
-          <Bar yAxisId="right" dataKey="Opened Complaints" fill="#54d140" />
-          <Line
-                yAxisId="left"
-                  type="monotone"
-                  dataKey={"Closed Complaints"}
-                  stroke={getColors(0)}
-                  activeDot={{ r: 8 }}
-                  strokeWidth={2}
-                  key={0}
-                  dot={{ stroke: getColors(0), strokeWidth: 1, r: 2, fill: getColors(0) }}
-                />
-                  <Line
-                yAxisId="left"
-                  type="monotone"
-                  dataKey={"Total Complaints"}
-                  stroke={getColors(2)}
-                  activeDot={{ r: 8 }}
-                  strokeWidth={2}
-                  key={2}
-                  dot={{ stroke: getColors(2), strokeWidth: 1, r: 2, fill: getColors(2) }}
-                />
-                
+            <Line
+              yAxisId="left"
+              type="monotone"
+              dataKey={"Total Complaints"}
+              stroke={getColors(2)}
+              activeDot={{ r: 8 }}
+              strokeWidth={2}
+              key={2}
+              dot={{ stroke: getColors(2), strokeWidth: 1, r: 2, fill: getColors(2) }}
+            />
+
             {/* {keysArr?.map((key, i) => {
               return (
                 <Line
@@ -375,9 +363,8 @@ else {
                 />
               );
             })} */}
-          
           </ComposedChart>
-        ):(
+        ) : (
           <LineChart
             width={500}
             height={300}
@@ -391,7 +378,7 @@ else {
           >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" />
-            <YAxis/>
+            <YAxis />
             <Tooltip content={renderTooltipForLine} />
             <Legend
               layout="horizontal"

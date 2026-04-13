@@ -7,133 +7,130 @@ import FilterContext from "./FilterContext";
 import NoData from "./NoData";
 import { checkCurrentScreen } from "./DSSCard";
 
-const formatValue = (value, symbol,type) => {
+const formatValue = (value, symbol, type) => {
   if (symbol?.toLowerCase() === "percentage") {
     /*   Removed by  percentage formatter.
     const Pformatter = new Intl.NumberFormat("en-IN", { maximumSignificantDigits: 3 });
     return `${Pformatter.format(Number(value).toFixed(2))}`;
     */
-   if(type == "others" && value >100)
-   {
-    return `${Number(100).toFixed()}`;
-   }
-    else {
+    if (type == "others" && value > 100) {
+      return `${Number(100).toFixed()}`;
+    } else {
       return `${Number(value).toFixed()}`;
     }
-  }
-  else if(type =="revenue")
-  {
-    return   Number(((value) / 1000000000).toFixed(2) || 0);
-  }
-  else if(type =="population")
-  {
-    return   Number(((value) / 100).toFixed(2) || 0);
-  }
-  else {
-    return  Number((value).toFixed(4) || 0);
+  } else if (type == "revenue") {
+    return Number((value / 1000000000).toFixed(2) || 0);
+  } else if (type == "population") {
+    return Number((value / 100).toFixed(2) || 0);
+  } else {
+    return Number(value.toFixed(4) || 0);
   }
 };
-let flag= 0
-let flag2=0
-const CustomLabel = ({ x, y, name, stroke, value, maxValue ,data}) => {
-  console.log("hhhhhh",maxValue,data)
+let flag = 0;
+let flag2 = 0;
+const CustomLabel = ({ x, y, name, stroke, value, maxValue, data }) => {
+  console.log("hhhhhh", maxValue, data);
 
   const currencyFormatter = new Intl.NumberFormat("en-IN", { currency: "INR" });
   const { t } = useTranslation();
-  
-  let possibleValues = ["pttopPerformingStatesRevenue","ptbottomPerformingStatesRevenue","tltopPerformingStatesRevenue","tlbottomPerformingStatesRevenue","obpstopPerformingStatesRevenue","obpsbottomPerformingStatesRevenue","noctopPerformingStatesRevenue","nocbottomPerformingStatesRevenue","wstopPerformingStatesRevenue","wsbottomPerformingStatesRevenue","OverviewtopPerformingStates","OverviewbottomPerformingStates"]
-if( possibleValues.includes(data?.id) ) 
-{
 
-  return (
-    <>
-      <text
-        x={x}
-        y={y}
-        dx={0}
-        dy={30}
-        fill={stroke}
-        width="35"
-        style={{ fontSize: "medium", textAlign: "right", fontVariantNumeric: "proportional-nums" }}
-      >
-        {`₹ ${maxValue?.[t(name)]} ${t("ES_DSS_CR")}`}
-      </text>
-      <text x={x} y={y} dx={-200} dy={10}>
-        {t(`DSS_TB_${Digit.Utils.locale.getTransformedLocale(name)}`)}
-      </text>
-    </>
-  );
-}
-else if(data?.id.includes("GDP") )
-{
-  
-  Object.keys(maxValue)?.forEach(key => { 
-    console.log("reee123",maxValue[key],name)
-    maxValue[key] = maxValue[key];
-  });
-  return (
-    <>
-      <text
-        x={x}
-        y={y}
-        dx={0}
-        dy={30}
-        fill={stroke}
-        width="35"
-        style={{ fontSize: "medium", textAlign: "right", fontVariantNumeric: "proportional-nums" }}
-      >
-        {`${maxValue?.[t(name)]} %`}
-      </text>
-      <text x={x} y={y} dx={-200} dy={10}>
-        {t(`DSS_TB_${Digit.Utils.locale.getTransformedLocale(name)}`)}
-      </text>
-    </>
-  );
-}
-else if (data?.id.includes("Population") || data?.id.includes("Household"))
-{
-  return (
-    <>
-      <text
-        x={x}
-        y={y}
-        dx={0}
-        dy={30}
-        fill={stroke}
-        width="35"
-        style={{ fontSize: "medium", textAlign: "right", fontVariantNumeric: "proportional-nums" }}
-      >
-        {`₹ ${maxValue?.[t(name)]}`}
-      </text>
-      <text x={x} y={y} dx={-200} dy={10}>
-        {t(`DSS_TB_${Digit.Utils.locale.getTransformedLocale(name)}`)}
-      </text>
-    </>
-  );
-}
-else {
-
-return (
-    <>
-      <text
-        x={x}
-        y={y}
-        dx={0}
-        dy={30}
-        fill={stroke}
-        width="35"
-        style={{ fontSize: "medium", textAlign: "right", fontVariantNumeric: "proportional-nums" }}
-      >
-        {`${maxValue?.[t(name)]}`}
-      </text>
-      <text x={x} y={y} dx={-200} dy={10}>
-        {t(`DSS_TB_${Digit.Utils.locale.getTransformedLocale(name)}`)}
-      </text>
-    </>
-  );
-}
+  let possibleValues = [
+    "pttopPerformingStatesRevenue",
+    "ptbottomPerformingStatesRevenue",
+    "tltopPerformingStatesRevenue",
+    "tlbottomPerformingStatesRevenue",
+    "obpstopPerformingStatesRevenue",
+    "obpsbottomPerformingStatesRevenue",
+    "noctopPerformingStatesRevenue",
+    "nocbottomPerformingStatesRevenue",
+    "wstopPerformingStatesRevenue",
+    "wsbottomPerformingStatesRevenue",
+    "OverviewtopPerformingStates",
+    "OverviewbottomPerformingStates",
+  ];
+  if (possibleValues.includes(data?.id)) {
+    return (
+      <>
+        <text
+          x={x}
+          y={y}
+          dx={0}
+          dy={30}
+          fill={stroke}
+          width="35"
+          style={{ fontSize: "medium", textAlign: "right", fontVariantNumeric: "proportional-nums" }}
+        >
+          {`₹ ${maxValue?.[t(name)]} ${t("ES_DSS_CR")}`}
+        </text>
+        <text x={x} y={y} dx={-200} dy={10}>
+          {t(`DSS_TB_${Digit.Utils.locale.getTransformedLocale(name)}`)}
+        </text>
+      </>
+    );
+  } else if (data?.id.includes("GDP")) {
+    Object.keys(maxValue)?.forEach((key) => {
+      console.log("reee123", maxValue[key], name);
+      maxValue[key] = maxValue[key];
+    });
+    return (
+      <>
+        <text
+          x={x}
+          y={y}
+          dx={0}
+          dy={30}
+          fill={stroke}
+          width="35"
+          style={{ fontSize: "medium", textAlign: "right", fontVariantNumeric: "proportional-nums" }}
+        >
+          {`${maxValue?.[t(name)]} %`}
+        </text>
+        <text x={x} y={y} dx={-200} dy={10}>
+          {t(`DSS_TB_${Digit.Utils.locale.getTransformedLocale(name)}`)}
+        </text>
+      </>
+    );
+  } else if (data?.id.includes("Population") || data?.id.includes("Household")) {
+    return (
+      <>
+        <text
+          x={x}
+          y={y}
+          dx={0}
+          dy={30}
+          fill={stroke}
+          width="35"
+          style={{ fontSize: "medium", textAlign: "right", fontVariantNumeric: "proportional-nums" }}
+        >
+          {`₹ ${maxValue?.[t(name)]}`}
+        </text>
+        <text x={x} y={y} dx={-200} dy={10}>
+          {t(`DSS_TB_${Digit.Utils.locale.getTransformedLocale(name)}`)}
+        </text>
+      </>
+    );
+  } else {
+    return (
+      <>
+        <text
+          x={x}
+          y={y}
+          dx={0}
+          dy={30}
+          fill={stroke}
+          width="35"
+          style={{ fontSize: "medium", textAlign: "right", fontVariantNumeric: "proportional-nums" }}
+        >
+          {`${maxValue?.[t(name)]}`}
+        </text>
+        <text x={x} y={y} dx={-200} dy={10}>
+          {t(`DSS_TB_${Digit.Utils.locale.getTransformedLocale(name)}`)}
+        </text>
+      </>
+    );
+  }
 };
-const COLORS = { RED: "#00703C", GREEN: "#D4351C", default: "#00703C" };
+const COLORS = { RED: "#D83A2F", GREEN: "#2E9E8F", default: "#2E9E8F" };
 
 const CustomBarChart = ({
   xDataKey = "value",
@@ -166,39 +163,48 @@ const CustomBarChart = ({
   });
   const chartData = useMemo(() => {
     if (!response) return null;
-    let possibleValues = ["pttopPerformingStatesRevenue","ptbottomPerformingStatesRevenue","tltopPerformingStatesRevenue","tlbottomPerformingStatesRevenue","obpstopPerformingStatesRevenue","obpsbottomPerformingStatesRevenue","noctopPerformingStatesRevenue","nocbottomPerformingStatesRevenue","wstopPerformingStatesRevenue","wsbottomPerformingStatesRevenue","OverviewtopPerformingStates","OverviewbottomPerformingStates"]
-   
+    let possibleValues = [
+      "pttopPerformingStatesRevenue",
+      "ptbottomPerformingStatesRevenue",
+      "tltopPerformingStatesRevenue",
+      "tlbottomPerformingStatesRevenue",
+      "obpstopPerformingStatesRevenue",
+      "obpsbottomPerformingStatesRevenue",
+      "noctopPerformingStatesRevenue",
+      "nocbottomPerformingStatesRevenue",
+      "wstopPerformingStatesRevenue",
+      "wsbottomPerformingStatesRevenue",
+      "OverviewtopPerformingStates",
+      "OverviewbottomPerformingStates",
+    ];
+
     setChartDenomination("number");
     const dd = response?.responseData?.data?.map((bar) => {
       let plotValue = bar?.plots?.[0].value || 0;
-      let type =""
-      if(possibleValues.includes(data?.id))
-      {
-        type="revenue"
+      let type = "";
+      if (possibleValues.includes(data?.id)) {
+        type = "revenue";
         return {
           name: t(bar?.plots?.[0].name),
-          value: formatValue(plotValue, bar?.plots?.[0].symbol,type),
+          value: formatValue(plotValue, bar?.plots?.[0].symbol, type),
+          // value: Digit.Utils.dss.formatter(plotValue, bar?.plots?.[0].symbol),
+        };
+      } else if (data.id.includes("Population") || data.id.includes("Household")) {
+        type = "population";
+        return {
+          name: t(bar?.plots?.[0].name),
+          value: formatValue(plotValue, bar?.plots?.[0].symbol, type),
+          // value: Digit.Utils.dss.formatter(plotValue, bar?.plots?.[0].symbol),
+        };
+      } else {
+        type = "others";
+        return {
+          name: t(bar?.plots?.[0].name),
+          value: formatValue(plotValue, bar?.plots?.[0].symbol, type),
           // value: Digit.Utils.dss.formatter(plotValue, bar?.plots?.[0].symbol),
         };
       }
-      else if (data.id.includes("Population") || data.id.includes("Household"))
-      {
-        type="population"
-        return {
-          name: t(bar?.plots?.[0].name),
-          value: formatValue(plotValue, bar?.plots?.[0].symbol,type),
-          // value: Digit.Utils.dss.formatter(plotValue, bar?.plots?.[0].symbol),
-        };
-      }
-      else {
-
-      type="others"
-      return {
-        name: t(bar?.plots?.[0].name),
-        value: formatValue(plotValue, bar?.plots?.[0].symbol,type),
-        // value: Digit.Utils.dss.formatter(plotValue, bar?.plots?.[0].symbol),
-      };}
-    })
+    });
     let newMax = Math.max(...dd.map((e) => Number(e.value)));
     let newObj = {};
     let newReturn = dd.map((ele) => {
@@ -224,11 +230,11 @@ const CustomBarChart = ({
   if (chartData?.length === 0 || !chartData) {
     return <NoData t={t} />;
   }
-  console.log("Loading chart",data)
-  let url=window.location.href
+  console.log("Loading chart", data);
+  let url = window.location.href;
   return (
     <Fragment>
-      <ResponsiveContainer width="98%" height={url.includes("drilldown")?730:400}>
+      <ResponsiveContainer width="98%" height={url.includes("drilldown") ? 730 : 400}>
         <BarChart
           width="70%"
           height="100%"
@@ -245,7 +251,7 @@ const CustomBarChart = ({
             dataKey={xDataKey}
             fill={COLORS[fillColor]}
             background={{ fill: "#D6D5D4", radius: 8 }}
-            label={<CustomLabel stroke={COLORS[fillColor]} maxValue={maxValue} data={data}/>}
+            label={<CustomLabel stroke={COLORS[fillColor]} maxValue={maxValue} data={data} />}
             radius={[8, 8, 8, 8]}
             isAnimationActive={false}
           />

@@ -248,12 +248,12 @@ const ApplicantDetails = ({ t, config, onSelect, formData }) => {
           ) : null}
           <div className="form-field wns-search-field">
             <CardLabel>
-              {`${t("COMMON_EMAIL_ID")}`} <span className="astericColor">*</span>
+              {`${t("COMMON_EMAIL_ID")}`}
             </CardLabel>
             <TextInput
               t={t}
               type={"email"}
-              isMandatory={false}
+              // isMandatory={false}
               optionKey="i18nKey"
               name="emailId"
               value={emailId}

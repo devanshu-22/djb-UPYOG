@@ -96,6 +96,7 @@ const MapController = ({ selectedDriver, mapZoom, mapCenter }) => {
 
 // Custom hook for route fetching
 const useRoute = (start, end) => {
+  const { t } = useTranslation();
   const [routeData, setRouteData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -143,6 +144,7 @@ const useRoute = (start, end) => {
 
 // Component to display route on map
 const RouteLayer = ({ start, end, color = "#2196f3", weight = 6 }) => {
+  const { t } = useTranslation();
   const { routeData, loading, error } = useRoute(start, end);
   const [showSteps, setShowSteps] = useState(false);
   const [selectedStep, setSelectedStep] = useState(null);
@@ -287,7 +289,7 @@ const RouteLayer = ({ start, end, color = "#2196f3", weight = 6 }) => {
           }}
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-            <h4 style={{ margin: 0, color: "#667eea" }}>{t("ROUTE_INFORMATION")}</h4>
+            <h4 style={{ margin: 0, color: "#1F5FA8" }}>{t("ROUTE_INFORMATION")}</h4>
             <button
               onClick={() => setShowSteps(false)}
               style={{
@@ -358,7 +360,7 @@ const RouteLayer = ({ start, end, color = "#2196f3", weight = 6 }) => {
                         width: "20px",
                         height: "20px",
                         borderRadius: "50%",
-                        background: "#667eea",
+                        background: "#1F5FA8",
                         color: "white",
                         display: "flex",
                         alignItems: "center",
@@ -406,12 +408,12 @@ const RouteMarkers = ({ coordinates, totalDistance }) => {
             className: "distance-marker",
             html: `<div style="
               background: white;
-              border: 2px solid #667eea;
+              border: 2px solid #1F5FA8;
               border-radius: 12px;
               padding: 2px 6px;
               font-size: 10px;
               font-weight: bold;
-              color: #667eea;
+              color: #1F5FA8;
               white-space: nowrap;
             ">${(i / 1000).toFixed(0)} km</div>`,
             iconSize: [40, 20],
@@ -515,7 +517,7 @@ const DriverCard = ({ driver, isSelected, onClick, vendorList }) => {
         padding: "16px",
         borderRadius: "12px",
         background: isSelected ? "#f0f4ff" : "white",
-        border: `2px solid ${isSelected ? "#667eea" : "#f0f0f0"}`,
+        border: `2px solid ${isSelected ? "#1F5FA8" : "#f0f0f0"}`,
         cursor: "pointer",
         position: "relative",
         transition: "all 0.2s ease",
@@ -803,6 +805,7 @@ export default function LiveTrackingSystem() {
         flexDirection: "column",
         height: "100vh",
         width: "100%",
+        overflow: "hidden",
         fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
         background: "#f0f2f5",
         padding: "16px",
@@ -820,7 +823,7 @@ export default function LiveTrackingSystem() {
           padding: "16px 24px",
           borderRadius: "12px",
           boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-          border: "2px solid #667eea44",
+          border: "2px solid #1F5FA844",
         }}
       >
         <div style={{ display: "flex", flexDirection: "column" }}>
@@ -851,7 +854,7 @@ export default function LiveTrackingSystem() {
                   boxShadow: isConnected ? "0 0 8px #4caf50" : "none",
                 }}
               />
-              {isConnected ? "CONNECTED" : "DISCONNECTED"}
+              {/* {isConnected ? "CONNECTED" : "DISCONNECTED"} */}
             </div>
           </div>
           <p style={{ margin: "4px 0 0 0", fontSize: "14px", color: "#666" }}>
@@ -906,7 +909,7 @@ export default function LiveTrackingSystem() {
               top: "80px",
               left: "20px",
               zIndex: 2000,
-              background: "#667eea",
+              background: "#1F5FA8",
               color: "white",
               border: "none",
               borderRadius: "8px",
@@ -964,7 +967,7 @@ export default function LiveTrackingSystem() {
                     style={{
                       background: "none",
                       border: "none",
-                      color: "#667eea",
+                      color: "#1F5FA8",
                       fontSize: "12px",
                       fontWeight: "700",
                       cursor: "pointer",
@@ -1034,7 +1037,7 @@ export default function LiveTrackingSystem() {
                         style={{
                           padding: "4px 12px",
                           borderRadius: "4px",
-                          background: filterOnline === filter ? "#667eea" : "transparent",
+                          background: filterOnline === filter ? "#1F5FA8" : "transparent",
                           color: filterOnline === filter ? "white" : "#666",
                           border: filterOnline === filter ? "none" : "1px solid #e0e0e0",
                           cursor: "pointer",
@@ -1097,6 +1100,8 @@ export default function LiveTrackingSystem() {
         <div
           style={{
             flex: 1,
+            height: "100%",
+            minHeight: 0,
             position: "relative",
             background: "white",
             borderRadius: "12px",
@@ -1146,7 +1151,7 @@ export default function LiveTrackingSystem() {
                       style={{
                         fontWeight: "bold",
                         fontSize: isMobile ? "14px" : "16px",
-                        color: "#667eea",
+                        color: "#1F5FA8",
                         marginBottom: "8px",
                         borderBottom: "1px solid #eee",
                         paddingBottom: "4px",
@@ -1260,7 +1265,7 @@ export default function LiveTrackingSystem() {
                   }}
                   style={{
                     padding: isMobile ? "10px 12px" : "8px 16px",
-                    background: "#667eea",
+                    background: "#1F5FA8",
                     color: "white",
                     border: "none",
                     borderRadius: "4px",
@@ -1323,7 +1328,7 @@ export default function LiveTrackingSystem() {
               }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                <h4 style={{ margin: 0, color: "#667eea", fontSize: isMobile ? "14px" : "16px" }}>{t("WT_SELECTED_DRIVER")}</h4>
+                <h4 style={{ margin: 0, color: "#1F5FA8", fontSize: isMobile ? "14px" : "16px" }}>{t("WT_SELECTED_DRIVER")}</h4>
                 <StatusBadge isOnline={selectedDriver.isOnline} />
               </div>
               <div style={{ fontSize: isMobile ? "12px" : "13px" }}>
@@ -1350,14 +1355,34 @@ export default function LiveTrackingSystem() {
           {/* Map Logic Controls */}
           <div style={{ position: "absolute", top: "20px", left: "20px", zIndex: 1000, display: "flex", flexDirection: "column", gap: "8px" }}>
             <button
-              onClick={() => setMapZoom(prev => prev + 1)}
-              style={{ width: "32px", height: "32px", background: "white", border: "1px solid #e0e0e0", borderRadius: "4px", fontSize: "18px", fontWeight: "700", cursor: "pointer", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}
+              onClick={() => setMapZoom((prev) => prev + 1)}
+              style={{
+                width: "32px",
+                height: "32px",
+                background: "white",
+                border: "1px solid #e0e0e0",
+                borderRadius: "4px",
+                fontSize: "18px",
+                fontWeight: "700",
+                cursor: "pointer",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+              }}
             >
               +
             </button>
             <button
-              onClick={() => setMapZoom(prev => prev - 1)}
-              style={{ width: "32px", height: "32px", background: "white", border: "1px solid #e0e0e0", borderRadius: "4px", fontSize: "18px", fontWeight: "700", cursor: "pointer", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}
+              onClick={() => setMapZoom((prev) => prev - 1)}
+              style={{
+                width: "32px",
+                height: "32px",
+                background: "white",
+                border: "1px solid #e0e0e0",
+                borderRadius: "4px",
+                fontSize: "18px",
+                fontWeight: "700",
+                cursor: "pointer",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+              }}
             >
               −
             </button>

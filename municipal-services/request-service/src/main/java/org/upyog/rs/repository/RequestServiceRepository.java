@@ -3,6 +3,7 @@ package org.upyog.rs.repository;
 import java.util.List;
 import java.util.Map;
 
+import org.upyog.rs.web.models.ApplicantDetail;
 import org.upyog.rs.web.models.RequestDetailsByDriverId;
 import org.upyog.rs.web.models.mobileToilet.MobileToiletBookingDetail;
 import org.upyog.rs.web.models.mobileToilet.MobileToiletBookingRequest;
@@ -39,4 +40,7 @@ public interface RequestServiceRepository {
 	public void save(FixedFillingPointMapping mapping);
 
 	public boolean existsByMobileNumber(String mobileNumber);
-}
+
+	public ApplicantDetail getApplicantByMobileNumber(String mobileNumber) ;
+
+	}

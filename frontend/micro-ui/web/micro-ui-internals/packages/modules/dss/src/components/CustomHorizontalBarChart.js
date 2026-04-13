@@ -6,7 +6,7 @@ import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAx
 import FilterContext from "./FilterContext";
 import NoData from "./NoData";
 
-const barColors = ["#048BD0", "#FBC02D", "#8E29BF", "#EA8A3B", "#0BABDE", "#6E8459", "#D4351C", "#0CF7E4", "#F80BF4", "#22F80B"];
+const barColors = ["#048BD0", "#FBC02D", "#8E29BF", "#EA8A3B", "#0BABDE", "#6E8459", "#D83A2F", "#0CF7E4", "#F80BF4", "#22F80B"];
 
 const renderPlot = (plot, key, denomination) => {
   const plotValue = key ? plot?.[key] : plot?.value || 0;
@@ -113,11 +113,11 @@ const CustomHorizontalBarChart = ({
 
   const getVerticalWidth = (layout) => {
     if (window?.location.href.includes("dss/dashboard/pgr")) {
-      return layout === "vertical" ? 150 : 60 
+      return layout === "vertical" ? 150 : 60;
     } else {
-      return layout === "vertical" ? 120 : 60
+      return layout === "vertical" ? 120 : 60;
     }
-  }
+  };
 
   const bars = response?.responseData?.data?.map((bar) => bar?.headerName);
   return (
@@ -164,7 +164,7 @@ const CustomHorizontalBarChart = ({
               }}
               tickCount={10}
               tickFormatter={tickFormatter}
-              unit={id === "fssmCapacityUtilization"  || id === "fsmCapacityUtilization"? "%" : ""}
+              unit={id === "fssmCapacityUtilization" || id === "fsmCapacityUtilization" ? "%" : ""}
               width={getVerticalWidth(layout)}
             />
             <XAxis dataKey={xDataKey} type={xAxisType} tick={{ fontSize: "14px", fill: "#505A5F" }} tickCount={10} tickFormatter={tickFormatter} />

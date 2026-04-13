@@ -1,4 +1,4 @@
-import { MdmsService } from "../../services/elements/MDMS";
+// import { MdmsService } from "../../services/elements/MDMS";
 import { MdmsServiceV2 } from "../../services/elements/MDMSV2";
 import { useQuery } from "react-query";
 

@@ -178,7 +178,7 @@
 
 .submit-bar {
   @apply h-10 text-center outline-none;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #1f5fa8, #0b2e5b);
   box-shadow: inset 0px -2px 0px theme(colors.text.primary);
   cursor: pointer;
   height: 36px !important;
@@ -195,7 +195,7 @@
 
 .submit-bar-disabled {
   @apply h-10 text-center w-full outline-none opacity-50;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #1f5fa8, #0b2e5b);
 
   &:focus {
     @apply outline-none;
@@ -866,7 +866,7 @@
 }
 
 .sidebar-item.active {
-  background-color: #667eea;
+  background-color: #1f5fa8;
   color: #ffffff;
   box-shadow: 0 4px 6px rgba(0, 173, 239, 0.2);
   padding: 6px;
@@ -1070,7 +1070,7 @@
 }
 
 .sidebar-item.active {
-  background-color: #667eea;
+  background-color: #1f5fa8;
   color: #ffffff;
   box-shadow: 0 4px 6px rgba(0, 173, 239, 0.2);
 }
@@ -1336,7 +1336,6 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 0 16px;
 }
 
 .nav-link {
@@ -1416,7 +1415,7 @@
 }
 
 .collapsed .sidebar-header {
-  padding: 24px 0;
+  padding: 15px 0;
   flex-direction: column;
   gap: 24px;
   justify-content: center;

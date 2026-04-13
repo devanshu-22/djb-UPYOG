@@ -184,7 +184,7 @@ const SearchApplication = ({ onSearch, type, onClose, onTabChange, isFstpOperato
           <form onSubmit={handleSubmit(onSubmitInput)}>
             <div className={FSTP ? "for-pt for-search flex-box" : "flex-box"} style={{ gap: "16px" }}>
               {searchFields?.map((input, index) => (
-                <span key={index} className={index === 0 ? "finance-mainlayout-col2 complaint-input" : "finance-mainlayout-col2 mobile-input"}>
+                <span key={index} className={index === 0 ? "finance-mainlayout-col1 complaint-input" : "finance-mainlayout-col1 mobile-input"}>
                   {getFields(input)}
                 </span>
               ))}

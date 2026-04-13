@@ -9,16 +9,14 @@ const LocalityModal = ({ t, closeModal, onSubmit, initialValues, tenantId, modal
 
   const { data: mdmsData, isLoading: isMdmsLoading } = Digit.Hooks.hrms.useHrmsMDMS(tenantId, "egov-location", "HRMSRolesandDesignation");
 
-  const gethierarchylistdata = () => {
+  const hierarchyOptions = useMemo(() => {
     const tenantBoundary = (mdmsData?.MdmsRes || mdmsData)?.["egov-location"]?.["TenantBoundary"] || [];
     return tenantBoundary.map((ele) => ({
       i18nKey: ele.hierarchyType.name || ele.hierarchyType.code || ele.hierarchyType,
       code: ele.hierarchyType.code || ele.hierarchyType,
       boundary: ele.boundary,
     }));
-  };
-
-  const hierarchyOptions = gethierarchylistdata();
+  }, [mdmsData]);
 
   // Automatically select the first available hierarchy once data is loaded
   React.useEffect(() => {
@@ -50,21 +48,33 @@ const LocalityModal = ({ t, closeModal, onSubmit, initialValues, tenantId, modal
 
   // Pre-populate selectedLocality for UPDATE and VIEW modes
   React.useEffect(() => {
-    if (structuredLocalities.length > 0 && (initialValues?.fillingPointLocalityCodes?.length > 0 || initialValues?.address?.locality) && (isView || isUpdate)) {
-      const currentLocalityCodes = initialValues?.fillingPointLocalityCodes?.length > 0
-        ? initialValues.fillingPointLocalityCodes
-        : initialValues.address.locality.split(",").map((s) => s.trim());
-      const preSelected = structuredLocalities
-        .filter((loc) => currentLocalityCodes.includes(loc.code))
-        .map((loc) => [loc.i18nKey, loc]);
-      setSelectedLocality(preSelected);
+    if (
+      structuredLocalities.length > 0 &&
+      selectedLocality.length === 0 &&
+      (initialValues?.fillingPointLocalityCodes?.length > 0 || initialValues?.address?.locality) &&
+      (isView || isUpdate)
+    ) {
+      const currentLocalityCodes =
+        initialValues?.fillingPointLocalityCodes?.length > 0
+          ? initialValues.fillingPointLocalityCodes
+          : typeof initialValues.address.locality === "string"
+          ? initialValues.address.locality.split(",").map((s) => s.trim())
+          : [];
+
+      const preSelected = structuredLocalities.filter((loc) =>
+        currentLocalityCodes.some((c) => c === loc.code || c.toLowerCase() === (loc.name || "").toLowerCase())
+      );
+
+      if (preSelected.length > 0) {
+        setSelectedLocality(preSelected);
+      }
     }
-  }, [structuredLocalities, initialValues, isView, isUpdate]);
+  }, [structuredLocalities, initialValues, isView, isUpdate, selectedLocality]);
 
   const onFormSubmit = () => {
     onSubmit({
       hierarchyType: selectedHierarchy,
-      locality: selectedLocality.map((l) => l[1]),
+      locality: selectedLocality,
     });
   };
 
@@ -150,7 +160,7 @@ const LocalityModal = ({ t, closeModal, onSubmit, initialValues, tenantId, modal
             </div>
           </div>
 
-          {!isView ? (
+          {!isView && (
             <div style={{ marginBottom: "16px" }}>
               <CardLabel>{t("WT_SELECT_NEW_LOCALITY")}</CardLabel>
               <MultiSelectDropdown
@@ -158,41 +168,19 @@ const LocalityModal = ({ t, closeModal, onSubmit, initialValues, tenantId, modal
                 optionsKey="i18nKey"
                 selected={selectedLocality}
                 onSelect={(val) => {
-                  if (!isView) setSelectedLocality(val);
+                  if (!isView) {
+                    const unwrappedSelections = val.map((v) => v[1]);
+                    setSelectedLocality(unwrappedSelections);
+                  }
                 }}
                 t={t}
                 disabled={!selectedHierarchy || isView}
               />
               {selectedLocality?.length > 0 && (
                 <div style={{ marginTop: "8px", fontSize: "14px", color: "#666" }}>
-                  <strong>{t("WT_LOCALITY_CODES")}:</strong> {selectedLocality.map((l) => l[1].code).join(", ")}
+                  <strong>{t("WT_LOCALITY_CODES")}:</strong> {selectedLocality.map((l) => l.code).join(", ")}
                 </div>
               )}
-            </div>
-          ) : (
-            <div style={{ marginBottom: "16px" }}>
-              <CardLabel>{t("WT_SELECTED_LOCALITIES")}</CardLabel>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "8px" }}>
-                {selectedLocality?.length > 0 ? (
-                  selectedLocality.map((l, index) => (
-                    <span
-                      key={index}
-                      style={{
-                        background: "#f4f4f4",
-                        border: "1px solid #ddd",
-                        borderRadius: "20px",
-                        padding: "4px 12px",
-                        fontSize: "14px",
-                        color: "#333",
-                      }}
-                    >
-                      {t(l[1].i18nKey)} ({l[1].code})
-                    </span>
-                  ))
-                ) : (
-                  null
-                )}
-              </div>
             </div>
           )}
         </div>

@@ -98,14 +98,14 @@ const DeleteBtn = ({ className, onClick, fill }) => (
 );
 
 const SuccessSvg = ({ className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#00703C" className={className}>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#2E9E8F" className={className}>
     <path d="M0 0h24v24H0V0z" fill="none" />
     <path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z" />
   </svg>
 );
 
 const ErrorSvg = ({ className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#d4351c" className={className}>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#D83A2F" className={className}>
     <path d="M0 0h24v24H0V0z" fill="none" />
     <circle cx="12" cy="19" r="2" />
     <path d="M10 3h4v12h-4z" />
@@ -473,7 +473,7 @@ function CloseSvg({ onClick }) {
   );
 }
 
-const UpwardArrow = ({ color = "#00703C", rotate = 0, marginRight = 0 }) => (
+const UpwardArrow = ({ color = "#2E9E8F", rotate = 0, marginRight = 0 }) => (
   <svg
     style={{ display: "inline-block", verticalAlign: "baseline", transform: `rotate(${rotate}deg)`, marginRight: `${marginRight}px` }}
     width="11"
@@ -1067,14 +1067,26 @@ const DownloadBtnCommon = () => (
   </svg>
 );
 
-const PrintBtnCommon = () => (
-  <svg width="41" height="41" viewBox="0 0 41 41" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M32.1663 13.8333H8.83301C6.06634 13.8333 3.83301 16.0667 3.83301 18.8333V28.8333H10.4997V35.5H30.4997V28.8333H37.1663V18.8333C37.1663 16.0667 34.933 13.8333 32.1663 13.8333ZM27.1663 32.1667H13.833V23.8333H27.1663V32.1667ZM32.1663 20.5C31.2497 20.5 30.4997 19.75 30.4997 18.8333C30.4997 17.9167 31.2497 17.1667 32.1663 17.1667C33.083 17.1667 33.833 17.9167 33.833 18.8333C33.833 19.75 33.083 20.5 32.1663 20.5ZM30.4997 5.5H10.4997V12.1667H30.4997V5.5Z"
-      fill="#505A5F"
-    />
-  </svg>
-);
+const PrintBtnCommon = ({ width = 41, height = 41, fill = "#505A5F", className = "", onClick, style = {}, ...props }) => {
+  return (
+    <svg
+      width={width}
+      height={height}
+      viewBox="0 0 41 41"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      onClick={onClick}
+      style={{ cursor: onClick ? "pointer" : "default", ...style }}
+      {...props}
+    >
+      <path
+        d="M32.1663 13.8333H8.83301C6.06634 13.8333 3.83301 16.0667 3.83301 18.8333V28.8333H10.4997V35.5H30.4997V28.8333H37.1663V18.8333C37.1663 16.0667 34.933 13.8333 32.1663 13.8333ZM27.1663 32.1667H13.833V23.8333H27.1663V32.1667ZM32.1663 20.5C31.2497 20.5 30.4997 19.75 30.4997 18.8333C30.4997 17.9167 31.2497 17.1667 32.1663 17.1667C33.083 17.1667 33.833 17.9167 33.833 18.8333C33.833 19.75 33.083 20.5 32.1663 20.5ZM30.4997 5.5H10.4997V12.1667H30.4997V5.5Z"
+        fill={fill}
+      />
+    </svg>
+  );
+};
 
 const WhatsappIconGreen = ({ className, styles }) => (
   <svg className={className} style={{ ...styles }} width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

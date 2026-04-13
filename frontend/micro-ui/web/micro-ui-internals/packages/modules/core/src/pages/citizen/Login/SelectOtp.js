@@ -79,7 +79,7 @@ const SelectOtp = ({ config, otp, onOtpChange, onResend, onSelect, t, error, use
           <p
             className="card-text-button"
             onClick={handleResendOtp}
-            style={{ textAlign: "center", color: "#F47738", cursor: "pointer", fontWeight: "bold" }}
+            style={{ textAlign: "center", color: "#3A8DCC", cursor: "pointer", fontWeight: "bold" }}
           >
             {t("CS_RESEND_OTP")}
           </p>
@@ -106,7 +106,7 @@ const SelectOtp = ({ config, otp, onOtpChange, onResend, onSelect, t, error, use
               className="card-text-button"
               onClick={handleResendOtp}
               style={{
-                color: "#F47738",
+                color: "#3A8DCC",
                 cursor: "pointer",
                 fontWeight: "700",
                 fontSize: "16px",
