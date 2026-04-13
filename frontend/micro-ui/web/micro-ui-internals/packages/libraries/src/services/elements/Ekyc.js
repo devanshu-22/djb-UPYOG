@@ -12,4 +12,14 @@ export const EkycService = {
             auth: true,
             userService: true,
         }),
+    dashboard: (data, params) =>
+        Request({
+            url: Urls.ekyc.dashboard,
+            data: data,
+            useCache: false,
+            method: "POST",
+            params,
+            auth: true,
+            userService: true,
+        }),
 };

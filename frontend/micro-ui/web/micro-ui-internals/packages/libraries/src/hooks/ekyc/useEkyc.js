@@ -58,3 +58,12 @@ export const useGetFloorCount = (tenantId, config = {}) => {
         config
     );
 };
+
+export const useEkycSurveyorDashboard = (data, params, config = {}) => {
+    return useQuery(
+        ["useEkycSurveyorDashboard", data, params],
+        () => Digit.EkycService.dashboard(data, params),
+        config
+    );
+};
+
