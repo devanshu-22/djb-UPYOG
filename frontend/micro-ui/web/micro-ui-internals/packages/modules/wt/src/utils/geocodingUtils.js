@@ -49,8 +49,11 @@ export const reverseGeocode = async (lat, lng) => {
  * @param {Object} data - The Nominatim response data
  * @returns {string} - A concise area name
  */
-export const getAreaName = (data) => {
-  if (!data || !data.address) return "Unknown Address";
+export const getAreaName = (data, useFull = false) => {
+  if (!data) return "Unknown Address";
+  
+  if (useFull && data.display_name) return data.display_name;
+  if (!data.address) return data.display_name || "Unknown Address";
 
   const { address } = data;
   

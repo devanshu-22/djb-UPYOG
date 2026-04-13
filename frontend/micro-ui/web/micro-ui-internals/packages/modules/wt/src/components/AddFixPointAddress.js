@@ -1,14 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  SubmitBar,
-  Toast,
-  Loader,
-  Card,
-  CardLabel,
-  TextInput,
-  MobileNumber,
-  CardSubHeader,
-} from "@djb25/digit-ui-react-components";
+import { SubmitBar, Toast, Loader, CardLabel, TextInput, MobileNumber, CollapsibleCardPage } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useLocation, useHistory } from "react-router-dom";
 import { useQueryClient } from "react-query";
@@ -80,12 +71,10 @@ const AddFixPointAddress = () => {
   const { mutate: updateFixedPoint } = Digit.Hooks.wt.useUpdateFixedPoint(tenantId);
 
   const handleSubmit = (e) => {
-    console.log("Submitting Form Data:", formData);
     const payload = fixedPointPayload({
       ...formData,
       tenantId,
     });
-    console.log("Generated Payload:", payload);
 
     const mutation = editId ? updateFixedPoint : createFixedPoint;
     mutation(payload, {
@@ -98,7 +87,6 @@ const AddFixPointAddress = () => {
         }, 3000);
       },
       onError: (error) => {
-        console.error("Mutation Error:", error);
         setShowToast({
           label: error?.response?.data?.Errors?.[0]?.message || (editId ? t("WT_FILLING_POINT_UPDATED_ERROR") : t("WT_FILLING_POINT_CREATED_ERROR")),
           isError: true,
@@ -131,8 +119,8 @@ const AddFixPointAddress = () => {
       <VerticalTimeline config={[{ timeLine: [{ actions: "Add Fixed Point", currentStep: 1 }] }]} showFinalStep={false} />
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "16px" }}>
-          <Card className="formcomposer-section-grid">
-            <CardSubHeader style={{ gridColumn: "span 2", marginBottom: isMobile ? "0px" : "10px" }}>{t("WT_FIXING_POINT_APPLICANT_DETAILS")}</CardSubHeader>
+        <CollapsibleCardPage title={t("WT_FIXING_POINT_APPLICANT_DETAILS")} defaultOpen={true}>
+          <div className="formcomposer-section-grid">
             <div style={{ display: "flex", flexDirection: "column" }}>
               <CardLabel>
                 {`${t("WT_FIXING_POINT_APPLICANT_DETAILS")}`} <span className="astericColor">*</span>
@@ -181,7 +169,8 @@ const AddFixPointAddress = () => {
                 style={{ width: "100%" }}
               />
             </div>
-          </Card>
+          </div>
+        </CollapsibleCardPage>
         <div>
           <AddFixFillAddress t={t} config={addressConfig} onSelect={handleSelect} formData={formData} isEdit={!!editId} />
         </div>

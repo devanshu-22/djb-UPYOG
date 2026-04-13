@@ -1,3 +1,14 @@
+.ekyc-module-header-wrapper {
+    justify-content: space-between !important;
+    padding: 0 20px;
+}
+
+.ekyc-module-header-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+}
+
 .ekyc-employee-container {
   .inbox-main-container {
     flex: 1;
@@ -32,6 +43,11 @@
 
     &:last-child {
       border-right: none;
+    }
+
+    .inbox-main-container {
+        flex: 1;
+        border-radius: 12px;
     }
 
     .count {

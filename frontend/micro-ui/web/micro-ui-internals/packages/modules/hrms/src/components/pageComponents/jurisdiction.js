@@ -110,7 +110,6 @@ const Jurisdictions = ({ t, config, onSelect, userType, formData, style }) => {
   if (isLoading) {
     return <Loader />;
   }
-  console.log("//////////////////////////////", style);
   return (
     <div className="juridictions-wrapper" style={style}>
       {jurisdictions?.map((jurisdiction, index) => (

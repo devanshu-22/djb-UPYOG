@@ -10,7 +10,7 @@ function ChatBot() {
   // Create a ref to track the bottom of messages container
   const messagesEndRef = useRef(null);
 
-    // Function to scroll to bottom of messages
+  // Function to scroll to bottom of messages
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -24,46 +24,40 @@ function ChatBot() {
     setIsOpen(!isOpen);
   };
 
-  const apiEndPoint = 'https://upyogchatbot.niua.in:8000/chatbot';
+  const apiEndPoint = "https://upyogchatbot.niua.in:8000/chatbot";
 
   const handleMessageSend = async () => {
     if (input.trim() !== "") {
       setMessages([...messages, { sender: "user", text: input }]);
       setInput("");
-      setIsLoading(true);  // Show loading indicator while waiting for response
-  
+      setIsLoading(true); // Show loading indicator while waiting for response
+
       try {
         const response = await fetch(apiEndPoint, {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({ user_input: input }),
         });
-        console.log("Response from Await",response);
+        console.log("Response from Await", response);
         if (!response.ok) {
-          throw new Error('Network response was not ok');
+          throw new Error("Network response was not ok");
         }
-  
+
         const data = await response.json();
-        const botReply = data.response; 
-  
+        const botReply = data.response;
+
         setTimeout(() => {
           setIsLoading(false);
-          setMessages((prevMessages) => [
-            ...prevMessages,
-            { sender: "bot", text: botReply },
-          ]);
+          setMessages((prevMessages) => [...prevMessages, { sender: "bot", text: botReply }]);
         }, 1000);
       } catch (error) {
         console.error("Error fetching response:", error);
         // Handle error or fallback message
         setTimeout(() => {
           setIsLoading(false);
-          setMessages((prevMessages) => [
-            ...prevMessages,
-            { sender: "bot", text: "Sorry, I'm having trouble understanding you right now." },
-          ]);
+          setMessages((prevMessages) => [...prevMessages, { sender: "bot", text: "Sorry, I'm having trouble understanding you right now." }]);
         }, 1000);
       }
     }
@@ -91,12 +85,8 @@ function ChatBot() {
   }, [isOpen]);
 
   const ReplaceURL = (text) => {
-    return text.replace(
-      /(https?:\/\/[^\s]+)/g,
-      '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
-    );
+    return text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
   };
-
 
   return (
     <div style={{ textAlign: "start" }}>
@@ -122,11 +112,13 @@ function ChatBot() {
           }}
           onClick={toggleChatbot}
         >
-          <svg xmlns="
-            http://www.w3.org/2000/svg"
-            fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z" />
-            </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z"
+            />
+          </svg>
         </button>
       )}
       {isOpen && (
@@ -166,11 +158,7 @@ function ChatBot() {
                 cursor: "pointer",
               }}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16.816"
-                height="16.816"
-                viewBox="0 0 16.816 16.816">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16.816" height="16.816" viewBox="0 0 16.816 16.816">
                 <path
                   id="Icon_ionic-ios-close-circle"
                   data-name="Icon ionic-ios-close-circle"
@@ -194,8 +182,7 @@ function ChatBot() {
                 key={index}
                 style={{
                   display: "flex",
-                  justifyContent:
-                    message.sender === "user" ? "flex-end" : "flex-start",
+                  justifyContent: message.sender === "user" ? "flex-end" : "flex-start",
                   marginBottom: "10px",
                 }}
               >
@@ -204,8 +191,7 @@ function ChatBot() {
                     maxWidth: "70%",
                     padding: "10px",
                     borderRadius: "10px",
-                    backgroundColor:
-                      message.sender === "user" ? "#162f6a" : "#e4e6eb",
+                    backgroundColor: message.sender === "user" ? "#162f6a" : "#e4e6eb",
                     color: message.sender === "user" ? "white" : "black",
                     whiteSpace: "pre-wrap",
                     wordWrap: "break-word",
@@ -233,7 +219,8 @@ function ChatBot() {
                     backgroundColor: "#e4e6eb",
                     color: "black",
                   }}
-                >{/**
+                >
+                  {/**
                 Each span tag represents one of the three animated dots (...) in the loading indicator. 
                 We use three separate spans because each dot needs to animate independently to 
                 create that nice wave-like motion effect. */}

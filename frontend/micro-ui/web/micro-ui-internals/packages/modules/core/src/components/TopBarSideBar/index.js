@@ -27,27 +27,23 @@ const TopBarSideBar = ({
     setShowDialog(true);
   };
   const handleOnSubmit = async () => {
-    if (!CITIZEN) {
-      try {
-        // await Digit.UserService.logoutUser();
-        const kc = window.keycloak;
+    try {
+      // await Digit.UserService.logoutUser();
+      const kc = window.keycloak;
 
-        // 🔥 Important: clear FIRST
-        sessionStorage.clear();
-        localStorage.clear();
+      // 🔥 Important: clear FIRST
+      sessionStorage.clear();
+      localStorage.clear();
 
-        if (kc) {
-          await kc.logout({
-            // redirectUri: window.location.origin + "/digit-ui",
-            idTokenHint: kc.idToken,
-          });
-        }
-      } catch (e) {
-        console.error("Logout failed", e);
-        window.location.replace("/digit-ui/employee/user/login");
+      if (kc) {
+        await kc.logout({
+          // redirectUri: window.location.origin + "/digit-ui",
+          idTokenHint: kc.idToken,
+        });
       }
-    } else {
-      Digit.UserService.logout();
+    } catch (e) {
+      console.error("Logout failed", e);
+      window.location.replace("/digit-ui/employee/user/login");
     }
 
     setShowDialog(false);

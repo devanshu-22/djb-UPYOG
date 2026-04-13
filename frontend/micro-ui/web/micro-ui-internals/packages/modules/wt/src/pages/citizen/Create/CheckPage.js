@@ -12,7 +12,7 @@ import {
 } from "@djb25/digit-ui-react-components";
 import React, { useState, Fragment } from "react";
 import { useTranslation } from "react-i18next";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import { checkForNA } from "../../../utils";
 import { convertTo12HourFormat, formatDate, APPLICATION_PATH } from "../../../utils";
 
@@ -64,10 +64,15 @@ const openFilePDF = (fileId) => {
 
 const WTCheckPage = ({ onSubmit, value = {} }) => {
   const { t } = useTranslation();
+  const { pathname } = useLocation();
   const { owner, requestDetails, address, serviceType, toiletRequestDetails, treePruningRequestDetails } = value;
   const [agree, setAgree] = useState(false);
   const immediateRequired = requestDetails?.extraCharge ? "YES" : "NO";
   const [fileUrl, setFileUrl] = useState(null);
+
+  const baseUrl = pathname.includes("citizen")
+    ? `${APPLICATION_PATH}/citizen/wt/request-service`
+    : `${APPLICATION_PATH}/employee/wt/request-service`;
 
   const setdeclarationhandler = () => {
     setAgree(!agree);
@@ -92,7 +97,7 @@ const WTCheckPage = ({ onSubmit, value = {} }) => {
             <Row
               label={t("COMMON_APPLICANT_NAME")}
               text={`${t(checkForNA(owner?.applicantName))}`}
-              actionButton={<ActionButton jumpTo={`${APPLICATION_PATH}/citizen/wt/request-service/applicant-details`} />}
+              actionButton={<ActionButton jumpTo={`${baseUrl}/applicant-details`} />}
             />
             <Row label={t("COMMON_MOBILE_NUMBER")} text={`${t(checkForNA(owner?.mobileNumber))}`} />
             <Row label={t("COMMON_ALT_MOBILE_NUMBER")} text={`${t(checkForNA(owner?.alternateNumber))}`} />
@@ -104,7 +109,7 @@ const WTCheckPage = ({ onSubmit, value = {} }) => {
             <Row
               label={t("HOUSE_NO")}
               text={`${t(checkForNA(address?.houseNo))}`}
-              actionButton={<ActionButton jumpTo={`${APPLICATION_PATH}/citizen/wt/request-service/address-details`} />}
+              actionButton={<ActionButton jumpTo={`${baseUrl}/address-details`} />}
             />
             <Row label={t("ADDRESS_LINE1")} text={`${t(checkForNA(address?.addressLine1))}`} />
             <Row label={t("ADDRESS_LINE2")} text={`${t(checkForNA(address?.addressLine2))}`} />
@@ -121,7 +126,7 @@ const WTCheckPage = ({ onSubmit, value = {} }) => {
                 <Row
                   label={t("WT_TANKER_TYPE")}
                   text={`${t(checkForNA(requestDetails?.tankerType?.value))}`}
-                  actionButton={<ActionButton jumpTo={`${APPLICATION_PATH}/citizen/wt/request-service/request-details`} />}
+                  actionButton={<ActionButton jumpTo={`${baseUrl}/request-details`} />}
                 />
                 <Row label={t("WT_WATER_TYPE")} text={`${t(checkForNA(requestDetails?.waterType?.code))}`} />
                 <Row label={t("WT_TANKER_QUANTITY")} text={`${t(checkForNA(requestDetails?.tankerQuantity?.code))}`} />
@@ -153,7 +158,7 @@ const WTCheckPage = ({ onSubmit, value = {} }) => {
                 <Row
                   label={t("MT_NUMBER_OF_MOBILE_TOILETS")}
                   text={`${t(checkForNA(toiletRequestDetails?.mobileToilet?.code))}`}
-                  actionButton={<ActionButton jumpTo={`${APPLICATION_PATH}/citizen/wt/request-service/toiletRequest-details`} />}
+                  actionButton={<ActionButton jumpTo={`${baseUrl}/toiletRequest-details`} />}
                 />
                 <Row label={t("MT_DELIVERY_FROM_DATE")} text={`${t(checkForNA(formatDate(toiletRequestDetails?.deliveryfromDate)))}`} />
                 <Row label={t("MT_DELIVERY_TO_DATE")} text={`${t(formatDate(checkForNA(toiletRequestDetails?.deliverytoDate)))}`} />
@@ -171,7 +176,7 @@ const WTCheckPage = ({ onSubmit, value = {} }) => {
                 <Row
                   label={t("REASON_FOR_PRUNING")}
                   text={`${t(checkForNA(treePruningRequestDetails?.reasonOfPruning?.code))}`}
-                  actionButton={<ActionButton jumpTo={`${APPLICATION_PATH}/citizen/wt/request-service/treePruningRequest-details`} />}
+                  actionButton={<ActionButton jumpTo={`${baseUrl}/treePruningRequest-details`} />}
                 />
 
                 <Row label={t("LOCATION_GEOTAG")} text={`${t(checkForNA(treePruningRequestDetails?.geoTagLocation))}`} />

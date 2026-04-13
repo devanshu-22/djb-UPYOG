@@ -110,7 +110,7 @@ body {
   }
 
   @media (min-width: 1280px) {
-    padding-inline: 64px;
+    padding-inline: 50px;
   }
 }
 
@@ -143,6 +143,10 @@ body {
     padding: 20px;
     width: 100%;
     gap: 12px;
+
+    @media (min-width: 768px) {
+      padding-right: 55px;
+    }
 
     .header {
       font-size: 18px;

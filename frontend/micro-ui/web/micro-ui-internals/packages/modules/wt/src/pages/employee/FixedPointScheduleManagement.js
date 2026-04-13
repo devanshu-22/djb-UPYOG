@@ -38,8 +38,8 @@ const FixedPointScheduleManagement = ({ ...props }) => {
 
     const points = combinedData
       .map((fp) => ({
-        label: fp.fixedPointCode || fp.name || fp.applicantDetail?.name || fp.bookingId,
-        value: fp.fixedPointCode || fp.bookingId,
+        label: fp.fixedPointCode || fp.applicantDetail?.fixedPointId || fp.name || fp.applicantDetail?.name || fp.bookingId,
+        value: fp.fixedPointCode || fp.applicantDetail?.fixedPointId || fp.bookingId,
       }))
       .filter((p) => p.label && p.value);
 
@@ -51,6 +51,10 @@ const FixedPointScheduleManagement = ({ ...props }) => {
       ...uniquePoints,
     ];
   }, [fixedPointData, allSchedulesData, t]);
+
+  console.log(fixedPoints, "fixedPoints");
+
+  console.log(fixedPointData, "fixedPointData");
 
   const { mutate: createSchedule } = Digit.Hooks.wt.useCreateFixedPointSchedule(tenantId);
   const { mutate: updateSchedule } = Digit.Hooks.wt.useUpdateFixedPointSchedule(tenantId);
@@ -131,7 +135,7 @@ const FixedPointScheduleManagement = ({ ...props }) => {
       rows.map((item) => ({
         scheduleId: item.systemAssignedScheduleId,
         fixedPointName: item.fixedPointName,
-        fixedPoint: item.fixedPointId,
+        fixedPoint: item.fixedPointCode || item.fixedPointId,
         day: item.day,
         freq: item.tripNo,
         arrToFpl: item.arrivalTimeToFpl,
@@ -516,13 +520,13 @@ const FixedPointScheduleManagement = ({ ...props }) => {
               system_assigned_schedule_id: formData.scheduleId,
               fixed_point_code: formData.fixedPointCode,
               day: daysArr.map((d) => d?.toUpperCase?.() || d),
-              trip_no: Number(formData.frequencyNo),
+              trip_no: Number(formData.frequencyNo) || Number(formData.tripNo) || 1,
               arrival_time_to_fpl: formData.arrivalTimeFpl,
               departure_time_from_fpl: formData.departureTimeFpl,
               arrival_time_delivery_point: formData.arrivalFixedPoint,
               departure_time_delivery_point: formData.departureFixedPoint,
               time_of_arriving_back_fpl_after_delivery: formData.returnFpl,
-              volume_water_tobe_delivery: formData.volume,
+              volume_water_tobe_delivery: formData.volume || "0",
               active: formData.active?.value === "Yes" || formData.active === "Yes",
               is_enable: formData.active?.value === "Yes" || formData.active === "Yes",
               remarks: formData.remarks,

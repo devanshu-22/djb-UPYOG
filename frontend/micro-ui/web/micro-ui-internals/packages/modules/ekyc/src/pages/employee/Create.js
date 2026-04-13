@@ -17,25 +17,13 @@ const Create = () => {
 
     const tenantId = Digit.ULBService.getCurrentTenantId();
 
-    const { isLoading: isSearching, data: connectionDetails, error, revalidate } = Digit.Hooks.ekyc.useGetConnection({
+    const { isLoading: isSearching, data: connectionDetails, error, revalidate } = Digit.Hooks.ekyc.useSearchConnection({
         tenantId,
-        details: { kno: searchParams.kNumber }
+        details: { kno: searchParams.kNumber, name: searchParams.kName }
     }, {
-        enabled: searchPerformed && !!searchParams.kNumber
-    });
-
-    const { mutate: validateUser, isLoading: isValidating } = Digit.Hooks.ekyc.useValidateUser(tenantId, {
-        onSuccess: (data) => {
-            if (data?.responseInfo?.status === "successful") {
-                // Keep the flow: first validate, then search details is implied by the new UI
-            } else {
-                setShowToast({ error: true, label: data?.message || t("EKYC_VALIDATION_FAILED") });
-                setSearchPerformed(false);
-                sessionStorage.removeItem("EKYC_CREATE_SEARCH_PERFORMED");
-            }
-        },
+        enabled: searchPerformed && !!searchParams.kNumber && !!searchParams.kName,
         onError: (error) => {
-            setShowToast({ error: true, label: error?.response?.data?.Errors?.[0]?.message || t("EKYC_VALIDATION_ERROR_PLEASE_ENTER_THE_CORRECT_CREDENTIALS") });
+            setShowToast({ error: true, label: error?.response?.data?.Errors?.[0]?.message || t("EKYC_SEARCH_ERROR_PLEASE_ENTER_THE_CORRECT_CREDENTIALS") });
             setSearchPerformed(false);
             sessionStorage.removeItem("EKYC_CREATE_SEARCH_PERFORMED");
         }
@@ -59,8 +47,6 @@ const Create = () => {
         setSearchPerformed(true);
         sessionStorage.setItem("EKYC_CREATE_SEARCH_PARAMS", JSON.stringify(params));
         sessionStorage.setItem("EKYC_CREATE_SEARCH_PERFORMED", "true");
-        // We validate first as per original logic, then the hook useGetConnection will fetch details
-        validateUser({ kno: params.kNumber, name: params.kName });
     };
 
     const closeToast = () => {
@@ -77,7 +63,7 @@ const Create = () => {
                     kNumber={searchParams.kNumber}
                     kName={searchParams.kName}
                     connectionDetails={connectionDetails}
-                    isLoading={isSearching || isValidating}
+                    isLoading={isSearching}
                 />
             )}
 

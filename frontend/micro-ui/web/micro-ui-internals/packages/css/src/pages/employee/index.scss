@@ -142,6 +142,17 @@
   }
 }
 
+.single-page-form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+.form-section-unit {
+  width: 100%;
+}
+
 .employee-form .citizen {
   .main {
     padding-top: 82px;
