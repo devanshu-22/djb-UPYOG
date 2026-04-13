@@ -1,29 +1,21 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { useHistory, useRouteMatch, Switch, Route, Redirect, useLocation } from "react-router-dom";
-import { loginSteps } from "./config";
+import { useHistory, useRouteMatch, Switch, Route, useLocation } from "react-router-dom";
 import SelectMobileNumber from "./SelectMobileNumber";
 import SelectOtp from "./SelectOtp";
+import { StatusTable, Row, Toast, Loader, TickMark, SideBar } from "@djb25/digit-ui-react-components";
 import SelectName from "./SelectName";
-import { Banner, Card, CardHeader, CardText, SubmitBar, StatusTable, Row, Toast, Loader, Stepper } from "@djb25/digit-ui-react-components";
-import Background from "../../../components/Background";
+import RegistrationSuccess from "./RegistrationSuccess";
+// import Background from "../../../components/Background";
 
 const Register = ({ stateCode }) => {
   const { t } = useTranslation();
   const history = useHistory();
   const { path } = useRouteMatch();
-  const location = useLocation();
   const [params, setParams] = Digit.Hooks.useSessionStorage("CITIZEN_REGISTRATION_DATA", {});
   const [isRegistered, setIsRegistered] = useState(false);
   const [showToast, setShowToast] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  const currentStep = useMemo(() => {
-    if (location.pathname.endsWith("/mobile-number")) return 0;
-    if (location.pathname.endsWith("/otp")) return 1;
-    if (location.pathname.endsWith("/name")) return 2;
-    return 0;
-  }, [location]);
 
   const handleMobileNumberSelect = async (data) => {
     setParams({ ...params, ...data });
@@ -108,15 +100,6 @@ const Register = ({ stateCode }) => {
     }
   };
 
-  const handleMobileChange = (event) => {
-    const { value } = event.target;
-    setParams({ ...params, mobileNumber: value });
-  };
-
-  const handleOtpChange = (value) => {
-    setParams({ ...params, otp: value });
-  };
-
   const closeToast = () => {
     setShowToast(null);
   };
@@ -127,121 +110,35 @@ const Register = ({ stateCode }) => {
 
   if (isRegistered) {
     return (
-      <div className="Citizen_register registration-page-container">
-        <div className="registration-card">
-          {/* Left Side: Sidebar - Success State */}
-          <div className="registration-sidebar">
-            <div className="sidebar-header">
-              <h1>UPYOG</h1>
-              <p>{t("CITIZEN_REGISTRATION_PORTAL", "Citizen Registration Portal")}</p>
-            </div>
-
-            <div className="success-icon-wrapper">
-              <div className="icon-outer">
-                <div className="icon-inner">
-                  <svg
-                    width="48"
-                    height="48"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="#10B981"
-                    strokeWidth="4"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                  </svg>
-                </div>
-              </div>
-              <h2>{t("CORE_COMMON_ALL_DONE", "All Done!")}</h2>
-              <p>{t("CORE_COMMON_REGISTRATION_SUCCESS_DESC", "You have been successfully registered with Delhi Jal Board.")}</p>
-            </div>
-
-            <div className="sidebar-footer">{t("CORE_COMMON_COPYRIGHT_FOOTER", "© 2026 Delhi Jal Board. All rights reserved.")}</div>
-          </div>
-
-          {/* Right Side: Success Content */}
-          <div className="registration-content">
-            <div className="content-wrapper">
-              <h1>{t("CORE_COMMON_LOGIN_CREDENTIALS")}</h1>
-              <p>
-                {t(
-                  "CORE_COMMON_REGISTRATION_COMPLETE_DESC",
-                  "Your registration is complete. Please use your registered mobile number as your username to continue."
-                )}
-              </p>
-
-              <div className="credentials-box">
-                <StatusTable>
-                  <Row label={t("CORE_COMMON_USERNAME", "Username")} text={params.mobileNumber} textStyle={{ fontWeight: "600", color: "#1E293B" }} />
-                  <Row
-                    label={t("CORE_COMMON_PASSWORD", "Password")}
-                    text={t("CORE_COMMON_PASSWORD_SENT_SMS", "Sent via SMS to your mobile")}
-                    textStyle={{ color: "#059669", fontWeight: "600" }}
-                  />
-                </StatusTable>
-              </div>
-
-              <button className="continue-btn" onClick={() => history.push("/digit-ui/citizen/login")}>
-                {t("CORE_COMMON_CONTINUE_TO_LOGIN")}
-              </button>
-            </div>
-          </div>
-        </div>
-        {showToast && <Toast label={showToast.label} error={showToast.error} onClose={closeToast} />}
-      </div>
+      <RegistrationSuccess
+        t={t}
+        params={params}
+        history={history}
+        showToast={showToast}
+        closeToast={closeToast}
+        Toast={Toast}
+        StatusTable={StatusTable}
+        Row={Row}
+        TickMark={TickMark}
+      />
     );
   }
 
   return (
     <div className="Citizen_register registration-page-container">
       <div className="registration-card">
-        {/* Left Side: Sidebar Stepper */}
-        <div className="registration-sidebar">
-          <div className="sidebar-header">
-            <h1>UPYOG</h1>
-            <p>{t("CITIZEN_REGISTRATION_PORTAL", "Citizen Registration Portal")}</p>
-          </div>
-
-          <div className="stepper-wrapper-vertical">
-            <Stepper steps={loginSteps} currentStep={currentStep} t={t} />
-          </div>
-
-          <div className="sidebar-footer">{t("CORE_COMMON_COPYRIGHT_FOOTER", "© 2026 Delhi Jal Board. All rights reserved.")}</div>
-        </div>
-
-        {/* Right Side: Form Content */}
-        <div className="registration-content">
-          <Switch>
-            <Route path={`${path}/mobile-number`}>
-              <SelectMobileNumber
-                t={t}
-                onSelect={handleMobileNumberSelect}
-                config={loginSteps[0]}
-                mobileNumber={params.mobileNumber || ""}
-                onMobileChange={handleMobileChange}
-                canSubmit={true}
-              />
-            </Route>
-            <Route path={`${path}/otp`}>
-              <SelectOtp
-                t={t}
-                onSelect={handleOtpSelect}
-                config={loginSteps[1]}
-                otp={params.otp || ""}
-                onOtpChange={handleOtpChange}
-                canSubmit={true}
-                onResend={handleResendOtp}
-              />
-            </Route>
-            <Route path={`${path}/name`}>
-              <SelectName t={t} onSelect={handleNameSelect} config={loginSteps[2]} isDisabled={false} />
-            </Route>
-            <Route>
-              <Redirect to={`${path}/mobile-number`} />
-            </Route>
-          </Switch>
-        </div>
+        <Switch>
+          <Route path={path}>
+            <RegistrationFlow
+              t={t}
+              handleMobileNumberSelect={handleMobileNumberSelect}
+              handleOtpSelect={handleOtpSelect}
+              handleNameSelect={handleNameSelect}
+              handleResendOtp={handleResendOtp}
+              params={params}
+            />
+          </Route>
+        </Switch>
       </div>
       {showToast && <Toast label={showToast.label} error={showToast.error} onClose={closeToast} />}
     </div>
@@ -249,3 +146,133 @@ const Register = ({ stateCode }) => {
 };
 
 export default Register;
+
+function RegistrationFlow({ t, handleMobileNumberSelect, handleOtpSelect, handleNameSelect, params, handleResendOtp }) {
+  const location = useLocation();
+  const [mobileNumber, setMobileNumber] = useState("");
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [timer, setTimer] = useState(45);
+  const [canResend, setCanResend] = useState(false);
+  const [profileData, setProfileData] = useState({
+    fullName: "",
+    dob: "",
+  });
+  const history = useHistory();
+  const { path } = useRouteMatch();
+  const [toast, setToast] = useState(null);
+
+  const inputRefs = useRef([]);
+
+  const steps = [
+    { number: 1, title: "Enter Mobile Number" },
+    { number: 2, title: "Verify OTP" },
+    { number: 3, title: "Set Profile Details" },
+  ];
+
+  const getStep = () => {
+    if (location.pathname.includes("mobile-number")) return 1;
+    if (location.pathname.includes("otp")) return 2;
+    if (location.pathname.includes("name")) return 3;
+    return 1;
+  };
+  const currentStep = getStep();
+
+  /* TIMER */
+  useEffect(() => {
+    if (currentStep === 2 && timer > 0 && !canResend) {
+      const interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+      return () => clearInterval(interval);
+    } else if (timer === 0) {
+      setCanResend(true);
+    }
+  }, [timer, canResend, currentStep]);
+
+  const handleSendOtp = () => {
+    if (mobileNumber.length >= 10) {
+      handleMobileNumberSelect({ mobileNumber });
+      setTimer(45);
+      setCanResend(false);
+    }
+  };
+
+  const handleEditNumber = () => {
+    history.push(`${path}/mobile-number`);
+  };
+
+  const handleVerifyOtp = () => {
+    const otpString = otp.join(""); // Chanhe Otp array of 6 numbers to String
+    if (otp.every((d) => d !== "" && d !== null && d !== undefined)) {
+      handleOtpSelect({ otp: otpString });
+    } else {
+      setToast({
+        type: "warning",
+        message: "Please Enter All Digits",
+      });
+    }
+  };
+
+  const handleComplete = () => {
+    if (profileData.fullName && profileData.dob) {
+      handleNameSelect({ otp: params.otp, mobileNumber: params.mobileNumber, name: profileData.fullName, dob: profileData.dob });
+    }
+  };
+
+  // const progress = currentStep === 1 ? 16 : currentStep === 2 ? 50 : 83;
+
+  return (
+    <div className="registration__wrapper">
+      {/* LEFT SIDEBAR */}
+      <SideBar steps={steps} currentStep={currentStep} t={t} title="REGISTRATION PROGRESS" />
+
+      {/* RIGHT CONTENT */}
+      <div className="registration__content">
+        {/* STEP 1 */}
+        {currentStep === 1 && (
+          <SelectMobileNumber
+            t={t}
+            handleMobileNumberSelect={handleSendOtp}
+            setTimer={setTimer}
+            setCanResend={setCanResend}
+            mobileNumber={mobileNumber}
+            setMobileNumber={setMobileNumber}
+          />
+        )}
+
+        {/* STEP 2 */}
+        {currentStep === 2 && (
+          <SelectOtp
+            mobileNumber={mobileNumber || params.mobileNumber}
+            inputRefs={inputRefs}
+            timer={timer}
+            canResend={canResend}
+            handleVerifyOtp={handleVerifyOtp}
+            handleEditNumber={handleEditNumber}
+            onResend={() => {
+              setTimer(45);
+              handleResendOtp();
+            }}
+            otp={otp}
+            setOtp={setOtp}
+          />
+        )}
+
+        {/* STEP 3 */}
+        {currentStep === 3 && <SelectName profileData={profileData} setProfileData={setProfileData} handleComplete={handleComplete} />}
+
+        {/* PROGRESS BAR */}
+        {/* <div className="registration__progress">
+
+        profileData={profileData}
+        setProfileData={setProfileData}
+        handleComplete={handleComplete}
+          <div className="registration__progress-track">
+            <div className="registration__progress-bar" style={{ width: `${progress}%` }} />
+          </div>
+        </div> */}
+      </div>
+      {toast && <Toast warning={toast.type === "warning"} error={toast.type === "error"} label={toast.message} onClose={() => setToast(null)} />}
+    </div>
+  );
+}
