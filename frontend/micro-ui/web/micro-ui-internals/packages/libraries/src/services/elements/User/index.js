@@ -1,5 +1,5 @@
 import Urls from "../../atoms/urls";
-import { Request, ServiceRequest } from "../../atoms/Utils/Request";
+import { PublicRequest, Request, ServiceRequest } from "../../atoms/Utils/Request";
 import { Storage } from "../../atoms/Utils/Storage";
 
 export const UserService = {
@@ -90,7 +90,7 @@ export const UserService = {
     }
   },
   sendOtp: (details, stateCode) =>
-    ServiceRequest({
+    PublicRequest({
       serviceName: "sendOtp",
       url: Urls.OTP_Send,
       data: details,
