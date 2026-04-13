@@ -384,12 +384,23 @@ public class UserService {
                 log.debug("Generated password is {}",user.getCreatedBy());
             }
         } else {
-            validatePassword(user.getPassword());
+            if (defaultPasswordEnabled) {
+                String usernameEncrypted = user.getUsername();
+                if (isEmpty(usernameEncrypted)) {
+                    throw new IllegalArgumentException("Username is required to generate default password");
+                }
+                String generatedPassword = defaultPasswordPattern.replace("{username}", username);
+                log.info("/_create Employee endpoint called with default password enabled");
+                log.debug("Default password set is {}", generatedPassword);
+                user.setPassword(generatedPassword);
+            }
+            else {
+                validatePassword(user.getPassword());
+                user.setPassword(encryptPwd(user.getPassword()));
+            }
         }
-        user.setPassword(encryptPwd(user.getPassword()));
         user.setDefaultPasswordExpiry(defaultPasswordExpiryInDays);
         user.setTenantId(getStateLevelTenantForCitizen(user.getTenantId(), user.getType()));
-
         User persistedNewUser = persistNewUser(user);
         return encryptionDecryptionUtil.decryptObject(persistedNewUser, "UserSelf", User.class, requestInfo);
 
