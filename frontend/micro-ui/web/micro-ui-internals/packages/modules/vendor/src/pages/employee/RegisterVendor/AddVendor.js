@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FormComposer, Toast, VerticalTimeline } from "@djb25/digit-ui-react-components";
-// import { useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 // import { useQueryClient } from "react-query";
 import VendorConfig from "../../../config/VendorConfig";
 
@@ -10,7 +10,7 @@ const AddVendor = ({ parentUrl, heading }) => {
   const stateId = Digit.ULBService.getStateId();
 
   const { t } = useTranslation();
-  // const history = useHistory();
+  const history = useHistory();
   // const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState(1);
   const [showToast, setShowToast] = useState(null);
@@ -46,10 +46,36 @@ const AddVendor = ({ parentUrl, heading }) => {
   };
 
   const onFormValueChange = (setValue, formData) => {
-    if (formData?.vendorName && formData?.phone && formData?.serviceType?.code) {
+    const isVendorDetailsFilled = formData?.vendorName && formData?.phone && formData?.serviceType?.code;
+    const isAddressFilled = formData?.address?.city && formData?.address?.locality;
+    if (isVendorDetailsFilled && isAddressFilled) {
       setCanSubmit(true);
     } else {
       setCanSubmit(false);
+    }
+
+    if (isVendorDetailsFilled) {
+      if (currentStep === 1) {
+        setCurrentStep(2);
+        setTimeout(() => {
+          const headers = Array.from(document.querySelectorAll(".collapsible-card-title"));
+          const addressHeader = headers.find((h) => h.textContent.includes(t("ES_FSM_REGISTRY_NEW_ADDRESS_DETAILS")));
+          if (addressHeader) {
+            addressHeader.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        }, 100);
+      }
+    } else {
+      if (currentStep === 2) {
+        setCurrentStep(1);
+        setTimeout(() => {
+          const headers = Array.from(document.querySelectorAll(".collapsible-card-title"));
+          const vendorHeader = headers.find((h) => h.textContent.includes(t("ES_VRNDOR_NEW_VENDOR_DETAILS")));
+          if (vendorHeader) {
+            vendorHeader.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        }, 100);
+      }
     }
   };
 
@@ -145,7 +171,10 @@ const AddVendor = ({ parentUrl, heading }) => {
       },
       onSuccess: (data, variables) => {
         setShowToast({ key: "success", action: "ADD_VENDOR" });
-        setTimeout(closeToast, 5000);
+        setTimeout(() => {
+          closeToast();
+          history.push("/digit-ui/employee/vendor/search-vendor");
+        }, 2000);
       },
     });
   };
@@ -180,6 +209,7 @@ const AddVendor = ({ parentUrl, heading }) => {
           onFormValueChange={onFormValueChange}
           noBreakLine={true}
           noCard={true}
+          isDisabled={!canSubmit}
         />
 
         {showToast && (
