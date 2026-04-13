@@ -3,20 +3,8 @@ import PropTypes from "prop-types";
 
 // SVG Check Icon
 const CheckSvg = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-  >
-    <path
-      d="M5 13l4 4L19 7"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
+  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
+    <path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
@@ -30,36 +18,26 @@ const CheckBox = ({
   pageType,
   index,
   isLabelFirst,
-  errorStyle,   // 👈 explicitly remove it
+  errorStyle, // 👈 explicitly remove it
   ...props
 }) => {
-  const userType =
-    pageType ||
-    (typeof Digit !== "undefined"
-      ? Digit.SessionStorage.get("userType")
-      : "citizen");
+  const userType = pageType || (typeof Digit !== "undefined" ? Digit.SessionStorage.get("userType") : "citizen");
 
   const isEmployee = userType === "employee";
 
-  const wrapperClass = `checkbox-wrap ${
-    isEmployee ? "checkbox-wrap-emp" : ""
-  }`;
+  const wrapperClass = `checkbox-wrap ${isEmployee ? "checkbox-wrap-emp" : ""}`;
 
   const inputClass = isEmployee ? "input-emp" : "";
 
-  const customClass = isEmployee
-    ? "custom-checkbox-emp"
-    : "custom-checkbox";
+  const customClass = isEmployee ? "custom-checkbox-emp" : "custom-checkbox";
 
   return (
     <div className={wrapperClass}>
       {isLabelFirst && (
-        <>
-          {typeof index === "number" && (
-            <span className="checkbox-index">{index + 1}.</span>
-          )}
+        <React.Fragment>
+          {typeof index === "number" && <span className="checkbox-index">{index + 1}.</span>}
           <span className="label label-left">{label}</span>
-        </>
+        </React.Fragment>
       )}
 
       <input
@@ -83,7 +61,7 @@ const CheckBox = ({
 };
 
 CheckBox.propTypes = {
-  label: PropTypes.string.isRequired,
+  label: PropTypes.node.isRequired,
   onChange: PropTypes.func,
   checked: PropTypes.bool,
   value: PropTypes.any,

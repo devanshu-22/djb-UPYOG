@@ -253,6 +253,46 @@ export const Request = async ({
  *
  */
 
+export const PublicRequest = async ({ method = "POST", url, data = {}, params = {}, headers = {}, locale = true, plainAccessRequest = null }) => {
+  if (method.toUpperCase() === "POST") {
+    const ts = new Date().getTime();
+    data.RequestInfo = {
+      apiId: "Rainmaker",
+    };
+
+    if (locale) {
+      data.RequestInfo = { ...data.RequestInfo, msgId: `${ts}|${Digit.StoreData.getCurrentLanguage()}` };
+    }
+
+    if (plainAccessRequest) {
+      data.RequestInfo = { ...data.RequestInfo, plainAccessRequest };
+    }
+  }
+  try {
+    const res = await Axios({
+      method,
+      url,
+      data,
+      params,
+      headers: {
+        "Content-Type": "application/json",
+        ...headers,
+      },
+    });
+
+    return res?.data || {};
+  } catch (error) {
+    console.error("Public API Error:", error?.response);
+
+    return {
+      error: true,
+      status: error?.response?.status,
+      data: error?.response?.data,
+      message: error?.message,
+    };
+  }
+};
+
 export const ServiceRequest = async ({
   serviceName,
   method = "POST",

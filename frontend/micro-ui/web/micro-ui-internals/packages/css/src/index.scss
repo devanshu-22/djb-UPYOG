@@ -913,6 +913,10 @@ input[type="number"] {
   height: 100%;
 }
 
+.flex-box-col {
+  flex-direction: column;
+}
+
 .flex-box-content-between {
   display: flex;
   justify-content: space-between;

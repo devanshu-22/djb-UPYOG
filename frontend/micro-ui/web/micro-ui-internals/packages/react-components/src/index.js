@@ -180,6 +180,8 @@ import {
   UploadIcon,
   MdUploadIcon,
   UploadCloudIcon,
+  CalendarIcon,
+  LuCalendarIcon,
 } from "./atoms/svgindex";
 import Table from "./atoms/Table";
 import TelePhone from "./atoms/TelePhone";
@@ -244,6 +246,7 @@ import CollapsibleModuleSidebar from "./atoms/CollapsibleModuleSidebar";
 import Tooltip from "./atoms/Tooltip";
 import CollapsibleCardPage from "./hoc/CollapsibleCardPage";
 import VerticalTimeline from "./atoms/VerticalTimeline";
+import SideBar from "./atoms/Sidebar";
 import LayoutWrapper from "./hoc/LayoutWrapper";
 export {
   Phone,
@@ -498,4 +501,7 @@ export {
   CollapsibleCardPage,
   VerticalTimeline,
   LayoutWrapper,
+  CalendarIcon,
+  LuCalendarIcon,
+  SideBar,
 };
