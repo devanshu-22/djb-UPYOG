@@ -396,9 +396,9 @@ public class UserService {
             }
             else {
                 validatePassword(user.getPassword());
-                user.setPassword(encryptPwd(user.getPassword()));
             }
         }
+        user.setPassword(encryptPwd(user.getPassword()));
         user.setDefaultPasswordExpiry(defaultPasswordExpiryInDays);
         user.setTenantId(getStateLevelTenantForCitizen(user.getTenantId(), user.getType()));
         User persistedNewUser = persistNewUser(user);
