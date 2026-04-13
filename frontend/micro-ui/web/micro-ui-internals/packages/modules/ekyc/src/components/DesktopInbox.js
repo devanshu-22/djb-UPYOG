@@ -44,11 +44,11 @@ const DesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
         accessor: "citizenName",
         Cell: ({ row }) => <span>{row.original?.citizenName || "NA"}</span>,
       },
-      {
-        Header: t("EKYC_MOBILE_NO"),
-        accessor: "mobileNumber",
-        Cell: ({ row }) => <span>{row.original?.mobileNumber || "NA"}</span>,
-      },
+      // {
+      //   Header: t("EKYC_MOBILE_NO"),
+      //   accessor: "mobileNumber",
+      //   Cell: ({ row }) => <span>{row.original?.mobileNumber || "NA"}</span>,
+      // },
       {
         Header: t("EKYC_STATUS"),
         accessor: "status",

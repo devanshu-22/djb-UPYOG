@@ -4,13 +4,7 @@ import DesktopInbox from "../../components/DesktopInbox";
 import MobileInbox from "../../components/MobileInbox";
 import Filter from "../../components/Filter";
 
-const MOCK_DATA_ITEMS = [
-    { applicationNumber: "EKYC-2024-001", citizenName: "Rahul Sharma", mobileNumber: "9876543210", status: "COMPLETED" },
-    { applicationNumber: "EKYC-2024-002", citizenName: "Anjali Devi", mobileNumber: "9123456789", status: "PENDING" },
-    { applicationNumber: "EKYC-2024-003", citizenName: "Amit Kumar", mobileNumber: "8888888888", status: "REJECTED" },
-    { applicationNumber: "EKYC-2024-004", citizenName: "Priya Singh", mobileNumber: "7777777777", status: "COMPLETED" },
-    { applicationNumber: "EKYC-2024-005", citizenName: "Suresh Gupta", mobileNumber: "6666666666", status: "PENDING" },
-];
+// Mock data removed in favor of API integration
 
 const Inbox = ({
     parentRoute,
@@ -33,28 +27,40 @@ const Inbox = ({
     // Maintain the full search objects for the Search component
     const [searchParams, setSearchParams] = useState(initialStates.searchParams || { status: defaultStatusOption });
 
-    // 2. Local Filtering Logic for Static Data
-    const filteredStaticData = useMemo(() => {
-        return MOCK_DATA_ITEMS.filter((item) => {
-            let match = true;
-            // Extract the string value from the status object if it exists
-            const currentStatus = searchParams.status?.value !== undefined ? searchParams.status.value : searchParams.status;
+    // 2. API Data Fetching
+    const { isLoading, data: dashboardData, isFetching } = Digit.Hooks.ekyc.useEkycSurveyorDashboard(
+        {}, 
+        { 
+            tenantId, 
+            offset: pageOffset, 
+            limit: pageSize,
+            status: searchParams.status?.value || ""
+        },
+        {
+            enabled: !!tenantId,
+        }
+    );
 
-            if (currentStatus && item.status !== currentStatus) {
-                match = false;
-            }
-            return match;
-        });
-    }, [searchParams]);
+    const filteredData = useMemo(() => {
+        const items = dashboardData?.dashboardInfo?.consumerList || [];
+        return items.map(item => ({
+            ...item,
+            applicationNumber: item.kno || item.applicationNumber,
+            citizenName: item.consumerName || item.citizenName,
+        }));
+    }, [dashboardData]);
 
-    const staticCountData = useMemo(() => {
+    const countData = useMemo(() => {
+        const info = dashboardData?.dashboardInfo || {};
         return {
-            total: MOCK_DATA_ITEMS.length,
-            completed: MOCK_DATA_ITEMS.filter(i => i.status === "COMPLETED").length,
-            pending: MOCK_DATA_ITEMS.filter(i => i.status === "PENDING").length,
-            rejected: MOCK_DATA_ITEMS.filter(i => i.status === "REJECTED").length
+            total: info.total || 0,
+            completed: info.completed || 0,
+            pending: info.pending || 0,
+            rejected: info.rejected || 0
         };
-    }, []);
+    }, [dashboardData]);
+
+    const totalRecords = dashboardData?.dashboardInfo?.totalRecords || dashboardData?.totalCount || 0;
 
     // 3. Handlers
     const handleSearch = useCallback((filterParam) => {
@@ -98,19 +104,19 @@ const Inbox = ({
             <div className="inbox-main-container">
                 {Digit.Utils.browser.isMobile() ? (
                     <MobileInbox
-                        data={{ items: filteredStaticData, totalCount: filteredStaticData.length }}
-                        isLoading={false}
+                        data={{ items: filteredData, totalCount: totalRecords }}
+                        isLoading={isLoading || isFetching}
                         onSearch={handleSearch}
                         searchFields={searchFields}
                         searchParams={searchParams}
                         parentRoute={parentRoute}
-                        countData={staticCountData}
+                        countData={countData}
                     />
                 ) : (
                     <DesktopInbox
                         businessService={businessService}
-                        data={{ items: filteredStaticData, totalCount: filteredStaticData.length }}
-                        isLoading={false}
+                        data={{ items: filteredData, totalCount: totalRecords }}
+                        isLoading={isLoading || isFetching}
                         searchFields={searchFields}
                         onSearch={handleSearch}
                         onSort={handleSort}
@@ -122,8 +128,8 @@ const Inbox = ({
                         parentRoute={parentRoute}
                         searchParams={searchParams}
                         sortParams={sortParams}
-                        totalRecords={filteredStaticData.length}
-                        countData={staticCountData}
+                        totalRecords={totalRecords}
+                        countData={countData}
                         filterComponent="EKYC_INBOX_FILTER"
                     />
                 )}
