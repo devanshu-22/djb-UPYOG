@@ -420,6 +420,36 @@ const CalendarIcon = (props) => (
   </svg>
 );
 
+const LuCalendarIcon = ({ size = 24, color = "currentColor", strokeWidth = 2, className = "", style = {}, onClick }) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={`lucide lucide-calendar-days ${className}`}
+      style={{ cursor: onClick ? "pointer" : "default", ...style }}
+      onClick={onClick}
+    >
+      <path d="M8 2v4" />
+      <path d="M16 2v4" />
+      <rect width="18" height="18" x="3" y="4" rx="2" />
+      <path d="M3 10h18" />
+      <path d="M8 14h.01" />
+      <path d="M12 14h.01" />
+      <path d="M16 14h.01" />
+      <path d="M8 18h.01" />
+      <path d="M12 18h.01" />
+      <path d="M16 18h.01" />
+    </svg>
+  );
+};
+
 const SortDown = (style) => (
   <svg
     style={{ display: "inline-block", height: "16px", ...style }}
@@ -881,11 +911,21 @@ const Clock = () => (
   </svg>
 );
 
-const TickMark = ({ fillColor = "white" }) => (
-  <svg style={{ display: "inline-block", margin: "auto" }} width="14" height="11" viewBox="0 0 14 11" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M4.75012 8.1275L1.62262 5L0.557617 6.0575L4.75012 10.25L13.7501 1.25L12.6926 0.192505L4.75012 8.1275Z" fill={fillColor} />
-  </svg>
-);
+const TickMark = ({ size = 14, color = "white", className = "", style = {} }) => {
+  return (
+    <svg
+      width={size}
+      height={(size * 11) / 14} // keep aspect ratio
+      viewBox="0 0 14 11"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      style={{ display: "inline-block", ...style }}
+    >
+      <path d="M4.75012 8.1275L1.62262 5L0.557617 6.0575L4.75012 10.25L13.7501 1.25L12.6926 0.192505L4.75012 8.1275Z" fill={color} />
+    </svg>
+  );
+};
 
 const EditIcon = ({ style }) => (
   <svg style={style} width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1285,6 +1325,7 @@ export {
   ShippingTruck,
   CloseSvg,
   CalendarIcon,
+  LuCalendarIcon,
   UpwardArrow,
   DownwardArrow,
   Poll,

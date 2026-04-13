@@ -1,71 +1,122 @@
-import React, { useState, useRef } from "react";
-import { CalendarIcon } from "../atoms/svgindex";
+import React, { useRef, useState } from "react";
 import PropTypes from "prop-types";
+import { LuCalendarIcon } from "./svgindex";
+import Toast from "./Toast";
+// import { CalendarIcon } from "../atoms/svgindex";
 
-const DatePicker = (props) => {
-  // const [date, setDate] = useState(() => props.initialDate || null);
-  const dateInp = useRef();
+const DatePicker = ({ date, onChange, disabled, style }) => {
+  const [toast, setToast] = useState(null);
+  const hiddenDateRef = useRef();
 
-  function defaultFormatFunc(date) {
-    if (date) {
-      const operationDate = typeof date === "string" ? new Date(date) : date;
-      const years = operationDate?.getFullYear();
-      const month = operationDate?.getMonth() + 1;
-      const _date = operationDate?.getDate();
-      return _date && month && years ? `${_date}/${month}/${years}` : "";
-    }
-    return "";
-  }
-
-  const getDatePrint = () => props?.formattingFn?.(props?.date) || defaultFormatFunc(props?.date);
-  const selectDate = (e) => {
-    const date = e.target.value;
-    // setDate(date);
-    props?.onChange?.(date);
+  // 👉 yyyy-mm-dd → dd/mm/yyyy
+  const formatDisplay = (date) => {
+    if (!date) return "";
+    const d = new Date(date);
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
   };
-  let addStyle = {};
-  if (Digit.UserService.getType() === "citizen") {
-    addStyle = { maxWidth: "540px" };
-  }
+
+  // 👉 dd/mm/yyyy → yyyy-mm-dd
+  const toInputFormat = (date) => {
+    if (!date) return "";
+    if (date.includes("-")) return date;
+
+    const [day, month, year] = date.split("/");
+    return `${year}-${month}-${day}`;
+  };
+
+  // 👉 Age validation (18+)
+  const isValidAge = (dateStr) => {
+    const today = new Date();
+    const dob = new Date(dateStr);
+
+    let age = today.getFullYear() - dob.getFullYear();
+    const m = today.getMonth() - dob.getMonth();
+
+    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+      age--;
+    }
+
+    return age >= 18;
+  };
+
+  const handleDateChange = (e) => {
+    const raw = e.target.value; // yyyy-mm-dd
+
+    if (!isValidAge(raw)) {
+      setToast({
+        type: "warning",
+        message: "User must be at least 18 years old",
+      });
+      return;
+    }
+
+    onChange?.(raw);
+  };
   return (
-    <div style={{ position: "relative", width: "100%", cursor: "pointer", ...addStyle, ...(props?.style ? props.style : {}) }}>
-      <React.Fragment>
-        {/* <input
-          type="text"
-          disabled={props.disabled}
-          value={getDatePrint() ? getDatePrint() : "DD/MM/YYYY"}
-          readOnly
-          className={`employee-card-input ${props.disabled ? "disabled" : ""}`}
-          style={{ width: "calc(100%-62px)"}}
-        /> 
-         <CalendarIcon isdisabled={props.disabled ? true : false} style={{ right: "6px", zIndex: "10", top: 6, position: "absolute" }} /> */}
+    <React.Fragment>
+      <div
+        className="date-picker"
+        style={{
+          position: "relative",
+          width: "100%",
+          cursor: disabled ? "not-allowed" : "pointer",
+          ...style,
+        }}
+      >
+        {/* 👉 Visible formatted input */}
         <input
-          className={`employee-card-input ${props.disabled ? "disabled" : ""}`}
-          // className={`${props.disabled ? "disabled" : ""}`}
-          style={{ width: "calc(100%-62px)" }}
-          // style={{ right: "6px", zIndex: "100", top: 6, position: "absolute", opacity: 0, width: "100%" }}
-          value={props.date ? props.date : ""}
-          type="date"
-          ref={dateInp}
-          disabled={props.disabled}
-          onChange={selectDate}
-          defaultValue={props.defaultValue}
-          min={props.min}
-          max={props.max}
-          required={props.isRequired || false}
+          type="text"
+          readOnly
+          disabled={disabled}
+          value={date ? formatDisplay(date) : ""}
+          placeholder="DD/MM/YYYY"
+          className={`registration__input ${disabled ? "disabled" : ""}`}
+          onClick={() => hiddenDateRef.current?.showPicker?.()}
         />
-      </React.Fragment>
-    </div>
+
+        {/* 👉 Hidden actual date input */}
+        <input
+          type="date"
+          ref={hiddenDateRef}
+          value={toInputFormat(date)}
+          onChange={handleDateChange}
+          style={{
+            position: "absolute",
+            opacity: 0,
+            pointerEvents: "none",
+            left: 0,
+            top: 0,
+            width: "100%",
+            height: "100%",
+          }}
+        />
+
+        {/* 👉 Optional icon */}
+        <LuCalendarIcon
+          color="#d1d1d1"
+          onClick={() => hiddenDateRef.current?.showPicker?.()}
+          style={{
+            position: "absolute",
+            right: "10px",
+            top: "50%",
+            transform: "translateY(-50%)",
+            cursor: "pointer",
+          }}
+        />
+      </div>
+      {toast && <Toast warning={toast.type === "warning"} error={toast.type === "error"} label={toast.message} onClose={() => setToast(null)} />}
+    </React.Fragment>
   );
 };
 
 DatePicker.propTypes = {
-  disabled: PropTypes.bool,
-  date: PropTypes.any,
-  min: PropTypes.any,
-  max: PropTypes.any,
-  defaultValue: PropTypes.any,
+  date: PropTypes.string,
   onChange: PropTypes.func,
+  disabled: PropTypes.bool,
+  style: PropTypes.object,
 };
 
 export default DatePicker;
