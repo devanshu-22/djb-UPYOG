@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.validation.annotation.Validated;
 import org.upyog.rs.util.RequestServiceUtil;
@@ -138,6 +139,10 @@ public class WaterTankerBookingDetail {
 
 	private AuditDetails auditDetails;
 
-	private FillingPointMetadata fillingpointmetadata;
+	@JsonProperty("fillingPointId")
+	private String fillingPointId;
+
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private FillingPointMetadata fillingPointMetadata;
 
 }

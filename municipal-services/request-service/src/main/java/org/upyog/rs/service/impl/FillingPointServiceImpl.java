@@ -69,7 +69,7 @@ public class FillingPointServiceImpl implements FillingPointService {
     public List<FillingPoint> createFromWaterTankerRequest(FillingPointRequest request) {
 
         WaterTankerBookingDetail wt = request.getWaterTankerBookingDetail();
-        FillingPointMetadata meta = wt.getFillingpointmetadata();
+        FillingPointMetadata meta = wt.getFillingPointMetadata();
         Address address = wt.getAddress();
 
         FillingPoint fp = new FillingPoint();

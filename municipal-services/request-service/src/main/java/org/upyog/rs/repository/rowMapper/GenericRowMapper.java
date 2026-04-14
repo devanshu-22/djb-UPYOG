@@ -16,6 +16,7 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 import org.upyog.rs.web.models.Address;
 import org.upyog.rs.web.models.ApplicantDetail;
 import org.upyog.rs.web.models.AuditDetails;
+import org.upyog.rs.web.models.fillingpoint.FillingPointMetadata;
 import org.upyog.rs.web.models.mobileToilet.MobileToiletBookingDetail;
 import org.upyog.rs.web.models.waterTanker.WaterTankerBookingDetail;
 
@@ -113,6 +114,13 @@ public class GenericRowMapper<T> implements ResultSetExtractor<List<T>> {
                     if (address != null) {
                         bookingDetail.setAddress(address);
                     }
+
+                    // — FillingPoint Details
+                    FillingPointMetadata fillingPointMetadata = extractFillingPointMetadata(rs);
+                    if (fillingPointMetadata != null) {
+                        bookingDetail.setFillingPointMetadata(fillingPointMetadata);
+                    }
+
                 }
 
                 if (instance instanceof MobileToiletBookingDetail) {
@@ -250,6 +258,31 @@ public class GenericRowMapper<T> implements ResultSetExtractor<List<T>> {
         }
     }
 
+
+    private FillingPointMetadata extractFillingPointMetadata(ResultSet rs) throws SQLException {
+        try {
+            String fillingPointId = rs.getString("filling_point_id");
+            if (fillingPointId == null) {
+                return null;
+            }
+
+            FillingPointMetadata metadata = new FillingPointMetadata();
+            metadata.setName(rs.getString("fp_name"));
+            metadata.setEeName(rs.getString("ee_name"));
+            metadata.setEeEmailId(rs.getString("ee_email_id"));
+            metadata.setEeMobileNumber(rs.getString("ee_mobile_number"));
+            metadata.setAeName(rs.getString("ae_name"));
+            metadata.setAeEmailId(rs.getString("ae_email_id"));
+            metadata.setAeMobileNumber(rs.getString("ae_mobile_number"));
+            metadata.setJeName(rs.getString("je_name"));
+            metadata.setJeEmailId(rs.getString("je_email_id"));
+            metadata.setJeMobileNumber(rs.getString("je_mobile_number"));
+            return metadata;
+        } catch (SQLException e) {
+            log.warn("FillingPoint columns not found in result set: {}", e.getMessage());
+            return null;
+        }
+    }
 
 
 }
