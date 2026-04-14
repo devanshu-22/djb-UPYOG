@@ -131,6 +131,30 @@ public class EnrichmentService {
 		waterTankerDetail.getAddress().setApplicantId(waterTankerDetail.getApplicantDetail().getApplicantId());
 		waterTankerDetail.getApplicantDetail().setAuditDetails(auditDetails);
 
+		// Handle filling point mapping
+		if (waterTankerRequest.getWaterTankerBookingDetail().getFillingPointMetadata() != null
+				&& waterTankerRequest.getWaterTankerBookingDetail().getFillingPointMetadata().getId() != null) {
+
+			// Case 1: frontend sends full object
+			waterTankerDetail.setFillingPointId(
+					waterTankerRequest.getWaterTankerBookingDetail()
+							.getFillingPointMetadata()
+							.getId()
+			);
+
+		} else if (waterTankerRequest.getWaterTankerBookingDetail().getFillingPointId() != null) {
+
+			// Case 2: frontend sends direct ID
+			waterTankerDetail.setFillingPointId(
+					waterTankerRequest.getWaterTankerBookingDetail().getFillingPointId()
+			);
+
+		} else {
+
+			// Case 3: frontend sends null
+			waterTankerDetail.setFillingPointId(null);
+		}
+
 		log.info("Enriched application request data :" + waterTankerDetail);
 	}
 
