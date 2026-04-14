@@ -145,7 +145,7 @@ body {
     gap: 12px;
 
     @media (min-width: 768px) {
-      padding-right: 55px;
+      /* padding-right: 55px; // commented by avinash as it was giving padding right in user */
     }
 
     .header {
