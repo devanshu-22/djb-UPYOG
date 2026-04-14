@@ -4,7 +4,7 @@ const SideBar = ({ steps, currentStep, t, title }) => {
   return (
     <div className="registration__sidebar">
       <div style={{ display: "flex", flexDirection: "column", height: "100%", justifyContent: "space-between" }}>
-        <div>
+        <div className="registration__sidebar__content no-scrollbar">
           <p className="registration__sidebar-title">{title}</p>
 
           {steps.map((step, index) => {

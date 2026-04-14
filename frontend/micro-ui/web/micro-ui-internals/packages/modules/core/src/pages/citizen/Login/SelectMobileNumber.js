@@ -73,10 +73,19 @@ const SelectMobileNumber = ({ t, handleMobileNumberSelect, mobileNumber, setMobi
       <p className="registration__description">Enter your mobile number to receive OTP.</p>
 
       <div className="registration__field">
-        <label className="registration__label">Mobile Number</label>
+        <label name="mobile-number" for="mobile-number" className="registration__label">
+          Mobile Number
+        </label>
 
         <div className="registration__input-group">
-          <select className="registration__select" value={countryCode} onChange={(e) => setCountryCode(e.target.value)} disabled>
+          <select
+            id="mobile-number"
+            name="mobile-number"
+            className="registration__select"
+            value={countryCode}
+            onChange={(e) => setCountryCode(e.target.value)}
+            disabled
+          >
             <option>+91</option>
             <option>+1</option>
           </select>
@@ -96,6 +105,7 @@ const SelectMobileNumber = ({ t, handleMobileNumberSelect, mobileNumber, setMobi
               <path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384" />
             </svg>
             <input
+              name="mobileNumber"
               className="phone"
               value={mobileNumber}
               onChange={(e) => {
