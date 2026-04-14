@@ -6,7 +6,8 @@
   border-radius: 12px;
   overflow-y: scroll;
   height: fit-content;
-  @media (min-width: 768px) {
+
+  @media (min-width: 769px) {
     max-width: 25%;
     min-width: 250px;
     min-height: 500px;
@@ -17,7 +18,8 @@
   display: flex;
   position: relative;
   gap: 16px;
-  @media (min-width: 768px) {
+
+  @media (min-width: 769px) {
     min-height: 80px;
     padding-bottom: 20px;
   }
@@ -86,7 +88,8 @@
 .vertical-timeline-content {
   display: flex;
   flex-direction: column;
-  @media (min-width: 768px) {
+
+  @media (min-width: 769px) {
     min-height: 38px;
     margin-top: 10px;
   }
@@ -115,6 +118,9 @@
     gap: 12px;
     padding: 12px;
     height: fit-content;
+    max-width: 100%;
+    min-width: auto;
+    min-height: auto;
   }
 
   .vertical-timeline-wrapper {
@@ -143,9 +149,8 @@
     cursor: pointer;
     height: 2rem;
     padding-inline: 24px;
-    @media (min-width: 768px) {
-      min-width: 120px;
-    }
+    flex-shrink: 0;
+    min-width: 120px;
   }
 
   /* 🔥 pill becomes tab */

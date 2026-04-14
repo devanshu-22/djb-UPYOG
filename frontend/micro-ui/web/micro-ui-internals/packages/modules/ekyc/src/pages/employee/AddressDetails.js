@@ -1,4 +1,4 @@
-import React, { useState, useRef, Fragment } from "react";
+import React, { useState, useRef, Fragment, useEffect } from "react";
 import {
   Card,
   LabelFieldPair,
@@ -14,6 +14,8 @@ import {
   HomeIcon,
   ConnectingCheckPoints,
   CheckPoint,
+  Dropdown,
+  Loader,
 } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useHistory, useLocation } from "react-router-dom";
@@ -164,6 +166,71 @@ const AddressDetails = ({ isSection = false, onComplete, parentState }) => {
   const [isLocationFetching, setIsLocationFetching] = useState(false);
   const fileInputRef = useRef(null);
 
+  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const { data: mdmsData, isLoading: isMdmsLoading } = Digit.Hooks.useCommonMDMS(
+    tenantId,
+    "egov-location",
+    ["TenantBoundary"]
+  );
+
+  const mdmsRes = mdmsData?.MdmsRes || mdmsData;
+  const adminHierarchy = mdmsRes?.["egov-location"]?.TenantBoundary?.find(h => h.hierarchyType.code === "ADMIN") 
+    || mdmsRes?.["egov-location"]?.TenantBoundary?.[0];
+  
+  const rootBoundary = adminHierarchy?.boundary;
+  
+  const getAssemblies = (boundaries) => {
+    if (!boundaries) return [];
+    let assemblies = [];
+    const targetLabel = "assembly constituency";
+    for (const boundary of boundaries) {
+      const label = (boundary.label || boundary.name || "").toLowerCase().replace(/_/g, " ");
+      if (label === targetLabel || label === "assemblyconstituency") {
+        assemblies.push({ code: boundary.code, name: boundary.name, children: boundary.children });
+      }
+      if (boundary.children?.length) {
+        assemblies.push(...getAssemblies(boundary.children));
+      }
+    }
+    return assemblies;
+  };
+
+  const getBlocks = (children) => {
+    if (!children) return [];
+    let blocks = [];
+    const targetLabel = "block";
+    for (const child of children) {
+      const label = (child.label || child.name || "").toLowerCase().replace(/_/g, " ");
+      if (label === targetLabel) {
+        blocks.push({ code: child.code, name: child.name });
+      }
+      if (child.children?.length) {
+        blocks.push(...getBlocks(child.children));
+      }
+    }
+    return blocks;
+  };
+
+  const assemblies = getAssemblies(Array.isArray(rootBoundary) ? rootBoundary : rootBoundary ? [rootBoundary] : []);
+
+  const [assembly, setAssembly] = useState(addrDetails.assembly ? { name: addrDetails.assembly } : null);
+  const [ward, setWard] = useState(addrDetails.ward ? { name: addrDetails.ward } : null);
+
+  useEffect(() => {
+    if (mdmsRes && addrDetails.assembly && !assembly?.code) {
+      const foundAssembly = assemblies.find((a) => a.name === addrDetails.assembly || a.code === addrDetails.assembly);
+      if (foundAssembly) setAssembly(foundAssembly);
+    }
+  }, [mdmsRes, assemblies]);
+
+  const blocks = assembly ? getBlocks(assembly.children) : [];
+
+  useEffect(() => {
+    if (assembly && ward && !blocks.find((b) => b.name === ward.name)) {
+      setWard(null);
+    }
+  }, [assembly]);
+
   const addressOptions = [
     { code: "AADHAAR", name: "EKYC_AADHAAR_ADDRESS" },
     { code: "OLD", name: "EKYC_OLD_ADDRESS" },
@@ -175,7 +242,17 @@ const AddressDetails = ({ isSection = false, onComplete, parentState }) => {
   ];
 
   const handleCompleteVerification = () => {
-    const payload = { addressType, fullAddress, flatNo, building, landmark, pincode, doorPhoto };
+    const payload = { 
+      addressType, 
+      fullAddress, 
+      flatNo, 
+      building, 
+      landmark, 
+      pincode, 
+      doorPhoto,
+      assembly: assembly?.name,
+      ward: ward?.name
+    };
     if (onComplete) {
       onComplete(payload);
     } else {
@@ -418,24 +495,35 @@ const AddressDetails = ({ isSection = false, onComplete, parentState }) => {
         label={t("EKYC_ADMINISTRATIVE_DIVISION") || "Administrative Division"}
       />
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", marginBottom: "24px" }}>
-        <AdminCard
-          bgColor="#E1F5EE"
-          iconBg="#9FE1CB"
-          icon={<FlagIcon size={18} />}
-          labelColor="#0F6E56"
-          label={t("EKYC_ASSEMBLY") || "Assembly"}
-          value={addrDetails.assembly || "AC-12 Chandni Chowk"}
-        />
-        <AdminCard
-          bgColor="#E6F1FB"
-          iconBg="#B5D4F4"
-          icon={<IdCardIcon size={18} />}
-          labelColor="#185FA5"
-          label={t("EKYC_WARD") || "Ward"}
-          value={addrDetails.ward || "WARD-45 Civil Lines"}
-        />
-      </div>
+      {isMdmsLoading ? <Loader /> : (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", marginBottom: "24px" }}>
+          <div>
+            <div style={{ fontSize: "11px", fontWeight: "600", color: "#667085", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "6px" }}>
+              {t("EKYC_ASSEMBLY") || "Assembly Constituency"}
+            </div>
+            <Dropdown
+              option={assemblies}
+              optionKey="name"
+              selected={assembly}
+              select={(val) => { setAssembly(val); setWard(null); }}
+              t={t}
+            />
+          </div>
+          <div>
+            <div style={{ fontSize: "11px", fontWeight: "600", color: "#667085", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "6px" }}>
+              {t("EKYC_WARD") || "Block"}
+            </div>
+            <Dropdown
+              option={blocks}
+              optionKey="name"
+              selected={ward}
+              select={setWard}
+              disabled={!assembly}
+              t={t}
+            />
+          </div>
+        </div>
+      )}
 
       <hr style={{ margin: "24px 0", border: 0, borderTop: "1px solid #EAECF0" }} />
 

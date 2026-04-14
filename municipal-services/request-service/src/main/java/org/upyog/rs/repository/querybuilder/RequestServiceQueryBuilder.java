@@ -25,22 +25,46 @@ public class RequestServiceQueryBuilder {
             "SELECT ursbd.booking_id, booking_no,applicant_uuid, mobile_number, locality_code, tanker_type, water_type, tanker_quantity, water_quantity, description, " +
                     "delivery_date, delivery_time, extra_charge, vendor_id, vehicle_id, driver_id, vehicle_type,payment_receipt_filestore_id, " +
                     "vehicle_capacity,address_detail_id, booking_status, ursbd.createdby, ursbd.lastModifiedby, ursbd.createdtime, " +
-                    "ursbd.lastmodifiedtime, ursbd.tenant_id " +
+                    "ursbd.lastmodifiedtime, ursbd.tenant_id, ursbd.filling_point_id " +
                     "FROM public.upyog_rs_water_tanker_booking_details ursbd"
     );
     
+//    private static final String WATER_TANKER_BOOKING_DETAILS_SEARCH_QUERY = (
+//            "SELECT ursbd.booking_id, ursbd.booking_no, ursbd.applicant_uuid, ursbd.mobile_number, ursbd.locality_code, ursbd.tanker_type, ursbd.water_type, ursbd.tanker_quantity, ursbd.water_quantity, ursbd.description, " +
+//                    "ursbd.delivery_date, ursbd.delivery_time, ursbd.extra_charge, ursbd.vendor_id, ursbd.vehicle_id, ursbd.driver_id, ursbd.vehicle_type, ursbd.payment_receipt_filestore_id, " +
+//                    "ursbd.vehicle_capacity, ursbd.address_detail_id, ursbd.booking_status, ursbd.createdby, ursbd.lastModifiedby, ursbd.createdtime, " +
+//                    "ursbd.lastmodifiedtime, ursbd.tenant_id, ursbd.wt_file_store_id, ursbd.filling_point_id," +
+//                    "urad.applicant_id, urad.name, urad.mobile_number as applicant_mobile, urad.email_id, urad.alternate_number, " +
+//                    "uraddr.address_id, uraddr.house_no, uraddr.address_line_1, uraddr.address_line_2, uraddr.street_name, " +
+//                    "uraddr.landmark, uraddr.city, uraddr.city_code, uraddr.locality, uraddr.locality_code as addr_locality_code, uraddr.pincode, " +
+//                    "uraddr.latitude, uraddr.longitude, uraddr.ward, uraddr.zone, uraddr.constituency "+
+//                    "FROM public.upyog_rs_water_tanker_booking_details ursbd " +
+//                    "INNER JOIN public.upyog_rs_water_tanker_applicant_details urad ON ursbd.booking_id = urad.booking_id " +
+//                    "INNER JOIN public.upyog_rs_water_tanker_address_details uraddr ON urad.applicant_id = uraddr.applicant_id"
+//    );
+
     private static final String WATER_TANKER_BOOKING_DETAILS_SEARCH_QUERY = (
-            "SELECT ursbd.booking_id, ursbd.booking_no, ursbd.applicant_uuid, ursbd.mobile_number, ursbd.locality_code, ursbd.tanker_type, ursbd.water_type, ursbd.tanker_quantity, ursbd.water_quantity, ursbd.description, " +
-                    "ursbd.delivery_date, ursbd.delivery_time, ursbd.extra_charge, ursbd.vendor_id, ursbd.vehicle_id, ursbd.driver_id, ursbd.vehicle_type, ursbd.payment_receipt_filestore_id, " +
-                    "ursbd.vehicle_capacity, ursbd.address_detail_id, ursbd.booking_status, ursbd.createdby, ursbd.lastModifiedby, ursbd.createdtime, " +
-                    "ursbd.lastmodifiedtime, ursbd.tenant_id, ursbd.wt_file_store_id," +
-                    "urad.applicant_id, urad.name, urad.mobile_number as applicant_mobile, urad.email_id, urad.alternate_number, " +
+            "SELECT ursbd.booking_id, ursbd.booking_no, ursbd.applicant_uuid, ursbd.mobile_number, ursbd.locality_code, " +
+                    "ursbd.tanker_type, ursbd.water_type, ursbd.tanker_quantity, ursbd.water_quantity, ursbd.description, " +
+                    "ursbd.delivery_date, ursbd.delivery_time, ursbd.extra_charge, ursbd.vendor_id, ursbd.vehicle_id, " +
+                    "ursbd.driver_id, ursbd.vehicle_type, ursbd.payment_receipt_filestore_id, ursbd.vehicle_capacity, " +
+                    "ursbd.address_detail_id, ursbd.booking_status, ursbd.createdby, ursbd.lastModifiedby, ursbd.createdtime, " +
+                    "ursbd.lastmodifiedtime, ursbd.tenant_id, ursbd.wt_file_store_id, ursbd.filling_point_id, " +
+                    // Applicant details
+                    "urad.applicant_id, urad.name, urad.mobile_number AS applicant_mobile, urad.email_id, urad.alternate_number, " +
+                    // Address details
                     "uraddr.address_id, uraddr.house_no, uraddr.address_line_1, uraddr.address_line_2, uraddr.street_name, " +
-                    "uraddr.landmark, uraddr.city, uraddr.city_code, uraddr.locality, uraddr.locality_code as addr_locality_code, uraddr.pincode, " +
-                    "uraddr.latitude, uraddr.longitude, uraddr.ward, uraddr.zone, uraddr.constituency "+
+                    "uraddr.landmark, uraddr.city, uraddr.city_code, uraddr.locality, uraddr.locality_code AS addr_locality_code, " +
+                    "uraddr.pincode, uraddr.latitude, uraddr.longitude, uraddr.ward, uraddr.zone, uraddr.constituency, " +
+                    // FillingPoint details
+                    "urfp.filling_point_name AS fp_name, urfp.emergency_name, " +
+                    "urfp.ee_name, urfp.ee_email AS ee_email_id, urfp.ee_mobile AS ee_mobile_number, " +
+                    "urfp.ae_name, urfp.ae_email AS ae_email_id, urfp.ae_mobile AS ae_mobile_number, " +
+                    "urfp.je_name, urfp.je_email AS je_email_id, urfp.je_mobile AS je_mobile_number " +
                     "FROM public.upyog_rs_water_tanker_booking_details ursbd " +
-                    "INNER JOIN public.upyog_rs_water_tanker_applicant_details urad ON ursbd.booking_id = urad.booking_id " +
-                    "INNER JOIN public.upyog_rs_water_tanker_address_details uraddr ON urad.applicant_id = uraddr.applicant_id"
+                    "LEFT JOIN public.upyog_rs_water_tanker_applicant_details urad ON ursbd.booking_id = urad.booking_id " +
+                    "LEFT JOIN public.upyog_rs_water_tanker_address_details uraddr ON urad.applicant_id = uraddr.applicant_id " +
+                    "LEFT JOIN public.upyog_rs_water_tanker_filling_point urfp ON ursbd.filling_point_id = urfp.id"
     );
 
     private static final String MOBILE_TOILET_BOOKING_DETAILS_SEARCH_QUERY_WITH_PROFILE = (

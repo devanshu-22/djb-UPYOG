@@ -88,7 +88,8 @@ const SearchConsumer = ({ onSearch, searchParams, FilterComponent, children, ...
                   />
                 </div>
               </div>
-
+            </div>
+            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "20px" }}>
               <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
                 <button
                   type="button"
@@ -105,10 +106,18 @@ const SearchConsumer = ({ onSearch, searchParams, FilterComponent, children, ...
                 >
                   {t("ES_COMMON_CLEAR")}
                 </button>
+
                 <SubmitBar
                   label={t("ES_COMMON_SEARCH")}
                   onSubmit={onSubmit}
-                  style={{ margin: 0, borderRadius: "8px", height: "44px", padding: "0 32px", marginTop: "-55px" }}
+                  style={{
+                    margin: 0,
+                    borderRadius: "8px",
+                    height: "44px",
+                    padding: "0 32px",
+                    // ❌ remove this (it breaks alignment)
+                    // marginTop: "-55px"
+                  }}
                 />
               </div>
             </div>

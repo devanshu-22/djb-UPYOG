@@ -129,8 +129,8 @@ const RadioToggleRow = ({ label, selected, onSelect, t, options }) => (
       selectedOption={selected}
       onSelect={onSelect}
       t={t}
-      innerStyles={{ display: "flex", gap: "20px" }}
-      style={{ marginBottom: 0 }}
+      innerStyles={{ display: "flex", gap: "20px", alignItems: "center" }}
+      style={{ display: "flex", gap: "20px", marginBottom: 0 }}
     />
   </div>
 );
@@ -257,7 +257,7 @@ const AadhaarVerification = () => {
       display: "grid",
       gridTemplateColumns: "1fr 1fr",
       gap: "14px",
-      marginBottom: "4px",
+      marginBottom: "20px",
     },
     optionalTag: {
       display: "inline-block",
@@ -364,7 +364,7 @@ const AadhaarVerification = () => {
                   if (val.length <= 12 && /^\d*$/.test(val)) setAadhaarLastFour(val);
                 }}
                 placeholder={t("EKYC_ENTER_LAST_4_DIGIT") || "Enter 12 digits"}
-                maxLength={4}
+                maxLength={12}
                 disabled={isAadhaarVerified}
                 inputStyle={isAadhaarVerified ? styles.verifiedInput : {}}
               />
@@ -428,12 +428,14 @@ const AadhaarVerification = () => {
             selected={nameCorrect}
             onSelect={setNameCorrect}
             options={yesNoOptions}
+            sty
             t={t}
           />
           <LabelFieldPair>
             <div className="field">
               <IconInput
                 icon={<UserIcon size={15} color={nameCorrect.code === "YES" ? "#64748b" : "#94a3b8"} />}
+                style={{ marginBottom: "12px" }}
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
                 placeholder={t("EKYC_ENTER_NAME_PLACEHOLDER") || "Enter full name"}
@@ -454,6 +456,7 @@ const AadhaarVerification = () => {
             <div className="field">
               <IconInput
                 icon={<PhoneIcon size={15} color={mobileChange.code === "YES" ? "#64748b" : "#94a3b8"} />}
+                style={{ marginBottom: "12px" }}
                 value={mobileNumber}
                 onChange={(e) => setMobileNumber(e.target.value)}
                 placeholder="+91 XXXXX XXXXX"

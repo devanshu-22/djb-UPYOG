@@ -326,6 +326,8 @@ const Urls = {
     create: "/ekyc-services/ekyc/v1/_create",
     application_search: "/ekyc-service/user/application/_search",
     connection_type: "/egov-mdms-service/v1/_search",
+    dashboard: "/ekyc-service/user/surveyor/_dashboard",
+
   },
   audit: "/inbox/v1/elastic/_search",
 };

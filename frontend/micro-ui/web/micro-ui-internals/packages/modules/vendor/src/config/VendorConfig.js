@@ -123,7 +123,7 @@ const VendorConfig = (t, disabled = false) => {
       head: "ES_FSM_REGISTRY_NEW_ADDRESS_DETAILS",
       body: [
         {
-          label: "ES_FSM_REGISTRY_NEW_DOOR",
+          label: "HOUSE_NO",
           isMandatory: false,
           type: "text",
           key: "doorNo",
