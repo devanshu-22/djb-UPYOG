@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.egov.tracer.model.CustomException;
 import org.egov.vehicle.config.VehicleConfiguration;
 import org.egov.vehicle.producer.VehicleProducer;
@@ -60,6 +61,41 @@ public class VehicleRepository {
 
 	public void update(VehicleRequest vehicleRequest) {
 		vehicleProducer.push(config.getUpdateTopic(), vehicleRequest);
+	}
+
+	private static final String UPDATE_DRIVER_MAPPING_INACTIVE =
+			"UPDATE eg_vehicle_driver_mapping SET status='INACTIVE' WHERE vehicle_id=? AND status='ACTIVE'";
+
+	private static final String INSERT_DRIVER_MAPPING =
+			"INSERT INTO eg_vehicle_driver_mapping(vehicle_id, driver_id, status) " +
+					"VALUES(?, ?, ?) " +
+					"ON CONFLICT (vehicle_id, driver_id) DO UPDATE SET status = EXCLUDED.status";
+
+
+	public void updateDriver(VehicleRequest vehicleRequest) {
+		String vehicleId = vehicleRequest.getVehicle().getId();
+		String driverId = vehicleRequest.getVehicle().getDriver().getId();
+		String status = vehicleRequest.getVehicle().getDriver().getStatus().toString();
+
+		log.info("Direct DB: setting old driver INACTIVE for vehicleId={}", vehicleId);
+		jdbcTemplate.update(UPDATE_DRIVER_MAPPING_INACTIVE, vehicleId);
+
+		log.info("Direct DB: inserting driver mapping vehicleId={}, driverId={}, status={}", vehicleId, driverId, status);
+		jdbcTemplate.update(INSERT_DRIVER_MAPPING, vehicleId, driverId, status);
+	}
+
+	private static final String UPDATE_FILLING_POINT_QUERY =
+			"UPDATE eg_vehicle SET filling_point_id=? WHERE id=?";
+
+	public void updateFillingPoint(VehicleRequest vehicleRequest) {
+		String fillingStationId = vehicleRequest.getVehicle()
+				.getFillingPoint().getId();
+		String vehicleId = vehicleRequest.getVehicle().getId();
+
+		int rows = jdbcTemplate.update(UPDATE_FILLING_POINT_QUERY,
+				fillingStationId, vehicleId);
+
+		log.info("Updated {} row(s)", rows);
 	}
 
 	public VehicleResponse getVehicleData(@Valid VehicleSearchCriteria criteria) {

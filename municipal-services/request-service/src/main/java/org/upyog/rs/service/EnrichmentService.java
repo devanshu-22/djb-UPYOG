@@ -510,20 +510,25 @@ System.out.println("test2         ");
 		request.getFillingPointLocality().forEach(mapping -> mapping.setAuditDetails(auditDetails));
 	}
 
-	public void enrichUpdateRequest(FillingPointLocalityRequest request) {
-		Long time = System.currentTimeMillis();
-		String uuid = request.getRequestInfo().getUserInfo().getUuid();
+		public void enrichUpdateRequest(FillingPointLocalityRequest request) {
+				Long time = System.currentTimeMillis();
+				String uuid = request.getRequestInfo().getUserInfo().getUuid();
 
-		request.getFillingPointLocality().forEach(mapping -> {
-			AuditDetails audit = mapping.getAuditDetails();
-			if(audit == null) {
-				audit = new AuditDetails();
-			}
-			audit.setLastModifiedBy(uuid);
-			audit.setLastModifiedTime(time);
-			mapping.setAuditDetails(audit);
-		});
-	}
+				request.getFillingPointLocality().forEach(mapping -> {
+					AuditDetails audit = mapping.getAuditDetails();
+					if (audit == null) {
+						audit = new AuditDetails();
+					}
+					if (audit.getCreatedBy() == null) {
+						audit.setCreatedBy(uuid);
+						audit.setCreatedTime(time);
+					}
+					audit.setLastModifiedBy(uuid);
+					audit.setLastModifiedTime(time);
+
+					mapping.setAuditDetails(audit);
+				});
+		}
 
 
 
