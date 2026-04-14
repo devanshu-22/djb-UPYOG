@@ -10,6 +10,7 @@ import org.upyog.rs.web.models.fillingpointlocality.FillingPointLocalitySearchCr
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Repository
 public class FillingPointLocalityRepository {
@@ -34,5 +35,32 @@ public class FillingPointLocalityRepository {
         String query = queryBuilder.getCountQuery(criteria, preparedStmtList);
         Long count = jdbcTemplate.queryForObject(query, preparedStmtList.toArray(), Long.class);
         return count != null ? count : 0L;
+    }
+
+    private static final String DELETE_BY_FILLING_POINT =
+            "DELETE FROM filling_point_locality_mapping WHERE filling_point_id = ?";
+
+    public void deleteByFillingPointId(String fillingPointId) {
+        jdbcTemplate.update(DELETE_BY_FILLING_POINT, fillingPointId);
+    }
+
+    private static final String UPSERT =
+            "INSERT INTO filling_point_locality_mapping " +
+                    "(filling_point_id, locality_code, createdby, lastmodifiedby, createdtime, lastmodifiedtime) " +
+                    "VALUES (?, ?, ?, ?, ?, ?)";
+
+    public void saveAll(List<FillingPointLocality> localities) {
+        List<Object[]> batchArgs = localities.stream()
+                .map(l -> new Object[]{
+                        l.getFillingPointId(),
+                        l.getLocalityCode(),
+                        l.getAuditDetails().getCreatedBy(),
+                        l.getAuditDetails().getLastModifiedBy(),
+                        l.getAuditDetails().getCreatedTime(),
+                        l.getAuditDetails().getLastModifiedTime()
+                })
+                .collect(Collectors.toList());
+
+        jdbcTemplate.batchUpdate(UPSERT, batchArgs);
     }
 }

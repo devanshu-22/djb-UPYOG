@@ -55,7 +55,6 @@ public class EnrichmentService {
 		AuditDetails auditDetails = util.getAuditDetails(requestInfo.getUserInfo().getUuid(), false,
 				vehicleRequest.getVehicle().getAuditDetails());
 		vehicleRequest.getVehicle().setAuditDetails(auditDetails);
-	  String fillingPointId = vehicleRequest.getVehicle().getFillingPoint().getId();
 		if (vehicleRequest.getVehicle().getDriver() != null) {
 			vehicleRequest.getVehicle().getDriver().setStatus(Driver.StatusEnum.ACTIVE);
 			if (vehicleRequest.getVehicle().getDriver().getId() == null) {
@@ -66,6 +65,7 @@ public class EnrichmentService {
 			vehicleRequest.getVehicle().getOwner().setId(Long.parseLong(UUID.randomUUID().toString()));
 		}
 		if (vehicleRequest.getVehicle().getFillingPoint() != null) {
+			String fillingPointId = vehicleRequest.getVehicle().getFillingPoint().getId();
 			vehicleRequest.getVehicle().getFillingPoint().setId(fillingPointId);
 		}
 	}

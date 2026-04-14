@@ -72,6 +72,16 @@ public class VehicleService {
 		validator.validateCreateOrUpdate(vehicleRequest, mdmsData, true);
 		enrichmentService.enrichVehicleUpdateRequest(vehicleRequest);
 		repository.update(vehicleRequest);
+
+		if (vehicleRequest.getVehicle().getDriver() != null
+				&& vehicleRequest.getVehicle().getDriver().getId() != null) {
+			repository.updateDriver(vehicleRequest);
+		}
+
+		if (vehicleRequest.getVehicle().getFillingPoint() != null
+				&& vehicleRequest.getVehicle().getFillingPoint().getId() != null) {
+			repository.updateFillingPoint(vehicleRequest);
+		}
 		return vehicleRequest.getVehicle();
 	}
 
@@ -86,7 +96,6 @@ public class VehicleService {
 			} else {
 				criteria.getIds().addAll(vehicleIds);
 			}
-
 		}
 
 		if (criteria.getMobileNumber() != null) {
