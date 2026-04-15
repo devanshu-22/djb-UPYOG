@@ -45,14 +45,14 @@ const WTCard = () => {
   const links = [
     {
       count: citizenInboxCount,
-      label: t("ES_COMMON_INBOX"),
-      subLabel: t("CITIZEN"),
+      label: t("ES_COMMON_INBOX_CITIZEN"),
+      // subLabel: t("CITIZEN"),
       link: `${APPLICATION_PATH}/employee/wt/inbox`,
     },
     {
       count: fixedPointInboxCount,
-      label: t("ES_COMMON_INBOX"),
-      subLabel: t("FIXED_POINT"),
+      label: t("ES_COMMON_INBOX_FIXED_POINT"),
+      // subLabel: t("FIXED_POINT"),
       link: `${APPLICATION_PATH}/employee/wt/fixed-point/inbox`,
     },
     {
@@ -78,7 +78,7 @@ const WTCard = () => {
     {
       label: t("Vendor_Assign"),
       link: `${APPLICATION_PATH}/employee/wt/vendor-assignment`,
-    }
+    },
   ];
   const WT_CEMP = Digit.UserService.hasAccess(["WT_CEMP"]) || false;
 
