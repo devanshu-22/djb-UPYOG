@@ -54,7 +54,7 @@ const DesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
         accessor: "status",
         Cell: ({ row }) => {
           const status = row.original?.status || "DEFAULT";
-          return <span className={`ekyc-status-tag ${status}`}>{t(`EKYC_STATUS_${status}`)}</span>;
+          return <span className={`ekyc-status-tag ${status}`}>{t(`${status}`)}</span>;
         },
       },
     ],
@@ -66,7 +66,7 @@ const DesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
   }, [data]);
 
   return (
-    <div className="inbox-container">
+    <div className="inbox-container" style={{ paddingBottom: "16px" }}>
       <div className="filters-container">
         {/* Sidebar Title Card */}
         <Card

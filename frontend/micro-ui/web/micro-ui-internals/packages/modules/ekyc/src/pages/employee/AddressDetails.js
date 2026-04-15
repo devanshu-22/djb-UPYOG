@@ -278,7 +278,7 @@ const AddressDetails = ({ isSection = false, onComplete, parentState }) => {
 
   const handleUseCurrentLocation = () => {
     if (!("geolocation" in navigator)) {
-      alert(t("GEOLOCATION_NOT_SUPPORTED") || "Geolocation is not supported by your browser");
+      alert(t("GEOLOCATION_NOT_SUPPORTED"));
       return;
     }
     setIsLocationFetching(true);
@@ -306,7 +306,7 @@ const AddressDetails = ({ isSection = false, onComplete, parentState }) => {
       (err) => {
         console.error("Geolocation error:", err);
         setIsLocationFetching(false);
-        alert(t("LOCATION_FETCH_FAILED") || "Failed to fetch location. Please grant location permissions.");
+        alert(t("LOCATION_FETCH_FAILED"));
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
@@ -318,7 +318,7 @@ const AddressDetails = ({ isSection = false, onComplete, parentState }) => {
       {/* ── Address Type Toggle ── */}
       <SectionHead
         icon={<LocationIcon className="icon" styles={{ fill: "#0B0C0C", width: "16px", height: "16px" }} />}
-        label={t("EKYC_ADDRESS_DETAILS_HEADER") || "Address Details"}
+        label={t("EKYC_ADDRESS_DETAILS_HEADER")}
       />
 
       <div style={{ marginBottom: "20px" }}>
@@ -350,7 +350,7 @@ const AddressDetails = ({ isSection = false, onComplete, parentState }) => {
             <LocationIcon className="icon" styles={{ fill: "#085041", width: "16px", height: "16px" }} />
           </div>
           <div style={{ fontSize: "14px", lineHeight: "1.6", color: "#04342C", fontWeight: "500" }}>
-            {addrDetails.fullAddress || "H.No. 123, Sector 15, Rohini, Delhi – 110085"}
+            {addrDetails.fullAddress}
           </div>
         </div>
       )}
@@ -362,7 +362,7 @@ const AddressDetails = ({ isSection = false, onComplete, parentState }) => {
           {/* Correction toggle */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
             <CardLabel style={{ fontWeight: "500", marginBottom: 0, fontSize: "13px", color: "#505A5F" }}>
-              {t("EKYC_ADDRESS_CORRECTION_PROMPT") || "Correct the address?"}
+              {t("EKYC_ADDRESS_CORRECTION_PROMPT")}
             </CardLabel>
             <RadioButtons
               options={yesNoOptions}
@@ -408,8 +408,8 @@ const AddressDetails = ({ isSection = false, onComplete, parentState }) => {
               </div>
               <span style={{ fontWeight: "500", fontSize: "14px", color: "#344054" }}>
                 {isLocationFetching
-                  ? t("EKYC_FETCHING_LOCATION") || "Fetching location..."
-                  : t("EKYC_USE_CURRENT_LOCATION") || "Use current location"}
+                  ? t("EKYC_FETCHING_LOCATION")
+                  : t("EKYC_USE_CURRENT_LOCATION")}
               </span>
             </div>
             {!isLocationFetching && (
@@ -420,14 +420,14 @@ const AddressDetails = ({ isSection = false, onComplete, parentState }) => {
           {/* Full Address (textarea-style) */}
           <div style={{ marginBottom: "14px" }}>
             <div style={{ fontSize: "11px", fontWeight: "600", color: "#667085", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "6px" }}>
-              {t("EKYC_FULL_ADDRESS") || "Full address"}
+              {t("EKYC_FULL_ADDRESS")}
             </div>
             <IconInput
               icon={<PropertyHouse styles={{ fill: "#0068fa", width: "15px", height: "15px" }} />}
               topAligned
               value={fullAddress}
               onChange={(e) => setFullAddress(e.target.value)}
-              placeholder={t("EKYC_ENTER_FULL_ADDRESS") || "Enter full address"}
+              placeholder={t("EKYC_ENTER_FULL_ADDRESS")}
               inputStyle={{ minHeight: "72px" }}
             />
           </div>
@@ -436,24 +436,24 @@ const AddressDetails = ({ isSection = false, onComplete, parentState }) => {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", marginBottom: "14px" }}>
             <div>
               <div style={{ fontSize: "11px", fontWeight: "600", color: "#667085", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "6px" }}>
-                {t("EKYC_FLAT_HOUSE_NUMBER") || "Flat / House no."}
+                {t("EKYC_FLAT_HOUSE_NUMBER")}
               </div>
               <IconInput
                 icon={<PropertyHouse styles={{ fill: "#0068fa", width: "15px", height: "15px" }} />}
                 value={flatNo}
                 onChange={(e) => setFlatNo(e.target.value)}
-                placeholder={t("EKYC_ENTER_FLAT_NO") || "e.g. 45-B"}
+                placeholder={t("EKYC_ENTER_FLAT_NO")}
               />
             </div>
             <div>
               <div style={{ fontSize: "11px", fontWeight: "600", color: "#667085", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "6px" }}>
-                {t("EKYC_BUILDING_TOWER") || "Building / Tower"}
+                {t("EKYC_BUILDING_TOWER")}
               </div>
               <IconInput
                 icon={<PropertyHouse styles={{ fill: "#0068fa", width: "15px", height: "15px" }} />}
                 value={building}
                 onChange={(e) => setBuilding(e.target.value)}
-                placeholder={t("EKYC_ENTER_BUILDING") || "e.g. Tower 4"}
+                placeholder={t("EKYC_ENTER_BUILDING")}
               />
             </div>
           </div>
@@ -462,24 +462,24 @@ const AddressDetails = ({ isSection = false, onComplete, parentState }) => {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", marginBottom: "4px" }}>
             <div>
               <div style={{ fontSize: "11px", fontWeight: "600", color: "#667085", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "6px" }}>
-                {t("EKYC_LANDMARK") || "Landmark"}
+                {t("EKYC_LANDMARK")}
               </div>
               <IconInput
                 icon={<LocationIcon className="icon" styles={{ fill: "#0068fa", width: "15px", height: "15px" }} />}
                 value={landmark}
                 onChange={(e) => setLandmark(e.target.value)}
-                placeholder={t("EKYC_ENTER_LANDMARK") || "Near Central Park"}
+                placeholder={t("EKYC_ENTER_LANDMARK")}
               />
             </div>
             <div>
               <div style={{ fontSize: "11px", fontWeight: "600", color: "#667085", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "6px" }}>
-                {t("EKYC_PINCODE") || "Pincode"}
+                {t("EKYC_PINCODE")}
               </div>
               <IconInput
                 icon={<PincodeIcon size={15} />}
                 value={pincode}
                 onChange={(e) => { if (/^\d*$/.test(e.target.value)) setPincode(e.target.value); }}
-                placeholder={t("EKYC_ENTER_PINCODE") || "6-digit pincode"}
+                placeholder={t("EKYC_ENTER_PINCODE")}
                 maxLength={6}
               />
             </div>
@@ -492,14 +492,14 @@ const AddressDetails = ({ isSection = false, onComplete, parentState }) => {
       {/* ── Administrative Division ── */}
       <SectionHead
         icon={<PropertyHouse styles={{ fill: "#0B0C0C", width: "16px", height: "16px" }} />}
-        label={t("EKYC_ADMINISTRATIVE_DIVISION") || "Administrative Division"}
+        label={t("EKYC_ADMINISTRATIVE_DIVISION")}
       />
 
       {isMdmsLoading ? <Loader /> : (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", marginBottom: "24px" }}>
           <div>
             <div style={{ fontSize: "11px", fontWeight: "600", color: "#667085", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "6px" }}>
-              {t("EKYC_ASSEMBLY") || "Assembly Constituency"}
+              {t("EKYC_ASSEMBLY")}
             </div>
             <Dropdown
               option={assemblies}
@@ -530,11 +530,11 @@ const AddressDetails = ({ isSection = false, onComplete, parentState }) => {
       {/* ── Door Photo ── */}
       <SectionHead
         icon={<CameraIcon size={16} />}
-        label={t("EKYC_DOOR_PHOTO_HEADER") || "Door photo with GPS stamp"}
+        label={t("EKYC_DOOR_PHOTO_HEADER")}
       />
 
       <div style={{ fontSize: "12px", color: "#667085", marginBottom: "12px" }}>
-        {t("EKYC_REQUIRED_FOR_VERIFICATION") || "Required for verification"}
+        {t("EKYC_REQUIRED_FOR_VERIFICATION")}
       </div>
 
       {/* Warning banner */}
@@ -553,10 +553,10 @@ const AddressDetails = ({ isSection = false, onComplete, parentState }) => {
         </div>
         <div>
           <div style={{ fontWeight: "600", color: "#B54708", fontSize: "13px", marginBottom: "2px" }}>
-            {t("EKYC_IMPORTANT") || "Important"}
+            {t("EKYC_IMPORTANT")}
           </div>
           <div style={{ fontSize: "12px", color: "#92400E" }}>
-            {t("EKYC_CAPTURE_LIVE_CAMERA") || "Capture with live camera for GPS metadata"}
+            {t("EKYC_CAPTURE_LIVE_CAMERA")}
           </div>
         </div>
       </div>
@@ -602,7 +602,7 @@ const AddressDetails = ({ isSection = false, onComplete, parentState }) => {
               {t("EKYC_TAP_TO_CAPTURE") || "Tap to capture"}
             </div>
             <div style={{ fontSize: "12px", color: "#667085" }}>
-              {t("EKYC_CAPTURE_DOOR_IMAGE") || "Capture door image"}
+              {t("EKYC_CAPTURE_DOOR_IMAGE")}
             </div>
           </>
         ) : (
@@ -622,7 +622,7 @@ const AddressDetails = ({ isSection = false, onComplete, parentState }) => {
                 cursor: "pointer", fontSize: "12px", color: "#D92D20", fontWeight: "500",
               }}
             >
-              <TrashIcon size={13} /> {t("EKYC_REMOVE") || "Remove"}
+              <TrashIcon size={13} /> {t("EKYC_REMOVE")}
             </button>
           </>
         )}
@@ -632,14 +632,14 @@ const AddressDetails = ({ isSection = false, onComplete, parentState }) => {
       {isSection ? (
         <div style={{ marginTop: "24px" }}>
           <SubmitBar
-            label={t("EKYC_COMPLETE_VERIFICATION_AND_PROCEED") || "Complete & Proceed"}
+            label={t("EKYC_COMPLETE_VERIFICATION_AND_PROCEED")}
             onSubmit={handleCompleteVerification}
           />
         </div>
       ) : (
         <ActionBar>
           <SubmitBar
-            label={t("EKYC_COMPLETE_VERIFICATION") || "Complete Verification"}
+            label={t("EKYC_COMPLETE_VERIFICATION")}
             onSubmit={handleCompleteVerification}
           />
         </ActionBar>
@@ -655,7 +655,7 @@ const AddressDetails = ({ isSection = false, onComplete, parentState }) => {
           <rect x="3" y="11" width="18" height="11" rx="2" />
           <path d="M7 11V7a5 5 0 0 1 10 0v4" />
         </svg>
-        {t("EKYC_SECURE_DATA_NOTICE") || "Your data is encrypted and secure"}
+        {t("EKYC_SECURE_DATA_NOTICE")}
       </div>
     </div>
   );
