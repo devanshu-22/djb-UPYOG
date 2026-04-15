@@ -13,7 +13,7 @@ COPY ${WORK_DIR} .
 
 
 # set your port
-ENV PORT 3000
+ENV PORT 8080
 
 
 # start command as per package.json
