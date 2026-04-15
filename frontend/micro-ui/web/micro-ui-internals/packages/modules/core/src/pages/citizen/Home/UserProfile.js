@@ -437,7 +437,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
     }
   };
 
-  if (loading) return <Loader></Loader>;
+  if (loading) return <Loader />;
 
   //function for edit button with edit icon and functioanality of redirecting to differnt URL's
   const ActionButton = ({ onClick }) => {
@@ -506,12 +506,12 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
         // {/* </BreadCrumb> */}
       )}
       <div
-        className={`user-profile-wrapper ${userType === "citizen" ? "citizen" : "employee"} ${
+        className={`user-profile-wrapper no-scrollbar employee-form-content-with-action-bar ${userType === "citizen" ? "citizen" : "employee"} ${
           activeTab === "address" ? "address-tab" : "default-tab"
         }`}
       >
         {activeTab !== "address" ? (
-          <section className={`profile-card ${userType === "citizen" ? "citizen" : "employee"}`}>
+          <section className={`profile-card no-scrollbar ${userType === "citizen" ? "citizen" : "employee"}`}>
             <div className={`profile-image-wrapper ${userType === "citizen" ? "citizen" : "employee"}`}>
               <span className="profile-image-background"></span>
               <div className="profile-circle-wrapper">
@@ -523,7 +523,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
             </div>
           </section>
         ) : null}
-        <div style={{ flex: 1, overflowY: "scroll" }}>
+        <div className="user-form no-scrollbar">
           <section
             className={`profile-content ${userType === "citizen" ? "citizen" : "employee"} ${
               activeTab === "address" ? "address-tab" : "default-tab"
