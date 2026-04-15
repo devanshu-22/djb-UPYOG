@@ -366,20 +366,34 @@ const PropertyInfo = () => {
                                 </div>
                                 <input type="file" ref={fileRef} accept=".pdf" style={{ display: "none" }} onChange={handleFileUpload} />
                                 <div
-                                    onClick={() => fileRef.current.click()}
-                                    onMouseOver={(e) => e.currentTarget.style.borderColor = "#185FA5"}
-                                    onMouseOut={(e) => e.currentTarget.style.borderColor = "#B5D4F4"}
+                                    onClick={() => pidNumber && fileRef.current.click()}
+                                    onMouseOver={(e) => { if (pidNumber) e.currentTarget.style.borderColor = "#185FA5"; }}
+                                    onMouseOut={(e) => { if (pidNumber) e.currentTarget.style.borderColor = "#B5D4F4"; }}
                                     style={{
-                                        border: "1.5px dashed #B5D4F4", borderRadius: "10px",
-                                        padding: "28px 20px", textAlign: "center", cursor: "pointer",
-                                        backgroundColor: "#E6F1FB", minHeight: "160px",
-                                        display: "flex", flexDirection: "column",
-                                        alignItems: "center", justifyContent: "center", gap: "10px",
-                                        transition: "border-color 0.15s",
+                                        border: pidNumber ? "1.5px dashed #B5D4F4" : "1.5px dashed #D0D5DD",
+                                        borderRadius: "10px",
+                                        padding: "28px 20px",
+                                        textAlign: "center",
+                                        cursor: pidNumber ? "pointer" : "not-allowed",
+                                        backgroundColor: pidNumber ? "#E6F1FB" : "#F9FAFB",
+                                        minHeight: "160px",
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        gap: "10px",
+                                        transition: "all 0.15s",
+                                        opacity: pidNumber ? 1 : 0.6,
                                     }}
                                 >
-                                    <div style={{ background: "#fff", padding: "10px", borderRadius: "10px", display: "flex" }}>
-                                        <svg width="32" height="32" viewBox="0 0 24 24" fill="#185FA5">
+                                    <div style={{
+                                        background: pidNumber ? "#fff" : "#EAECF0",
+                                        padding: "10px",
+                                        borderRadius: "10px",
+                                        display: "flex",
+                                        filter: pidNumber ? "none" : "grayscale(100%)"
+                                    }}>
+                                        <svg width="32" height="32" viewBox="0 0 24 24" fill={pidNumber ? "#185FA5" : "#98A2B3"}>
                                             <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13z" />
                                             <path d="M12 18v-4M12 14l-2 2M12 14l2 2" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" />
                                         </svg>
@@ -390,10 +404,10 @@ const PropertyInfo = () => {
                                         </div>
                                     ) : (
                                         <>
-                                            <div style={{ fontSize: "13px", fontWeight: "600", color: "#185FA5" }}>
-                                                {t("EKYC_UPLOAD_PROPERTY_DOC_CTA") || "Tap to upload"}
+                                            <div style={{ fontSize: "13px", fontWeight: "600", color: pidNumber ? "#185FA5" : "#98A2B3" }}>
+                                                {pidNumber ? (t("EKYC_UPLOAD_PROPERTY_DOC_CTA") || "Tap to upload") : (t("EKYC_ENTER_PID_FIRST_CTA") || "Enter PID to upload")}
                                             </div>
-                                            <div style={{ fontSize: "12px", color: "#378ADD" }}>PDF only</div>
+                                            <div style={{ fontSize: "12px", color: pidNumber ? "#378ADD" : "#98A2B3" }}>{pidNumber ? "PDF | Max 5MB" : "Requires PID"}</div>
                                         </>
                                     )}
                                 </div>
@@ -430,6 +444,9 @@ const PropertyInfo = () => {
                                             </div>
                                             <div style={{ fontSize: "12px", color: "#667085", marginTop: "2px" }}>
                                                 {t("EKYC_BUILDING_PHOTO") || "Building photo with GPS"}
+                                            </div>
+                                            <div style={{ fontSize: "11px", color: "#98A2B3", marginTop: "2px" }}>
+                                                JPG, PNG | Max 2MB
                                             </div>
                                         </>
                                     ) : (

@@ -25,7 +25,9 @@ const Filter = ({ searchParams, onFilterChange, defaultSearchParams, statusMap, 
     };
 
     const onStatusChange = (value) => {
-        localParamChange({ status: value });
+        const newParams = { ..._searchParams, status: value };
+        setSearchParams(newParams);
+        onFilterChange(newParams);
     };
 
     return (
@@ -43,9 +45,8 @@ const Filter = ({ searchParams, onFilterChange, defaultSearchParams, statusMap, 
                 <Dropdown
                     option={[
                         { label: t("EKYC_STATUS_ALL"), value: "" },
-                        { label: t("EKYC_STATUS_COMPLETED"), value: "COMPLETED" },
-                        { label: t("EKYC_STATUS_PENDING"), value: "PENDING" },
-                        { label: t("EKYC_STATUS_REJECTED"), value: "REJECTED" },
+                        { label: t("EKYC_STATUS_ACTIVE"), value: "ACTIVE" },
+                        { label: t("EKYC_STATUS_PENDING"), value: "PENDING START" },
                     ]}
                     optionKey="label"
                     select={onStatusChange}

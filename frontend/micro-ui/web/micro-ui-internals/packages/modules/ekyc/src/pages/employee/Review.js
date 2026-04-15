@@ -1,10 +1,11 @@
-import React, { Fragment } from "react";
+import React, { Fragment, useState } from "react";
 import {
   Card,
   CardHeader,
   SubmitBar,
   HomeIcon,
   ActionBar,
+  Toast,
 } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useHistory, useLocation } from "react-router-dom";
@@ -133,8 +134,89 @@ const Review = () => {
     propertyDetails = {},
   } = location.state || {};
 
-  const handleSubmit = () => {
-    history.push("/digit-ui/employee/ekyc/dashboard");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [toast, setToast] = useState(null);
+
+  // ── Helper: upload a File object to Filestore ──────────────────────────────
+  const uploadFile = async (file, tenantId) => {
+    if (!file) return null;
+    const res = await Digit.UploadServices.Filestorage("EKYC", file, tenantId);
+    return res?.data?.files?.[0]?.fileStoreId || null;
+  };
+
+  // ── Helper: convert a data-URL (base64 string) to a File blob ─────────────
+  const dataUrlToFile = (dataUrl, filename) => {
+    const arr = dataUrl.split(",");
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) u8arr[n] = bstr.charCodeAt(n);
+    return new File([u8arr], filename, { type: mime });
+  };
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    setToast(null);
+    try {
+      const tenantId = Digit.ULBService.getCurrentTenantId() || "dl.djb";
+      const userInfo = Digit.UserService.getUser()?.info || {};
+
+      // ── 1. Upload property document (PDF File object) ──────────────────────
+      const propertyDocFile = propertyDetails.propertyDocument || null; // File object from <input>
+      const propertyDocFileStoreId = await uploadFile(propertyDocFile, tenantId);
+
+      // ── 2. Upload building photo (data-URL string from camera capture) ─────
+      let buildingImageFileStoreId = null;
+      if (propertyDetails.buildingPhoto) {
+        const photoFile = dataUrlToFile(propertyDetails.buildingPhoto, "building_photo.jpg");
+        buildingImageFileStoreId = await uploadFile(photoFile, tenantId);
+      }
+
+      // ── 3. Build request payload ───────────────────────────────────────────
+      const requestBody = {
+        RequestInfo: {
+          apiId: "Rainmaker",
+          ver: "1.0",
+          msgId: `${Date.now()}|${navigator.language || "en_IN"}`,
+          tenantId,
+          authToken: userInfo.access_token || Digit.UserService.getUser()?.access_token || "",
+        },
+        updateType: "PROPERTY",
+        kno: kNumber,
+        pidNumber: propertyDetails.pidNumber || null,
+        propertyDocumentFileStoreId: propertyDocFileStoreId,
+        buildingImageFileStoreId: buildingImageFileStoreId,
+        userType: propertyDetails.userType?.value || null,
+        noOfFloor: propertyDetails.noOfFloors?.value ? parseInt(propertyDetails.noOfFloors.value, 10) : null,
+        typeOfConnection: propertyDetails.connectionCategory?.value || null,
+        connectionCategory: propertyDetails.connectionType?.value || null,
+        modifiedBy: userInfo.name || userInfo.userName || null,
+      };
+
+      // ── 4. Call the update API ─────────────────────────────────────────────
+      await Digit.CustomService.getResponse({
+        url: "/ekyc-service/user/application/_update",
+        params: { tenantId },
+        body: requestBody,
+        useCache: false,
+        method: "POST",
+      });
+
+      setToast({ type: "success", message: t("EKYC_SUBMIT_SUCCESS") || "Application submitted successfully!" });
+      setTimeout(() => {
+        history.push("/digit-ui/employee/ekyc/dashboard");
+      }, 1800);
+    } catch (err) {
+      console.error("eKYC Submit Error:", err);
+      setToast({
+        type: "error",
+        message: err?.response?.data?.Errors?.[0]?.message ||
+          t("EKYC_SUBMIT_ERROR") || "Submission failed. Please try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleEditAadhaar = () => {
@@ -150,6 +232,7 @@ const Review = () => {
   };
 
   return (
+    <Fragment>
     <div className="inbox-container">
       <style>{`
         @keyframes fadeSlideIn {
@@ -259,7 +342,7 @@ const Review = () => {
               editLabel={t("CS_COMMON_EDIT") || "Edit"}
               rows={[
                 { label: t("EKYC_NAME") || "Name", value: aadhaarDetails.userName || "Rajesh Kumar Singh" },
-                { label: t("EKYC_AADHAAR") || "Aadhaar no.", value: aadhaarDetails.aadhaarLastFour ? `XXXX XXXX ${aadhaarDetails.aadhaarLastFour}` : "XXXX XXXX 1234" },
+                { label: t("EKYC_AADHAAR") || "Aadhaar no.", value: aadhaarDetails.aadhaarLastFour ? `${aadhaarDetails.aadhaarLastFour}` : "XXXX XXXX 1234" },
                 { label: t("EKYC_MOBILE_NO") || "Mobile no.", value: aadhaarDetails.mobileNumber || "XXXXXXXXXX" },
                 { label: t("EKYC_EMAIL_ADDRESS") || "Email", value: aadhaarDetails.email || null },
               ]}
@@ -317,8 +400,12 @@ const Review = () => {
           {/* Submit (Non-sticky, at form end) */}
           <div style={{ marginTop: "24px" }}>
             <SubmitBar
-              label={t("ES_COMMON_SUBMIT") || "Submit"}
+              label={isSubmitting
+                ? (t("EKYC_SUBMITTING") || "Submitting...")
+                : (t("ES_COMMON_SUBMIT") || "Submit")
+              }
               onSubmit={handleSubmit}
+              disabled={isSubmitting}
             />
           </div>
 
@@ -338,6 +425,17 @@ const Review = () => {
         </Card>
       </div>
     </div>
+
+    {/* Toast notification */}
+    {toast && (
+      <Toast
+        label={toast.message}
+        error={toast.type === "error"}
+        success={toast.type === "success"}
+        onClose={() => setToast(null)}
+      />
+    )}
+    </Fragment>
   );
 };
 
