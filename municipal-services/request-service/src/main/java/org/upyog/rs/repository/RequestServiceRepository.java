@@ -43,4 +43,7 @@ public interface RequestServiceRepository {
 
 	public ApplicantDetail getApplicantByMobileNumber(String mobileNumber) ;
 
-	}
+	public WaterTankerBookingDetail getBookingByMobileNumber(String mobileNumber);
+
+
+}

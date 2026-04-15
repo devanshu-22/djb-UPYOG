@@ -62,7 +62,11 @@ public class WaterTankerServiceImpl implements WaterTankerService {
 
 		enrichmentService.enrichCreateWaterTankerRequest(waterTankerRequest);
 
-		workflowService.updateWorkflowStatus(null, waterTankerRequest);
+		ApplicantDetail existingApplicant = requestServiceRepository.getApplicantByMobileNumber(waterTankerRequest.getWaterTankerBookingDetail().getMobileNumber());
+
+		if (existingApplicant == null) {
+			workflowService.updateWorkflowStatus(null, waterTankerRequest);
+		}
 
 		try {
 			RequestInfo requestInfo = waterTankerRequest.getRequestInfo();
@@ -74,11 +78,6 @@ public class WaterTankerServiceImpl implements WaterTankerService {
 						applicantDetail.getMobileNumber());
 			}
 
-
-
-//			//  Fetch existing applicant
-			ApplicantDetail existingApplicant = requestServiceRepository.getApplicantByMobileNumber(applicantDetail.getMobileNumber());
-
 			if (existingApplicant != null) {
 				// EXISTING USER
 				waterTankerRequest.getWaterTankerBookingDetail()
@@ -88,13 +87,11 @@ public class WaterTankerServiceImpl implements WaterTankerService {
 				waterTankerRequest.getWaterTankerBookingDetail()
 						.getAddress()
 						.setApplicantId(existingApplicant.getApplicantId());
-				//System.out.println("test11+  EXIST applicant");
 
 			} else {
 
 				waterTankerRequest.getWaterTankerBookingDetail()
 						.setApplicantDetail(applicantDetail);
-				//System.out.println("test13+  keep new applicant");
 
 			}
 
@@ -105,7 +102,6 @@ public class WaterTankerServiceImpl implements WaterTankerService {
 				// If user profile is not enabled, set the applicantUuid null
 				waterTankerRequest.getWaterTankerBookingDetail().setApplicantUuid(null);
 			}
-
 
 			log.info("Applicant or User Uuid: " + user.getUuid());
 		} catch (Exception e) {

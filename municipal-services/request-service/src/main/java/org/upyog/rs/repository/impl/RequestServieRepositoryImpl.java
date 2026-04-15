@@ -2,6 +2,7 @@ package org.upyog.rs.repository.impl;
 
 import java.util.*;
 
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -306,4 +307,34 @@ public class RequestServieRepositoryImpl implements RequestServiceRepository {
 		}
 	}
 
+
+	@Override
+	public WaterTankerBookingDetail getBookingByMobileNumber(String mobileNumber) {
+
+		String query = "SELECT b.booking_id, b.booking_no ,b.applicant_id " +
+				"FROM upyog_rs_water_tanker_booking_details b " +
+				"JOIN upyog_rs_water_tanker_applicant_details a " +
+				"ON b.applicant_id = a.applicant_id " +
+				"WHERE TRIM(a.mobile_number) = TRIM(?) " ;
+
+		try {
+			return jdbcTemplate.queryForObject(
+					query,
+					new Object[]{mobileNumber},
+					(rs, rowNum) -> {
+						WaterTankerBookingDetail booking = new WaterTankerBookingDetail();
+						booking.setBookingId(rs.getString("booking_id"));
+						booking.setBookingNo(rs.getString("booking_no"));
+						booking.setApplicantId(rs.getString("applicant_id"));
+
+						return booking;
+					});
+
+		} catch (EmptyResultDataAccessException e) {
+			return null; // no record found
+		} catch (Exception e) {
+			log.error("Error fetching booking for mobile: {}", mobileNumber, e);
+			return null;
+		}
+	}
 }
