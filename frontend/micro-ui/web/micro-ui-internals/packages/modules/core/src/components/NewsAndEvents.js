@@ -260,7 +260,7 @@ const NewsAndEvents = () => {
             <h3 style={{ fontSize: "16px", margin: 0, color: "#0f172a" }}>{t("Upcoming Events & Latest Updates")}</h3>
           </div>
           <div className="ra-footer" style={{ padding: "12px 0" }}>
-            <button className="ra-view-all" onClick={() => setIsModalOpen(true)} style={{ color: "#2563eb" }}>
+            <button className="ra-view-all" onClick={() => setIsModalOpen(true)}>
               <Icons.Calendar size={16} /> <span style={{ marginLeft: "6px" }}>{t("View All")}</span>
             </button>
           </div>
