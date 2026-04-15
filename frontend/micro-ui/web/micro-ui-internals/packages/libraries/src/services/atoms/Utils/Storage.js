@@ -12,6 +12,9 @@ const getStorage = (storageClass) => ({
     if (localStoreSupport() && key) {
       let valueInStorage = storageClass.getItem(k(key));
       if (!valueInStorage || valueInStorage === "undefined") {
+        // Check in-memory fallback (used when localStorage quota was exceeded)
+        const memItem = window?.eGov?.Storage?.[k(key)];
+        if (memItem && Date.now() <= memItem.expiry) return memItem.value;
         return null;
       }
       const item = JSON.parse(valueInStorage);
@@ -21,7 +24,8 @@ const getStorage = (storageClass) => ({
       }
       return item.value;
     } else if (typeof window !== "undefined") {
-      return window?.eGov?.Storage && window.eGov.Storage[k(key)].value;
+      const memItem = window?.eGov?.Storage?.[k(key)];
+      return memItem && Date.now() <= memItem.expiry ? memItem.value : null;
     } else {
       return null;
     }
@@ -33,7 +37,16 @@ const getStorage = (storageClass) => ({
       expiry: Date.now() + ttl * 1000,
     };
     if (localStoreSupport()) {
-      storageClass.setItem(k(key), JSON.stringify(item));
+      try {
+        storageClass.setItem(k(key), JSON.stringify(item));
+      } catch (e) {
+        // QuotaExceededError: fall back to in-memory storage so the app doesn't crash
+        if (typeof window !== "undefined") {
+          window.eGov = window.eGov || {};
+          window.eGov.Storage = window.eGov.Storage || {};
+          window.eGov.Storage[k(key)] = item;
+        }
+      }
     } else if (typeof window !== "undefined") {
       window.eGov = window.eGov || {};
       window.eGov.Storage = window.eGov.Storage || {};
