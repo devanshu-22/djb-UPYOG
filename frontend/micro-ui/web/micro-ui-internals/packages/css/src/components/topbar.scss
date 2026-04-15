@@ -15,7 +15,6 @@
     width: 100%;
   }
 
-
   .btx {
     display: flex;
     flex-direction: column;
@@ -124,6 +123,28 @@
     .profile-dropdown--item {
       span {
         white-space: pre;
+      }
+    }
+  }
+
+  @media (max-width: 1280px) {
+    padding: 10px 30px;
+
+    .brand {
+      gap: 8px !important;
+    }
+
+    .brand-mark {
+      width: 42px !important;
+      height: 42px !important;
+    }
+
+    .btx {
+      h1 {
+        font-size: 22px !important;
+      }
+      p {
+        font-size: 9px !important;
       }
     }
   }
@@ -281,6 +302,10 @@ video::-webkit-media-controls-panel {
   flex: 1;
   gap: 15px;
 
+  @media (max-width: 1280px) {
+    gap: 10px;
+  }
+
   @media (max-width: 1024px) {
     gap: 8px;
     margin-right: 0px !important;
@@ -368,6 +393,33 @@ video::-webkit-media-controls-panel {
   }
   @media (max-width: 780px) {
     height: 16px;
+  }
+}
+
+@media (max-width: 1280px) {
+  .user-profile-pill {
+    padding: 4px 12px 4px 4px !important;
+    gap: 8px !important;
+
+    .user-profile-avatar,
+    .user-profile-img {
+      width: 36px !important;
+      height: 36px !important;
+      font-size: 15px !important;
+    }
+
+    .user-profile-info {
+      .user-profile-name {
+        font-size: 13px !important;
+      }
+      .user-profile-details {
+        font-size: 11px !important;
+      }
+    }
+  }
+
+  .topbar img.spect-icon {
+    max-height: 42px !important;
   }
 }
 
