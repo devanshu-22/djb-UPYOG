@@ -13,6 +13,7 @@ import org.springframework.util.CollectionUtils;
 import org.upyog.rs.config.RequestServiceConfiguration;
 import org.upyog.rs.enums.RequestServiceStatus;
 import org.upyog.rs.repository.IdGenRepository;
+import org.upyog.rs.repository.RequestServiceRepository;
 import org.upyog.rs.util.IdgenUtil;
 import org.upyog.rs.util.RequestServiceUtil;
 import org.upyog.rs.util.UserUtil;
@@ -51,6 +52,9 @@ public class EnrichmentService {
 	@Autowired
 	private IdgenUtil idgenUtil;
 
+	@Autowired
+	private RequestServiceRepository requestServiceRepository;
+
 
 
 	public void enrichCreateWaterTankerRequest(WaterTankerBookingRequest waterTankerRequest) {
@@ -80,7 +84,7 @@ public class EnrichmentService {
 			if (StringUtils.isBlank(addressDetailId)) {
 				enrichAddressDetails(waterTankerRequest, waterTankerDetail);
 			}
-		}else{
+		} else {
 			/*
 			 * If the currently logged-in user is not the same as the applicant mobile number entered in the form is different from the login mobile number,
 			 * then we proceed to enrich user details, which will create a new user with the provided details.
@@ -96,40 +100,98 @@ public class EnrichmentService {
 			log.info("User profile is not enabled, using generated applicantUuid for both tables");
 		}
 
-		waterTankerDetail.setBookingId(bookingId);
+
+		WaterTankerBookingDetail existingWaterTankerDetail =
+				requestServiceRepository.getBookingByMobileNumber(
+						waterTankerRequest.getWaterTankerBookingDetail()
+								.getApplicantDetail().getMobileNumber());
+
+		if (existingWaterTankerDetail != null) {
+
+
+
+			waterTankerDetail.setBookingId(existingWaterTankerDetail.getBookingId());
+
+			waterTankerDetail.setBookingNo(existingWaterTankerDetail.getBookingNo());
+
+			waterTankerDetail.setApplicantId(existingWaterTankerDetail.getApplicantId());
+
+			waterTankerDetail.getAddress().setAddressId(RequestServiceUtil.getRandonUUID());
+			waterTankerDetail.getAddress().setApplicantId(existingWaterTankerDetail.getApplicantId());
+			waterTankerDetail.getApplicantDetail().setAuditDetails(auditDetails);
+
+			waterTankerDetail.getApplicantDetail().setApplicantId(existingWaterTankerDetail.getApplicantId());
+			waterTankerDetail.getApplicantDetail().setBookingId(existingWaterTankerDetail.getBookingId());
+
+		} else {
+
+			// ================= NEW =================
+
+			List<String> customIds = getIdList(
+					requestInfo,
+					waterTankerDetail.getTenantId(),
+					config.getWaterTankerApplicationKey(),
+					config.getWaterTankerApplicationFormat(),
+					1
+			);
+
+			waterTankerDetail.setBookingId(bookingId);
+			waterTankerDetail.setBookingNo(customIds.get(0));
+			waterTankerDetail.setApplicantId(applicantUuid);
+			waterTankerDetail.getApplicantDetail().setApplicantId(applicantUuid);
+			waterTankerDetail.getApplicantDetail().setBookingId(bookingId);
+			waterTankerDetail.getAddress().setAddressId(RequestServiceUtil.getRandonUUID());
+			waterTankerDetail.getAddress().setApplicantId(applicantUuid);
+
+		}
+
+		waterTankerDetail.setMobileNumber(
+				waterTankerRequest.getWaterTankerBookingDetail()
+						.getApplicantDetail().getMobileNumber()
+		);
+		waterTankerDetail.getApplicantDetail().setAuditDetails(auditDetails);
 		waterTankerDetail.setApplicationDate(auditDetails.getCreatedTime());
-		waterTankerDetail.setBookingStatus(RequestServiceStatus.valueOf(waterTankerDetail.getBookingStatus()).toString());
+		waterTankerDetail.setBookingStatus(
+				RequestServiceStatus.valueOf(waterTankerDetail.getBookingStatus()).toString()
+		);
 		waterTankerDetail.setAuditDetails(auditDetails);
-		waterTankerDetail.setTenantId(waterTankerRequest.getWaterTankerBookingDetail().getTenantId());
+		waterTankerDetail.setTenantId(
+				waterTankerRequest.getWaterTankerBookingDetail().getTenantId()
+		);
+		waterTankerDetail.setTankerType(
+				waterTankerRequest.getWaterTankerBookingDetail().getTankerType()
+		);
+		waterTankerDetail.setTankerQuantity(
+				waterTankerRequest.getWaterTankerBookingDetail().getTankerQuantity()
+		);
+		waterTankerDetail.setWaterQuantity(
+				waterTankerRequest.getWaterTankerBookingDetail().getWaterQuantity()
+		);
+		waterTankerDetail.setDescription(
+				waterTankerRequest.getWaterTankerBookingDetail().getDescription()
+		);
+		waterTankerDetail.setDeliveryDate(
+				waterTankerRequest.getWaterTankerBookingDetail().getDeliveryDate()
+		);
+		waterTankerDetail.setDeliveryTime(
+				waterTankerRequest.getWaterTankerBookingDetail().getDeliveryTime()
+		);
+		waterTankerDetail.setLocalityCode(
+				waterTankerRequest.getWaterTankerBookingDetail().getAddress().getLocalityCode()
+		);
+		waterTankerDetail.setLatitude(
+				waterTankerRequest.getWaterTankerBookingDetail().getAddress().getLatitude()
+		);
+		waterTankerDetail.setLongitude(
+				waterTankerRequest.getWaterTankerBookingDetail().getAddress().getLongitude()
+		);
+		waterTankerDetail.setWTfileStoreId(
+				waterTankerRequest.getWaterTankerBookingDetail().getWTfileStoreId()
+		);
 
-		List<String> customIds = getIdList(requestInfo, waterTankerDetail.getTenantId(),
-				config.getWaterTankerApplicationKey(), config.getWaterTankerApplicationFormat(), 1);
-		log.info("Enriched application request application no :" + customIds.get(0));
-		waterTankerDetail.setBookingNo(customIds.get(0));
-
-		waterTankerDetail.setTankerType(waterTankerRequest.getWaterTankerBookingDetail().getTankerType());
-		waterTankerDetail.setTankerQuantity(waterTankerRequest.getWaterTankerBookingDetail().getTankerQuantity());
-		waterTankerDetail.setWaterQuantity(waterTankerRequest.getWaterTankerBookingDetail().getWaterQuantity());
-		waterTankerDetail.setDescription(waterTankerRequest.getWaterTankerBookingDetail().getDescription());
-		waterTankerDetail.setDeliveryDate(waterTankerRequest.getWaterTankerBookingDetail().getDeliveryDate());
-		waterTankerDetail.setDeliveryTime(waterTankerRequest.getWaterTankerBookingDetail().getDeliveryTime());
-		waterTankerDetail.setMobileNumber(waterTankerRequest.getWaterTankerBookingDetail().getApplicantDetail().getMobileNumber());
-		waterTankerDetail.setLocalityCode(waterTankerRequest.getWaterTankerBookingDetail().getAddress().getLocalityCode());
-		waterTankerDetail.setLatitude(waterTankerRequest.getWaterTankerBookingDetail().getAddress().getLatitude());
-		waterTankerDetail.setLongitude(waterTankerRequest.getWaterTankerBookingDetail().getAddress().getLongitude());
-		waterTankerDetail.setWTfileStoreId(waterTankerRequest.getWaterTankerBookingDetail().getWTfileStoreId());
-		String roles = waterTankerRequest.getRequestInfo().getUserInfo().getRoles()
-				.stream()
-				.map(Role::getName)
-				.collect(Collectors.joining(", "));
 		waterTankerDetail.setBookingCreatedBy(bookingCreateBy);
 
-		waterTankerDetail.getApplicantDetail().setBookingId(bookingId);
-		waterTankerDetail.getApplicantDetail().setApplicantId(applicantUuid);
-		waterTankerDetail.setApplicantId(applicantUuid);
-		waterTankerDetail.getAddress().setAddressId(RequestServiceUtil.getRandonUUID());
-		waterTankerDetail.getAddress().setApplicantId(waterTankerDetail.getApplicantDetail().getApplicantId());
-		waterTankerDetail.getApplicantDetail().setAuditDetails(auditDetails);
+
 
 		// Handle filling point mapping
 		if (waterTankerRequest.getWaterTankerBookingDetail().getFillingPointMetadata() != null
@@ -156,8 +218,8 @@ public class EnrichmentService {
 		}
 
 		log.info("Enriched application request data :" + waterTankerDetail);
-	}
 
+	}
 	public void enrichUpdateFixedPointWaterTankerRequest(
 			WaterTankerFixedPointRequest waterTankerFixedPointRequest) {
 
@@ -242,9 +304,9 @@ public class EnrichmentService {
 
 		// Fetch the new address associated with the user's UUID
 		AddressV2 addressDetails = UserService.convertApplicantAddressToUserAddress(waterTankerRequest.getWaterTankerBookingDetail().getAddress(), RequestServiceUtil.extractTenantId(waterTankerRequest.getWaterTankerBookingDetail().getTenantId()));
-		System.out.println("test1       ");
+		//System.out.println("test1       ");
 		AddressV2 address = userService.createNewAddressV2ByUserUuid(addressDetails,waterTankerRequest.getRequestInfo(),waterTankerRequest.getWaterTankerBookingDetail().getApplicantUuid());
-System.out.println("test2         ");
+      //   System.out.println("test2         ");
 		if (address != null) {
 			// Set the address detail ID in the booking detail
 			waterTankerDetail.setAddressDetailId(String.valueOf(address.getId()));
