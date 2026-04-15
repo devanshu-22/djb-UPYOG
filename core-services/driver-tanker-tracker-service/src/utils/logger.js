@@ -1,12 +1,24 @@
-const log = (...args) => {
-  console.log(new Date().toISOString(), ...args);
-};
+function log(level, message, meta = undefined) {
+  const payload = {
+    ts: new Date().toISOString(),
+    level,
+    message,
+  };
 
-const error = (...args) => {
-  console.error(new Date().toISOString(), ...args);
-};
+  if (meta !== undefined) {
+    payload.meta = meta;
+  }
+
+  const line = JSON.stringify(payload);
+  if (level === 'error') {
+    console.error(line);
+    return;
+  }
+  console.log(line);
+}
 
 module.exports = {
-  log,
-  error,
+  info: (message, meta) => log('info', message, meta),
+  warn: (message, meta) => log('warn', message, meta),
+  error: (message, meta) => log('error', message, meta),
 };

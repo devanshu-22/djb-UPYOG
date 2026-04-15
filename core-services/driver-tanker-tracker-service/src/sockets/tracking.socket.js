@@ -1,83 +1,87 @@
-const driverService = require("../services/driver.service");
-const { log, error } = require("../utils/logger");
+const driverService = require('../services/driver.service');
+const { info, warn, error } = require('../utils/logger');
 
 function registerTrackingSocket(io) {
-  io.on("connection", (socket) => {
-    log(`Socket connected: ${socket.id}`);
+  io.on('connection', (socket) => {
+   // info('socket_connected', { socketId: socket.id, ip: socket.handshake.address });
 
-    socket.on("admin-join", () => {
-      socket.join("admins");
-      log(`Admin joined: ${socket.id}`);
-      socket.emit("drivers-snapshot", driverService.getAllDrivers());
+    socket.on('admin-join', async () => {
+      try {
+        socket.join('admins');
+        const snapshot = await driverService.getAllDrivers();
+        socket.emit('drivers-snapshot', snapshot);
+       // info('admin_joined', { socketId: socket.id, driverCount: snapshot.length });
+      } catch (err) {
+        error('admin_join_failed', { socketId: socket.id, message: err.message });
+        socket.emit('tracking-error', { message: err.message });
+      }
     });
 
-    socket.on("driver-online", (data = {}) => {
+    socket.on('driver-online', async (data = {}, ack) => {
       try {
-        const driverId = String(data.driverId || "").trim();
+        const state = await driverService.markDriverOnline(socket.id, data);
+        socket.join(`driver:${state.driverId}`);
+        io.to('admins').emit('driver-status', state);
+        if (typeof ack === 'function') ack({ success: true, driverId: state.driverId });
+       // info('driver_online', { socketId: socket.id, driverId: state.driverId, tripId: state.tripId });
+      } catch (err) {
+        error('driver_online_failed', { socketId: socket.id, message: err.message });
+        socket.emit('tracking-error', { message: err.message });
+        if (typeof ack === 'function') ack({ success: false, message: err.message });
+      }
+    });
 
-        if (!driverId) {
-          socket.emit("tracking-error", {
-            message: "driverId is required in driver-online",
-          });
-          return;
+    socket.on('driver-location', async (data = {}, ack) => {
+      try {
+        const state = await driverService.updateDriverLocation(socket.id, data);
+        io.to('admins').emit('driver-location-update', state);
+        if (typeof ack === 'function') ack({ success: true, driverId: state.driverId, tripId: state.tripId });
+      } catch (err) {
+        error('driver_location_failed', { socketId: socket.id, message: err.message });
+        socket.emit('tracking-error', { message: err.message });
+        if (typeof ack === 'function') ack({ success: false, message: err.message });
+      }
+    });
+
+    socket.on('trip-destination-updated', async (data = {}, ack) => {
+      try {
+        const state = await driverService.updateDestination(socket.id, data);
+        io.to('admins').emit('driver-destination-update', state);
+        socket.to(`driver:${state.driverId}`).emit('driver-destination-update', state);
+        if (typeof ack === 'function') ack({ success: true, driverId: state.driverId, tripId: state.tripId });
+        //info('driver_destination_updated', { socketId: socket.id, driverId: state.driverId, tripId: state.tripId });
+      } catch (err) {
+        error('driver_destination_update_failed', { socketId: socket.id, message: err.message });
+        socket.emit('tracking-error', { message: err.message });
+        if (typeof ack === 'function') ack({ success: false, message: err.message });
+      }
+    });
+
+    socket.on('driver-offline', async (data = {}, ack) => {
+      try {
+        const state = await driverService.markDriverOffline(socket.id, data);
+        if (state) {
+          io.to('admins').emit('driver-status', state);
+       //   info('driver_offline', { socketId: socket.id, driverId: state.driverId, tripId: state.tripId });
         }
-
-        socket.join(`driver:${driverId}`);
-
-        const updatedDriver = driverService.markDriverOnline(driverId, socket.id);
-
-        io.to("admins").emit("driver-status", updatedDriver);
-        log(`Driver online: ${driverId}`);
+        if (typeof ack === 'function') ack({ success: true });
       } catch (err) {
-        error("driver-online error:", err.message);
-        socket.emit("tracking-error", { message: err.message });
+        error('driver_offline_failed', { socketId: socket.id, message: err.message });
+        if (typeof ack === 'function') ack({ success: false, message: err.message });
       }
     });
 
-    socket.on("driver-location", (data = {}) => {
+    socket.on('disconnect', async (reason) => {
       try {
-        const updatedDriver = driverService.updateDriverLocation(socket.id, data);
-        io.to("admins").emit("driver-location-update", updatedDriver);
-      } catch (err) {
-        error("driver-location error:", err.message);
-        socket.emit("tracking-error", { message: err.message });
-      }
-    });
-
-    socket.on("driver-offline", (data = {}) => {
-      try {
-        const driverId = String(
-          data.driverId || driverService.getDriverIdFromSocket(socket.id) || ""
-        ).trim();
-
-        if (!driverId) return;
-
-        const updatedDriver = driverService.markDriverOffline(
-          driverId,
-          data.timestamp
-        );
-
-        if (updatedDriver) {
-          io.to("admins").emit("driver-status", updatedDriver);
-          log(`Driver offline: ${driverId}`);
-        }
-      } catch (err) {
-        error("driver-offline error:", err.message);
-      }
-    });
-
-    socket.on("disconnect", () => {
-      try {
-        const updatedDriver = driverService.handleSocketDisconnect(socket.id);
-
-        if (updatedDriver) {
-          io.to("admins").emit("driver-status", updatedDriver);
-          log(`Driver disconnected: ${updatedDriver.driverId}`);
+        const state = await driverService.handleSocketDisconnect(socket.id);
+        if (state) {
+          io.to('admins').emit('driver-status', state);
+        //  warn('socket_disconnected_driver_offline', { socketId: socket.id, reason, driverId: state.driverId, tripId: state.tripId });
         } else {
-          log(`Socket disconnected: ${socket.id}`);
+          info('socket_disconnected', { socketId: socket.id, reason });
         }
       } catch (err) {
-        error("disconnect error:", err.message);
+        error('socket_disconnect_failed', { socketId: socket.id, message: err.message });
       }
     });
   });
