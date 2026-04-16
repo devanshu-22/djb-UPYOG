@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useState, useEffect } from "react";
 import {
   Card,
   CardHeader,
@@ -9,6 +9,7 @@ import {
 } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useHistory, useLocation } from "react-router-dom";
+import { getPayloadDiff, getSavedData } from "../../utils";
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
@@ -60,7 +61,7 @@ const SectionHead = ({ icon, label }) => (
 
 // ─── Reusable: Review section card ───────────────────────────────────────────
 
-const ReviewCard = ({ icon, title, onEdit, editLabel, rows }) => (
+const ReviewCard = ({ icon, title, onEdit, editLabel, rows, t }) => (
   <div style={{
     border: "0.5px solid #EAECF0",
     borderRadius: "10px",
@@ -110,8 +111,22 @@ const ReviewCard = ({ icon, title, onEdit, editLabel, rows }) => (
             }}>
               {row.label}
             </div>
-            <div style={{ flex: 1, fontSize: "14px", color: "#101828", fontWeight: "500", wordBreak: "break-word" }}>
+            <div style={{ flex: 1, fontSize: "14px", color: "#101828", fontWeight: "500", wordBreak: "break-word", display: "flex", alignItems: "center", gap: "8px" }}>
               {row.value}
+              {row.isModified && (
+                <span style={{
+                  fontSize: "10px",
+                  background: "#FFF4ED",
+                  color: "#B45309",
+                  border: "0.5px solid #FDE68A",
+                  borderRadius: "4px",
+                  padding: "2px 6px",
+                  fontWeight: "600",
+                  textTransform: "uppercase"
+                }}>
+                  {t("EKYC_MODIFIED") || "Modified"}
+                </span>
+              )}
             </div>
           </div>
         ) : null
@@ -127,15 +142,60 @@ const Review = () => {
   const history = useHistory();
   const location = useLocation();
 
-  const {
-    kNumber = "EKYC-1234567890",
-    aadhaarDetails = {},
-    addressDetails = {},
-    propertyDetails = {},
-  } = location.state || {};
+  // ── Restore State Logic ──
+  const state = location.state || {};
+  const initialData = state.initialData || getSavedData("EKYC_INITIAL_DATA", {});
+  const kNumber = state.kNumber || sessionStorage.getItem("EKYC_K_NUMBER") || "EKYC-1234567890";
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // Reconstruct nested objects if state is lost on refresh
+  const aadhaarDetails = state.aadhaarDetails || {
+    userName: sessionStorage.getItem("EKYC_USER_NAME"),
+    mobileNumber: sessionStorage.getItem("EKYC_MOBILE_NUMBER"),
+    whatsappNumber: sessionStorage.getItem("EKYC_WHATSAPP_NUMBER"),
+    email: sessionStorage.getItem("EKYC_EMAIL"),
+    noOfPersons: sessionStorage.getItem("EKYC_NO_OF_PERSONS"),
+  };
+
+  const addressDetails = state.addressDetails || {
+    fullAddress: sessionStorage.getItem("EKYC_FULL_ADDRESS"),
+    flatNo: sessionStorage.getItem("EKYC_FLAT_NO"),
+    building: sessionStorage.getItem("EKYC_BUILDING"),
+    landmark: sessionStorage.getItem("EKYC_LANDMARK"),
+    pincode: sessionStorage.getItem("EKYC_PINCODE"),
+    assembly: getSavedData("EKYC_ASSEMBLY_DATA")?.name,
+    ward: getSavedData("EKYC_WARD_DATA")?.name,
+    doorPhoto: sessionStorage.getItem("EKYC_DOOR_PHOTO"),
+    doorPhotoFileStoreId: sessionStorage.getItem("EKYC_DOOR_PHOTO_FILESTORE_ID"),
+  };
+
+  const propertyDetails = state.propertyDetails || {
+    ownerType: sessionStorage.getItem("EKYC_OWNER_TYPE"),
+    pidNumber: sessionStorage.getItem("EKYC_PID_NUMBER"),
+    connectionCategory: getSavedData("EKYC_TYPE_OF_CONNECTION_DATA"),
+    connectionType: getSavedData("EKYC_CONNECTION_CATEGORY_DATA"),
+    userType: getSavedData("EKYC_USER_TYPE_DATA"),
+    noOfFloors: getSavedData("EKYC_NO_OF_FLOORS_DATA"),
+    propertyDocument: sessionStorage.getItem("EKYC_PROPERTY_DOC"),
+    propertyDocumentFileStoreId: sessionStorage.getItem("EKYC_PROPERTY_DOC_FILESTORE_ID"),
+    buildingPhoto: sessionStorage.getItem("EKYC_BUILDING_PHOTO"),
+    buildingPhotoFileStoreId: sessionStorage.getItem("EKYC_BUILDING_PHOTO_FILESTORE_ID"),
+  };
+
+  useEffect(() => {
+    sessionStorage.setItem("EKYC_CURRENT_STEP", "REVIEW");
+  }, []);
+
+  // Helper to check if a field is modified
+  const isFieldModified = (key, currentVal) => {
+    const initialVal = initialData[key];
+    if (initialVal === undefined) return false;
+    return JSON.stringify(initialVal) !== JSON.stringify(currentVal);
+  };
+
   const [toast, setToast] = useState(null);
+  const tenantId = Digit.ULBService.getCurrentTenantId() || "dl";
+  const { mutate, isLoading: isMutationLoading } = Digit.Hooks.ekyc.useEkycApplicationUpdate(tenantId);
+  const isSubmitting = isMutationLoading;
 
   // ── Helper: upload a File object to Filestore ──────────────────────────────
   const uploadFile = async (file, tenantId) => {
@@ -156,32 +216,34 @@ const Review = () => {
   };
 
   const handleSubmit = async () => {
-    setIsSubmitting(true);
     setToast(null);
     try {
-      const tenantId = Digit.ULBService.getCurrentTenantId() || "dl.djb";
       const userInfo = Digit.UserService.getUser()?.info || {};
 
-      // ── 1. Upload property document (PDF File object) ──────────────────────
-      const propertyDocFile = propertyDetails.propertyDocument || null; // File object from <input>
-      const propertyDocFileStoreId = await uploadFile(propertyDocFile, tenantId);
+      // ── 1. Upload property document ──────────────────────────────────────
+      let propertyDocFileStoreId = propertyDetails.propertyDocumentFileStoreId || null;
+      if (!propertyDocFileStoreId && propertyDetails.propertyDocument instanceof File) {
+        propertyDocFileStoreId = await uploadFile(propertyDetails.propertyDocument, tenantId);
+      }
 
-      // ── 2. Upload building photo (data-URL string from camera capture) ─────
-      let buildingImageFileStoreId = null;
-      if (propertyDetails.buildingPhoto) {
+      // ── 2. Upload building photo ──────────────────────────────────────────
+      let buildingImageFileStoreId = propertyDetails.buildingPhotoFileStoreId || null;
+      if (!buildingImageFileStoreId && propertyDetails.buildingPhoto) {
+        // Fallback if we only have the dataURL
         const photoFile = dataUrlToFile(propertyDetails.buildingPhoto, "building_photo.jpg");
         buildingImageFileStoreId = await uploadFile(photoFile, tenantId);
       }
 
-      // ── 3. Build request payload ───────────────────────────────────────────
+      // ── 3. Upload door photo ──────────────────────────────────────────────
+      let doorPhotoFileStoreId = addressDetails.doorPhotoFileStoreId || null;
+      if (!doorPhotoFileStoreId && addressDetails.doorPhoto) {
+        const doorFile = dataUrlToFile(addressDetails.doorPhoto, "door_photo.jpg");
+        doorPhotoFileStoreId = await uploadFile(doorFile, tenantId);
+      }
+
+      // ── 4. Build optimized request payload ────────────────────────────────
+      // Note: RequestInfo is added automatically by the Digit Request utility
       const requestBody = {
-        RequestInfo: {
-          apiId: "Rainmaker",
-          ver: "1.0",
-          msgId: `${Date.now()}|${navigator.language || "en_IN"}`,
-          tenantId,
-          authToken: userInfo.access_token || Digit.UserService.getUser()?.access_token || "",
-        },
         updateType: "PROPERTY",
         kno: kNumber,
         pidNumber: propertyDetails.pidNumber || null,
@@ -192,30 +254,50 @@ const Review = () => {
         typeOfConnection: propertyDetails.connectionCategory?.value || null,
         connectionCategory: propertyDetails.connectionType?.value || null,
         modifiedBy: userInfo.name || userInfo.userName || null,
+        mobileNumber: aadhaarDetails.mobileNumber || null,
+        email: aadhaarDetails.email || null,
+        userName: aadhaarDetails.userName || null,
+        noOfPersons: aadhaarDetails.noOfPersons || null,
+        doorPhotoFileStoreId: doorPhotoFileStoreId,
+        fullAddress: addressDetails.fullAddress || null,
+        flatNo: addressDetails.flatNo || null,
+        building: addressDetails.building || null,
+        landmark: addressDetails.landmark || null,
+        pincode: addressDetails.pincode || null,
+        assembly: addressDetails.assembly || null,
+        ward: addressDetails.ward || null,
       };
 
-      // ── 4. Call the update API ─────────────────────────────────────────────
-      await Digit.CustomService.getResponse({
-        url: "/ekyc-service/user/application/_update",
-        params: { tenantId },
-        body: requestBody,
-        useCache: false,
-        method: "POST",
+      // ── 4. Call the update API using the new Hook ──────────────────────────
+      mutate(requestBody, {
+        onSuccess: (res) => {
+          setToast({ type: "success", message: t("EKYC_SUBMIT_SUCCESS") || "Application submitted successfully!" });
+
+          // Cleanup sessionStorage on success
+          Object.keys(sessionStorage).forEach(key => {
+            if (key.startsWith("EKYC_")) sessionStorage.removeItem(key);
+          });
+
+          setTimeout(() => {
+            history.push("/digit-ui/employee/ekyc/dashboard");
+          }, 1800);
+        },
+        onError: (err) => {
+          console.error("eKYC Submit Error:", err);
+          setToast({
+            type: "error",
+            message: err?.response?.data?.Errors?.[0]?.message ||
+              t("EKYC_SUBMIT_ERROR") || "Submission failed. Please try again.",
+          });
+        }
       });
 
-      setToast({ type: "success", message: t("EKYC_SUBMIT_SUCCESS") || "Application submitted successfully!" });
-      setTimeout(() => {
-        history.push("/digit-ui/employee/ekyc/dashboard");
-      }, 1800);
     } catch (err) {
-      console.error("eKYC Submit Error:", err);
+      console.error("eKYC Frontend Error:", err);
       setToast({
         type: "error",
-        message: err?.response?.data?.Errors?.[0]?.message ||
-          t("EKYC_SUBMIT_ERROR") || "Submission failed. Please try again.",
+        message: t("EKYC_SUBMIT_ERROR") || "An error occurred during submission.",
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -232,210 +314,216 @@ const Review = () => {
   };
 
   return (
-    <Fragment>
-    <div className="inbox-container">
-      <style>{`
+    <div className="ground-container employee-app-container form-container">
+
+      <Fragment>
+        <div className="inbox-container">
+          <style>{`
         @keyframes fadeSlideIn {
           from { opacity: 0; transform: translateY(8px); }
           to   { opacity: 1; transform: translateY(0); }
         }
       `}</style>
 
-      {/* ── Sidebar ── */}
-      <div className="filters-container">
-        <Card style={{ display: "flex", alignItems: "center", padding: "12px 16px", marginBottom: "12px", borderRadius: "8px" }}>
-          <div style={{ color: "#185FA5", marginRight: "10px", display: "flex" }}>
-            <HomeIcon style={{ width: "20px", height: "20px" }} />
-          </div>
-          <div style={{ fontWeight: "600", fontSize: "15px", color: "#0B0C0C" }}>
-            {t("EKYC_PROCESS") || "eKYC Process"}
-          </div>
-        </Card>
+          {/* ── Sidebar ── */}
+          <div className="filters-container">
+            <Card style={{ display: "flex", alignItems: "center", padding: "12px 16px", marginBottom: "12px", borderRadius: "8px" }}>
+              <div style={{ color: "#185FA5", marginRight: "10px", display: "flex" }}>
+                <HomeIcon style={{ width: "20px", height: "20px" }} />
+              </div>
+              <div style={{ fontWeight: "600", fontSize: "15px", color: "#0B0C0C" }}>
+                {t("EKYC_PROCESS") || "eKYC Process"}
+              </div>
+            </Card>
 
-        <div style={{ background: "#fff", padding: "16px 14px", borderRadius: "8px", border: "1px solid #EAECF0" }}>
-          {[
-            { label: t("EKYC_STEP_AADHAAR") || "Aadhaar", done: true, active: false },
-            { label: t("EKYC_STEP_ADDRESS") || "Address", done: true, active: false },
-            { label: t("EKYC_STEP_PROPERTY") || "Property", done: true, active: false },
-            { label: t("EKYC_STEP_REVIEW") || "Review", done: false, active: true },
-          ].map((step, i) => (
-            <div key={i} style={{
-              display: "flex", gap: "10px", alignItems: "flex-start",
-              position: "relative", paddingBottom: i < 3 ? "18px" : 0,
-            }}>
-              {i < 3 && (
+            <div style={{ background: "#fff", padding: "16px 14px", borderRadius: "8px", border: "1px solid #EAECF0" }}>
+              {[
+                { label: t("EKYC_STEP_AADHAAR") || "Aadhaar", done: true, active: false },
+                { label: t("EKYC_STEP_ADDRESS") || "Address", done: true, active: false },
+                { label: t("EKYC_STEP_PROPERTY") || "Property", done: true, active: false },
+                { label: t("EKYC_STEP_REVIEW") || "Review", done: false, active: true },
+              ].map((step, i) => (
+                <div key={i} style={{
+                  display: "flex", gap: "10px", alignItems: "flex-start",
+                  position: "relative", paddingBottom: i < 3 ? "18px" : 0,
+                }}>
+                  {i < 3 && (
+                    <div style={{
+                      position: "absolute", left: "10px", top: "22px",
+                      width: "1px", height: "calc(100% - 10px)", background: "#EAECF0",
+                    }} />
+                  )}
+                  <div style={{
+                    width: "20px", height: "20px", borderRadius: "50%", flexShrink: 0, marginTop: "1px",
+                    border: step.done ? "none" : step.active ? "1.5px solid #185FA5" : "1.5px solid #D0D5DD",
+                    background: step.done ? "#0F6E56" : step.active ? "#E6F1FB" : "#fff",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: "10px", fontWeight: "500",
+                    color: step.done ? "#fff" : step.active ? "#185FA5" : "#98A2B3",
+                  }}>
+                    {step.done ? <CheckIcon size={11} color="#fff" /> : i + 1}
+                  </div>
+                  <div style={{
+                    fontSize: "12px", paddingTop: "2px",
+                    color: step.done ? "#0F6E56" : step.active ? "#0B0C0C" : "#667085",
+                    fontWeight: step.done || step.active ? "600" : "400",
+                  }}>
+                    {step.label}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ── Main Content ── */}
+          <div style={{ flex: 1, marginLeft: "16px" }}>
+            <Card>
+
+              {/* Page header */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+                <CardHeader style={{ margin: 0, fontSize: "18px" }}>
+                  {t("EKYC_REVIEW_DETAILS") || "Review Details"}
+                </CardHeader>
                 <div style={{
-                  position: "absolute", left: "10px", top: "22px",
-                  width: "1px", height: "calc(100% - 10px)", background: "#EAECF0",
-                }} />
-              )}
+                  background: "#F9FAFB", border: "0.5px solid #EAECF0",
+                  borderRadius: "20px", padding: "4px 14px",
+                  fontSize: "12px", color: "#667085",
+                }}>
+                  {t("EKYC_K_NUMBER") || "K Number"}:{" "}
+                  <span style={{ color: "#0B0C0C", fontWeight: "600" }}>{kNumber}</span>
+                </div>
+              </div>
+
+              {/* Confirmation banner */}
               <div style={{
-                width: "20px", height: "20px", borderRadius: "50%", flexShrink: 0, marginTop: "1px",
-                border: step.done ? "none" : step.active ? "1.5px solid #185FA5" : "1.5px solid #D0D5DD",
-                background: step.done ? "#0F6E56" : step.active ? "#E6F1FB" : "#fff",
+                backgroundColor: "#E1F5EE", border: "0.5px solid #5DCAA5",
+                borderRadius: "8px", padding: "12px 16px",
+                display: "flex", alignItems: "center", gap: "10px",
+                marginBottom: "24px",
+              }}>
+                <div style={{ backgroundColor: "#9FE1CB", padding: "5px", borderRadius: "6px", display: "flex", flexShrink: 0 }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#085041" strokeWidth="3" strokeLinecap="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </div>
+                <div style={{ fontSize: "13px", color: "#04342C", fontWeight: "500" }}>
+                  {t("EKYC_REVIEW_NOTICE") || "Please review all details carefully before submitting. You can edit any section by clicking Edit."}
+                </div>
+              </div>
+
+              <div style={{ animation: "fadeSlideIn 0.3s ease" }}>
+
+                {/* ── Aadhaar section head ── */}
+                <SectionHead
+                  icon={<PersonIcon size={16} />}
+                  label={t("EKYC_AADHAAR_VERIFICATION_HEADER") || "Aadhaar details"}
+                />
+
+                <ReviewCard
+                  icon={<PersonIcon size={16} />}
+                  title={t("EKYC_AADHAAR_VERIFICATION_HEADER") || "Aadhaar details"}
+                  onEdit={handleEditAadhaar}
+                  editLabel={t("CS_COMMON_EDIT") || "Edit"}
+                  t={t}
+                  rows={[
+                    { label: t("EKYC_NAME") || "Name", value: aadhaarDetails.userName || "Rajesh Kumar Singh", isModified: isFieldModified("userName", aadhaarDetails.userName) },
+                    { label: t("EKYC_AADHAAR") || "Aadhaar no.", value: aadhaarDetails.aadhaarLastFour ? `${aadhaarDetails.aadhaarLastFour}` : "XXXX XXXX 1234" },
+                    { label: t("EKYC_MOBILE_NO") || "Mobile no.", value: aadhaarDetails.mobileNumber || "XXXXXXXXXX", isModified: isFieldModified("mobileNumber", aadhaarDetails.mobileNumber) },
+                    { label: t("EKYC_EMAIL_ADDRESS") || "Email", value: aadhaarDetails.email || null, isModified: isFieldModified("email", aadhaarDetails.email) },
+                  ]}
+                />
+
+                <hr style={{ margin: "20px 0", border: 0, borderTop: "1px solid #EAECF0" }} />
+
+                {/* ── Address section head ── */}
+                <SectionHead
+                  icon={<LocationIcon2 size={16} />}
+                  label={t("EKYC_ADDRESS_DETAILS_HEADER") || "Address details"}
+                />
+
+                <ReviewCard
+                  icon={<LocationIcon2 size={16} />}
+                  title={t("EKYC_ADDRESS_DETAILS_HEADER") || "Address details"}
+                  onEdit={handleEditAddress}
+                  editLabel={t("CS_COMMON_EDIT") || "Edit"}
+                  t={t}
+                  rows={[
+                    { label: t("EKYC_FULL_ADDRESS") || "Full address", value: addressDetails.fullAddress || "H.No. 123, Sector 15, Rohini, Delhi – 110085", isModified: isFieldModified("fullAddress", addressDetails.fullAddress) },
+                    { label: t("EKYC_FLAT_HOUSE_NUMBER") || "Flat / House no.", value: addressDetails.flatNo || null, isModified: isFieldModified("flatNo", addressDetails.flatNo) },
+                    { label: t("EKYC_BUILDING_TOWER") || "Building", value: addressDetails.building || null, isModified: isFieldModified("building", addressDetails.building) },
+                    { label: t("EKYC_LANDMARK") || "Landmark", value: addressDetails.landmark || null, isModified: isFieldModified("landmark", addressDetails.landmark) },
+                    { label: t("EKYC_PINCODE") || "Pincode", value: addressDetails.pincode || "110085", isModified: isFieldModified("pincode", addressDetails.pincode) },
+                    { label: t("EKYC_ASSEMBLY") || "Assembly", value: addressDetails.assembly || "AC-12 Chandni Chowk", isModified: isFieldModified("assembly", addressDetails.assembly) },
+                    { label: t("EKYC_WARD") || "Ward", value: addressDetails.ward || "WARD-45 Civil Lines", isModified: isFieldModified("ward", addressDetails.ward) },
+                  ]}
+                />
+
+                <hr style={{ margin: "20px 0", border: 0, borderTop: "1px solid #EAECF0" }} />
+
+                {/* ── Property section head ── */}
+                <SectionHead
+                  icon={<BuildingIcon size={16} />}
+                  label={t("EKYC_PROPERTY_INFO") || "Property details"}
+                />
+
+                <ReviewCard
+                  icon={<BuildingIcon size={16} />}
+                  title={t("EKYC_PROPERTY_INFO") || "Property details"}
+                  onEdit={handleEditProperty}
+                  editLabel={t("CS_COMMON_EDIT") || "Edit"}
+                  t={t}
+                  rows={[
+                    { label: t("EKYC_PROPERTY_OWNER") || "Property owner", value: propertyDetails.ownerType || "Owner" },
+                    { label: t("EKYC_PID_NUMBER") || "PID number", value: propertyDetails.pidNumber || null, isModified: isFieldModified("pidNumber", propertyDetails.pidNumber) },
+                    { label: t("EKYC_TYPE_OF_CONNECTION") || "Type of connection", value: propertyDetails.connectionCategory?.label || null, isModified: isFieldModified("typeOfConnection", propertyDetails.connectionCategory?.value) },
+                    { label: t("EKYC_CONNECTION_CATEGORY") || "Connection category", value: propertyDetails.connectionType?.label || null, isModified: isFieldModified("connectionCategory", propertyDetails.connectionType?.value) },
+                    { label: t("EKYC_USER_TYPE") || "User type", value: propertyDetails.userType?.label || null, isModified: isFieldModified("userType", propertyDetails.userType?.value) },
+                    { label: t("EKYC_NO_OF_FLOORS") || "No. of floors", value: propertyDetails.noOfFloors?.label || null, isModified: isFieldModified("noOfFloor", propertyDetails.noOfFloors?.value) },
+                  ]}
+                />
+
+              </div>
+
+              {/* Submit (Non-sticky, at form end) */}
+              <div style={{ marginTop: "24px" }}>
+                <SubmitBar
+                  label={isSubmitting
+                    ? (t("EKYC_SUBMITTING") || "Submitting...")
+                    : (t("ES_COMMON_SUBMIT") || "Submit")
+                  }
+                  onSubmit={handleSubmit}
+                  disabled={isSubmitting}
+                />
+              </div>
+
+              {/* Secure notice */}
+              <div style={{
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: "10px", fontWeight: "500",
-                color: step.done ? "#fff" : step.active ? "#185FA5" : "#98A2B3",
+                gap: "5px", marginTop: "16px",
+                fontSize: "11px", color: "#98A2B3",
               }}>
-                {step.done ? <CheckIcon size={11} color="#fff" /> : i + 1}
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+                {t("EKYC_SECURE_DATA_NOTICE") || "Your data is encrypted and secure"}
               </div>
-              <div style={{
-                fontSize: "12px", paddingTop: "2px",
-                color: step.done ? "#0F6E56" : step.active ? "#0B0C0C" : "#667085",
-                fontWeight: step.done || step.active ? "600" : "400",
-              }}>
-                {step.label}
-              </div>
-            </div>
-          ))}
+
+            </Card>
+          </div>
         </div>
-      </div>
 
-      {/* ── Main Content ── */}
-      <div style={{ flex: 1, marginLeft: "16px" }}>
-        <Card>
-
-          {/* Page header */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-            <CardHeader style={{ margin: 0, fontSize: "18px" }}>
-              {t("EKYC_REVIEW_DETAILS") || "Review Details"}
-            </CardHeader>
-            <div style={{
-              background: "#F9FAFB", border: "0.5px solid #EAECF0",
-              borderRadius: "20px", padding: "4px 14px",
-              fontSize: "12px", color: "#667085",
-            }}>
-              {t("EKYC_K_NUMBER") || "K Number"}:{" "}
-              <span style={{ color: "#0B0C0C", fontWeight: "600" }}>{kNumber}</span>
-            </div>
-          </div>
-
-          {/* Confirmation banner */}
-          <div style={{
-            backgroundColor: "#E1F5EE", border: "0.5px solid #5DCAA5",
-            borderRadius: "8px", padding: "12px 16px",
-            display: "flex", alignItems: "center", gap: "10px",
-            marginBottom: "24px",
-          }}>
-            <div style={{ backgroundColor: "#9FE1CB", padding: "5px", borderRadius: "6px", display: "flex", flexShrink: 0 }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#085041" strokeWidth="3" strokeLinecap="round">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-            </div>
-            <div style={{ fontSize: "13px", color: "#04342C", fontWeight: "500" }}>
-              {t("EKYC_REVIEW_NOTICE") || "Please review all details carefully before submitting. You can edit any section by clicking Edit."}
-            </div>
-          </div>
-
-          <div style={{ animation: "fadeSlideIn 0.3s ease" }}>
-
-            {/* ── Aadhaar section head ── */}
-            <SectionHead
-              icon={<PersonIcon size={16} />}
-              label={t("EKYC_AADHAAR_VERIFICATION_HEADER") || "Aadhaar details"}
-            />
-
-            <ReviewCard
-              icon={<PersonIcon size={16} />}
-              title={t("EKYC_AADHAAR_VERIFICATION_HEADER") || "Aadhaar details"}
-              onEdit={handleEditAadhaar}
-              editLabel={t("CS_COMMON_EDIT") || "Edit"}
-              rows={[
-                { label: t("EKYC_NAME") || "Name", value: aadhaarDetails.userName || "Rajesh Kumar Singh" },
-                { label: t("EKYC_AADHAAR") || "Aadhaar no.", value: aadhaarDetails.aadhaarLastFour ? `${aadhaarDetails.aadhaarLastFour}` : "XXXX XXXX 1234" },
-                { label: t("EKYC_MOBILE_NO") || "Mobile no.", value: aadhaarDetails.mobileNumber || "XXXXXXXXXX" },
-                { label: t("EKYC_EMAIL_ADDRESS") || "Email", value: aadhaarDetails.email || null },
-              ]}
-            />
-
-            <hr style={{ margin: "20px 0", border: 0, borderTop: "1px solid #EAECF0" }} />
-
-            {/* ── Address section head ── */}
-            <SectionHead
-              icon={<LocationIcon2 size={16} />}
-              label={t("EKYC_ADDRESS_DETAILS_HEADER") || "Address details"}
-            />
-
-            <ReviewCard
-              icon={<LocationIcon2 size={16} />}
-              title={t("EKYC_ADDRESS_DETAILS_HEADER") || "Address details"}
-              onEdit={handleEditAddress}
-              editLabel={t("CS_COMMON_EDIT") || "Edit"}
-              rows={[
-                { label: t("EKYC_FULL_ADDRESS") || "Full address", value: addressDetails.fullAddress || "H.No. 123, Sector 15, Rohini, Delhi – 110085" },
-                { label: t("EKYC_FLAT_HOUSE_NUMBER") || "Flat / House no.", value: addressDetails.flatNo || null },
-                { label: t("EKYC_BUILDING_TOWER") || "Building", value: addressDetails.building || null },
-                { label: t("EKYC_LANDMARK") || "Landmark", value: addressDetails.landmark || null },
-                { label: t("EKYC_PINCODE") || "Pincode", value: addressDetails.pincode || "110085" },
-                { label: t("EKYC_ASSEMBLY") || "Assembly", value: addressDetails.assembly || "AC-12 Chandni Chowk" },
-                { label: t("EKYC_WARD") || "Ward", value: addressDetails.ward || "WARD-45 Civil Lines" },
-              ]}
-            />
-
-            <hr style={{ margin: "20px 0", border: 0, borderTop: "1px solid #EAECF0" }} />
-
-            {/* ── Property section head ── */}
-            <SectionHead
-              icon={<BuildingIcon size={16} />}
-              label={t("EKYC_PROPERTY_INFO") || "Property details"}
-            />
-
-            <ReviewCard
-              icon={<BuildingIcon size={16} />}
-              title={t("EKYC_PROPERTY_INFO") || "Property details"}
-              onEdit={handleEditProperty}
-              editLabel={t("CS_COMMON_EDIT") || "Edit"}
-              rows={[
-                { label: t("EKYC_PROPERTY_OWNER") || "Property owner", value: propertyDetails.ownerType || "Owner" },
-                { label: t("EKYC_PID_NUMBER") || "PID number", value: propertyDetails.pidNumber || null },
-                { label: t("EKYC_TYPE_OF_CONNECTION") || "Type of connection", value: propertyDetails.connectionCategory?.label || null },
-                { label: t("EKYC_CONNECTION_CATEGORY") || "Connection category", value: propertyDetails.connectionType?.label || null },
-                { label: t("EKYC_USER_TYPE") || "User type", value: propertyDetails.userType?.label || null },
-                { label: t("EKYC_NO_OF_FLOORS") || "No. of floors", value: propertyDetails.noOfFloors?.label || null },
-              ]}
-            />
-
-          </div>
-
-          {/* Submit (Non-sticky, at form end) */}
-          <div style={{ marginTop: "24px" }}>
-            <SubmitBar
-              label={isSubmitting
-                ? (t("EKYC_SUBMITTING") || "Submitting...")
-                : (t("ES_COMMON_SUBMIT") || "Submit")
-              }
-              onSubmit={handleSubmit}
-              disabled={isSubmitting}
-            />
-          </div>
-
-          {/* Secure notice */}
-          <div style={{
-            display: "flex", alignItems: "center", justifyContent: "center",
-            gap: "5px", marginTop: "16px",
-            fontSize: "11px", color: "#98A2B3",
-          }}>
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <rect x="3" y="11" width="18" height="11" rx="2" />
-              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-            </svg>
-            {t("EKYC_SECURE_DATA_NOTICE") || "Your data is encrypted and secure"}
-          </div>
-
-        </Card>
-      </div>
+        {/* Toast notification */}
+        {toast && (
+          <Toast
+            label={toast.message}
+            error={toast.type === "error"}
+            success={toast.type === "success"}
+            onClose={() => setToast(null)}
+          />
+        )}
+      </Fragment>
     </div>
-
-    {/* Toast notification */}
-    {toast && (
-      <Toast
-        label={toast.message}
-        error={toast.type === "error"}
-        success={toast.type === "success"}
-        onClose={() => setToast(null)}
-      />
-    )}
-    </Fragment>
   );
 };
 
