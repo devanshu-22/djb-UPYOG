@@ -85,6 +85,67 @@ const getFillingPointDisplayValue = (row = {}) => {
   );
 };
 
+const getSelectedVendorOption = (row = {}, vendors = []) => {
+  const selectedVendorId = row?.vendor?.id || row?.vendorData?.id || row?.vendorId;
+  if (!selectedVendorId) return null;
+
+  return vendors.find((vendor) => vendor?.id === selectedVendorId) || row?.vendor || row?.vendorData || null;
+};
+
+const getVendorFillingPoints = (vendor = {}) => {
+  const fillingPointOptions = [vendor?.fillingPoint, ...(Array.isArray(vendor?.fillingPoints) ? vendor.fillingPoints : [])].filter(Boolean);
+  const uniqueFillingPoints = new Map();
+
+  fillingPointOptions.forEach((fillingPoint) => {
+    const identifier = getFillingPointIdentifiers(fillingPoint)[0] || fillingPoint?.fillingPointName || fillingPoint?.id;
+    if (identifier && !uniqueFillingPoints.has(identifier)) {
+      uniqueFillingPoints.set(identifier, fillingPoint);
+    }
+  });
+
+  return Array.from(uniqueFillingPoints.values());
+};
+
+const getDriverFillingPointIdentifiers = (driver = {}) => {
+  return Array.from(
+    new Set(
+      [
+        driver?.fillingPointId,
+        driver?.fillingStationId,
+        driver?.additionalDetails?.fillingPointId,
+        driver?.additionalDetails?.fillingStationId,
+        driver?.fillingpointmetadata?.fillingPointId,
+      ]
+        .filter((value) => value !== undefined && value !== null && value !== "")
+        .map(String)
+        .concat(
+          getFillingPointIdentifiers(driver?.fillingPoint),
+          getFillingPointIdentifiers(driver?.fillingPointDetail),
+          getFillingPointIdentifiers(driver?.fillingPointDetails)
+        )
+    )
+  );
+};
+
+const getVendorDriversForFillingPoint = (vendor, fillingPoint) => {
+  const vendorDrivers = Array.isArray(vendor?.drivers) ? vendor.drivers.filter(Boolean) : [];
+  if (!fillingPoint) return [];
+
+  const selectedFillingPointIdentifiers = getFillingPointIdentifiers(fillingPoint);
+  if (!selectedFillingPointIdentifiers.length) return vendorDrivers;
+
+  return vendorDrivers.filter((driver) => {
+    const driverFillingPointIdentifiers = getDriverFillingPointIdentifiers(driver);
+    return !driverFillingPointIdentifiers.length || driverFillingPointIdentifiers.some((identifier) => selectedFillingPointIdentifiers.includes(identifier));
+  });
+};
+
+const getSelectedDriverOption = (row = {}, drivers = []) => {
+  const selectedDriverId = row?.driverData?.id || row?.driver?.id;
+  if (!selectedDriverId) return null;
+  return drivers.find((driver) => driver?.id === selectedDriverId) || null;
+};
+
 const normalizeFillingPointForVehicleUpdate = (fillingPoint) => {
   if (!fillingPoint || typeof fillingPoint !== "object") return fillingPoint;
 
@@ -178,6 +239,12 @@ const VendorInbox = (props) => {
     setShowToast(null);
   };
 
+  const updateVehicleRowState = (vehicleId, updates) => {
+    setTableData((currentTableData) =>
+      currentTableData.map((vehicle) => (vehicle?.id === vehicleId ? { ...vehicle, ...updates } : vehicle))
+    );
+  };
+
   const getVehicleUpdatePayload = (vehicle, overrides = {}) => {
     const normalizedVehicle = {
       ...vehicle,
@@ -194,6 +261,19 @@ const VendorInbox = (props) => {
 
     return {
       vehicle: normalizedVehicle,
+    };
+  };
+
+  const getVendorPayloadForVehicle = (vendor, vehicles) => {
+    return {
+      vendor: {
+        ...vendor,
+        owner: {
+          ...vendor?.owner,
+          gender: vendor?.owner?.gender || "OTHERS",
+        },
+        vehicles,
+      },
     };
   };
 
@@ -322,6 +402,87 @@ const VendorInbox = (props) => {
     });
   };
 
+  const onVehicleVendorSelect = (row, selectedVendor) => {
+    const currentVehicle = row.original;
+    const existingVendor = currentVehicle?.vendor;
+
+    if (!selectedVendor?.id || existingVendor?.id === selectedVendor?.id) {
+      return;
+    }
+
+    const vehicleForVendorMapping = {
+      ...currentVehicle,
+      vendorVehicleStatus: "ACTIVE",
+      fillingPoint: null,
+      driverData: null,
+      driver: null,
+    };
+
+    delete vehicleForVendorMapping.vendor;
+    delete vehicleForVendorMapping.popup;
+    delete vehicleForVendorMapping.driver;
+
+    const addVehicleToSelectedVendor = () => {
+      const selectedVendorVehicles = Array.isArray(selectedVendor?.vehicles) ? [...selectedVendor.vehicles] : [];
+      const existingVehicleIndex = selectedVendorVehicles.findIndex((vehicle) => vehicle?.id === currentVehicle?.id);
+
+      if (existingVehicleIndex > -1) {
+        selectedVendorVehicles[existingVehicleIndex] = {
+          ...selectedVendorVehicles[existingVehicleIndex],
+          ...vehicleForVendorMapping,
+          vendorVehicleStatus: "ACTIVE",
+        };
+      } else {
+        selectedVendorVehicles.push(vehicleForVendorMapping);
+      }
+
+      const updatedSelectedVendor = {
+        ...selectedVendor,
+        vehicles: selectedVendorVehicles,
+      };
+
+      mutateVendor(getVendorPayloadForVehicle(selectedVendor, selectedVendorVehicles), {
+        onError: (error) => {
+          setShowToast({ key: "error", action: error });
+          setTimeout(closeToast, 5000);
+        },
+        onSuccess: () => {
+          updateVehicleRowState(currentVehicle?.id, {
+            vendor: updatedSelectedVendor,
+            fillingPoint: null,
+            driverData: null,
+            driver: null,
+          });
+          setShowToast({ key: "success", action: "VEHICLE" });
+          queryClient.invalidateQueries("DSO_SEARCH");
+          queryClient.invalidateQueries("FSM_VEICLES_SEARCH");
+          props.refetchData();
+          props.refetchVendor && props.refetchVendor();
+          setTimeout(closeToast, 3000);
+        },
+      });
+    };
+
+    if (existingVendor?.id) {
+      const existingVendorVehicles = Array.isArray(existingVendor?.vehicles)
+        ? existingVendor.vehicles.map((vehicle) =>
+            vehicle?.id === currentVehicle?.id ? { ...vehicle, vendorVehicleStatus: "INACTIVE" } : vehicle
+          )
+        : [];
+
+      mutateVendor(getVendorPayloadForVehicle(existingVendor, existingVendorVehicles), {
+        onError: (error) => {
+          setShowToast({ key: "error", action: error });
+          setTimeout(closeToast, 5000);
+        },
+        onSuccess: addVehicleToSelectedVendor,
+      });
+      return;
+    }
+
+    addVehicleToSelectedVendor();
+  };
+
   const onDriverSelect = (row, selectedOption) => {
     const formData = getVehicleUpdatePayload(row.original, {
       driverData: selectedOption,
@@ -333,6 +494,9 @@ const VendorInbox = (props) => {
         setTimeout(closeToast, 5000);
       },
       onSuccess: (data, variables) => {
+        updateVehicleRowState(row.original?.id, {
+          driverData: selectedOption,
+        });
         setShowToast({ key: "success", action: "VEHICLE" });
         queryClient.invalidateQueries("FSM_VEICLES_SEARCH");
         /* Mandatory: Invalidate DSO_SEARCH to ensure vendorData in the parent component is refetched with the new driver assignment */
@@ -358,24 +522,22 @@ const VendorInbox = (props) => {
         setTimeout(closeToast, 5000);
       },
       onSuccess: () => {
-        setTableData((currentTableData) =>
-          currentTableData.map((vehicle) =>
-            vehicle?.id === row.original?.id
-              ? {
-                  ...vehicle,
-                  fillingPoint: {
-                    ...selectedOption,
-                    fillingStationId:
-                      selectedOption?.fillingStationId ||
-                      selectedOption?.id ||
-                      selectedOption?.bookingId ||
-                      selectedOption?.uuid ||
-                      selectedOption?.fillingPointId,
-                  },
-                }
-              : vehicle
-          )
-        );
+        const mappedVendor = getSelectedVendorOption(row.original, vendors);
+        const vendorDrivers = getVendorDriversForFillingPoint(mappedVendor, selectedOption);
+        const selectedDriver = getSelectedDriverOption(row.original, vendorDrivers);
+
+        updateVehicleRowState(row.original?.id, {
+          fillingPoint: {
+            ...selectedOption,
+            fillingStationId:
+              selectedOption?.fillingStationId ||
+              selectedOption?.id ||
+              selectedOption?.bookingId ||
+              selectedOption?.uuid ||
+              selectedOption?.fillingPointId,
+          },
+          ...(selectedDriver ? {} : { driverData: null, driver: null }),
+        });
         setShowToast({ key: "success", label: "Filling point mapped successfully" });
         queryClient.invalidateQueries("FSM_VEICLES_SEARCH");
         queryClient.invalidateQueries("DSO_SEARCH");
@@ -845,10 +1007,22 @@ const VendorInbox = (props) => {
 
           //vendor name
           {
-            Header: t("ES_FSM_REGISTRY_INBOX_VENDOR_NAME"),
-            id: "vendorName",
-            accessor: (row) => row.vendor?.name || "NA",
-            Cell: ({ row }) => GetCell(row.original?.vendor?.name || "NA"),
+            Header: "Map Vendor",
+            id: "mapVendor",
+            accessor: (row) => row.vendor?.name || row.vendorData?.name || "NA",
+            Cell: ({ row }) => {
+              return (
+                <Dropdown
+                  className="fsm-registry-dropdown"
+                  selected={getSelectedVendorOption(row.original, vendors)}
+                  option={vendors}
+                  select={(value) => onVehicleVendorSelect(row, value)}
+                  style={{ textAlign: "left" }}
+                  optionKey="name"
+                  t={t}
+                />
+              );
+            },
           },
 
           // {
@@ -913,15 +1087,19 @@ const VendorInbox = (props) => {
             accessor: (row) => getFillingPointDisplayValue(row),
             id: "fillingPoint",
             Cell: ({ row }) => {
+              const selectedVendor = getSelectedVendorOption(row.original, vendors);
+              const vendorFillingPoints = getVendorFillingPoints(selectedVendor);
+
               return (
                 <Dropdown
                   className="fsm-registry-dropdown"
-                  selected={getSelectedFillingPointOption(row.original, allFillingPoints)}
-                  option={allFillingPoints}
+                  selected={getSelectedFillingPointOption(row.original, vendorFillingPoints)}
+                  option={vendorFillingPoints}
                   select={(value) => onVehicleFillingPointSelect(row, value)}
                   style={{ textAlign: "left" }}
                   optionKey="fillingPointName"
                   t={t}
+                  disable={!selectedVendor || !vendorFillingPoints.length}
                 />
               );
             },
@@ -932,20 +1110,20 @@ const VendorInbox = (props) => {
             id: "driver",
             accessor: (row) => row.driverData?.name || row.driver?.name || "NA",
             Cell: ({ row }) => {
+              const selectedVendor = getSelectedVendorOption(row.original, vendors);
+              const selectedFillingPoint = getSelectedFillingPointOption(row.original, getVendorFillingPoints(selectedVendor));
+              const availableDrivers = getVendorDriversForFillingPoint(selectedVendor, selectedFillingPoint);
+
               return (
                 <Dropdown
                   className="fsm-registry-dropdown"
-                  /* Use ID matching to ensure the selection is shown even if object references differ between API calls */
-                  selected={
-                    drivers?.find((driver) => (row.original.driverData?.id || row.original.driver?.id) === driver.id) ||
-                    row.original.driverData ||
-                    row.original.driver
-                  }
-                  option={drivers}
+                  selected={getSelectedDriverOption(row.original, availableDrivers)}
+                  option={availableDrivers}
                   select={(value) => onDriverSelect(row, value)}
                   optionKey="name"
                   t={t}
                   style={{ textAlign: "left" }}
+                  disable={!selectedFillingPoint || !availableDrivers.length}
                 />
               );
             },
@@ -1101,8 +1279,8 @@ const VendorInbox = (props) => {
             exportAccessor: (row) => (row?.auditDetails?.createdTime ? Digit.DateUtils.ConvertEpochToDate(row?.auditDetails?.createdTime) : ""),
           },
           {
-            Header: t("ES_FSM_REGISTRY_INBOX_VENDOR_NAME"),
-            exportAccessor: (row) => row?.vendor?.name || "NA",
+            Header: "Map Vendor",
+            exportAccessor: (row) => row?.vendor?.name || row?.vendorData?.name || "NA",
           },
           {
             Header: t("ES_VENDOR_INBOX_SERVICE_TYPE"),
