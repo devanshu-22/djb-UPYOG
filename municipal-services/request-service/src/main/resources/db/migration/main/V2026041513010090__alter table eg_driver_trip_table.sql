@@ -1,0 +1,4 @@
+ALTER TABLE eg_driver_trip
+    ADD COLUMN IF NOT EXISTS initial_km BIGINT,
+    ADD COLUMN IF NOT EXISTS final_km BIGINT,
+    ADD COLUMN IF NOT EXISTS total_km BIGINT;

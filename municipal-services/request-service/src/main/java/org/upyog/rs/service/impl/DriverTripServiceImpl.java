@@ -65,6 +65,19 @@ public class DriverTripServiceImpl implements DriverTripService {
                     "Cannot complete trip. Current status: " + existingTrip.getCurrentStatus());
         }
 
+        if (existingTrip.getInitialKM() != null && updateReq.getFinalKM() != null) {
+
+            if (updateReq.getFinalKM() < existingTrip.getInitialKM()) {
+                throw new CustomException("INVALID_KM",
+                        "Final KM cannot be less than Initial KM");
+            }
+
+            Long totalKm = updateReq.getFinalKM() - existingTrip.getInitialKM();
+
+            existingTrip.setFinalKM(updateReq.getFinalKM());
+            existingTrip.setTotalKM(totalKm);
+        }
+
         existingTrip.setCurrentStatus("COMPLETED");
         existingTrip.setEndLatitude(updateReq.getEndLatitude());
         existingTrip.setEndLongitude(updateReq.getEndLongitude());

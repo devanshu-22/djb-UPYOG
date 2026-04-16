@@ -23,7 +23,7 @@ public class DriverDetailsQueryBuilder {
             .append("edt.start_file_store_id AS trip_start_file_store_id, edt.end_latitude AS trip_end_latitude, ")
             .append("edt.end_longitude AS trip_end_longitude, edt.end_file_store_id AS trip_end_file_store_id, ")
             .append("edt.remark AS trip_remark, edt.created_by AS trip_created_by, edt.created_time AS trip_created_time, ")
-            .append("edt.last_modified_by AS trip_last_modified_by, edt.last_modified_time AS trip_last_modified_time, ")
+            .append("edt.last_modified_by AS trip_last_modified_by, edt.last_modified_time AS trip_last_modified_time,edt.initial_km,edt.final_km,edt.total_km, ")
             .append("ev.registrationnumber AS registrationNumber, ev.model AS vehicle_model, ")
 
             // NEW: Filling Point Master Columns
