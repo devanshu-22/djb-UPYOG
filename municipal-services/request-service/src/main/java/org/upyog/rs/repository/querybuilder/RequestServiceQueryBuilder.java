@@ -120,14 +120,20 @@ public class RequestServiceQueryBuilder {
             query.append(" ursbd.tenant_id LIKE ? ");
             preparedStmtList.add("%" + criteria.getTenantId() + "%");
         }
-        if (requestServiceConfiguration.getIsUserProfileEnabled()) {
-            addClauseIfRequired(query, preparedStmtList);
-            query.append(" ursbd.applicant_uuid IS NOT NULL ");
-        } else {
-            // If user profile is not enabled, we don't need to filter by applicant UUID
-            addClauseIfRequired(query, preparedStmtList);
-            query.append(" ursbd.applicant_uuid IS NULL ");
+
+        // Apply applicant_uuid filter ONLY if explicitly required
+        if (criteria.getCreatedBy() != null && !criteria.getCreatedBy().isEmpty()) {
+
+            if (requestServiceConfiguration.getIsUserProfileEnabled()) {
+                addClauseIfRequired(query, preparedStmtList);
+                query.append(" ursbd.applicant_uuid IS NOT NULL ");
+            } else {
+                // If user profile is not enabled, we don't need to filter by applicant UUID
+                addClauseIfRequired(query, preparedStmtList);
+                query.append(" ursbd.applicant_uuid IS NULL ");
+            }
         }
+
         if (!ObjectUtils.isEmpty(criteria.getBookingNo())) {
             addClauseIfRequired(query, preparedStmtList);
             
@@ -163,6 +169,18 @@ public class RequestServiceQueryBuilder {
             addClauseIfRequired(query, preparedStmtList);
             query.append(" ursbd.driver_id = ? ");
             preparedStmtList.add(criteria.getDriverId());
+        }
+
+        if (criteria.getFromDate() != null) {
+            addClauseIfRequired(query, preparedStmtList);
+            query.append(" ursbd.createdtime >= ? ");
+            preparedStmtList.add(criteria.getFromDate());
+        }
+
+        if (criteria.getToDate() != null) {
+            addClauseIfRequired(query, preparedStmtList);
+            query.append(" ursbd.createdtime <= ? ");
+            preparedStmtList.add(criteria.getToDate());
         }
 
         // Return count query directly without applying pagination
@@ -247,11 +265,19 @@ public class RequestServiceQueryBuilder {
     }
 
 
+//    private void addClauseIfRequired(StringBuilder query, List<Object> preparedStmtList) {
+//        if (preparedStmtList.isEmpty()) {
+//            query.append(" WHERE ");
+//        } else {
+//            query.append(" AND ");
+//        }
+//    }
+
     private void addClauseIfRequired(StringBuilder query, List<Object> preparedStmtList) {
-        if (preparedStmtList.isEmpty()) {
-            query.append(" WHERE ");
-        } else {
+        if (query.toString().contains("WHERE")) {
             query.append(" AND ");
+        } else {
+            query.append(" WHERE ");
         }
     }
 
