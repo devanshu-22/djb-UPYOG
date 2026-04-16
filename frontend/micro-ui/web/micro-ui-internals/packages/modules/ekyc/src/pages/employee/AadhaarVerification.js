@@ -165,6 +165,9 @@ const AadhaarVerification = () => {
   const [aadhaarLastFour, setAadhaarLastFour] = useState("");
   const [isAadhaarVerified, setIsAadhaarVerified] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [showOtpField, setShowOtpField] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [otpError, setOtpError] = useState(false);
   const [nameCorrect, setNameCorrect] = useState({ code: "NO", name: "CORE_COMMON_NO" });
   const [userName, setUserName] = useState(details.consumerName || "");
 
@@ -186,17 +189,27 @@ const AadhaarVerification = () => {
 
   // ── Handlers ──
   const handleVerifyAadhaar = () => {
-    if (aadhaarLastFour.length !== 4 || isVerifying) return;
+    if (aadhaarLastFour.length !== 12 || isVerifying) return;
     setIsVerifying(true);
     setTimeout(() => {
       setIsVerifying(false);
+      setShowOtpField(true);
+    }, 1200);
+  };
+
+  const handleVerifyOtp = () => {
+    if (otp === "123456") {
       setIsAadhaarVerified(true);
+      setShowOtpField(false);
+      setOtpError(false);
       // Auto-expand address section upon verification
       setShowAddressSection(true);
       setTimeout(() => {
         addressSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 100);
-    }, 1200);
+    } else {
+      setOtpError(true);
+    }
   };
 
   const handleSaveAndContinue = () => {
@@ -371,15 +384,51 @@ const AadhaarVerification = () => {
             </div>
           </LabelFieldPair>
 
-          {!isAadhaarVerified && (
+          {!isAadhaarVerified && !showOtpField && (
             <SubmitBar
               label={isVerifying
                 ? t("EKYC_VERIFYING") || "Verifying..."
                 : t("EKYC_VERIFY_AADHAAR_BTN") || "Verify Aadhaar"}
               onSubmit={handleVerifyAadhaar}
-              disabled={aadhaarLastFour.length !== 4 || isVerifying}
+              disabled={aadhaarLastFour.length !== 12 || isVerifying}
               style={{ marginTop: "12px" }}
             />
+          )}
+
+          {!isAadhaarVerified && showOtpField && (
+            <Fragment>
+              <div className="ekyc-field-label" style={{ marginTop: "16px" }}>
+                {t("EKYC_ENTER_OTP") || "Enter OTP"}
+              </div>
+              <LabelFieldPair>
+                <div className="field">
+                  <IconInput
+                    icon={<LockIcon size={15} />}
+                    value={otp}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (/^\d*$/.test(val)) {
+                        setOtp(val);
+                        if (otpError) setOtpError(false);
+                      }
+                    }}
+                    placeholder={t("EKYC_ENTER_OTP_PLACEHOLDER") || "Enter 123456"}
+                    maxLength={6}
+                  />
+                </div>
+              </LabelFieldPair>
+              {otpError && (
+                <div style={{ color: "#D4351C", fontSize: "12px", marginTop: "4px" }}>
+                  {t("EKYC_INVALID_OTP") || "Invalid OTP. Please enter 123456."}
+                </div>
+              )}
+              <SubmitBar
+                label={t("EKYC_VERIFY_OTP_BTN") || "Verify OTP"}
+                onSubmit={handleVerifyOtp}
+                disabled={otp.length !== 6}
+                style={{ marginTop: "12px" }}
+              />
+            </Fragment>
           )}
 
           {isAadhaarVerified && (
@@ -404,7 +453,7 @@ const AadhaarVerification = () => {
                 </div>
                 <div>
                   <div style={styles.infoLabel}>{t("EKYC_AADHAAR") || "Aadhaar"}</div>
-                  <div style={styles.infoValue}>XXXX XXXX {aadhaarLastFour}</div>
+                  <div style={styles.infoValue}>{aadhaarLastFour}</div>
                 </div>
                 <div style={{ gridColumn: "span 2" }}>
                   <div style={styles.infoLabel}>{t("EKYC_ADDRESS") || "Address"}</div>

@@ -90,10 +90,9 @@ const Inbox = ({
             name: "status",
             type: "dropdown",
             options: [
-                { label: t("CHOOSE_STATUS"), value: "" },
-                { label: t("EKYC_STATUS_COMPLETED"), value: "COMPLETED" },
-                { label: t("EKYC_STATUS_PENDING"), value: "PENDING" },
-                { label: t("EKYC_STATUS_REJECTED"), value: "REJECTED" },
+                { label: t("EKYC_STATUS_ALL"), value: "" },
+                { label: t("EKYC_STATUS_ACTIVE"), value: "ACTIVE" },
+                { label: t("EKYC_STATUS_PENDING"), value: "PENDING START" },
             ],
             optionsKey: "label"
         },

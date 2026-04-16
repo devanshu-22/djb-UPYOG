@@ -1,0 +1,2 @@
+ALTER TABLE upyog_rs_water_tanker_booking_details
+ADD CONSTRAINT unique_mobile_number UNIQUE (mobile_number);
