@@ -109,6 +109,10 @@ public class DriverDetailsRowMapper implements RowMapper<RequestDetailsByDriverI
 
             trip.setRemark(rs.getString("trip_remark"));
 
+            trip.setInitialKM(rs.getLong("initial_km"));
+            trip.setFinalKM(rs.getLong("final_km"));
+            trip.setTotalKM(rs.getLong("total_km"));
+
             AuditDetails audit = AuditDetails.builder()
                     .createdBy(rs.getString("trip_created_by"))
                     .lastModifiedBy(rs.getString("trip_last_modified_by"))

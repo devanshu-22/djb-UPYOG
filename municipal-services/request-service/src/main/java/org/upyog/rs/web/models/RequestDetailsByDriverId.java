@@ -130,6 +130,15 @@ public class RequestDetailsByDriverId {
         @JsonProperty("address")
         private Address address;
 
+        @JsonProperty("initial_km")
+        private Long initialKM;
+
+        @JsonProperty("final_km")
+        private Long finalKM;
+
+        @JsonProperty("total_km")
+        private Long totalKM;
+
         @JsonProperty("driverTripDetails")
         private DriverTrip driverTrip;
 

@@ -22,8 +22,8 @@ public class DriverTripRepository {
             String sql = "INSERT INTO eg_driver_trip " +
                     "(id, booking_id, booking_no, tenant_id, tanker_type, vendor_id, vehicle_id, driver_id, " +
                     "current_status, start_latitude, start_longitude, start_file_store_id, " +
-                    "created_by, created_time, last_modified_by, last_modified_time) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    "created_by, created_time, initial_km) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             jdbcTemplate.update(sql,
                     trip.getId(),
@@ -40,14 +40,14 @@ public class DriverTripRepository {
                     trip.getStartFileStoreId(),
                     trip.getAuditDetails().getCreatedBy(),
                     trip.getAuditDetails().getCreatedTime(),
-                    trip.getAuditDetails().getLastModifiedBy(),
-                    trip.getAuditDetails().getLastModifiedTime());
+                    trip.getInitialKM()
+                    );
         }
 
         public void update(DriverTrip trip) {
             String sql = "UPDATE eg_driver_trip " +
                     "SET current_status = ?, end_latitude = ?, end_longitude = ?, end_file_store_id = ?, " +
-                    "last_modified_by = ?, last_modified_time = ? , remark = ? " +
+                    "last_modified_by = ?, last_modified_time = ? , remark = ?, final_km= ? , total_km = ? " +
                     "WHERE booking_no = ?";
 
             jdbcTemplate.update(sql,
@@ -58,6 +58,8 @@ public class DriverTripRepository {
                     trip.getAuditDetails().getLastModifiedBy(),
                     trip.getAuditDetails().getLastModifiedTime(),
                     trip.getRemark(),
+                    trip.getFinalKM(),
+                    trip.getTotalKM(),
                     trip.getBookingNo());
         }
 

@@ -33,4 +33,13 @@ public class DriverTrip {
     private String remarkUpdatedByRole;
     @JsonProperty("je_filestore_id")
     private String jefilestoreId;
+
+    @JsonProperty("initial_km")
+    private Long initialKM;
+
+    @JsonProperty("final_km")
+    private Long finalKM;
+
+    @JsonProperty("total_km")
+    private Long totalKM;
 }
