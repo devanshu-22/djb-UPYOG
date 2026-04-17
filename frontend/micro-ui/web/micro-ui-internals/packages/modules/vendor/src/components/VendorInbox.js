@@ -710,6 +710,7 @@ const VendorInbox = (props) => {
             Header: t("WT_FILLING_POINT"),
             accessor: (row) => getFillingPointDisplayValue(row),
             id: "fillingPoint",
+            minWidth: 250,
             Cell: ({ row }) => {
               return (
                 <Dropdown
@@ -717,7 +718,7 @@ const VendorInbox = (props) => {
                   selected={getSelectedFillingPointOption(row.original, allFillingPoints)}
                   option={allFillingPoints}
                   select={(value) => onFillingPointSelect(row, value)}
-                  style={{ textAlign: "left" }}
+                  style={{ textAlign: "left", width: "100%", minWidth: "250px" }}
                   optionKey="fillingPointName"
                   t={t}
                 />
@@ -1086,6 +1087,7 @@ const VendorInbox = (props) => {
             Header: t("WT_FILLING_POINT"),
             accessor: (row) => getFillingPointDisplayValue(row),
             id: "fillingPoint",
+            minWidth: 250,
             Cell: ({ row }) => {
               const selectedVendor = getSelectedVendorOption(row.original, vendors);
               const vendorFillingPoints = getVendorFillingPoints(selectedVendor);
@@ -1096,7 +1098,7 @@ const VendorInbox = (props) => {
                   selected={getSelectedFillingPointOption(row.original, vendorFillingPoints)}
                   option={vendorFillingPoints}
                   select={(value) => onVehicleFillingPointSelect(row, value)}
-                  style={{ textAlign: "left" }}
+                  style={{ textAlign: "left", width: "100%", minWidth: "250px" }}
                   optionKey="fillingPointName"
                   t={t}
                   disable={!selectedVendor || !vendorFillingPoints.length}
@@ -1109,6 +1111,7 @@ const VendorInbox = (props) => {
             Header: t("ES_FSM_REGISTRY_SELECT_DRIVER"),
             id: "driver",
             accessor: (row) => row.driverData?.name || row.driver?.name || "NA",
+            minWidth: 250,
             Cell: ({ row }) => {
               const selectedVendor = getSelectedVendorOption(row.original, vendors);
               const selectedFillingPoint = getSelectedFillingPointOption(row.original, getVendorFillingPoints(selectedVendor));
@@ -1122,7 +1125,7 @@ const VendorInbox = (props) => {
                   select={(value) => onDriverSelect(row, value)}
                   optionKey="name"
                   t={t}
-                  style={{ textAlign: "left" }}
+                  style={{ textAlign: "left", width: "100%", minWidth: "250px" }}
                   disable={!selectedFillingPoint || !availableDrivers.length}
                 />
               );
@@ -1201,6 +1204,7 @@ const VendorInbox = (props) => {
             Header: t("ES_FSM_REGISTRY_INBOX_VENDOR_NAME"),
             id: "vendorName",
             accessor: (row) => row.vendorData?.name || row.vendor?.name || "NA",
+            minWidth: 250,
             Cell: ({ row }) => {
               return (
                 <Dropdown
@@ -1213,7 +1217,7 @@ const VendorInbox = (props) => {
                   // selected={row.original.vendor}
                   option={vendors}
                   select={(value) => onVendorSelect(row, value)}
-                  style={{ textAlign: "left" }}
+                  style={{ textAlign: "left", width: "100%", minWidth: "250px" }}
                   optionKey="name"
                   t={t}
                 />

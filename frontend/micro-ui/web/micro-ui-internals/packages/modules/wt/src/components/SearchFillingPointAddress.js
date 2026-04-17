@@ -255,6 +255,7 @@ const SearchFillingPointAddress = () => {
             row?.fillingPoint ||
             "NA",
           id: "fillingPoint",
+          minWidth: 250,
           Cell: ({ row }) => {
             const rowFpId = String(
               row.original.fillingPointId ||
@@ -280,7 +281,7 @@ const SearchFillingPointAddress = () => {
                 selected={selectedOption}
                 option={allFillingPoints}
                 select={(value) => onFillingPointSelect(row, value)}
-                style={{ textAlign: "left" }}
+                style={{ textAlign: "left", width: "100%", minWidth: "250px" }}
                 optionKey="fillingPointName"
                 t={t}
               />
