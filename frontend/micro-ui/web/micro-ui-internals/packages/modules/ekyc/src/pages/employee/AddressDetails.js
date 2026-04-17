@@ -16,9 +16,12 @@ import {
   CheckPoint,
   Dropdown,
   Loader,
+  UploadFile,
+  Toast,
 } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useHistory, useLocation } from "react-router-dom";
+import { getPayloadDiff, getSavedData } from "../../utils";
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
@@ -151,18 +154,76 @@ const AddressDetails = ({ isSection = false, onComplete, parentState }) => {
     kNumber: "EKYC-1234567890",
     selectedOption: { code: "SELF", name: "EKYC_SELF" },
     connectionDetails: null,
+    initialData: {},
   };
+
+  const initialData = flowState.initialData || {};
 
   const addrDetails = flowState.connectionDetails?.addressDetails || {};
 
-  const [addressType, setAddressType] = useState({ code: "AADHAAR", name: "EKYC_AADHAAR_ADDRESS" });
-  const [correctAddress, setCorrectAddress] = useState({ code: "NO", name: "CORE_COMMON_NO" });
-  const [fullAddress, setFullAddress] = useState(addrDetails.fullAddress || "");
-  const [flatNo, setFlatNo] = useState(addrDetails.flatHouseNumber || "");
-  const [building, setBuilding] = useState(addrDetails.buildingTower || "");
-  const [landmark, setLandmark] = useState(addrDetails.landmark || "");
-  const [pincode, setPincode] = useState(addrDetails.pinCode || "");
-  const [doorPhoto, setDoorPhoto] = useState(null);
+  const [addressType, setAddressType] = useState(() => getSavedData("EKYC_ADDRESS_TYPE", { code: "AADHAAR", name: "EKYC_AADHAAR_ADDRESS" }));
+  const [correctAddress, setCorrectAddress] = useState(() => getSavedData("EKYC_ADDRESS_CORRECT", { code: "NO", name: "CORE_COMMON_NO" }));
+  const [fullAddress, setFullAddress] = useState(() => sessionStorage.getItem("EKYC_FULL_ADDRESS") || initialData.fullAddress || "");
+  const [flatNo, setFlatNo] = useState(() => sessionStorage.getItem("EKYC_FLAT_NO") || initialData.flatNo || "");
+  const [building, setBuilding] = useState(() => sessionStorage.getItem("EKYC_BUILDING") || initialData.building || "");
+  const [landmark, setLandmark] = useState(() => sessionStorage.getItem("EKYC_LANDMARK") || initialData.landmark || "");
+  const [pincode, setPincode] = useState(() => sessionStorage.getItem("EKYC_PINCODE") || initialData.pincode || "");
+  const [doorPhoto, setDoorPhoto] = useState(() => sessionStorage.getItem("EKYC_DOOR_PHOTO") || null);
+  const [doorPhotoFileStoreId, setDoorPhotoFileStoreId] = useState(() => sessionStorage.getItem("EKYC_DOOR_PHOTO_FILESTORE_ID") || null);
+  
+  const [filephoto, setFilephoto] = useState(null);
+  const [error, setError] = useState(null);
+  const [toast, setToast] = useState(null);
+
+  // Sync address state to sessionStorage
+  useEffect(() => {
+    sessionStorage.setItem("EKYC_ADDRESS_TYPE", JSON.stringify(addressType));
+    sessionStorage.setItem("EKYC_ADDRESS_CORRECT", JSON.stringify(correctAddress));
+    sessionStorage.setItem("EKYC_FULL_ADDRESS", fullAddress);
+    sessionStorage.setItem("EKYC_FLAT_NO", flatNo);
+    sessionStorage.setItem("EKYC_BUILDING", building);
+    sessionStorage.setItem("EKYC_LANDMARK", landmark);
+    sessionStorage.setItem("EKYC_PINCODE", pincode);
+    if (doorPhoto) sessionStorage.setItem("EKYC_DOOR_PHOTO", doorPhoto);
+    if (doorPhotoFileStoreId) sessionStorage.setItem("EKYC_DOOR_PHOTO_FILESTORE_ID", doorPhotoFileStoreId);
+    sessionStorage.setItem("EKYC_CURRENT_STEP", "ADDRESS");
+  }, [addressType, correctAddress, fullAddress, flatNo, building, landmark, pincode, doorPhoto, doorPhotoFileStoreId]);
+
+  const uploadFile = async (file, tenantId) => {
+    if (!file) return null;
+    const res = await Digit.UploadServices.Filestorage("EKYC", file, tenantId);
+    return res?.data?.files?.[0]?.fileStoreId || null;
+  };
+
+  useEffect(() => {
+    (async () => {
+      setError(null);
+      if (filephoto) {
+        if (filephoto.size >= 2000000) {
+          setError(t("EKYC_MAXIMUM_UPLOAD_SIZE_EXCEEDED"));
+          setToast({ type: "error", message: t("EKYC_MAXIMUM_UPLOAD_SIZE_EXCEEDED") });
+        } else {
+          try {
+            setToast({ type: "info", message: t("EKYC_UPLOADING") });
+            const fsId = await uploadFile(filephoto, tenantId);
+            if (fsId) {
+              setDoorPhotoFileStoreId(fsId);
+              const reader = new FileReader();
+              reader.onloadend = () => setDoorPhoto(reader.result);
+              reader.readAsDataURL(filephoto);
+              setToast({ type: "success", message: t("EKYC_UPLOAD_SUCCESS") });
+            } else {
+              setError(t("EKYC_FILE_UPLOAD_ERROR"));
+              setToast({ type: "error", message: t("EKYC_FILE_UPLOAD_ERROR") });
+            }
+          } catch (err) {
+            setError(t("EKYC_FILE_UPLOAD_ERROR"));
+            setToast({ type: "error", message: t("EKYC_FILE_UPLOAD_ERROR") });
+          }
+        }
+      }
+    })();
+  }, [filephoto]);
   const [isLocationFetching, setIsLocationFetching] = useState(false);
   const fileInputRef = useRef(null);
 
@@ -174,11 +235,11 @@ const AddressDetails = ({ isSection = false, onComplete, parentState }) => {
   );
 
   const mdmsRes = mdmsData?.MdmsRes || mdmsData;
-  const adminHierarchy = mdmsRes?.["egov-location"]?.TenantBoundary?.find(h => h.hierarchyType.code === "ADMIN") 
+  const adminHierarchy = mdmsRes?.["egov-location"]?.TenantBoundary?.find(h => h.hierarchyType.code === "ADMIN")
     || mdmsRes?.["egov-location"]?.TenantBoundary?.[0];
-  
+
   const rootBoundary = adminHierarchy?.boundary;
-  
+
   const getAssemblies = (boundaries) => {
     if (!boundaries) return [];
     let assemblies = [];
@@ -213,8 +274,14 @@ const AddressDetails = ({ isSection = false, onComplete, parentState }) => {
 
   const assemblies = getAssemblies(Array.isArray(rootBoundary) ? rootBoundary : rootBoundary ? [rootBoundary] : []);
 
-  const [assembly, setAssembly] = useState(addrDetails.assembly ? { name: addrDetails.assembly } : null);
-  const [ward, setWard] = useState(addrDetails.ward ? { name: addrDetails.ward } : null);
+  const [assembly, setAssembly] = useState(() => getSavedData("EKYC_ASSEMBLY_DATA", initialData.assembly ? { name: initialData.assembly } : null));
+  const [ward, setWard] = useState(() => getSavedData("EKYC_WARD_DATA", initialData.ward ? { name: initialData.ward } : null));
+
+  // Sync MDMS selection
+  useEffect(() => {
+    sessionStorage.setItem("EKYC_ASSEMBLY_DATA", JSON.stringify(assembly));
+    sessionStorage.setItem("EKYC_WARD_DATA", JSON.stringify(ward));
+  }, [assembly, ward]);
 
   useEffect(() => {
     if (mdmsRes && addrDetails.assembly && !assembly?.code) {
@@ -242,38 +309,37 @@ const AddressDetails = ({ isSection = false, onComplete, parentState }) => {
   ];
 
   const handleCompleteVerification = () => {
-    const payload = { 
-      addressType, 
-      fullAddress, 
-      flatNo, 
-      building, 
-      landmark, 
-      pincode, 
+    const payload = {
+      addressType,
+      fullAddress,
+      flatNo,
+      building,
+      landmark,
+      pincode,
       doorPhoto,
+      doorPhotoFileStoreId,
       assembly: assembly?.name,
       ward: ward?.name
     };
     if (onComplete) {
       onComplete(payload);
     } else {
-      const { kNumber, selectedOption, connectionDetails } = flowState;
+      const { kNumber, selectedOption, connectionDetails, initialData } = flowState;
       history.push("/digit-ui/employee/ekyc/property-info", {
-        kNumber, selectedOption, connectionDetails, addressDetails: payload,
+        kNumber, selectedOption, connectionDetails, addressDetails: payload, initialData
       });
     }
   };
 
-  const handleCapture = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => setDoorPhoto(reader.result);
-    reader.readAsDataURL(file);
-  };
+  function selectphoto(e) {
+    setDoorPhotoFileStoreId(null);
+    setFilephoto(e.target.files[0]);
+  }
 
   const removePhoto = () => {
     setDoorPhoto(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    setDoorPhotoFileStoreId(null);
+    setFilephoto(null);
   };
 
   const handleUseCurrentLocation = () => {
@@ -530,14 +596,14 @@ const AddressDetails = ({ isSection = false, onComplete, parentState }) => {
       {/* ── Door Photo ── */}
       <SectionHead
         icon={<CameraIcon size={16} />}
-        label={t("EKYC_DOOR_PHOTO_HEADER")}
+        label={t("EKYC_CAPTURE_DOOR_IMAGE")}
       />
 
       <div style={{ fontSize: "12px", color: "#667085", marginBottom: "12px" }}>
         {t("EKYC_REQUIRED_FOR_VERIFICATION")}
       </div>
 
-      {/* Warning banner */}
+      {/* Warning banner
       <div style={{
         backgroundColor: "#FFFAEB",
         border: "0.5px solid #FEDF89",
@@ -559,80 +625,29 @@ const AddressDetails = ({ isSection = false, onComplete, parentState }) => {
             {t("EKYC_CAPTURE_LIVE_CAMERA")}
           </div>
         </div>
-      </div>
+      </div> */}
 
-      {/* Drop zone */}
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={handleCapture}
-        accept="image/*"
-        style={{ display: "none" }}
+      {/* Building Photo Upload */}
+      <UploadFile
+        id={"ekyc-door-photo"}
+        extraStyleName={"propertyCreate"}
+        accept=".jpg,.png,.jpeg"
+        onUpload={selectphoto}
+        onDelete={removePhoto}
+        message={doorPhotoFileStoreId ? `1 ${t(`EKYC_ACTION_FILEUPLOADED`)}` : t(`EKYC_ACTION_NO_FILEUPLOADED`)}
+        error={error}
       />
-      <div
-        onClick={!doorPhoto ? () => fileInputRef.current.click() : undefined}
-        onMouseOver={(e) => { if (!doorPhoto) e.currentTarget.style.borderColor = "#185FA5"; }}
-        onMouseOut={(e) => { if (!doorPhoto) e.currentTarget.style.borderColor = "#D0D5DD"; }}
-        style={{
-          border: "1.5px dashed #D0D5DD",
-          borderRadius: "10px",
-          minHeight: "160px",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: "#F9FAFB",
-          cursor: doorPhoto ? "default" : "pointer",
-          overflow: "hidden",
-          transition: "border-color 0.15s",
-          position: "relative",
-          padding: doorPhoto ? "0" : "32px 24px",
-        }}
-      >
-        {!doorPhoto ? (
-          <>
-            <div style={{
-              width: "52px", height: "52px", borderRadius: "50%",
-              background: "#E6F1FB", display: "flex",
-              alignItems: "center", justifyContent: "center", marginBottom: "12px",
-            }}>
-              <CameraIcon size={26} />
-            </div>
-            <div style={{ fontWeight: "600", fontSize: "14px", color: "#101828", marginBottom: "4px" }}>
-              {t("EKYC_TAP_TO_CAPTURE") || "Tap to capture"}
-            </div>
-            <div style={{ fontSize: "12px", color: "#667085" }}>
-              {t("EKYC_CAPTURE_DOOR_IMAGE")}
-            </div>
-          </>
-        ) : (
-          <>
-            <img
-              src={doorPhoto}
-              alt="Door"
-              style={{ width: "100%", maxHeight: "280px", objectFit: "cover", display: "block" }}
-            />
-            <button
-              onClick={(e) => { e.stopPropagation(); removePhoto(); }}
-              style={{
-                position: "absolute", top: "10px", right: "10px",
-                background: "#fff", border: "0.5px solid #EAECF0",
-                borderRadius: "7px", padding: "6px 10px",
-                display: "flex", alignItems: "center", gap: "5px",
-                cursor: "pointer", fontSize: "12px", color: "#D92D20", fontWeight: "500",
-              }}
-            >
-              <TrashIcon size={13} /> {t("EKYC_REMOVE")}
-            </button>
-          </>
-        )}
-      </div>
+      {doorPhoto && (
+        <div style={{ marginTop: "10px", borderRadius: "8px", overflow: "hidden", border: "1px solid #EAECF0" }}>
+          <img src={doorPhoto} alt="Door Preview" style={{ width: "100%", maxHeight: "250px", objectFit: "cover" }} />
+        </div>
+      )}
 
       {/* Submit */}
       {isSection ? (
         <div style={{ marginTop: "24px" }}>
           <SubmitBar
-            label={t("EKYC_COMPLETE_VERIFICATION_AND_PROCEED")}
+            label={t("ES_COMMON_SAVE_CONTINUE")}
             onSubmit={handleCompleteVerification}
           />
         </div>
@@ -657,6 +672,15 @@ const AddressDetails = ({ isSection = false, onComplete, parentState }) => {
         </svg>
         {t("EKYC_SECURE_DATA_NOTICE")}
       </div>
+      {toast && (
+        <Toast
+          label={toast.message}
+          error={toast.type === "error"}
+          info={toast.type === "info"}
+          success={toast.type === "success"}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 
