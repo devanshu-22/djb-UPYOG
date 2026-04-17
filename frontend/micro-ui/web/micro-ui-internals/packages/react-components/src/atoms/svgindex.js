@@ -1293,6 +1293,29 @@ const UploadCloudIcon = ({ size = 24, color = "currentColor", className = "", st
   );
 };
 
+const ChevronForwardOutline = ({ size = 20, color = "currentColor", strokeWidth = 48, className = "", style = {}, onClick, rotate = 0 }) => {
+  return (
+    <svg
+      stroke={color}
+      fill="none"
+      strokeWidth={strokeWidth}
+      viewBox="0 0 512 512"
+      height={size}
+      width={size}
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      style={{
+        transform: `rotate(${rotate}deg)`,
+        cursor: onClick ? "pointer" : "default",
+        ...style,
+      }}
+      onClick={onClick}
+    >
+      <path d="m184 112 144 144-144 144" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+};
+
 export {
   AnnouncementIcon,
   ReceiptIcon,
@@ -1421,4 +1444,5 @@ export {
   UploadIcon,
   MdUploadIcon,
   UploadCloudIcon,
+  ChevronForwardOutline,
 };
