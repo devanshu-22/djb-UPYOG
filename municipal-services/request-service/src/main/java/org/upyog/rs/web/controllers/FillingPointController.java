@@ -5,10 +5,7 @@ import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.response.ResponseInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.upyog.rs.service.FillingPointService;
 import org.upyog.rs.util.ResponseInfoFactory;
 import org.upyog.rs.web.models.fillingpoint.*;
@@ -46,19 +43,32 @@ public class FillingPointController {
         ResponseInfo responseInfo = responseInfoFactory
                 .createResponseInfoFromRequestInfo(request.getRequestInfo(), true);
 
-        return ResponseEntity.ok(new FillingPointResponse(responseInfo, result));
+        FillingPointResponse response = FillingPointResponse.builder()
+                .responseInfo(responseInfo)
+                .fillingPoints(result)
+                .build();
+
+        return ResponseEntity.ok(response);
+
     }
 
     @PostMapping("/_search")
     public ResponseEntity<FillingPointResponse> search(
-            @RequestBody FillingPointSearchRequest request) {
+            @RequestBody FillingPointSearchRequest request,
+            @RequestParam(required = false) Integer limit,
+            @RequestParam(required = false) Integer offset) {
 
-        List<FillingPoint> result = service.search(request.getCriteria());
+        request.getCriteria().setLimit(limit);
+        request.getCriteria().setOffset(offset);
+
+        FillingPointResponse response = service.search(request.getCriteria());
 
         ResponseInfo responseInfo = responseInfoFactory
                 .createResponseInfoFromRequestInfo(request.getRequestInfo(), true);
 
-        return ResponseEntity.ok(new FillingPointResponse(responseInfo, result));
+        response.setResponseInfo(responseInfo);
+
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/_update")
@@ -70,9 +80,12 @@ public class FillingPointController {
         ResponseInfo responseInfo = responseInfoFactory
                 .createResponseInfoFromRequestInfo(request.getRequestInfo(), true);
 
-        return ResponseEntity.ok(
-                new FillingPointResponse(responseInfo, result)
-        );
+        FillingPointResponse response = FillingPointResponse.builder()
+                .responseInfo(responseInfo)
+                .fillingPoints(result)
+                .build();
+
+        return ResponseEntity.ok(response);
     }
 
 
