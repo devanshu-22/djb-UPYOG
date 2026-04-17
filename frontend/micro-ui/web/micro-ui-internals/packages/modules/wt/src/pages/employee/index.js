@@ -46,6 +46,8 @@ const EmployeeApp = ({ path }) => {
       if (pathname.includes("/mt/my-bookings")) label = "MT_SEARCH_BOOKINGS";
       if (pathname.includes("/tp/my-bookings")) label = "TP_SEARCH_BOOKINGS";
       crumbs.push({ label: t(label) });
+    } else if (pathname.includes("/fixed-point/request-service")) {
+      crumbs.push({ label: t("WT_APPLICATION_CREATE_FIXED_POINT") });
     } else if (pathname.includes("/request-service")) {
       crumbs.push({ label: t("WT_REQUEST_SERVICE") });
     } else if (pathname.includes("/fixed-point/booking-details")) {
@@ -119,6 +121,7 @@ const EmployeeApp = ({ path }) => {
   const ApplicationDetails = Digit?.ComponentRegistryService?.getComponent("ApplicationDetails");
 
   const WTCreate = Digit?.ComponentRegistryService?.getComponent("WTCreate");
+  const WTEmergencyFixedPointCreate = Digit?.ComponentRegistryService?.getComponent("WTEmergencyFixedPointCreate");
 
   /* -------------------------------------------------------------------------- */
   /*                                   RETURN                                   */
@@ -211,6 +214,8 @@ const EmployeeApp = ({ path }) => {
               <PrivateRoute path={`${path}/request-service`} component={WTCreate} />
               <PrivateRoute path={`${path}/mt/request-service`} component={WTCreate} />
               <PrivateRoute path={`${path}/tp/request-service`} component={WTCreate} />
+              {/* Fixed Point Create */}
+              <PrivateRoute path={`${path}/fixed-point/request-service`} component={WTEmergencyFixedPointCreate} />
               {/* Booking Details */}
               <PrivateRoute
                 path={`${path}/fixed-point/booking-details/:id`}
