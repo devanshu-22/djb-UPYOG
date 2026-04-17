@@ -62,7 +62,8 @@ const Inbox = ({
             total: info.total || 0,
             completed: info.completed || 0,
             pending: info.pending || 0,
-            rejected: info.rejected || 0
+            rejected: info.rejected || 0,
+            active: info.active || 0,
         };
     }, [dashboardData]);
 
