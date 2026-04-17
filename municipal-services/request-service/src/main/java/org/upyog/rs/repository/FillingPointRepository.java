@@ -116,7 +116,17 @@ public class FillingPointRepository {
                 params.add(criteria.getMobileNo());
             }
         }
+        query.append(" ORDER BY fp.createdtime DESC");
 
+        if (criteria.getLimit() != null) {
+            query.append(" LIMIT ?");
+            params.add(criteria.getLimit());
+        }
+
+        if (criteria.getOffset() != null) {
+            query.append(" OFFSET ?");
+            params.add(criteria.getOffset());
+        }
         Map<String, FillingPoint> fillingPointMap = new LinkedHashMap<>();
 
         jdbcTemplate.query(
@@ -266,5 +276,70 @@ public class FillingPointRepository {
             ps.setLong(12, fp.getLastModifiedTime());
             ps.setString(13, fp.getId());
         });
+    }
+
+    public Integer count(FillingPointSearchCriteria criteria) {
+
+        StringBuilder query = new StringBuilder(
+                "SELECT COUNT(DISTINCT fp.id) " +
+                        "FROM upyog_rs_water_tanker_filling_point fp " +
+                        "LEFT JOIN upyog_rs_water_tanker_address_details ad " +
+                        "ON ad.applicant_id = fp.id " +
+                        "LEFT JOIN filling_point_locality_mapping lm " +
+                        "ON lm.filling_point_id = fp.id " +
+                        "WHERE fp.tenant_id = ?"
+        );
+
+        List<Object> params = new ArrayList<>();
+        params.add(criteria.getTenantId());
+
+        if (criteria.getId() != null && !criteria.getId().isEmpty()) {
+            query.append(" AND fp.id = ?");
+            params.add(criteria.getId());
+        }
+
+        if (criteria.getFillingPointName() != null && !criteria.getFillingPointName().isEmpty()) {
+            query.append(" AND LOWER(fp.filling_point_name) LIKE LOWER(?)");
+            params.add("%" + criteria.getFillingPointName() + "%");
+        }
+
+        if ("JE".equalsIgnoreCase(criteria.getDesignation())) {
+
+            if (criteria.getName() != null && !criteria.getName().isEmpty()) {
+                query.append(" AND fp.je_name = ?");
+                params.add(criteria.getName());
+            }
+
+            if (criteria.getMobileNo() != null && !criteria.getMobileNo().isEmpty()) {
+                query.append(" AND fp.je_mobile = ?");
+                params.add(criteria.getMobileNo());
+            }
+
+        } else if ("AE".equalsIgnoreCase(criteria.getDesignation())) {
+
+            if (criteria.getName() != null && !criteria.getName().isEmpty()) {
+                query.append(" AND fp.ae_name = ?");
+                params.add(criteria.getName());
+            }
+
+            if (criteria.getMobileNo() != null && !criteria.getMobileNo().isEmpty()) {
+                query.append(" AND fp.ae_mobile = ?");
+                params.add(criteria.getMobileNo());
+            }
+
+        } else if ("EE".equalsIgnoreCase(criteria.getDesignation())) {
+
+            if (criteria.getName() != null && !criteria.getName().isEmpty()) {
+                query.append(" AND fp.ee_name = ?");
+                params.add(criteria.getName());
+            }
+
+            if (criteria.getMobileNo() != null && !criteria.getMobileNo().isEmpty()) {
+                query.append(" AND fp.ee_mobile = ?");
+                params.add(criteria.getMobileNo());
+            }
+        }
+
+        return jdbcTemplate.queryForObject(query.toString(), params.toArray(), Integer.class);
     }
 }
