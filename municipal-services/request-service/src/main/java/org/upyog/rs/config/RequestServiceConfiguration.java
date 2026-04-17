@@ -37,6 +37,8 @@ public class RequestServiceConfiguration {
 	@Value("${egov.workflow.processinstance.search.path}")
 	private String wfProcessInstanceSearchPath;
 
+	@Value("${kafka.topics.save.trip.history}")
+	private String driverTripHistortSave;
 	/** Used for application no creation **/
 
 	@Value("${egov.idgen.water.tanker.booking.id.name}")
