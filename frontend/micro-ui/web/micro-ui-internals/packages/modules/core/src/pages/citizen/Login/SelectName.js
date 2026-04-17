@@ -36,6 +36,8 @@ const SelectName = ({ profileData, setProfileData, handleComplete }) => {
               dob: value,
             })
           }
+          enableAgeValidation
+          minAge={22}
         />
       </div>
 
