@@ -1,4 +1,4 @@
-import { AppContainer, PrivateRoute, ModuleHeader, ArrowLeft, HomeIcon } from "@djb25/digit-ui-react-components";
+import { AppContainer, PrivateRoute, ModuleHeader, ArrowLeft, HomeIcon, LayoutWrapper } from "@djb25/digit-ui-react-components";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Switch, useLocation } from "react-router-dom";
@@ -10,6 +10,7 @@ import AddFillingPointAddress from "../../components/AddFillingPointAddress";
 import AddFixPointAddress from "../../components/AddFixPointAddress";
 import WTSearchPointAddress from "../../components/SearchFillingPointAddress";
 import VendorAssign from "../../components/VendorAssign";
+import Reports from "../../components/Reports";
 
 const EmployeeApp = ({ path }) => {
   const { t } = useTranslation();
@@ -68,7 +69,7 @@ const EmployeeApp = ({ path }) => {
       crumbs.push({ label: t("WT_ADD_FIX_POINT_ADDRESS") });
     } else if (pathname.includes("/search-filling-fix-point")) {
       crumbs.push({ label: t("WT_SEARCH_FIX_POINT") });
-    }else if (pathname.includes("/vendor-assign")) {
+    } else if (pathname.includes("/vendor-assign")) {
       crumbs.push({ label: t("WT_VENDOR_ASSIGN") });
     }
 
@@ -211,9 +212,15 @@ const EmployeeApp = ({ path }) => {
               <PrivateRoute path={`${path}/mt/request-service`} component={WTCreate} />
               <PrivateRoute path={`${path}/tp/request-service`} component={WTCreate} />
               {/* Booking Details */}
-              <PrivateRoute path={`${path}/fixed-point/booking-details/:id`} component={(props) => <ApplicationDetails {...props} parentRoute={path} />} />
+              <PrivateRoute
+                path={`${path}/fixed-point/booking-details/:id`}
+                component={(props) => <ApplicationDetails {...props} parentRoute={path} />}
+              />
               <PrivateRoute path={`${path}/booking-details/:id`} component={(props) => <ApplicationDetails {...props} parentRoute={path} />} />
-              <PrivateRoute path={`${path}/bookingsearch/booking-details/:id`} component={(props) => <ApplicationDetails {...props} parentRoute={path} />} />
+              <PrivateRoute
+                path={`${path}/bookingsearch/booking-details/:id`}
+                component={(props) => <ApplicationDetails {...props} parentRoute={path} />}
+              />
               {/* My Bookings */}
               <PrivateRoute path={`${path}/my-bookings`} component={(props) => <SearchApp {...props} parentRoute={path} moduleCode="WT" />} />
               <PrivateRoute path={`${path}/mt/my-bookings`} component={(props) => <SearchApp {...props} parentRoute={path} moduleCode="MT" />} />
@@ -225,6 +232,14 @@ const EmployeeApp = ({ path }) => {
               <PrivateRoute path={`${path}/add-fix-point-address`} component={AddFixPointAddress} />
               <PrivateRoute path={`${path}/search-filling-fix-point`} component={WTSearchPointAddress} />
               <PrivateRoute path={`${path}/vendor-assignment`} component={VendorAssign} />
+              <PrivateRoute
+                path={`${path}/reports`}
+                component={(props) => (
+                  <LayoutWrapper layoutClass="normal">
+                    <Reports t={t} {...props} parentRoute={path} moduleCode="WT" />
+                  </LayoutWrapper>
+                )}
+              />
             </div>
           </div>
         </div>
