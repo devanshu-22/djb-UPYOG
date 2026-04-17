@@ -602,7 +602,7 @@ const EmployeeModuleCard = ({ Icon, moduleName, kpis = [], links = [], className
 
   return (
     <Fragment>
-      <div className={`new-employee-card card-home ${className || ""}`}>
+      <div className={`new-employee-card card-home ${className || ""}`} onClick={handleDetailsClick} style={{ cursor: "pointer" }}>
         <div className="card-header-row">
           <div className={`module-icon-wrap ${getIconColorClass(moduleName, kpis, links)}`}>
             {getModuleIcon(moduleName, kpis, links, Icon)}
@@ -633,9 +633,9 @@ const EmployeeModuleCard = ({ Icon, moduleName, kpis = [], links = [], className
                     <span className="sec-kpi-label">
                       {kpi.link ? (
                         kpi.link.includes("digit-ui/") ? (
-                          <Link to={kpi.link} style={{ color: "inherit", textDecoration: "none" }}>{kpi.label}</Link>
+                          <Link to={kpi.link} style={{ color: "inherit", textDecoration: "none" }} onClick={(e) => e.stopPropagation()}>{kpi.label}</Link>
                         ) : (
-                          <a href={kpi.link} style={{ color: "inherit", textDecoration: "none" }}>{kpi.label}</a>
+                          <a href={kpi.link} style={{ color: "inherit", textDecoration: "none" }} onClick={(e) => e.stopPropagation()}>{kpi.label}</a>
                         )
                       ) : kpi.label}
                     </span>
@@ -652,7 +652,7 @@ const EmployeeModuleCard = ({ Icon, moduleName, kpis = [], links = [], className
 
         <div className="card-footer-row">
           <div className="footer-links">
-            <span className="pill-link" style={{ cursor: "pointer" }}>
+            <span className="pill-link" style={{ cursor: "pointer" }} onClick={(e) => e.stopPropagation()}>
               {t("View Reports")}
               <svg
                 width="12"
@@ -669,9 +669,9 @@ const EmployeeModuleCard = ({ Icon, moduleName, kpis = [], links = [], className
                 <polyline points="12 5 19 12 12 19"></polyline>
               </svg>
             </span>
-            <span className="pill-link" style={{ cursor: "pointer" }}>+</span>
+            <span className="pill-link" style={{ cursor: "pointer" }} onClick={(e) => e.stopPropagation()}>+</span>
           </div>
-          <button className="details-btn" onClick={handleDetailsClick}>
+          <button className="details-btn" onClick={(e) => { e.stopPropagation(); handleDetailsClick(); }}>
             {t("Details")}
           </button>
         </div>

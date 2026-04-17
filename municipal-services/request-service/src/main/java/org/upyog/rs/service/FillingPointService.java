@@ -2,6 +2,7 @@ package org.upyog.rs.service;
 
 import org.upyog.rs.web.models.fillingpoint.FillingPoint;
 import org.upyog.rs.web.models.fillingpoint.FillingPointRequest;
+import org.upyog.rs.web.models.fillingpoint.FillingPointResponse;
 import org.upyog.rs.web.models.fillingpoint.FillingPointSearchCriteria;
 import org.upyog.rs.web.models.fillingpoint.vendor.FillingPointVendorMap;
 import org.upyog.rs.web.models.fillingpoint.vendor.FillingPointVendorMapRequest;
@@ -12,7 +13,7 @@ public interface FillingPointService {
 
     List<FillingPoint> create(FillingPointRequest request);
 
-    List<FillingPoint> search(FillingPointSearchCriteria criteria);
+    FillingPointResponse search(FillingPointSearchCriteria criteria);
 
     List<FillingPoint> update(FillingPointRequest request);
     List<FillingPoint> createFromWaterTankerRequest(FillingPointRequest request);

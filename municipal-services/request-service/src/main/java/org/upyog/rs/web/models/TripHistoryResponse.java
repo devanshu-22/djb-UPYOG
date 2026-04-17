@@ -1,12 +1,12 @@
-package org.upyog.rs.web.models.fillingpoint;
+package org.upyog.rs.web.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.response.ResponseInfo;
-import org.upyog.rs.web.models.fillingpointlocality.FillingPointLocality;
 
 import java.util.List;
 
@@ -14,12 +14,14 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class FillingPointResponse {
-
+public class TripHistoryResponse {
+    @JsonProperty("ResponseInfo")
     private ResponseInfo responseInfo;
-    private List<FillingPoint> fillingPoints;
 
-    @JsonProperty("totalCount")
+    @JsonProperty("TripHistory")
+    private List<TripHistory> tripHistory;
+
+    @JsonProperty("Count")
     private Integer totalCount;
 
     @JsonProperty("offset")
@@ -27,5 +29,4 @@ public class FillingPointResponse {
 
     @JsonProperty("limit")
     private Integer limit;
-
 }
