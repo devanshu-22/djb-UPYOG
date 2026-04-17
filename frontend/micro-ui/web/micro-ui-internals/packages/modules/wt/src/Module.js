@@ -36,6 +36,13 @@ import AddFixPointAddress from "./components/AddFixPointAddress";
 import AddFillingPointMetaData from "./components/AddFillingPointMetaData";
 import WTSearchPointAddress from "./components/SearchFillingPointAddress";
 import VendorAssign from "./components/VendorAssign";
+import EmergencyFixedPointInfoPage from "./pageComponents/EmergencyFixedPoint/InfoPage";
+import EmergencyFixedPointRequestDetails from "./pageComponents/EmergencyFixedPoint/RequestDetails";
+import EmergencyFixedPointCheckPage from "./pageComponents/EmergencyFixedPoint/CheckPage";
+import WTEmergencyFixedPointAcknowledgement from "./pageComponents/EmergencyFixedPoint/WTAcknowledgement";
+import MTEmergencyFixedPointAcknowledgement from "./pageComponents/EmergencyFixedPoint/MTAcknowledgement";
+import EmergencyFixedPointTPAcknowledgement from "./pageComponents/EmergencyFixedPoint/TPAcknowledgement";
+import WTEmergencyFixedPointCreate from "./pageComponents/EmergencyFixedPoint";
 
 // Parent component of module
 export const WTModule = ({ stateCode, userType, tenants }) => {
@@ -130,6 +137,13 @@ const componentsToRegister = {
   AddFillingPointMetaData,
   WTSearchPointAddress,
   VendorAssign,
+  EmergencyFixedPointInfoPage,
+  EmergencyFixedPointRequestDetails,
+  EmergencyFixedPointCheckPage,
+  WTEmergencyFixedPointAcknowledgement,
+  MTEmergencyFixedPointAcknowledgement,
+  EmergencyFixedPointTPAcknowledgement,
+  WTEmergencyFixedPointCreate,
 };
 
 export const initWTComponents = () => {
