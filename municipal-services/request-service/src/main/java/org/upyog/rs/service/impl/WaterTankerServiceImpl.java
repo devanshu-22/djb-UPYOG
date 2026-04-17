@@ -188,23 +188,23 @@ public class WaterTankerServiceImpl implements WaterTankerService {
 		 * and give the data already retrieved to the repository layer
 		 */
 
-		if (waterTankerBookingSearchCriteria.getFromDate() == null
-				&& waterTankerBookingSearchCriteria.getToDate() == null)  {
-
-			long startOfDay = java.time.LocalDate.now()
-					.atStartOfDay(java.time.ZoneId.systemDefault())
-					.toInstant()
-					.toEpochMilli();
-
-			long endOfDay = java.time.LocalDate.now()
-					.atTime(23, 59, 59, 999_000_000)
-					.atZone(java.time.ZoneId.systemDefault())
-					.toInstant()
-					.toEpochMilli();
-
-			waterTankerBookingSearchCriteria.setFromDate(startOfDay);
-			waterTankerBookingSearchCriteria.setToDate(endOfDay);
-		}
+//		if (waterTankerBookingSearchCriteria.getFromDate() == null
+//				&& waterTankerBookingSearchCriteria.getToDate() == null)  {
+//
+//			long startOfDay = java.time.LocalDate.now()
+//					.atStartOfDay(java.time.ZoneId.systemDefault())
+//					.toInstant()
+//					.toEpochMilli();
+//
+//			long endOfDay = java.time.LocalDate.now()
+//					.atTime(23, 59, 59, 999_000_000)
+//					.atZone(java.time.ZoneId.systemDefault())
+//					.toInstant()
+//					.toEpochMilli();
+//
+//			waterTankerBookingSearchCriteria.setFromDate(startOfDay);
+//			waterTankerBookingSearchCriteria.setToDate(endOfDay);
+//		}
 
 		List<WaterTankerBookingDetail> applications = requestServiceRepository
 				.getWaterTankerBookingDetails(waterTankerBookingSearchCriteria);
