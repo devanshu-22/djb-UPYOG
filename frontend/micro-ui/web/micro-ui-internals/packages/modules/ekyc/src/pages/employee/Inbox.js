@@ -34,7 +34,6 @@ const Inbox = ({
             tenantId, 
             offset: pageOffset, 
             limit: pageSize,
-            status: searchParams.status?.value || ""
         },
         {
             enabled: !!tenantId,
@@ -42,13 +41,20 @@ const Inbox = ({
     );
 
     const filteredData = useMemo(() => {
-        const items = dashboardData?.dashboardInfo?.consumerList || [];
+        let items = dashboardData?.dashboardInfo?.consumerList || [];
+        
+        // Frontend filtering since we no longer send status to API
+        const selectedStatus = searchParams.status?.value;
+        if (selectedStatus && selectedStatus !== "") {
+            items = items.filter(item => item.status === selectedStatus);
+        }
+
         return items.map(item => ({
             ...item,
             applicationNumber: item.kno || item.applicationNumber,
             citizenName: item.consumerName || item.citizenName,
         }));
-    }, [dashboardData]);
+    }, [dashboardData, searchParams.status]);
 
     const countData = useMemo(() => {
         const info = dashboardData?.dashboardInfo || {};
@@ -56,7 +62,8 @@ const Inbox = ({
             total: info.total || 0,
             completed: info.completed || 0,
             pending: info.pending || 0,
-            rejected: info.rejected || 0
+            rejected: info.rejected || 0,
+            active: info.active || 0,
         };
     }, [dashboardData]);
 
