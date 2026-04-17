@@ -171,17 +171,17 @@ public class RequestServiceQueryBuilder {
             preparedStmtList.add(criteria.getDriverId());
         }
 
-        if (criteria.getFromDate() != null) {
-            addClauseIfRequired(query, preparedStmtList);
-            query.append(" ursbd.createdtime >= ? ");
-            preparedStmtList.add(criteria.getFromDate());
-        }
-
-        if (criteria.getToDate() != null) {
-            addClauseIfRequired(query, preparedStmtList);
-            query.append(" ursbd.createdtime <= ? ");
-            preparedStmtList.add(criteria.getToDate());
-        }
+//        if (criteria.getFromDate() != null) {
+//            addClauseIfRequired(query, preparedStmtList);
+//            query.append(" ursbd.createdtime >= ? ");
+//            preparedStmtList.add(criteria.getFromDate());
+//        }
+//
+//        if (criteria.getToDate() != null) {
+//            addClauseIfRequired(query, preparedStmtList);
+//            query.append(" ursbd.createdtime <= ? ");
+//            preparedStmtList.add(criteria.getToDate());
+//        }
 
         // Return count query directly without applying pagination
         if (criteria.isCountCall()) {
