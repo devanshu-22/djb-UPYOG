@@ -79,6 +79,11 @@ const WTCard = () => {
       label: t("Vendor_Assign"),
       link: `${APPLICATION_PATH}/employee/wt/vendor-assignment`,
     },
+    // Water Tanker Report Link uncomment this when apis for this will be completed
+    // {
+    //   label: t("WT_REPORTS"),
+    //   link: `${APPLICATION_PATH}/employee/wt/reports`,
+    // },
   ];
   const WT_CEMP = Digit.UserService.hasAccess(["WT_CEMP"]) || false;
 

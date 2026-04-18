@@ -2,9 +2,15 @@ import React, { useRef, useState } from "react";
 import PropTypes from "prop-types";
 import { LuCalendarIcon } from "./svgindex";
 import Toast from "./Toast";
-// import { CalendarIcon } from "../atoms/svgindex";
 
-const DatePicker = ({ date, onChange, disabled, style }) => {
+const DatePicker = ({
+  date,
+  onChange,
+  disabled,
+  style,
+  enableAgeValidation = false, // 👉 NEW
+  minAge = 18, // 👉 NEW (default 18)
+}) => {
   const [toast, setToast] = useState(null);
   const hiddenDateRef = useRef();
 
@@ -27,7 +33,7 @@ const DatePicker = ({ date, onChange, disabled, style }) => {
     return `${year}-${month}-${day}`;
   };
 
-  // 👉 Age validation (18+)
+  // 👉 Dynamic Age Validation
   const isValidAge = (dateStr) => {
     const today = new Date();
     const dob = new Date(dateStr);
@@ -39,22 +45,24 @@ const DatePicker = ({ date, onChange, disabled, style }) => {
       age--;
     }
 
-    return age >= 18;
+    return age >= minAge;
   };
 
   const handleDateChange = (e) => {
-    const raw = e.target.value; // yyyy-mm-dd
+    const raw = e.target.value;
 
-    if (!isValidAge(raw)) {
+    // 👉 Apply validation only if enabled
+    if (enableAgeValidation && !isValidAge(raw)) {
       setToast({
         type: "warning",
-        message: "User must be at least 18 years old",
+        message: `User must be at least ${minAge} years old`,
       });
       return;
     }
 
     onChange?.(raw);
   };
+
   return (
     <React.Fragment>
       <div
@@ -66,7 +74,7 @@ const DatePicker = ({ date, onChange, disabled, style }) => {
           ...style,
         }}
       >
-        {/* 👉 Visible formatted input */}
+        {/* Visible input */}
         <input
           type="text"
           readOnly
@@ -77,7 +85,7 @@ const DatePicker = ({ date, onChange, disabled, style }) => {
           onClick={() => hiddenDateRef.current?.showPicker?.()}
         />
 
-        {/* 👉 Hidden actual date input */}
+        {/* Hidden input */}
         <input
           type="date"
           ref={hiddenDateRef}
@@ -94,7 +102,7 @@ const DatePicker = ({ date, onChange, disabled, style }) => {
           }}
         />
 
-        {/* 👉 Optional icon */}
+        {/* Icon */}
         <LuCalendarIcon
           color="#d1d1d1"
           onClick={() => hiddenDateRef.current?.showPicker?.()}
@@ -107,6 +115,7 @@ const DatePicker = ({ date, onChange, disabled, style }) => {
           }}
         />
       </div>
+
       {toast && <Toast warning={toast.type === "warning"} error={toast.type === "error"} label={toast.message} onClose={() => setToast(null)} />}
     </React.Fragment>
   );
@@ -117,6 +126,8 @@ DatePicker.propTypes = {
   onChange: PropTypes.func,
   disabled: PropTypes.bool,
   style: PropTypes.object,
+  enableAgeValidation: PropTypes.bool, // 👉 NEW
+  minAge: PropTypes.number, // 👉 NEW
 };
 
 export default DatePicker;

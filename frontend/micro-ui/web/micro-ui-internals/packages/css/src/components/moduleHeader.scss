@@ -8,7 +8,7 @@
 
   .header-top-section {
     width: 100%;
-    background: linear-gradient(135deg,#1a67a3,#5282e6 40%,#5495fe);
+    background: linear-gradient(135deg, #1a67a3, #5282e6 40%, #5495fe);
     padding: 30px 50px;
     border-radius: 11px;
     margin-inline: 42px;
@@ -41,7 +41,7 @@
 
   .header-bottom-section {
     width: 100%;
-    background: linear-gradient(135deg,#1a67a3,#5282e6 40%,#5495fe);
+    background: linear-gradient(135deg, #1a67a3, #5282e6 40%, #5495fe);
     padding: 5px 20px;
     border-radius: 11px;
     position: relative;
@@ -102,6 +102,12 @@
       justify-content: space-between;
       gap: 16px;
       width: 100%;
+    }
+
+    .bread-crumb-item {
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
     .left-section {
