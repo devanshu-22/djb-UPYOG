@@ -115,12 +115,14 @@ public class RequestServiceQueryBuilder {
             query = new StringBuilder(waterTankerBookingCount);
         }
 
+
+      //  query.append(" WHERE 1=1 ");
+
         if (!ObjectUtils.isEmpty(criteria.getTenantId())) {
             addClauseIfRequired(query, preparedStmtList);
             query.append(" ursbd.tenant_id LIKE ? ");
             preparedStmtList.add("%" + criteria.getTenantId() + "%");
         }
-
         // Apply applicant_uuid filter ONLY if explicitly required
         if (criteria.getCreatedBy() != null && !criteria.getCreatedBy().isEmpty()) {
 
@@ -134,23 +136,38 @@ public class RequestServiceQueryBuilder {
             }
         }
 
-        if (!ObjectUtils.isEmpty(criteria.getBookingNo())) {
-            addClauseIfRequired(query, preparedStmtList);
-            
-            // Create a comma-separated string of placeholders
-            String bookingNosPlaceholders = String.join(",", Collections.nCopies(criteria.getBookingNo().split(",").length, "?"));
-            
-            query.append(" ursbd.booking_no IN (").append(bookingNosPlaceholders).append(")");
+        // Apply bookingNo / mobileNumber filter ONLY if present
+        if (!ObjectUtils.isEmpty(criteria.getBookingNo()) || !ObjectUtils.isEmpty(criteria.getMobileNumber())) {
 
-            // Add the booking numbers to the preparedStmtList
-            String[] bookingNumbers = criteria.getBookingNo().split(",");
-            Collections.addAll(preparedStmtList, bookingNumbers);
-        }
-
-        if (!ObjectUtils.isEmpty(criteria.getMobileNumber())) {
             addClauseIfRequired(query, preparedStmtList);
-            query.append(" ursbd.mobile_number = ? ");
-            preparedStmtList.add(criteria.getMobileNumber());
+            query.append(" ( ");
+
+            // bookingNo
+            if (!ObjectUtils.isEmpty(criteria.getBookingNo())) {
+
+                String[] bookingNumbers = criteria.getBookingNo().split(",");
+                String placeholders = String.join(",", Collections.nCopies(bookingNumbers.length, "?"));
+
+                query.append(" ursbd.booking_no IN (").append(placeholders).append(") ");
+                Collections.addAll(preparedStmtList, bookingNumbers);
+
+
+            }
+
+            // mobileNumber
+            if (!ObjectUtils.isEmpty(criteria.getMobileNumber())) {
+
+                if (!ObjectUtils.isEmpty(criteria.getBookingNo())) {
+                    query.append(" AND ");   // ✅ OR is correct for search
+                }
+
+                query.append(" ursbd.mobile_number LIKE ? ");
+                preparedStmtList.add("%" + criteria.getMobileNumber() + "%");
+
+
+            }
+
+            query.append(" ) ");
         }
 
         if(!ObjectUtils.isEmpty(criteria.getLocalityCode())){
@@ -170,18 +187,6 @@ public class RequestServiceQueryBuilder {
             query.append(" ursbd.driver_id = ? ");
             preparedStmtList.add(criteria.getDriverId());
         }
-
-//        if (criteria.getFromDate() != null) {
-//            addClauseIfRequired(query, preparedStmtList);
-//            query.append(" ursbd.createdtime >= ? ");
-//            preparedStmtList.add(criteria.getFromDate());
-//        }
-//
-//        if (criteria.getToDate() != null) {
-//            addClauseIfRequired(query, preparedStmtList);
-//            query.append(" ursbd.createdtime <= ? ");
-//            preparedStmtList.add(criteria.getToDate());
-//        }
 
         // Return count query directly without applying pagination
         if (criteria.isCountCall()) {
@@ -265,19 +270,11 @@ public class RequestServiceQueryBuilder {
     }
 
 
-//    private void addClauseIfRequired(StringBuilder query, List<Object> preparedStmtList) {
-//        if (preparedStmtList.isEmpty()) {
-//            query.append(" WHERE ");
-//        } else {
-//            query.append(" AND ");
-//        }
-//    }
-
     private void addClauseIfRequired(StringBuilder query, List<Object> preparedStmtList) {
-        if (query.toString().contains("WHERE")) {
-            query.append(" AND ");
-        } else {
+        if (preparedStmtList.isEmpty()) {
             query.append(" WHERE ");
+        } else {
+            query.append(" AND ");
         }
     }
 
