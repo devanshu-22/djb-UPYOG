@@ -12,11 +12,7 @@ import org.upyog.rs.service.FillingPointService;
 import org.upyog.rs.util.FillingPointVendorMapEnrichmentUtil;
 import org.upyog.rs.util.VendorUtil;
 import org.upyog.rs.web.models.Address;
-import org.upyog.rs.web.models.fillingpoint.FillingPoint;
-import org.upyog.rs.web.models.fillingpoint.FillingPointKafkaRequest;
-import org.upyog.rs.web.models.fillingpoint.FillingPointMetadata;
-import org.upyog.rs.web.models.fillingpoint.FillingPointRequest;
-import org.upyog.rs.web.models.fillingpoint.FillingPointSearchCriteria;
+import org.upyog.rs.web.models.fillingpoint.*;
 import org.upyog.rs.web.models.fillingpoint.vendor.FillingPointVendorMap;
 import org.upyog.rs.web.models.fillingpoint.vendor.FillingPointVendorMapRequest;
 import org.upyog.rs.web.models.waterTanker.WaterTankerBookingDetail;
@@ -107,9 +103,10 @@ public class FillingPointServiceImpl implements FillingPointService {
     }
 
     @Override
-    public List<FillingPoint> search(FillingPointSearchCriteria criteria) {
+    public FillingPointResponse search(FillingPointSearchCriteria criteria) {
 
         List<FillingPoint> list = repository.search(criteria);
+        Integer count = repository.count(criteria);
 
         for (FillingPoint fp : list) {
 
@@ -126,7 +123,13 @@ public class FillingPointServiceImpl implements FillingPointService {
                 fp.setAeName(null);   fp.setAeEmail(null);   fp.setAeMobile(null);
             }
         }
-        return list;
+        return new FillingPointResponse(
+                null,
+                list,
+                count,
+                criteria.getOffset(),
+                criteria.getLimit()
+        );
     }
 
     @Override

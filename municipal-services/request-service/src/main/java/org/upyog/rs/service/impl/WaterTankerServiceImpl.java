@@ -9,7 +9,6 @@ import org.egov.common.contract.request.Role;
 import org.egov.common.contract.request.User;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.upyog.rs.config.RequestServiceConfiguration;
@@ -53,6 +52,9 @@ public class WaterTankerServiceImpl implements WaterTankerService {
 	@Autowired
 	private UserService userService;
 
+
+//	@Autowired
+//	private FillingPointRepository fillingPointRepository;
 
 	@Override
 	public WaterTankerBookingDetail createNewWaterTankerBookingRequest(WaterTankerBookingRequest waterTankerRequest) {
@@ -185,6 +187,25 @@ public class WaterTankerServiceImpl implements WaterTankerService {
 		 * Retrieve WT booking details from the repository based on search criteria and
 		 * and give the data already retrieved to the repository layer
 		 */
+
+//		if (waterTankerBookingSearchCriteria.getFromDate() == null
+//				&& waterTankerBookingSearchCriteria.getToDate() == null)  {
+//
+//			long startOfDay = java.time.LocalDate.now()
+//					.atStartOfDay(java.time.ZoneId.systemDefault())
+//					.toInstant()
+//					.toEpochMilli();
+//
+//			long endOfDay = java.time.LocalDate.now()
+//					.atTime(23, 59, 59, 999_000_000)
+//					.atZone(java.time.ZoneId.systemDefault())
+//					.toInstant()
+//					.toEpochMilli();
+//
+//			waterTankerBookingSearchCriteria.setFromDate(startOfDay);
+//			waterTankerBookingSearchCriteria.setToDate(endOfDay);
+//		}
+
 		List<WaterTankerBookingDetail> applications = requestServiceRepository
 				.getWaterTankerBookingDetails(waterTankerBookingSearchCriteria);
 
@@ -202,6 +223,29 @@ public class WaterTankerServiceImpl implements WaterTankerService {
 				userService.enrichBookingWithUserDetails(booking, waterTankerBookingSearchCriteria);
 			}
 		}
+
+//		for (WaterTankerBookingDetail booking : applications) {
+//
+//			//  Existing user enrichment
+//			if (config.getIsUserProfileEnabled()) {
+//				userService.enrichBookingWithUserDetails(booking, waterTankerBookingSearchCriteria);
+//			}
+//
+//			// Filling Point Enrichment
+//			if (booking.getFillingPointId() != null) {
+//
+//				FillingPointSearchCriteria criteria = new FillingPointSearchCriteria();
+//				criteria.setTenantId(booking.getTenantId());
+//				criteria.setId(booking.getFillingPointId());
+//
+//				List<FillingPoint> fps = fillingPointRepository.search(criteria);
+//
+//				if (!fps.isEmpty()) {
+//					booking.setFillingPointName(fps.get(0).getFillingPointName());
+//				}
+//			}
+//		}
+
 		// Return retrieved application
 		return applications;
 	}

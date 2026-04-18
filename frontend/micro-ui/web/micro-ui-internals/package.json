@@ -89,7 +89,8 @@
     "crypto-js": "^4.2.0",
     "keycloak-js": "26.0.7",
     "lodash": "4.17.21",
-    "microbundle-crl": "^0.13.11"
+    "microbundle-crl": "^0.13.11",
+    "chart.js": "^4.4.1"
   },
   "resolutions": {
     "**/babel-loader": "9.1.2",

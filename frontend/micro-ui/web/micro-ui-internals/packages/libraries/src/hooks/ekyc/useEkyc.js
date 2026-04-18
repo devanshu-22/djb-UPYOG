@@ -67,3 +67,11 @@ export const useEkycSurveyorDashboard = (data, params, config = {}) => {
     );
 };
 
+export const useEkycApplicationReview = (params, config = {}) => {
+    return useMutation((data) => Digit.EkycService.application_review(data, params), config);
+};
+
+export const useEkycApplicationUpdate = (tenantId, config = {}) => {
+    return useMutation((data) => Digit.EkycService.application_update(data, tenantId), config);
+};
+

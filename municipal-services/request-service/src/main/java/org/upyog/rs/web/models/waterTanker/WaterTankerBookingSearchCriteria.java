@@ -38,11 +38,11 @@ public class WaterTankerBookingSearchCriteria {
 
     // @ValidDate
     @JsonProperty("fromDate")
-    private String fromDate;
+    private Long fromDate;
 
     // @ValidDate
     @JsonProperty("toDate")
-    private String toDate;
+    private Long toDate;
 
     private boolean isCountCall;
 
@@ -56,6 +56,18 @@ public class WaterTankerBookingSearchCriteria {
                 // && this.offset == null && this.limit == null
                 && this.fromDate == null && this.toDate == null && this.createdBy==null && localityCode==null);
     }
+
+//    public boolean isEmpty() {
+//        return (this.tenantId == null &&
+//                this.status == null &&
+//                this.bookingNo == null &&
+//                this.mobileNumber == null &&
+//                this.fromDate == null &&
+//                this.toDate == null &&
+//                this.createdBy == null &&
+//                this.localityCode == null &&
+//                this.driverId == null);
+//    }
 
     public boolean tenantIdOnly() {
         return (this.tenantId != null && this.status == null && this.bookingNo == null

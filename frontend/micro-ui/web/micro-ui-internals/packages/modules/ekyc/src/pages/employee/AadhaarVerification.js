@@ -1,4 +1,4 @@
-import React, { useState, useRef, Fragment } from "react";
+import React, { useState, useRef, Fragment, useEffect } from "react";
 import {
   Card,
   LabelFieldPair,
@@ -14,6 +14,7 @@ import {
 } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useLocation, useHistory } from "react-router-dom";
+import { getSavedData } from "../../utils";
 import AddressDetails from "./AddressDetails";
 
 // ─── Icons ───────────────────────────────────────────────────────────────────
@@ -156,29 +157,68 @@ const AadhaarVerification = () => {
   };
 
   // Normalize the nested data shape (API returns .connectionDetails, fallback uses .connectionDetailsInfo)
-  const details =
+  const initialDetails =
     connectionDetails?.connectionDetails ||
     connectionDetails?.connectionDetailsInfo ||
     {};
 
   // ── State ──
-  const [aadhaarLastFour, setAadhaarLastFour] = useState("");
-  const [isAadhaarVerified, setIsAadhaarVerified] = useState(false);
+  const [initialData] = useState(() => getSavedData("EKYC_INITIAL_DATA", {
+    userName: initialDetails.consumerName || "",
+    mobileNumber: initialDetails.phoneNumber || "",
+    whatsappNumber: initialDetails.phoneNumber || "",
+    email: initialDetails.email || "",
+    noOfPersons: connectionDetails?.addressDetails?.noOfPerson || "",
+    // Property and Connection Info
+    pidNumber: connectionDetails?.propertyDetails?.pidNumber || "",
+    typeOfConnection: connectionDetails?.connectionDetails?.connectionType || "",
+    connectionCategory: connectionDetails?.connectionDetails?.connectionCategory || "",
+    userType: connectionDetails?.propertyDetails?.userType || "",
+    noOfFloor: connectionDetails?.propertyDetails?.noOfFloor || null,
+    // Address Info
+    fullAddress: connectionDetails?.addressDetails?.fullAddress || "",
+    flatNo: connectionDetails?.addressDetails?.flatHouseNumber || "",
+    building: connectionDetails?.addressDetails?.buildingTower || "",
+    landmark: connectionDetails?.addressDetails?.landmark || "",
+    pincode: connectionDetails?.addressDetails?.pinCode || "",
+    assembly: connectionDetails?.addressDetails?.assembly || "",
+    ward: connectionDetails?.addressDetails?.ward || "",
+  }));
+
+  // Sync initial data snapshot
+  useEffect(() => {
+    sessionStorage.setItem("EKYC_INITIAL_DATA", JSON.stringify(initialData));
+  }, [initialData]);
+
+  const [aadhaarLastFour, setAadhaarLastFour] = useState(() => sessionStorage.getItem("EKYC_AADHAAR_LAST_FOUR") || "");
+  const [isAadhaarVerified, setIsAadhaarVerified] = useState(() => sessionStorage.getItem("EKYC_AADHAAR_VERIFIED") === "true");
   const [isVerifying, setIsVerifying] = useState(false);
   const [showOtpField, setShowOtpField] = useState(false);
   const [otp, setOtp] = useState("");
   const [otpError, setOtpError] = useState(false);
-  const [nameCorrect, setNameCorrect] = useState({ code: "NO", name: "CORE_COMMON_NO" });
-  const [userName, setUserName] = useState(details.consumerName || "");
+  const [nameCorrect, setNameCorrect] = useState(() => getSavedData("EKYC_NAME_CORRECT", { code: "NO", name: "CORE_COMMON_NO" }));
+  const [userName, setUserName] = useState(() => sessionStorage.getItem("EKYC_USER_NAME") || initialData.userName);
 
-  const [mobileChange, setMobileChange] = useState({ code: "NO", name: "CORE_COMMON_NO" });
-  const [mobileNumber, setMobileNumber] = useState(details.phoneNumber || "");
+  const [mobileChange, setMobileChange] = useState(() => getSavedData("EKYC_MOBILE_CHANGE", { code: "NO", name: "CORE_COMMON_NO" }));
+  const [mobileNumber, setMobileNumber] = useState(() => sessionStorage.getItem("EKYC_MOBILE_NUMBER") || initialData.mobileNumber);
 
-  const [whatsappNumber, setWhatsappNumber] = useState(details.phoneNumber || "");
-  const [email, setEmail] = useState(details.email || "");
-  const [noOfPersons, setNoOfPersons] = useState(
-    connectionDetails?.addressDetails?.noOfPerson || ""
-  );
+  const [whatsappNumber, setWhatsappNumber] = useState(() => sessionStorage.getItem("EKYC_WHATSAPP_NUMBER") || initialData.whatsappNumber);
+  const [email, setEmail] = useState(() => sessionStorage.getItem("EKYC_EMAIL") || initialData.email);
+  const [noOfPersons, setNoOfPersons] = useState(() => sessionStorage.getItem("EKYC_NO_OF_PERSONS") || initialData.noOfPersons);
+
+  // Sync current form state to sessionStorage
+  useEffect(() => {
+    sessionStorage.setItem("EKYC_AADHAAR_LAST_FOUR", aadhaarLastFour);
+    sessionStorage.setItem("EKYC_AADHAAR_VERIFIED", isAadhaarVerified);
+    sessionStorage.setItem("EKYC_NAME_CORRECT", JSON.stringify(nameCorrect));
+    sessionStorage.setItem("EKYC_USER_NAME", userName);
+    sessionStorage.setItem("EKYC_MOBILE_CHANGE", JSON.stringify(mobileChange));
+    sessionStorage.setItem("EKYC_MOBILE_NUMBER", mobileNumber);
+    sessionStorage.setItem("EKYC_WHATSAPP_NUMBER", whatsappNumber);
+    sessionStorage.setItem("EKYC_EMAIL", email);
+    sessionStorage.setItem("EKYC_NO_OF_PERSONS", noOfPersons);
+    sessionStorage.setItem("EKYC_CURRENT_STEP", "AADHAAR");
+  }, [aadhaarLastFour, isAadhaarVerified, nameCorrect, userName, mobileChange, mobileNumber, whatsappNumber, email, noOfPersons]);
   const [showAddressSection, setShowAddressSection] = useState(false);
   const [addressData, setAddressData] = useState(null);
 
@@ -235,6 +275,7 @@ const AadhaarVerification = () => {
         noOfPersons,
       },
       addressDetails,
+      initialData: initialData, // Pass the initial snapshot
     });
   };
 
@@ -286,8 +327,9 @@ const AadhaarVerification = () => {
   };
 
   return (
-    <div className="inbox-container">
-      <style>{`
+    <div className="ground-container employee-app-container form-container">
+      <div className="inbox-container">
+        <style>{`
         @keyframes fadeSlideIn {
           from { opacity: 0; transform: translateY(6px); }
           to   { opacity: 1; transform: translateY(0); }
@@ -308,295 +350,296 @@ const AadhaarVerification = () => {
         .ekyc-field-label { font-size: 11px; font-weight: 600; color: #667085; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
       `}</style>
 
-      {/* ── Sidebar ── */}
-      <div className="filters-container">
-        <Card style={{ display: "flex", alignItems: "center", padding: "12px 16px", marginBottom: "12px", borderRadius: "8px" }}>
-          <div style={{ color: "#185FA5", marginRight: "10px", display: "flex" }}>
-            <HomeIcon style={{ width: "20px", height: "20px" }} />
-          </div>
-          <div style={{ fontWeight: "600", fontSize: "15px", color: "#0B0C0C" }}>
-            {t("EKYC_PROCESS") || "eKYC Process"}
-          </div>
-        </Card>
-
-        <div style={{ background: "#fff", padding: "16px 14px", borderRadius: "8px", border: "1px solid #EAECF0" }}>
-          {[
-            { label: t("EKYC_STEP_AADHAAR") || "Aadhaar", done: showAddressSection, active: !showAddressSection },
-            { label: t("EKYC_STEP_ADDRESS") || "Address", done: addressData !== null, active: showAddressSection && addressData === null },
-            { label: t("EKYC_STEP_PROPERTY") || "Property", done: false, active: false },
-            { label: t("EKYC_STEP_REVIEW") || "Review", done: false, active: false },
-          ].map((step, i) => (
-            <div className="ekyc-sidebar-step" key={i}>
-              <div className={`ekyc-step-dot${step.done ? " done" : step.active ? " active" : ""}`}>
-                {step.done
-                  ? <CheckIcon size={11} color="#fff" />
-                  : i + 1}
-              </div>
-              {i < 3 && <div className="ekyc-step-line" />}
-              <div className={`ekyc-step-label${step.done ? " done" : step.active ? " active" : ""}`}>
-                {step.label}
-              </div>
+        {/* ── Sidebar ── */}
+        <div className="filters-container">
+          <Card style={{ display: "flex", alignItems: "center", padding: "12px 16px", marginBottom: "12px", borderRadius: "8px" }}>
+            <div style={{ color: "#185FA5", marginRight: "10px", display: "flex" }}>
+              <HomeIcon style={{ width: "20px", height: "20px" }} />
             </div>
-          ))}
+            <div style={{ fontWeight: "600", fontSize: "15px", color: "#0B0C0C" }}>
+              {t("EKYC_PROCESS") || "eKYC Process"}
+            </div>
+          </Card>
+
+          <div style={{ background: "#fff", padding: "16px 14px", borderRadius: "8px", border: "1px solid #EAECF0" }}>
+            {[
+              { label: t("EKYC_STEP_AADHAAR") || "Aadhaar", done: showAddressSection, active: !showAddressSection },
+              { label: t("EKYC_STEP_ADDRESS") || "Address", done: addressData !== null, active: showAddressSection && addressData === null },
+              { label: t("EKYC_STEP_PROPERTY") || "Property", done: false, active: false },
+              { label: t("EKYC_STEP_REVIEW") || "Review", done: false, active: false },
+            ].map((step, i) => (
+              <div className="ekyc-sidebar-step" key={i}>
+                <div className={`ekyc-step-dot${step.done ? " done" : step.active ? " active" : ""}`}>
+                  {step.done
+                    ? <CheckIcon size={11} color="#fff" />
+                    : i + 1}
+                </div>
+                {i < 3 && <div className="ekyc-step-line" />}
+                <div className={`ekyc-step-label${step.done ? " done" : step.active ? " active" : ""}`}>
+                  {step.label}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
 
-      {/* ── Main content ── */}
-      <div style={{ flex: 1, marginLeft: "16px" }}>
-        <Card>
+        {/* ── Main content ── */}
+        <div style={{ flex: 1, marginLeft: "16px" }}>
+          <Card>
 
-          {/* K-Number badge */}
-          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "20px" }}>
-            <div style={{
-              background: "#F9FAFB", border: "0.5px solid #EAECF0",
-              borderRadius: "20px", padding: "4px 14px",
-              fontSize: "12px", color: "#667085",
-            }}>
-              {t("EKYC_K_NUMBER") || "K Number"}:{" "}
-              <span style={{ color: "#0B0C0C", fontWeight: "600" }}>{kNumber}</span>
-            </div>
-          </div>
-
-          {/* ── Section 1: Aadhaar ── */}
-          <SectionHead
-            icon={<LockIcon size={16} />}
-            label={t("EKYC_AADHAAR_NUMBER_HEADER") || "Aadhaar Number"}
-          />
-
-          <div className="ekyc-field-label">
-            {t("EKYC_LAST_4_DIGIT_AADHAAR") || "Enter 12 digits of Aadhaar"}
-          </div>
-          <LabelFieldPair>
-            <div className="field">
-              <IconInput
-                icon={<LockIcon size={15} />}
-                rightIcon={isAadhaarVerified ? <CheckIcon size={15} /> : null}
-                value={aadhaarLastFour}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (val.length <= 12 && /^\d*$/.test(val)) setAadhaarLastFour(val);
-                }}
-                placeholder={t("EKYC_ENTER_LAST_4_DIGIT") || "Enter 12 digits"}
-                maxLength={12}
-                disabled={isAadhaarVerified}
-                inputStyle={isAadhaarVerified ? styles.verifiedInput : {}}
-              />
-            </div>
-          </LabelFieldPair>
-
-          {!isAadhaarVerified && !showOtpField && (
-            <SubmitBar
-              label={isVerifying
-                ? t("EKYC_VERIFYING") || "Verifying..."
-                : t("EKYC_VERIFY_AADHAAR_BTN") || "Verify Aadhaar"}
-              onSubmit={handleVerifyAadhaar}
-              disabled={aadhaarLastFour.length !== 12 || isVerifying}
-              style={{ marginTop: "12px" }}
-            />
-          )}
-
-          {!isAadhaarVerified && showOtpField && (
-            <Fragment>
-              <div className="ekyc-field-label" style={{ marginTop: "16px" }}>
-                {t("EKYC_ENTER_OTP") || "Enter OTP"}
+            {/* K-Number badge */}
+            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "20px" }}>
+              <div style={{
+                background: "#F9FAFB", border: "0.5px solid #EAECF0",
+                borderRadius: "20px", padding: "4px 14px",
+                fontSize: "12px", color: "#667085",
+              }}>
+                {t("EKYC_K_NUMBER") || "K Number"}:{" "}
+                <span style={{ color: "#0B0C0C", fontWeight: "600" }}>{kNumber}</span>
               </div>
-              <LabelFieldPair>
-                <div className="field">
-                  <IconInput
-                    icon={<LockIcon size={15} />}
-                    value={otp}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      if (/^\d*$/.test(val)) {
-                        setOtp(val);
-                        if (otpError) setOtpError(false);
-                      }
-                    }}
-                    placeholder={t("EKYC_ENTER_OTP_PLACEHOLDER") || "Enter 123456"}
-                    maxLength={6}
-                  />
-                </div>
-              </LabelFieldPair>
-              {otpError && (
-                <div style={{ color: "#D4351C", fontSize: "12px", marginTop: "4px" }}>
-                  {t("EKYC_INVALID_OTP") || "Invalid OTP. Please enter 123456."}
-                </div>
-              )}
+            </div>
+
+            {/* ── Section 1: Aadhaar ── */}
+            <SectionHead
+              icon={<LockIcon size={16} />}
+              label={t("EKYC_AADHAAR_NUMBER_HEADER") || "Aadhaar Number"}
+            />
+
+            <div className="ekyc-field-label">
+              {t("EKYC_LAST_4_DIGIT_AADHAAR") || "Enter 12 digits of Aadhaar"}
+            </div>
+            <LabelFieldPair>
+              <div className="field">
+                <IconInput
+                  icon={<LockIcon size={15} />}
+                  rightIcon={isAadhaarVerified ? <CheckIcon size={15} /> : null}
+                  value={aadhaarLastFour}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val.length <= 12 && /^\d*$/.test(val)) setAadhaarLastFour(val);
+                  }}
+                  placeholder={t("EKYC_ENTER_LAST_4_DIGIT") || "Enter 12 digits"}
+                  maxLength={12}
+                  disabled={isAadhaarVerified}
+                  inputStyle={isAadhaarVerified ? styles.verifiedInput : {}}
+                />
+              </div>
+            </LabelFieldPair>
+
+            {!isAadhaarVerified && !showOtpField && (
               <SubmitBar
-                label={t("EKYC_VERIFY_OTP_BTN") || "Verify OTP"}
-                onSubmit={handleVerifyOtp}
-                disabled={otp.length !== 6}
+                label={isVerifying
+                  ? t("EKYC_VERIFYING") || "Verifying..."
+                  : t("EKYC_VERIFY_AADHAAR_BTN") || "Verify Aadhaar"}
+                onSubmit={handleVerifyAadhaar}
+                disabled={aadhaarLastFour.length !== 12 || isVerifying}
                 style={{ marginTop: "12px" }}
               />
-            </Fragment>
-          )}
+            )}
 
-          {isAadhaarVerified && (
-            <div style={styles.verifiedCard}>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "14px" }}>
-                <div style={{
-                  width: "24px", height: "24px", borderRadius: "50%",
-                  background: "#9FE1CB", display: "flex", alignItems: "center",
-                  justifyContent: "center", animation: "pulseGreen 2s ease infinite",
-                  flexShrink: 0,
-                }}>
-                  <CheckIcon size={13} color="#085041" />
+            {!isAadhaarVerified && showOtpField && (
+              <Fragment>
+                <div className="ekyc-field-label" style={{ marginTop: "16px" }}>
+                  {t("EKYC_ENTER_OTP")}
                 </div>
-                <span style={{ fontWeight: "600", color: "#085041", fontSize: "14px" }}>
-                  {t("EKYC_AADHAAR_VERIFIED_SUCCESS") || "Aadhaar Verified Successfully"}
-                </span>
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-                <div>
-                  <div style={styles.infoLabel}>{t("EKYC_NAME") || "Name"}</div>
-                  <div style={styles.infoValue}>{details.consumerName}</div>
+                <LabelFieldPair>
+                  <div className="field">
+                    <IconInput
+                      icon={<LockIcon size={15} />}
+                      value={otp}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (/^\d*$/.test(val)) {
+                          setOtp(val);
+                          if (otpError) setOtpError(false);
+                        }
+                      }}
+                      placeholder={t("EKYC_ENTER_OTP_PLACEHOLDER") || "Enter 123456"}
+                      maxLength={6}
+                    />
+                  </div>
+                </LabelFieldPair>
+                {otpError && (
+                  <div style={{ color: "#D4351C", fontSize: "12px", marginTop: "4px" }}>
+                    {t("EKYC_INVALID_OTP") || "Invalid OTP. Please enter 123456."}
+                  </div>
+                )}
+                <SubmitBar
+                  label={t("EKYC_VERIFY_OTP_BTN") || "Verify OTP"}
+                  onSubmit={handleVerifyOtp}
+                  disabled={otp.length !== 6}
+                  style={{ marginTop: "12px" }}
+                />
+              </Fragment>
+            )}
+
+            {isAadhaarVerified && (
+              <div style={styles.verifiedCard}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "14px" }}>
+                  <div style={{
+                    width: "24px", height: "24px", borderRadius: "50%",
+                    background: "#9FE1CB", display: "flex", alignItems: "center",
+                    justifyContent: "center", animation: "pulseGreen 2s ease infinite",
+                    flexShrink: 0,
+                  }}>
+                    <CheckIcon size={13} color="#085041" />
+                  </div>
+                  <span style={{ fontWeight: "600", color: "#085041", fontSize: "14px" }}>
+                    {t("EKYC_AADHAAR_VERIFIED_SUCCESS") || "Aadhaar Verified Successfully"}
+                  </span>
                 </div>
-                <div>
-                  <div style={styles.infoLabel}>{t("EKYC_AADHAAR") || "Aadhaar"}</div>
-                  <div style={styles.infoValue}>{aadhaarLastFour}</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                  <div>
+                    <div style={styles.infoLabel}>{t("EKYC_NAME") || "Name"}</div>
+                    <div style={styles.infoValue}>{initialDetails.consumerName}</div>
+                  </div>
+                  <div>
+                    <div style={styles.infoLabel}>{t("EKYC_AADHAAR") || "Aadhaar"}</div>
+                    <div style={styles.infoValue}>{aadhaarLastFour}</div>
+                  </div>
+                  <div style={{ gridColumn: "span 2" }}>
+                    <div style={styles.infoLabel}>{t("EKYC_ADDRESS") || "Address"}</div>
+                    <div style={{ ...styles.infoValue, fontSize: "13px" }}>{initialDetails.address}</div>
+                  </div>
                 </div>
-                <div style={{ gridColumn: "span 2" }}>
-                  <div style={styles.infoLabel}>{t("EKYC_ADDRESS") || "Address"}</div>
-                  <div style={{ ...styles.infoValue, fontSize: "13px" }}>{details.address}</div>
+              </div>
+            )}
+
+            <hr style={{ margin: "24px 0", border: 0, borderTop: "1px solid #EAECF0" }} />
+
+            {/* ── Section 2: Contact Details ── */}
+            <SectionHead
+              icon={<UserIcon size={16} />}
+              label={t("EKYC_CONTACT_DETAILS_HEADER") || "Contact Details"}
+            />
+
+            {/* Name */}
+            <RadioToggleRow
+              label={`${t("EKYC_USER_NAME")} (${t("EKYC_NAME_CORRECT_HINT")})`}
+              selected={nameCorrect}
+              onSelect={setNameCorrect}
+              options={yesNoOptions}
+              sty
+              t={t}
+            />
+            <LabelFieldPair>
+              <div className="field">
+                <IconInput
+                  icon={<UserIcon size={15} color={nameCorrect.code === "YES" ? "#64748b" : "#94a3b8"} />}
+                  style={{ marginBottom: "12px" }}
+                  value={userName}
+                  onChange={(e) => setUserName(e.target.value)}
+                  placeholder={t("EKYC_ENTER_NAME_PLACEHOLDER") || "Enter full name"}
+                  disabled={nameCorrect.code !== "YES"}
+                />
+              </div>
+            </LabelFieldPair>
+
+            {/* Mobile */}
+            <RadioToggleRow
+              label={`${t("EKYC_USER_MOBILE_NUMBER")} (${t("EKYC_UPDATE_MOBILE_HINT")})`}
+              selected={mobileChange}
+              onSelect={setMobileChange}
+              options={yesNoOptions}
+              t={t}
+            />
+            <LabelFieldPair>
+              <div className="field">
+                <IconInput
+                  icon={<PhoneIcon size={15} color={mobileChange.code === "YES" ? "#64748b" : "#94a3b8"} />}
+                  style={{ marginBottom: "12px" }}
+                  value={mobileNumber}
+                  onChange={(e) => setMobileNumber(e.target.value)}
+                  placeholder="+91 XXXXX XXXXX"
+                  disabled={mobileChange.code !== "YES"}
+                />
+              </div>
+            </LabelFieldPair>
+
+            {/* WhatsApp + Email */}
+            <div style={styles.twoCol}>
+              <div>
+                <div className="ekyc-field-label">
+                  {t("EKYC_WHATSAPP_NUMBER") || "WhatsApp Number"}
                 </div>
+                <IconInput
+                  icon={<WhatsappIcon size={15} />}
+                  value={whatsappNumber}
+                  onChange={(e) => setWhatsappNumber(e.target.value)}
+                  placeholder="+91 XXXXX XXXXX"
+                />
+              </div>
+              <div>
+                <div className="ekyc-field-label">
+                  {t("EKYC_EMAIL_ADDRESS") || "Email Address"}
+                  <span style={styles.optionalTag}>{t("EKYC_OPTIONAL") || "Optional"}</span>
+                </div>
+                <IconInput
+                  icon={<MailIcon size={15} />}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={t("EKYC_EMAIL_ADDRESS_PLACEHOLDER") || "example@email.com"}
+                />
               </div>
             </div>
-          )}
 
-          <hr style={{ margin: "24px 0", border: 0, borderTop: "1px solid #EAECF0" }} />
+            <hr style={{ margin: "24px 0", border: 0, borderTop: "1px solid #EAECF0" }} />
 
-          {/* ── Section 2: Contact Details ── */}
-          <SectionHead
-            icon={<UserIcon size={16} />}
-            label={t("EKYC_CONTACT_DETAILS_HEADER") || "Contact Details"}
-          />
+            {/* ── Section 3: Family Details ── */}
+            <SectionHead
+              icon={<UsersIcon size={16} />}
+              label={t("EKYC_FAMILY_DETAILS_HEADER") || "Family Details"}
+            />
 
-          {/* Name */}
-          <RadioToggleRow
-            label={`${t("EKYC_USER_NAME")} (${t("EKYC_NAME_CORRECT_HINT")})`}
-            selected={nameCorrect}
-            onSelect={setNameCorrect}
-            options={yesNoOptions}
-            sty
-            t={t}
-          />
-          <LabelFieldPair>
-            <div className="field">
-              <IconInput
-                icon={<UserIcon size={15} color={nameCorrect.code === "YES" ? "#64748b" : "#94a3b8"} />}
-                style={{ marginBottom: "12px" }}
-                value={userName}
-                onChange={(e) => setUserName(e.target.value)}
-                placeholder={t("EKYC_ENTER_NAME_PLACEHOLDER") || "Enter full name"}
-                disabled={nameCorrect.code !== "YES"}
-              />
+            <div className="ekyc-field-label">
+              {t("EKYC_NO_OF_PERSONS") || "Number of Family Members"}
             </div>
-          </LabelFieldPair>
-
-          {/* Mobile */}
-          <RadioToggleRow
-            label={`${t("EKYC_USER_MOBILE_NUMBER")} (${t("EKYC_UPDATE_MOBILE_HINT")})`}
-            selected={mobileChange}
-            onSelect={setMobileChange}
-            options={yesNoOptions}
-            t={t}
-          />
-          <LabelFieldPair>
-            <div className="field">
-              <IconInput
-                icon={<PhoneIcon size={15} color={mobileChange.code === "YES" ? "#64748b" : "#94a3b8"} />}
-                style={{ marginBottom: "12px" }}
-                value={mobileNumber}
-                onChange={(e) => setMobileNumber(e.target.value)}
-                placeholder="+91 XXXXX XXXXX"
-                disabled={mobileChange.code !== "YES"}
-              />
-            </div>
-          </LabelFieldPair>
-
-          {/* WhatsApp + Email */}
-          <div style={styles.twoCol}>
-            <div>
-              <div className="ekyc-field-label">
-                {t("EKYC_WHATSAPP_NUMBER") || "WhatsApp Number"}
+            <LabelFieldPair>
+              <div className="field">
+                <IconInput
+                  icon={<UsersIcon size={15} />}
+                  value={noOfPersons}
+                  onChange={(e) => {
+                    if (/^\d*$/.test(e.target.value)) setNoOfPersons(e.target.value);
+                  }}
+                  placeholder={t("EKYC_ENTER_NO_OF_PERSONS") || "Enter total number of persons"}
+                />
               </div>
-              <IconInput
-                icon={<WhatsappIcon size={15} />}
-                value={whatsappNumber}
-                onChange={(e) => setWhatsappNumber(e.target.value)}
-                placeholder="+91 XXXXX XXXXX"
-              />
-            </div>
-            <div>
-              <div className="ekyc-field-label">
-                {t("EKYC_EMAIL_ADDRESS") || "Email Address"}
-                <span style={styles.optionalTag}>{t("EKYC_OPTIONAL") || "Optional"}</span>
+            </LabelFieldPair>
+
+            {/* Save & Continue (Non-sticky, at form end) */}
+            {!showAddressSection && (
+              <div style={{ marginTop: "24px" }}>
+                <SubmitBar
+                  label={t("ES_COMMON_SAVE_CONTINUE") || "Save & Continue"}
+                  onSubmit={handleSaveAndContinue}
+                />
               </div>
-              <IconInput
-                icon={<MailIcon size={15} />}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder={t("EKYC_EMAIL_ADDRESS_PLACEHOLDER") || "example@email.com"}
-              />
+            )}
+
+            {/* Address section (injected inline) */}
+            {showAddressSection && (
+              <div ref={addressSectionRef}>
+                <AddressDetails
+                  isSection={true}
+                  onComplete={handleCompleteAll}
+                  parentState={{ kNumber, selectedOption, connectionDetails }}
+                />
+              </div>
+            )}
+
+            {/* Secure notice */}
+            <div style={{
+              display: "flex", alignItems: "center", justifyContent: "center",
+              gap: "5px", marginTop: "20px",
+              fontSize: "11px", color: "#98A2B3",
+            }}>
+              <LockIcon size={11} />
+              {t("EKYC_SECURE_DATA_NOTICE") || "Your data is encrypted and secure"}
             </div>
-          </div>
 
-          <hr style={{ margin: "24px 0", border: 0, borderTop: "1px solid #EAECF0" }} />
-
-          {/* ── Section 3: Family Details ── */}
-          <SectionHead
-            icon={<UsersIcon size={16} />}
-            label={t("EKYC_FAMILY_DETAILS_HEADER") || "Family Details"}
-          />
-
-          <div className="ekyc-field-label">
-            {t("EKYC_NO_OF_PERSONS") || "Number of Family Members"}
-          </div>
-          <LabelFieldPair>
-            <div className="field">
-              <IconInput
-                icon={<UsersIcon size={15} />}
-                value={noOfPersons}
-                onChange={(e) => {
-                  if (/^\d*$/.test(e.target.value)) setNoOfPersons(e.target.value);
-                }}
-                placeholder={t("EKYC_ENTER_NO_OF_PERSONS") || "Enter total number of persons"}
-              />
-            </div>
-          </LabelFieldPair>
-
-          {/* Save & Continue (Non-sticky, at form end) */}
-          {!showAddressSection && (
-            <div style={{ marginTop: "24px" }}>
-              <SubmitBar
-                label={t("ES_COMMON_SAVE_CONTINUE") || "Save & Continue"}
-                onSubmit={handleSaveAndContinue}
-              />
-            </div>
-          )}
-
-          {/* Address section (injected inline) */}
-          {showAddressSection && (
-            <div ref={addressSectionRef}>
-              <AddressDetails
-                isSection={true}
-                onComplete={handleCompleteAll}
-                parentState={{ kNumber, selectedOption, connectionDetails }}
-              />
-            </div>
-          )}
-
-          {/* Secure notice */}
-          <div style={{
-            display: "flex", alignItems: "center", justifyContent: "center",
-            gap: "5px", marginTop: "20px",
-            fontSize: "11px", color: "#98A2B3",
-          }}>
-            <LockIcon size={11} />
-            {t("EKYC_SECURE_DATA_NOTICE") || "Your data is encrypted and secure"}
-          </div>
-
-        </Card>
+          </Card>
+        </div>
       </div>
     </div>
   );

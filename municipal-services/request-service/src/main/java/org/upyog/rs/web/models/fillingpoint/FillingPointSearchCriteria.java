@@ -27,4 +27,9 @@ public class FillingPointSearchCriteria {
     @JsonProperty("vendorId")
     private String vendorId;
 
+    @JsonProperty("offset")
+    private Integer offset;
+
+    @JsonProperty("limit")
+    private Integer limit;
 }

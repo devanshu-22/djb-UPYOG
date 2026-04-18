@@ -501,6 +501,7 @@ const RegisryInbox = (props) => {
           },
           {
             Header: t("ES_FSM_REGISTRY_INBOX_VENDOR_NAME"),
+            minWidth: 250,
             Cell: ({ row }) => {
               return (
                 <Dropdown
@@ -510,6 +511,7 @@ const RegisryInbox = (props) => {
                   select={(value) => onVendorSelect(row, value)}
                   optionKey="name"
                   t={t}
+                  style={{ textAlign: "left", width: "100%", minWidth: "250px" }}
                 />
               );
             },
