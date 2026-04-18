@@ -6,6 +6,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
 import org.upyog.rs.web.models.AdditionalDetails;
+import org.upyog.rs.web.models.AuditDetails;
 import org.upyog.rs.web.models.RoutePoint;
 import org.upyog.rs.web.models.TripHistory;
 
@@ -40,6 +41,13 @@ public class TripHistoryRowMapper implements ResultSetExtractor<List<TripHistory
                     }
                 }
 
+                AuditDetails auditDetails = AuditDetails.builder()
+                        .createdBy(rs.getString("createdby"))
+                        .lastModifiedBy(rs.getString("lastmodifiedby"))
+                        .createdTime(rs.getLong("createdtime"))
+                        .lastModifiedTime(rs.getLong("lastmodifiedtime"))
+                        .build();
+
                 currentTrip = TripHistory.builder()
                         .tenantId(rs.getString("tenantId"))
                         .tripId(rs.getString("tripId"))
@@ -52,6 +60,7 @@ public class TripHistoryRowMapper implements ResultSetExtractor<List<TripHistory
                         .businessService(rs.getString("businessService"))
                         .status(rs.getString("status"))
                         .additionalDetails(additionalDetails)
+                        .auditDetails(auditDetails)
                         .routePoints(new ArrayList<>())
                         .build();
                 tripMap.put(currentTripId, currentTrip);
@@ -65,6 +74,7 @@ public class TripHistoryRowMapper implements ResultSetExtractor<List<TripHistory
                     .rawLng(rs.getDouble("rawLng"))
                     .accuracy(rs.getDouble("accuracy"))
                     .speed(rs.getDouble("speed"))
+                    .tripId(rs.getString("tripid"))
                     .bearing(rs.getDouble("bearing"))
                     .provider(rs.getString("provider"))
                     .timestamp(rs.getString("timestamp"))
