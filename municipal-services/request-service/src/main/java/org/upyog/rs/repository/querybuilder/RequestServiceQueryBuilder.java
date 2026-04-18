@@ -115,36 +115,59 @@ public class RequestServiceQueryBuilder {
             query = new StringBuilder(waterTankerBookingCount);
         }
 
+
+      //  query.append(" WHERE 1=1 ");
+
         if (!ObjectUtils.isEmpty(criteria.getTenantId())) {
             addClauseIfRequired(query, preparedStmtList);
             query.append(" ursbd.tenant_id LIKE ? ");
             preparedStmtList.add("%" + criteria.getTenantId() + "%");
         }
-        if (requestServiceConfiguration.getIsUserProfileEnabled()) {
-            addClauseIfRequired(query, preparedStmtList);
-            query.append(" ursbd.applicant_uuid IS NOT NULL ");
-        } else {
-            // If user profile is not enabled, we don't need to filter by applicant UUID
-            addClauseIfRequired(query, preparedStmtList);
-            query.append(" ursbd.applicant_uuid IS NULL ");
-        }
-        if (!ObjectUtils.isEmpty(criteria.getBookingNo())) {
-            addClauseIfRequired(query, preparedStmtList);
-            
-            // Create a comma-separated string of placeholders
-            String bookingNosPlaceholders = String.join(",", Collections.nCopies(criteria.getBookingNo().split(",").length, "?"));
-            
-            query.append(" ursbd.booking_no IN (").append(bookingNosPlaceholders).append(")");
+        // Apply applicant_uuid filter ONLY if explicitly required
+        if (criteria.getCreatedBy() != null && !criteria.getCreatedBy().isEmpty()) {
 
-            // Add the booking numbers to the preparedStmtList
-            String[] bookingNumbers = criteria.getBookingNo().split(",");
-            Collections.addAll(preparedStmtList, bookingNumbers);
+            if (requestServiceConfiguration.getIsUserProfileEnabled()) {
+                addClauseIfRequired(query, preparedStmtList);
+                query.append(" ursbd.applicant_uuid IS NOT NULL ");
+            } else {
+                // If user profile is not enabled, we don't need to filter by applicant UUID
+                addClauseIfRequired(query, preparedStmtList);
+                query.append(" ursbd.applicant_uuid IS NULL ");
+            }
         }
 
-        if (!ObjectUtils.isEmpty(criteria.getMobileNumber())) {
+        // Apply bookingNo / mobileNumber filter ONLY if present
+        if (!ObjectUtils.isEmpty(criteria.getBookingNo()) || !ObjectUtils.isEmpty(criteria.getMobileNumber())) {
+
             addClauseIfRequired(query, preparedStmtList);
-            query.append(" ursbd.mobile_number = ? ");
-            preparedStmtList.add(criteria.getMobileNumber());
+            query.append(" ( ");
+
+            // bookingNo
+            if (!ObjectUtils.isEmpty(criteria.getBookingNo())) {
+
+                String[] bookingNumbers = criteria.getBookingNo().split(",");
+                String placeholders = String.join(",", Collections.nCopies(bookingNumbers.length, "?"));
+
+                query.append(" ursbd.booking_no IN (").append(placeholders).append(") ");
+                Collections.addAll(preparedStmtList, bookingNumbers);
+
+
+            }
+
+            // mobileNumber
+            if (!ObjectUtils.isEmpty(criteria.getMobileNumber())) {
+
+                if (!ObjectUtils.isEmpty(criteria.getBookingNo())) {
+                    query.append(" AND ");   // ✅ OR is correct for search
+                }
+
+                query.append(" ursbd.mobile_number LIKE ? ");
+                preparedStmtList.add("%" + criteria.getMobileNumber() + "%");
+
+
+            }
+
+            query.append(" ) ");
         }
 
         if(!ObjectUtils.isEmpty(criteria.getLocalityCode())){
