@@ -80,8 +80,33 @@ const useWSConfigMDMS = {
         ),
       { select: (d) => d["ws-services-masters"].WSDisconnectionConfig, ...config }
     ),
-  
-    getFormConfig: (tenantId, config) =>
+
+  OwnerType: (tenantId, config) =>
+    useQuery(
+      [tenantId, "OWNER_TYPE"],
+      () =>
+        MdmsService.getDataByCriteria(
+          tenantId,
+          {
+            details: {
+              tenantId: tenantId,
+              moduleDetails: [
+                {
+                  moduleName: "ws-services-masters",
+                  masterDetails: [
+                    {
+                      name: "OwnerType",
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+          "WS"
+        ),
+      { select: (d) => d?.["ws-services-masters"]?.OwnerType || d?.["ws-services-masters"]?.ownerType, ...config }
+    ),
+  getFormConfig: (tenantId, config) =>
     useQuery(
       [tenantId, "FORM_CONFIG"],
       () =>
@@ -95,14 +120,15 @@ const useWSConfigMDMS = {
                   moduleName: "ws-services-masters",
                   masterDetails: [
                     {
-                      "name": "WSCreateConfig"
+                      name: "WSCreateConfig",
                     },
                     {
-                      "name": "WSActivationConfig"
+                      name: "WSActivationConfig",
                     },
                     {
-                      "name": "WSDisconnectionConfig"
-                    }
+                      name: "WSDisconnectionConfig",
+                    },
+                    { name: "OwnerType" },
                   ],
                 },
               ],

@@ -238,34 +238,31 @@ export const createPayloadOfWS = async (data) => {
     if (owner?.permanentAddress) owner.correspondenceAddress = owner?.permanentAddress;
   });
 
+  const serviceType = data?.applicationSelection?.serviceType?.code;
+  const isWater = serviceType === "WATER" || serviceType === "BOTH";
+  const isSewerage = serviceType === "SEWERAGE" || serviceType === "BOTH";
+
   let payload = {
-    water: data?.ConnectionDetails?.[0]?.water,
-    sewerage: data?.ConnectionDetails?.[0]?.sewerage,
-    proposedTaps: data?.ConnectionDetails?.[0]?.proposedTaps && Number(data?.ConnectionDetails?.[0]?.proposedTaps),
-    proposedPipeSize: data?.ConnectionDetails?.[0]?.proposedPipeSize?.size && Number(data?.ConnectionDetails?.[0]?.proposedPipeSize?.size),
-    proposedWaterClosets: data?.ConnectionDetails?.[0]?.proposedWaterClosets && Number(data?.ConnectionDetails?.[0]?.proposedWaterClosets),
-    proposedToilets: data?.ConnectionDetails?.[0]?.proposedToilets && Number(data?.ConnectionDetails?.[0]?.proposedToilets),
-    connectionHolders: !data?.ConnectionHolderDetails?.[0]?.sameAsOwnerDetails
-      ? [
-        {
-          correspondenceAddress: data?.ConnectionHolderDetails?.[0]?.address || "",
-          fatherOrHusbandName: data?.ConnectionHolderDetails?.[0]?.guardian || "",
-          gender: data?.ConnectionHolderDetails?.[0]?.gender?.code || "",
-          mobileNumber: data?.ConnectionHolderDetails?.[0]?.mobileNumber || "",
-          name: data?.ConnectionHolderDetails?.[0]?.name || "",
-          ownerType: data?.ConnectionHolderDetails?.[0]?.ownerType?.code || "",
-          relationship: data?.ConnectionHolderDetails?.[0]?.relationship?.code || "",
-          sameAsPropertyAddress: data?.ConnectionHolderDetails?.[0]?.sameAsOwnerDetails,
-          emailId: data?.ConnectionHolderDetails?.[0].emailId || "",
-        },
-      ]
-      : null,
-    service:
-      data?.ConnectionDetails?.[0]?.water && !data?.ConnectionDetails?.[0]?.sewerage
-        ? "Water"
-        : !data?.ConnectionDetails?.[0]?.water && data?.ConnectionDetails?.[0]?.sewerage
-          ? "Sewerage"
-          : "Water And Sewerage",
+    water: isWater,
+    sewerage: isSewerage,
+    proposedTaps: data?.useDetails?.noOfTaps && Number(data?.useDetails?.noOfTaps),
+    proposedPipeSize: data?.useDetails?.proposedPipeSize?.size && Number(data?.useDetails?.proposedPipeSize?.size),
+    proposedWaterClosets: data?.useDetails?.proposedWaterClosets && Number(data?.useDetails?.proposedWaterClosets),
+    proposedToilets: data?.useDetails?.proposedToilets && Number(data?.useDetails?.proposedToilets),
+    connectionHolders: [
+      {
+        correspondenceAddress: data?.propertyAddress?.address || "",
+        fatherOrHusbandName: data?.applicant?.ParentorSpouse || "",
+        gender: data?.useDetails?.gender?.code || "",
+        mobileNumber: data?.contact?.mobileNumber || "",
+        name: `${data?.applicant?.firstName} ${data?.applicant?.middleName || ""} ${data?.applicant?.lastName}`.replace(/\s+/g, " ").trim(),
+        ownerType: data?.applicationSelection?.categoryType?.code || "",
+        relationship: "OTHERS",
+        sameAsPropertyAddress: true,
+        emailId: data?.contact?.emailId || "",
+      },
+    ],
+    service: isWater && !isSewerage ? "Water" : !isWater && isSewerage ? "Sewerage" : "Water And Sewerage",
     property: data?.cpt?.details,
     propertyId: data?.cpt?.details?.propertyId,
     roadCuttingArea: null,
@@ -273,17 +270,27 @@ export const createPayloadOfWS = async (data) => {
     noOfWaterClosets: null,
     noOfToilets: null,
     additionalDetails: {
-      initialMeterReading: null,
+      ...data?.useDetails,
+      ...data?.djbEmployee,
+      ...data?.bankDetails,
+      zro: data?.zro?.code,
+      locality: data?.propertyAddress?.locality?.code,
+      applicantType: data?.applicationSelection?.applicantType?.code,
+      connectionType: data?.applicationSelection?.connectionType?.code,
+      categoryType: data?.applicationSelection?.categoryType?.code,
+      subCategory: data?.applicationSelection?.subCategory?.code,
+      commercialType: data?.applicationSelection?.commercialType?.code,
+      govtOrganization: data?.applicationSelection?.govtOrganization,
+      whatsAppNumber: data?.contact?.whatsAppNumber,
       detailsProvidedBy: "",
-      locality: data?.cpt?.details?.address?.locality?.code,
     },
-    tenantId: data?.cpt?.details?.address?.tenantId,
+    tenantId: data?.cpt?.details?.tenantId || data?.propertyAddress?.city?.code,
     processInstance: {
       action: "INITIATE",
     },
     channel: "CFC_COUNTER",
   };
-  sessionStorage.setItem("WS_DOCUMENTS_INOF", JSON.stringify(data?.DocumentsRequired?.documents));
+  sessionStorage.setItem("WS_DOCUMENTS_INOF", JSON.stringify(data?.documents));
   sessionStorage.setItem("WS_PROPERTY_INOF", JSON.stringify(data?.cpt?.details));
   /* use customiseCreateFormData hook to make some chnages to the water object */
   payload = Digit?.Customizations?.WS?.customiseCreatePayloadOfWS ? Digit?.Customizations?.WS?.customiseCreatePayloadOfWS(data, payload) : payload;
