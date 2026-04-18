@@ -99,78 +99,99 @@ public class RequestServiceQueryBuilder {
     private static final String mobileToiletBookingCount =
             "SELECT count(urmt.booking_id) FROM upyog_rs_mobile_toilet_booking_details urmt";
 
-
-    public String getWaterTankerQuery(WaterTankerBookingSearchCriteria criteria, List<Object> preparedStmtList) {
+    public String getWaterTankerQuery(WaterTankerBookingSearchCriteria criteria,
+                                      List<Object> preparedStmtList) {
 
         StringBuilder query;
 
+        //  Base query selection
         if (!criteria.isCountCall()) {
-            // Use different query based on isProfileEnabled
+
             if (requestServiceConfiguration.getIsUserProfileEnabled()) {
                 query = new StringBuilder(WATER_TANKER_BOOKING_DETAILS_SEARCH_QUERY_WITH_PROFILE);
+
             } else {
                 query = new StringBuilder(WATER_TANKER_BOOKING_DETAILS_SEARCH_QUERY);
+
             }
+
         } else {
             query = new StringBuilder(waterTankerBookingCount);
+
         }
 
+        //  ALWAYS START SAFE
+        query.append(" WHERE 1=1 ");
+
+        //  Tenant filter
         if (!ObjectUtils.isEmpty(criteria.getTenantId())) {
-            addClauseIfRequired(query, preparedStmtList);
-            query.append(" ursbd.tenant_id LIKE ? ");
+            query.append(" AND ursbd.tenant_id LIKE ? ");
             preparedStmtList.add("%" + criteria.getTenantId() + "%");
         }
+
+        //  Applicant UUID filter
         if (requestServiceConfiguration.getIsUserProfileEnabled()) {
-            addClauseIfRequired(query, preparedStmtList);
-            query.append(" ursbd.applicant_uuid IS NOT NULL ");
+            query.append(" AND ursbd.applicant_uuid IS NOT NULL ");
         } else {
-            // If user profile is not enabled, we don't need to filter by applicant UUID
-            addClauseIfRequired(query, preparedStmtList);
-            query.append(" ursbd.applicant_uuid IS NULL ");
-        }
-        if (!ObjectUtils.isEmpty(criteria.getBookingNo())) {
-            addClauseIfRequired(query, preparedStmtList);
-            
-            // Create a comma-separated string of placeholders
-            String bookingNosPlaceholders = String.join(",", Collections.nCopies(criteria.getBookingNo().split(",").length, "?"));
-            
-            query.append(" ursbd.booking_no IN (").append(bookingNosPlaceholders).append(")");
-
-            // Add the booking numbers to the preparedStmtList
-            String[] bookingNumbers = criteria.getBookingNo().split(",");
-            Collections.addAll(preparedStmtList, bookingNumbers);
+            query.append(" AND ursbd.applicant_uuid IS NULL ");
         }
 
-        if (!ObjectUtils.isEmpty(criteria.getMobileNumber())) {
-            addClauseIfRequired(query, preparedStmtList);
-            query.append(" ursbd.mobile_number = ? ");
-            preparedStmtList.add(criteria.getMobileNumber());
+
+        // BookingNo + MobileNumber block
+        if (!ObjectUtils.isEmpty(criteria.getBookingNo()) ||
+                !ObjectUtils.isEmpty(criteria.getMobileNumber())) {
+
+            query.append(" AND ( ");
+
+            // bookingNo
+            if (!ObjectUtils.isEmpty(criteria.getBookingNo())) {
+
+                String[] bookingNumbers = criteria.getBookingNo().split(",");
+                String placeholders = String.join(",", Collections.nCopies(bookingNumbers.length, "?"));
+
+                query.append(" ursbd.booking_no IN (").append(placeholders).append(") ");
+                Collections.addAll(preparedStmtList, bookingNumbers);
+
+            }
+
+            //  mobileNumber
+            if (!ObjectUtils.isEmpty(criteria.getMobileNumber())) {
+
+                if (!ObjectUtils.isEmpty(criteria.getBookingNo())) {
+                    query.append(" OR ");
+                }
+
+                query.append(" ursbd.mobile_number LIKE ? ");
+                preparedStmtList.add("%" + criteria.getMobileNumber() + "%");
+            }
+
+            query.append(" ) ");
         }
 
-        if(!ObjectUtils.isEmpty(criteria.getLocalityCode())){
-            addClauseIfRequired(query, preparedStmtList);
-            query.append(" ursbd.locality_code = ? ");
+        //  Locality
+        if (!ObjectUtils.isEmpty(criteria.getLocalityCode())) {
+            query.append(" AND ursbd.locality_code = ? ");
             preparedStmtList.add(criteria.getLocalityCode());
         }
 
+        // Status
         if (!ObjectUtils.isEmpty(criteria.getStatus())) {
-            addClauseIfRequired(query, preparedStmtList);
-            query.append(" ursbd.booking_status = ? ");
+            query.append(" AND ursbd.booking_status = ? ");
             preparedStmtList.add(criteria.getStatus());
         }
 
+        // Driver
         if (!ObjectUtils.isEmpty(criteria.getDriverId())) {
-            addClauseIfRequired(query, preparedStmtList);
-            query.append(" ursbd.driver_id = ? ");
+            query.append(" AND ursbd.driver_id = ? ");
             preparedStmtList.add(criteria.getDriverId());
         }
 
-        // Return count query directly without applying pagination
+        // RETURN COUNT QUERY (NO PAGINATION)
         if (criteria.isCountCall()) {
             return query.toString();
         }
 
-        // Apply pagination for non-count queries
+        // APPLY PAGINATION
         return addPaginationWrapper(query.toString(), preparedStmtList, criteria);
 
     }
