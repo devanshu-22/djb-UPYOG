@@ -12,6 +12,7 @@ import org.egov.tracer.model.CustomException;
 import org.egov.vendor.web.model.AuditDetails;
 import org.egov.vendor.web.model.Vendor;
 import org.egov.vendor.web.model.Vendor.StatusEnum;
+import org.egov.vendor.web.model.VendorAdditionalDetails;
 import org.egov.vendor.web.model.VendorWorkOrder;
 import org.egov.vendor.web.model.fillingpoint.FillingPoint;
 import org.egov.vendor.web.model.location.Address;
@@ -78,6 +79,7 @@ public class VendorRowMapper implements ResultSetExtractor<List<Vendor>> {
 			addChildrenToProperty(rs, currentvendor);
 			addWorkOrderToVendor(rs, currentvendor);
 			addFillingPointToVendor(rs, currentvendor);
+			addVendorAdditionalDetailsToVendor(rs, currentvendor);
 		}
 
 		return new ArrayList<>(vendorMap.values());
@@ -144,7 +146,17 @@ public class VendorRowMapper implements ResultSetExtractor<List<Vendor>> {
 	private void addFillingPointToVendor(ResultSet rs, Vendor vendor) throws SQLException {
 		String fpId = rs.getString("fp_id");
 
-		if (fpId != null && vendor.getFillingPoint() == null) {
+		if (fpId == null) return;
+
+		if (vendor.getFillingPoint() == null) {
+			vendor.setFillingPoint(new ArrayList<>());
+		}
+
+		boolean alreadyAdded = vendor.getFillingPoint()
+				.stream()
+				.anyMatch(fp -> fp.getId().equals(fpId));
+
+		if (!alreadyAdded) {
 			FillingPoint fillingPoint = FillingPoint.builder()
 					.id(fpId)
 					.fillingPointId(rs.getString("fp_filling_point_id"))
@@ -166,7 +178,50 @@ public class VendorRowMapper implements ResultSetExtractor<List<Vendor>> {
 					.lastModifiedTime(rs.getLong("fp_lastmodifiedtime"))
 					.build();
 
-			vendor.setFillingPoint(fillingPoint);
+			vendor.getFillingPoint().add(fillingPoint);
 		}
+	}
+	private void addVendorAdditionalDetailsToVendor(ResultSet rs, Vendor vendor) throws SQLException {
+
+		if (vendor.getVendorAdditionalDetails() != null) return;
+
+		String vadId = rs.getString("vad_id");
+		if (vadId == null) return;
+
+		VendorAdditionalDetails details = new VendorAdditionalDetails();
+		details.setVendorAdditionalDetailsId(rs.getString("vad_id"));
+		details.setVendorId(rs.getString("vad_vendor_id"));
+		details.setTenantId(rs.getString("vad_tenant_id"));
+		details.setCode(rs.getString("vad_code"));
+		details.setName(rs.getString("vad_name"));
+		details.setVendorCompany(rs.getString("vad_vendor_company"));
+		details.setVendorCategory(rs.getString("vad_vendor_category"));
+		details.setVendorPhone(rs.getString("vad_vendor_phone"));
+		details.setVendorEmail(rs.getString("vad_vendor_email"));
+		details.setContactPerson(rs.getString("vad_contact_person"));
+		details.setVendorMobileNumber(rs.getString("vad_vendor_mobile_number"));
+		details.setIfscCode(rs.getString("vad_ifsc_code"));
+		details.setBank(rs.getString("vad_bank"));
+		details.setBankBranchName(rs.getString("vad_bank_branch_name"));
+		details.setMicrNo(rs.getString("vad_micr_no"));
+		details.setBankAccountNumber(rs.getString("vad_bank_account_number"));
+		details.setNarration(rs.getString("vad_narration"));
+		details.setPanNo(rs.getString("vad_pan_no"));
+		details.setGstTinNo(rs.getString("vad_gst_tin_no"));
+		details.setGstRegisteredState(rs.getString("vad_gst_registered_state"));
+		details.setVendorGroup(rs.getString("vad_vendor_group"));
+		details.setVendorType(rs.getString("vad_vendor_type"));
+		details.setServiceType(rs.getString("vad_service_type"));
+		details.setRegistrationNo(rs.getString("vad_registration_no"));
+
+		long registrationDate = rs.getLong("vad_registration_date");
+		details.setRegistrationDate(rs.wasNull() ? null : registrationDate);
+
+		details.setStatus(rs.getString("vad_status"));
+		details.setActive(rs.getBoolean("vad_active"));
+		details.setEpfNo(rs.getString("vad_epf_no"));
+		details.setEsiNo(rs.getString("vad_esi_no"));
+
+		vendor.setVendorAdditionalDetails(details);
 	}
 	}
