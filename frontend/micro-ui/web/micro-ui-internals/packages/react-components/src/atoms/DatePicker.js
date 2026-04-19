@@ -1,30 +1,30 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { LuCalendarIcon } from "./svgindex";
 import Toast from "./Toast";
 
-const DatePicker = ({
-  date,
-  onChange,
-  disabled,
-  style,
-  enableAgeValidation = false, // 👉 NEW
-  minAge = 18, // 👉 NEW (default 18)
-}) => {
+const DatePicker = ({ date, onChange, disabled, style, isDOB }) => {
   const [toast, setToast] = useState(null);
+  const [inputValue, setInputValue] = useState("");
   const hiddenDateRef = useRef();
 
-  // 👉 yyyy-mm-dd → dd/mm/yyyy
+  useEffect(() => {
+    setInputValue(date ? formatDisplay(date) : "");
+  }, [date]);
+
+  // yyyy-mm-dd → dd/mm/yyyy
   const formatDisplay = (date) => {
     if (!date) return "";
+
     const d = new Date(date);
     const day = String(d.getDate()).padStart(2, "0");
     const month = String(d.getMonth() + 1).padStart(2, "0");
     const year = d.getFullYear();
+
     return `${day}/${month}/${year}`;
   };
 
-  // 👉 dd/mm/yyyy → yyyy-mm-dd
+  // dd/mm/yyyy → yyyy-mm-dd
   const toInputFormat = (date) => {
     if (!date) return "";
     if (date.includes("-")) return date;
@@ -33,7 +33,7 @@ const DatePicker = ({
     return `${year}-${month}-${day}`;
   };
 
-  // 👉 Dynamic Age Validation
+  // 18+ validation
   const isValidAge = (dateStr) => {
     const today = new Date();
     const dob = new Date(dateStr);
@@ -48,11 +48,78 @@ const DatePicker = ({
     return age >= minAge;
   };
 
+  // Auto format while typing
+  const handleTextChange = (e) => {
+    let value = e.target.value.replace(/\D/g, ""); // numbers only
+
+    value = value.slice(0, 8); // ddmmyyyy max
+
+    let formatted = "";
+
+    if (value.length <= 2) {
+      formatted = value;
+    } else if (value.length <= 4) {
+      formatted = `${value.slice(0, 2)}/${value.slice(2)}`;
+    } else {
+      formatted = `${value.slice(0, 2)}/${value.slice(2, 4)}/${value.slice(4)}`;
+    }
+
+    setInputValue(formatted);
+  };
+
+  const handleBlur = () => {
+    if (!inputValue) {
+      onChange?.("");
+      return;
+    }
+
+    const regex = /^\d{2}\/\d{2}\/\d{4}$/;
+
+    if (regex.test(inputValue)) {
+      const [d, m, y] = inputValue.split("/");
+
+      const day = Number(d);
+      const month = Number(m);
+      const year = Number(y);
+
+      // basic validation
+      if (day < 1 || day > 31 || month < 1 || month > 12 || year < 1900 || year > new Date().getFullYear()) {
+        setInputValue(date ? formatDisplay(date) : "");
+        return;
+      }
+
+      const isoDate = `${y}-${m}-${d}`;
+      const dateObj = new Date(isoDate);
+
+      if (!isNaN(dateObj.getTime())) {
+        if (isDOB && !isValidAge(isoDate)) {
+          setToast({
+            type: "warning",
+            message: "User must be at least 18 years old",
+          });
+
+          setInputValue(date ? formatDisplay(date) : "");
+          return;
+        }
+
+        onChange?.(isoDate);
+      } else {
+        setInputValue(date ? formatDisplay(date) : "");
+      }
+    } else {
+      setInputValue(date ? formatDisplay(date) : "");
+    }
+  };
+
   const handleDateChange = (e) => {
     const raw = e.target.value;
 
-    // 👉 Apply validation only if enabled
-    if (enableAgeValidation && !isValidAge(raw)) {
+    if (!raw) {
+      onChange?.("");
+      return;
+    }
+
+    if (isDOB && !isValidAge(raw)) {
       setToast({
         type: "warning",
         message: `User must be at least ${minAge} years old`,
@@ -74,18 +141,19 @@ const DatePicker = ({
           ...style,
         }}
       >
-        {/* Visible input */}
+        {/* Visible Input */}
         <input
           type="text"
-          readOnly
           disabled={disabled}
-          value={date ? formatDisplay(date) : ""}
+          value={inputValue}
+          onChange={handleTextChange}
+          onBlur={handleBlur}
           placeholder="DD/MM/YYYY"
+          maxLength="10"
           className={`registration__input ${disabled ? "disabled" : ""}`}
-          onClick={() => hiddenDateRef.current?.showPicker?.()}
         />
 
-        {/* Hidden input */}
+        {/* Hidden Date Picker */}
         <input
           type="date"
           ref={hiddenDateRef}
@@ -102,7 +170,7 @@ const DatePicker = ({
           }}
         />
 
-        {/* Icon */}
+        {/* Calendar Icon */}
         <LuCalendarIcon
           color="#d1d1d1"
           onClick={() => hiddenDateRef.current?.showPicker?.()}
@@ -126,8 +194,7 @@ DatePicker.propTypes = {
   onChange: PropTypes.func,
   disabled: PropTypes.bool,
   style: PropTypes.object,
-  enableAgeValidation: PropTypes.bool, // 👉 NEW
-  minAge: PropTypes.number, // 👉 NEW
+  isDOB: PropTypes.bool,
 };
 
 export default DatePicker;

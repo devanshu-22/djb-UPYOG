@@ -41,6 +41,7 @@ const SelectDateofBirthEmployment = ({ t, config, onSelect, formData = {}, userT
                 disable={false}
                 max={convertEpochToDate(new Date().setFullYear(new Date().getFullYear() - 18))}
                 defaultValue={undefined}
+                isDOB={true}
                 {...input.validation}
               />
               {formData?.[config.key]?.[input.name] &&
