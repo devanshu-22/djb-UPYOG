@@ -45,7 +45,7 @@ const DatePicker = ({ date, onChange, disabled, style, isDOB }) => {
       age--;
     }
 
-    return age >= 18;
+    return age >= minAge;
   };
 
   // Auto format while typing
@@ -122,7 +122,7 @@ const DatePicker = ({ date, onChange, disabled, style, isDOB }) => {
     if (isDOB && !isValidAge(raw)) {
       setToast({
         type: "warning",
-        message: "User must be at least 18 years old",
+        message: `User must be at least ${minAge} years old`,
       });
       return;
     }

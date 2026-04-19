@@ -459,16 +459,8 @@
   display: inline-block;
   transition: transform 0.3s ease;
 }
-
-.collapsible-card-arrow.open {
+w .collapsible-card-arrow.open {
   transform: rotate(180deg);
-}
-
-.collapsible-card-body {
-  font-size: 14px;
-  color: #444;
-  background: #fff;
-  padding: 15px;
 }
 
 .finance-breadcrumb {
@@ -691,10 +683,6 @@
   .finance-breadcrumb .back-button svg {
     width: 14px;
     height: 14px;
-  }
-
-  .collapsible-card-body {
-    padding: 15px;
   }
 }
 
