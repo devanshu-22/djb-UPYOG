@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useHistory } from "react-router-dom";
-import { Card, Dropdown, Loader, Menu, SubmitBar, Toast } from "@djb25/digit-ui-react-components";
+import { Card, Dropdown, Loader, SubmitBar, Toast } from "@djb25/digit-ui-react-components";
 //import FSMLink from "./inbox/FSMLink";
 import VENDORLink from "./inbox/VENDORLink";
 import ApplicationTable from "./inbox/ApplicationTable";
@@ -47,10 +47,12 @@ const getRowFillingPointIdentifiers = (row = {}) => {
         row?.fillingpointmetadata?.fillingPointId,
         row?.fillingPtName,
         row?.filling_pt_name,
+        row?.fillingPoint?.fillingPointId,
       ]
         .filter((value) => value !== undefined && value !== null && value !== "")
         .map(String),
       ...getFillingPointIdentifiers(row?.fillingPoint),
+      ...getFillingPointIdentifiers(row?.fillingPoint?.length ? row.fillingPoint[0] : row.fillingPoint),
       ...getFillingPointIdentifiers(row?.dsoDetails?.fillingPoint),
       ...getFillingPointIdentifiers(row?.fillingPointDetail),
     ])
@@ -136,7 +138,10 @@ const getVendorDriversForFillingPoint = (vendor, fillingPoint) => {
 
   return vendorDrivers.filter((driver) => {
     const driverFillingPointIdentifiers = getDriverFillingPointIdentifiers(driver);
-    return !driverFillingPointIdentifiers.length || driverFillingPointIdentifiers.some((identifier) => selectedFillingPointIdentifiers.includes(identifier));
+    return (
+      !driverFillingPointIdentifiers.length ||
+      driverFillingPointIdentifiers.some((identifier) => selectedFillingPointIdentifiers.includes(identifier))
+    );
   });
 };
 
@@ -161,7 +166,7 @@ const VendorInbox = (props) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const { t } = useTranslation();
   const history = useHistory();
-  const DSO = Digit.UserService.hasAccess(["FSM_DSO"]) || false;
+  // const DSO = Digit.UserService.hasAccess(["FSM_DSO"]) || false;
   const GetCell = (value) => <span className="cell-text">{value}</span>;
   const FSTP = Digit.UserService.hasAccess("FSM_EMP_FSTPO") || false;
   const [tableData, setTableData] = useState([]);
@@ -240,9 +245,7 @@ const VendorInbox = (props) => {
   };
 
   const updateVehicleRowState = (vehicleId, updates) => {
-    setTableData((currentTableData) =>
-      currentTableData.map((vehicle) => (vehicle?.id === vehicleId ? { ...vehicle, ...updates } : vehicle))
-    );
+    setTableData((currentTableData) => currentTableData.map((vehicle) => (vehicle?.id === vehicleId ? { ...vehicle, ...updates } : vehicle)));
   };
 
   const getVehicleUpdatePayload = (vehicle, overrides = {}) => {
@@ -465,9 +468,7 @@ const VendorInbox = (props) => {
 
     if (existingVendor?.id) {
       const existingVendorVehicles = Array.isArray(existingVendor?.vehicles)
-        ? existingVendor.vehicles.map((vehicle) =>
-            vehicle?.id === currentVehicle?.id ? { ...vehicle, vendorVehicleStatus: "INACTIVE" } : vehicle
-          )
+        ? existingVendor.vehicles.map((vehicle) => (vehicle?.id === currentVehicle?.id ? { ...vehicle, vendorVehicleStatus: "INACTIVE" } : vehicle))
         : [];
 
       mutateVendor(getVendorPayloadForVehicle(existingVendor, existingVendorVehicles), {
@@ -548,35 +549,35 @@ const VendorInbox = (props) => {
     });
   };
 
-  const onCellClick = (row, column, length) => {
-    setTableData((old) =>
-      old.map((data, index) => {
-        if (index == row.id && row.id !== data?.popup?.row && column.id !== data?.popup?.column && length) {
-          return {
-            ...data,
-            popup: {
-              row: row.id,
-              column: column.id,
-            },
-          };
-        } else {
-          return {
-            ...data,
-            popup: {},
-          };
-        }
-      })
-    );
-  };
+  // const onCellClick = (row, column, length) => {
+  //   setTableData((old) =>
+  //     old.map((data, index) => {
+  //       if (index == row.id && row.id !== data?.popup?.row && column.id !== data?.popup?.column && length) {
+  //         return {
+  //           ...data,
+  //           popup: {
+  //             row: row.id,
+  //             column: column.id,
+  //           },
+  //         };
+  //       } else {
+  //         return {
+  //           ...data,
+  //           popup: {},
+  //         };
+  //       }
+  //     })
+  //   );
+  // };
 
-  const onActionSelect = (action, type, data) => {
-    if (type === "VEHICLE") {
-      history.push("/digit-ui/employee/vendor/registry/vehicle-details/" + action);
-    } else {
-      let driver = data.find((ele) => ele.name === action);
-      history.push("/digit-ui/employee/vendor/registry/driver-details/" + driver?.id);
-    }
-  };
+  // const onActionSelect = (action, type, data) => {
+  //   if (type === "VEHICLE") {
+  //     history.push("/digit-ui/employee/vendor/registry/vehicle-details/" + action);
+  //   } else {
+  //     let driver = data.find((ele) => ele.name === action);
+  //     history.push("/digit-ui/employee/vendor/registry/driver-details/" + driver?.id);
+  //   }
+  // };
 
   //on search if the card is empty then it will
   const onSelectAdd = () => {
@@ -952,7 +953,11 @@ const VendorInbox = (props) => {
                 return <span>Loading...</span>;
               }
 
-              const hasDetails = additionalVendorData?.VendorDetails?.some((item) => item?.vendorAdditionalDetails?.vendorId === vendorId);
+              // const hasDetails = additionalVendorData?.VendorDetails?.some((item) => {
+              //   return item?.vendorAdditionalDetails?.vendorId === vendorId;
+              // });
+
+              const hasDetails = row.original?.vendorAdditionalDetails !== null;
               return (
                 <Link
                   to={
@@ -988,9 +993,7 @@ const VendorInbox = (props) => {
                 <div>
                   <span className="link">
                     <Link to={"/digit-ui/employee/vendor/registry/vehicle-details/" + row.original["registrationNumber"]}>
-                      <div>
-                        {row.original.registrationNumber}
-                      </div>
+                      <div>{row.original.registrationNumber}</div>
                     </Link>
                   </span>
                 </div>
@@ -1163,9 +1166,7 @@ const VendorInbox = (props) => {
                 <div>
                   <span className="link">
                     <Link to={"/digit-ui/employee/vendor/registry/driver-details/" + row.original["id"]}>
-                      <div>
-                        {row.original.owner?.userName || "NA"}
-                      </div>
+                      <div>{row.original.owner?.userName || "NA"}</div>
                     </Link>
                   </span>
                 </div>
@@ -1181,9 +1182,7 @@ const VendorInbox = (props) => {
                 <div>
                   <span className="link">
                     <Link to={"/digit-ui/employee/vendor/registry/driver-details/" + row.original["id"]}>
-                      <div>
-                        {row.original.name}
-                      </div>
+                      <div>{row.original.name}</div>
                     </Link>
                   </span>
                 </div>
@@ -1336,7 +1335,25 @@ const VendorInbox = (props) => {
   // if it validate the user role then it starts working
   let result;
   if (props.isLoading || isAllFillingPointsLoading) {
-    result = <Loader />;
+    result = (
+      <div
+        style={{
+          zIndex: 10,
+          position: "relative",
+          padding: "10px",
+          backgroundColor: "#fff",
+          width: "75px",
+          height: "75px",
+          borderRadius: "12px",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          margin: "auto",
+        }}
+      >
+        <Loader />
+      </div>
+    );
   } else if (tableData.length === 0) {
     let emptyCardText = "";
     let emptyButtonText = "";
@@ -1425,7 +1442,11 @@ const VendorInbox = (props) => {
       {showToast && (
         <Toast
           error={showToast.key === "error" ? true : false}
-          label={showToast.label ? t(showToast.label) : t(showToast.key === "success" ? `ES_FSM_REGISTRY_${showToast.action}_DISABLE_SUCCESS` : showToast.action)}
+          label={
+            showToast.label
+              ? t(showToast.label)
+              : t(showToast.key === "success" ? `ES_FSM_REGISTRY_${showToast.action}_DISABLE_SUCCESS` : showToast.action)
+          }
           onClose={closeToast}
         />
       )}

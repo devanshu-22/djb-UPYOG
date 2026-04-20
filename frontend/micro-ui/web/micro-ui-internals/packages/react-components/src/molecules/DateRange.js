@@ -1,10 +1,27 @@
 import React, { Fragment, useEffect, useMemo, useRef, useState } from "react";
-// import { ArrowDown, Modal, ButtonSelector, Calender } from "@djb25/digit-ui-react-components";
-import ButtonSelector from "../atoms/ButtonSelector";
-import { ArrowDown, Calender } from "../atoms/svgindex";
-import Modal from "../hoc/Modal";
+
+import { Calender, LuCalendarIcon } from "../atoms/svgindex";
 import { DateRangePicker, createStaticRanges } from "react-date-range";
-import { format, addMonths, addHours, startOfToday, endOfToday, endOfYesterday, addMinutes, addSeconds, isEqual, subYears, startOfYesterday, startOfWeek, endOfWeek, startOfYear, endOfYear, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter } from "date-fns";
+import {
+  format,
+  addMonths,
+  addHours,
+  startOfToday,
+  endOfToday,
+  endOfYesterday,
+  addMinutes,
+  addSeconds,
+  subYears,
+  startOfYesterday,
+  startOfWeek,
+  endOfWeek,
+  startOfYear,
+  endOfYear,
+  startOfMonth,
+  endOfMonth,
+  startOfQuarter,
+  endOfQuarter,
+} from "date-fns";
 
 function isEndDateFocused(focusNumber) {
   return focusNumber === 1;
@@ -14,14 +31,15 @@ function isStartDateFocused(focusNumber) {
   return focusNumber === 0;
 }
 
-const DateRange = ({ values, onFilterChange, t, labelClass }) => {
+const DateRange = ({ values, onFilterChange, t, hideLabel = false }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [focusedRange, setFocusedRange] = useState([0, 0]);
   const [selectionRange, setSelectionRange] = useState({
     ...values,
     startDate: values?.startDate,
-    endDate: values?.endDate
+    endDate: values?.endDate,
   });
+  const [isHovered, setIsHovered] = useState(false);
   const wrapperRef = useRef(null);
 
   useEffect(() => {
@@ -39,11 +57,12 @@ const DateRange = ({ values, onFilterChange, t, labelClass }) => {
   useEffect(() => {
     if (!isModalOpen && selectionRange?.startDate instanceof Date && selectionRange?.endDate instanceof Date) {
       const startDate = selectionRange?.startDate;
-      const endDate =  selectionRange?.endDate;
+      const endDate = selectionRange?.endDate;
       const duration = getDuration(selectionRange?.startDate, selectionRange?.endDate);
       const title = `${format(selectionRange?.startDate, "MMM d, yy")} - ${format(selectionRange?.endDate, "MMM d, yy")}`;
       onFilterChange({ range: { startDate, endDate, duration, title }, requestDate: { startDate, endDate, duration, title } });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectionRange, isModalOpen]);
 
   const staticRanges = useMemo(() => {
@@ -53,52 +72,53 @@ const DateRange = ({ values, onFilterChange, t, labelClass }) => {
         range: () => ({
           startDate: startOfToday(new Date()),
           endDate: endOfToday(new Date()),
-        })
+        }),
       },
       {
         label: t("DSS_YESTERDAY"),
         range: () => ({
           startDate: startOfYesterday(new Date()),
           endDate: endOfYesterday(new Date()),
-        })
+        }),
       },
       {
         label: t("DSS_THIS_WEEK"),
         range: () => ({
           startDate: startOfWeek(new Date()),
           endDate: endOfWeek(new Date()),
-        })
+        }),
       },
       {
-        label: t('DSS_THIS_MONTH'),
+        label: t("DSS_THIS_MONTH"),
         range: () => ({
           startDate: startOfMonth(new Date()),
           endDate: endOfMonth(new Date()),
-        })
+        }),
       },
       {
-        label: t('DSS_THIS_QUARTER'),
+        label: t("DSS_THIS_QUARTER"),
         range: () => ({
           startDate: startOfQuarter(new Date()),
           endDate: endOfQuarter(new Date()),
-        })
+        }),
       },
       {
-        label: t('DSS_PREVIOUS_YEAR'),
+        label: t("DSS_PREVIOUS_YEAR"),
         range: () => ({
           startDate: subYears(addMonths(startOfYear(new Date()), 3), 1),
-          endDate: subYears(addMonths(endOfYear(new Date()), 3), 1)
-        })
+          endDate: subYears(addMonths(endOfYear(new Date()), 3), 1),
+        }),
       },
       {
-        label: t('DSS_THIS_YEAR'),
+        label: t("DSS_THIS_YEAR"),
         range: () => ({
           startDate: addMonths(startOfYear(new Date()), 3),
-          endDate: addMonths(endOfYear(new Date()), 3)
-        })
-      }
-    ])
-  }, [])
+          endDate: addMonths(endOfYear(new Date()), 3),
+        }),
+      },
+    ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const getDuration = (startDate, endDate) => {
     let noOfDays = (new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 3600 * 24);
@@ -125,22 +145,18 @@ const DateRange = ({ values, onFilterChange, t, labelClass }) => {
     }
   };
 
-  const handleFocusChange = (focusedRange) => {
-    const [rangeIndex, rangeStep] = focusedRange;
-    setFocusedRange(focusedRange);
-  };
-
-  const handleClose = () => {
-    setIsModalOpen(false);
-  };
-
   return (
-    <>
-      <div className="filter-label">{t(`ES_DSS_DATE_RANGE`)}</div>
+    <Fragment>
+      {!hideLabel && <div className="filter-label">{t(`ES_DSS_DATE_RANGE`)}</div>}
       <div className="employee-select-wrap" ref={wrapperRef}>
-        <div className="select">
+        <div
+          className="select"
+          onClick={() => setIsModalOpen((prevState) => !prevState)}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
           <input className="employee-select-wrap--elipses" type="text" value={values?.title ? `${values?.title}` : ""} readOnly />
-          <Calender className="cursorPointer" onClick={() => setIsModalOpen((prevState) => !prevState)} />
+          <LuCalendarIcon hoverColor="#a1a1aa" color="#d1d1d1" className="cursorPointer" isHovered={isHovered} />
         </div>
         {isModalOpen && (
           <div className="options-card" style={{ overflow: "visible", width: "unset", maxWidth: "unset" }}>
@@ -159,7 +175,7 @@ const DateRange = ({ values, onFilterChange, t, labelClass }) => {
           </div>
         )}
       </div>
-    </>
+    </Fragment>
   );
 };
 
