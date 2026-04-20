@@ -7,7 +7,8 @@
   ],
   "applicantTypes": [
     { "code": "OWNER", "name": "Owner" },
-    { "code": "TENANT", "name": "Tenant" }
+    { "code": "TENANT", "name": "Tenant" },
+    { "code": "RELATIVE", "name": "Relative" }
   ],
   "connectionTypes": [
     { "code": "PERMANENT", "name": "Permanent" },
@@ -30,5 +31,14 @@
     { "code": "SHOP", "name": "Shop" },
     { "code": "OFFICE", "name": "Office" },
     { "code": "HOSPITAL", "name": "Hospital" }
+  ],
+  "temporaryConnectionTypes": [
+    { "code": "EXHIBITION", "name": "Exhibition" },
+    { "code": "OFFICIAL_FUNCTION", "name": "Official Function" },
+    { "code": "RELIGIOUS_FUNCTION", "name": "Religious Function" },
+    { "code": "CIRCUS", "name": "Circus" },
+    { "code": "CONSTRUCTION", "name": "Construction" },
+    { "code": "AS_PER_COURT_ORDERS", "name": "as per Court Orders" },
+    { "code": "SOCIAL_FAMILY_FUNCTION", "name": "Social/Family Function" }
   ]
 }
