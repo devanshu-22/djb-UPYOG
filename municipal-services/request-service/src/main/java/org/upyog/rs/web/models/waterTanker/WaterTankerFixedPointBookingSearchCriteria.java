@@ -24,4 +24,10 @@ public class WaterTankerFixedPointBookingSearchCriteria {
     @JsonProperty("offset")
     private Integer offset;
 
+    @JsonProperty("fromDate")
+    private Long fromDate;
+
+    @JsonProperty("toDate")
+    private Long toDate;
+
 }
