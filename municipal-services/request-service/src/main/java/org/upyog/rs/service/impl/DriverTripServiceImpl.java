@@ -1,9 +1,11 @@
 package org.upyog.rs.service.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.upyog.rs.constant.RequestServiceConstants;
+import org.upyog.rs.constant.TripStatus;
 import org.upyog.rs.kafka.Producer;
 import org.upyog.rs.repository.DriverTripRepository;
 import org.upyog.rs.service.DriverTripService;
@@ -16,6 +18,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class DriverTripServiceImpl implements DriverTripService {
 
     @Autowired
@@ -32,18 +35,60 @@ public class DriverTripServiceImpl implements DriverTripService {
         DriverTrip existingTrip = repository.findByBookingNo(trip.getBookingNo());
 
         if (existingTrip != null) {
-            if ("STARTED".equalsIgnoreCase(existingTrip.getCurrentStatus())) {
-                throw new CustomException("TRIP_ALREADY_STARTED",
-                        "Trip is already started for booking: " + trip.getBookingNo());
+            TripStatus status = TripStatus.from(existingTrip.getCurrentStatus());
+            if (status == TripStatus.START || status == TripStatus.DIVERT) {
+                throw new CustomException("TRIP_ALREADY_ACTIVE",
+                        "An active trip already exists for booking: " + trip.getBookingNo()
+                                + ". Current status: " + existingTrip.getCurrentStatus());
             }
-            // COMPLETED status → allow new trip
         }
 
         trip.setId(RequestServiceUtil.getRandonUUID());
         trip.setAuditDetails(RequestServiceUtil.getAuditDetails(userUuid, true));
-        trip.setCurrentStatus("STARTED");
+        trip.setCurrentStatus(TripStatus.START.name());
 
         producer.push(RequestServiceConstants.KAFKA_SAVE_DRIVER_TRIP_TOPIC, request);
+        return trip;
+    }
+
+    @Override
+    public DriverTrip divertTrip(DriverTripRequest request) {
+        DriverTrip updateReq = request.getDriverTrip();
+        String userUuid  = request.getRequestInfo().getUserInfo().getUuid();
+
+        DriverTrip existing = requireActiveTrip(updateReq.getBookingNo());
+
+        TripStatus status = TripStatus.from(existing.getCurrentStatus());
+
+        // Divert is only allowed from STARTED or an existing DIVERTED state
+        if (status == TripStatus.COMPLETE) {
+            throw new CustomException("TRIP_ALREADY_COMPLETED",
+                    "Cannot divert a completed trip for booking: " + updateReq.getBookingNo());
+        }
+
+        existing.setCurrentStatus(TripStatus.DIVERT.name());
+        existing.setDivertLat(updateReq.getDivertLat());
+        existing.setDivertLong(updateReq.getDivertLong());
+        existing.setDivertFileStoreId(updateReq.getDivertFileStoreId());
+        existing.setDivertRemark(updateReq.getDivertRemark());
+        existing.setAuditDetails(RequestServiceUtil.getAuditDetails(userUuid, false));
+
+        log.info("Diverting trip for bookingNo={}", existing.getBookingNo());
+
+        repository.updateDivert(existing);
+        repository.saveTripHistory(existing);
+
+        request.setDriverTrip(existing);
+        producer.push(RequestServiceConstants.KAFKA_UPDATE_DRIVER_TRIP_TOPIC, request);
+        return existing;
+    }
+
+    private DriverTrip requireActiveTrip(String bookingNo) {
+        DriverTrip trip = repository.findByBookingNo(bookingNo);
+        if (trip == null) {
+            throw new CustomException("TRIP_NOT_FOUND",
+                    "No active trip found for booking: " + bookingNo);
+        }
         return trip;
     }
 
@@ -52,38 +97,38 @@ public class DriverTripServiceImpl implements DriverTripService {
         DriverTrip updateReq = request.getDriverTrip();
         String userUuid = request.getRequestInfo().getUserInfo().getUuid();
 
-        DriverTrip existingTrip = repository.findByBookingNo(updateReq.getBookingNo());
+        DriverTrip existingTrip = requireActiveTrip(updateReq.getBookingNo());
 
-        if (existingTrip == null) {
-            throw new CustomException("TRIP_NOT_FOUND",
-                    "No trip found for booking: " + updateReq.getBookingNo());
+        TripStatus status = TripStatus.from(existingTrip.getCurrentStatus());
+
+
+        // Complete is allowed from STARTED or DIVERTED
+        if (status == TripStatus.COMPLETE) {
+            throw new CustomException("TRIP_ALREADY_COMPLETED",
+                    "Trip is already completed for booking: " + updateReq.getBookingNo());
         }
 
-        // Can only complete a STARTED trip
-        if (!"STARTED".equalsIgnoreCase(existingTrip.getCurrentStatus())) {
-            throw new CustomException("TRIP_NOT_STARTED",
-                    "Cannot complete trip. Current status: " + existingTrip.getCurrentStatus());
-        }
-
+        // KM validation
         if (existingTrip.getInitialKM() != null && updateReq.getFinalKM() != null) {
-
             if (updateReq.getFinalKM() < existingTrip.getInitialKM()) {
                 throw new CustomException("INVALID_KM",
-                        "Final KM cannot be less than Initial KM");
+                        "Final KM (" + updateReq.getFinalKM()
+                                + ") cannot be less than Initial KM (" + existingTrip.getInitialKM() + ")");
             }
-
-            Long totalKm = updateReq.getFinalKM() - existingTrip.getInitialKM();
-
             existingTrip.setFinalKM(updateReq.getFinalKM());
-            existingTrip.setTotalKM(totalKm);
+            existingTrip.setTotalKM(updateReq.getFinalKM() - existingTrip.getInitialKM());
         }
 
-        existingTrip.setCurrentStatus("COMPLETED");
+
+        existingTrip.setCurrentStatus(TripStatus.COMPLETE.name());
         existingTrip.setEndLatitude(updateReq.getEndLatitude());
         existingTrip.setEndLongitude(updateReq.getEndLongitude());
         existingTrip.setEndFileStoreId(updateReq.getEndFileStoreId());
         existingTrip.setRemark(updateReq.getRemark());
         existingTrip.setAuditDetails(RequestServiceUtil.getAuditDetails(userUuid, false));
+
+        log.info("Completing trip for bookingNo={}, totalKM={}", existingTrip.getBookingNo(), existingTrip.getTotalKM());
+
 
         repository.update(existingTrip);
         repository.saveTripHistory(existingTrip);
@@ -98,17 +143,15 @@ public class DriverTripServiceImpl implements DriverTripService {
     public DriverTrip updateTripByNonDriver(DriverTripRequest request) {
         DriverTrip updateReq = request.getDriverTrip();
         String userUuid = request.getRequestInfo().getUserInfo().getUuid();
-        DriverTrip existingTrip = repository.findByBookingNo(updateReq.getBookingNo());
+        DriverTrip existingTrip = requireActiveTrip(updateReq.getBookingNo());
 
-        if (existingTrip == null) {
-            throw new CustomException("TRIP_NOT_FOUND",
-                    "No trip found for booking: " + updateReq.getBookingNo());
-        }
         existingTrip.setJefilestoreId(updateReq.getJefilestoreId());
+        existingTrip.setRemarkUpdatedByRole(updateReq.getRemarkUpdatedByRole());
+        existingTrip.setPhotoUpdatedByRole(getNonDriverRoles(request));
+        existingTrip.setCurrentStatus(TripStatus.COMPLETE.name());
         existingTrip.setAuditDetails(RequestServiceUtil.getAuditDetails(userUuid, false));
+        log.info("Non-driver update for bookingNo={}, roles={}", existingTrip.getBookingNo(), existingTrip.getPhotoUpdatedByRole());
 
-        String roles = getNonDriverRoles(request);
-        existingTrip.setPhotoUpdatedByRole(roles);
         existingTrip.setRemarkUpdatedByRole(updateReq.getRemarkUpdatedByRole());
 
         repository.updateByNonDriver(existingTrip);
