@@ -255,6 +255,24 @@ public class WaterTankerServiceImpl implements WaterTankerService {
 			RequestInfo requestInfo,
 			WaterTankerFixedPointBookingSearchCriteria criteria) {
 
+
+		if (criteria.getFromDate() == null && criteria.getToDate() == null) {
+
+			long startOfDay = java.time.LocalDate.now()
+					.atStartOfDay(java.time.ZoneId.systemDefault())
+					.toInstant()
+					.toEpochMilli();
+
+			long endOfDay = java.time.LocalDate.now()
+					.atTime(23, 59, 59, 999_000_000)
+					.atZone(java.time.ZoneId.systemDefault())
+					.toInstant()
+					.toEpochMilli();
+
+			criteria.setFromDate(startOfDay);
+			criteria.setToDate(endOfDay);
+		}
+
 		List<WaterTankerFixedPointDetail> applications =
 				requestServiceRepository.getWaterTankerFixedPointBookingDetails(criteria);
 
