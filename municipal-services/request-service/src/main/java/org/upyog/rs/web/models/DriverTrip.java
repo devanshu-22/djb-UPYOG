@@ -42,4 +42,17 @@ public class DriverTrip {
 
     @JsonProperty("total_km")
     private Long totalKM;
+
+    // ── Divert fields ─────────────────────────────────────────────
+    @JsonProperty("divert_lat")
+    private BigDecimal divertLat;
+
+    @JsonProperty("divert_long")
+    private BigDecimal divertLong;
+
+    @JsonProperty("divert_file_store_id")
+    private String divertFileStoreId;
+
+    @JsonProperty("divert_remark")
+    private String divertRemark;
 }

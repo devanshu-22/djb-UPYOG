@@ -9,6 +9,7 @@ import org.upyog.rs.repository.rowMapper.DriverRowMapper;
 import org.upyog.rs.util.RequestServiceUtil;
 import org.upyog.rs.web.models.DriverTrip;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -62,6 +63,20 @@ public class DriverTripRepository {
                     trip.getTotalKM(),
                     trip.getBookingNo());
         }
+    public void updateDivert(DriverTrip trip) {
+        String sql = "UPDATE eg_driver_trip " +
+                "SET current_status = ?, divert_lat = ?, divert_long = ?, " +
+                "divert_file_store_id = ?, divert_remark = ?, " +
+                "last_modified_by = ?, last_modified_time = ? " +
+                "WHERE booking_no = ?";
+
+        jdbcTemplate.update(sql,
+                trip.getCurrentStatus(),
+                trip.getDivertLat(), trip.getDivertLong(),
+                trip.getDivertFileStoreId(), trip.getDivertRemark(),
+                trip.getAuditDetails().getLastModifiedBy(), trip.getAuditDetails().getLastModifiedTime(),
+                trip.getBookingNo());
+    }
 
         public DriverTrip findByBookingNo(String bookingNo) {
             String sql = "SELECT * FROM eg_driver_trip WHERE booking_no = ?";
@@ -72,42 +87,80 @@ public class DriverTripRepository {
         }
 
     public void saveTripHistory(DriverTrip trip) {
-        String sql = "INSERT INTO eg_driver_trip_history " +
-                "(history_id, booking_no, tenant_id, vendor_id, vehicle_id, driver_id, " +
-                "completion_time, remark, start_latitude, end_latitude, start_longitude, " +
-                "end_longitude, created_time, created_by,lastmodifiedby,lastmodifiedtime) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        String sql = "INSERT INTO eg_driver_trip_history (" +
+                "history_id, booking_no, tenant_id, vendor_id, vehicle_id, driver_id, " +
+                "current_status, " +
+
+                "start_latitude, start_longitude, start_file_store_id, " +
+                "end_latitude, end_longitude, end_file_store_id, " +
+
+                "divert_lat, divert_long, divert_file_store_id, divert_remark, " +
+
+                "initial_km, final_km, total_km, " +
+
+                "remark, remark_updated_by_role, photo_updated_by_role, jefilestoreid, " +
+
+                "completion_time, " +
+
+                "created_time, created_by, " +
+                "lastmodifiedby, lastmodifiedtime" +
+
+                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         jdbcTemplate.update(sql,
                 RequestServiceUtil.getRandonUUID(),
+
                 trip.getBookingNo(),
                 trip.getTenantId(),
                 trip.getVendorId(),
                 trip.getVehicleId(),
                 trip.getDriverId(),
-                System.currentTimeMillis(),
-                trip.getRemark(),
+
+                trip.getCurrentStatus(),
+
+                // Start
                 trip.getStartLatitude(),
-                trip.getEndLatitude(),
                 trip.getStartLongitude(),
+                trip.getStartFileStoreId(),
+
+                // End
+                trip.getEndLatitude(),
                 trip.getEndLongitude(),
+                trip.getEndFileStoreId(),
+                trip.getDivertLat(),
+                trip.getDivertLong(),
+                trip.getDivertFileStoreId(),
+                trip.getDivertRemark(),
+                trip.getInitialKM(),
+                trip.getFinalKM(),
+                trip.getTotalKM(),
+                trip.getRemark(),
+                trip.getRemarkUpdatedByRole(),
+                trip.getPhotoUpdatedByRole(),
+                trip.getJefilestoreId(),
+
+                System.currentTimeMillis(),
+
                 trip.getAuditDetails().getCreatedTime(),
                 trip.getAuditDetails().getCreatedBy(),
                 trip.getAuditDetails().getLastModifiedBy(),
-                trip.getAuditDetails().getLastModifiedTime());
+                trip.getAuditDetails().getLastModifiedTime()
+        );
     }
 
-    public void updateByNonDriver(DriverTrip trip) {
+        public void updateByNonDriver(DriverTrip trip) {
         String sql = "UPDATE eg_driver_trip " +
                 "SET jefilestoreid = ?, " +
-                "photo_updated_by_role = ?, remark_updated_by_role = ?, " +
+                "photo_updated_by_role = ?, remark_updated_by_role = ?,current_status = ?, " +
                 "last_modified_by = ?, last_modified_time = ? " +
                 "WHERE booking_no = ?";
 
-        log.info("Updating trip with values: jefilestoreid={}, photoRole={}, remarkRole={}, lastModifiedBy={}, bookingNo={}",
+        log.info("Updating trip with values: jefilestoreid={}, photoRole={}, remarkRole={},currentStatus={}, lastModifiedBy={}, bookingNo={}",
                 trip.getJefilestoreId(),
                 trip.getPhotoUpdatedByRole(),
                 trip.getRemarkUpdatedByRole(),
+                trip.getCurrentStatus(),
                 trip.getAuditDetails().getLastModifiedBy(),
                 trip.getBookingNo());
 
@@ -115,6 +168,7 @@ public class DriverTripRepository {
                 trip.getJefilestoreId(),
                 trip.getPhotoUpdatedByRole(),
                 trip.getRemarkUpdatedByRole(),
+                trip.getCurrentStatus(),
                 trip.getAuditDetails().getLastModifiedBy(),
                 trip.getAuditDetails().getLastModifiedTime(),
                 trip.getBookingNo());
