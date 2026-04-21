@@ -12,7 +12,7 @@
 .ekyc-employee-container {
   .inbox-main-container {
     flex: 1;
-    padding-right: -24px;
+    padding-right: 0px;
     border-radius: 12px;
   }
 
@@ -309,7 +309,7 @@
     padding: 0;
 
     .header-wrapper {
-      padding: 0px 32px;
+      padding: 0px 0px;
 
       .sidebar-title-card {
         display: flex;
@@ -337,7 +337,8 @@
     }
 
     .main-content-wrapper {
-      padding: 24px 32px;
+      padding: 0px 0px;
+      margin-top: 24px;
 
       .search-stats-row {
         display: flex;

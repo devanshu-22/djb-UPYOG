@@ -327,7 +327,6 @@ const AadhaarVerification = () => {
   };
 
   return (
-    <div className="ground-container employee-app-container form-container">
       <div className="inbox-container">
         <style>{`
         @keyframes fadeSlideIn {
@@ -643,7 +642,6 @@ const AadhaarVerification = () => {
           </Card>
         </div>
       </div>
-    </div>
   );
 };
 

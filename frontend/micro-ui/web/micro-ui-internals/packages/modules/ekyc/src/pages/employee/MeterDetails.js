@@ -216,7 +216,6 @@ const MeterDetails = () => {
         })) || [];
 
     return (
-        <div className="ground-container employee-app-container form-container">
             <div className="inbox-container">
                 <style>{`
                     @keyframes fadeSlideIn {
@@ -471,7 +470,6 @@ const MeterDetails = () => {
                         </div>
                     </Card>
                 </div>
-            </div>
             {toast && (
                 <Toast
                     label={toast.message}

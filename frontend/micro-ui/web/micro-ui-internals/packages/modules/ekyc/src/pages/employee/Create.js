@@ -64,28 +64,26 @@ const Create = () => {
     };
 
     return (
-        <div class="ground-container employee-app-container form-container">
-            <SearchConsumer
-                onSearch={handleSearch}
-                searchParams={searchParams}
-            >
-                {searchPerformed && (
-                    <ConnectionDetailsView
-                        kNumber={searchParams.kNumber}
-                        kName={searchParams.kName}
-                        connectionDetails={connectionDetails}
-                        isLoading={isSearching}
-                    />
-                )}
+        <SearchConsumer
+            onSearch={handleSearch}
+            searchParams={searchParams}
+        >
+            {searchPerformed && (
+                <ConnectionDetailsView
+                    kNumber={searchParams.kNumber}
+                    kName={searchParams.kName}
+                    connectionDetails={connectionDetails}
+                    isLoading={isSearching}
+                />
+            )}
 
-                {!searchPerformed && !isSearching && (
-                    <Card style={{ textAlign: "center", padding: "40px" }}>
-                        <div style={{ color: "#667085" }}>{t("EKYC_SEARCH_TO_VIEW_DETAILS")}</div>
-                    </Card>
-                )}
-                {showToast && <Toast error={showToast.error} label={showToast.label} onClose={closeToast} isDsc={true} />}
-            </SearchConsumer>
-        </div>
+            {!searchPerformed && !isSearching && (
+                <Card style={{ textAlign: "center", padding: "40px" }}>
+                    <div style={{ color: "#667085" }}>{t("EKYC_SEARCH_TO_VIEW_DETAILS")}</div>
+                </Card>
+            )}
+            {showToast && <Toast error={showToast.error} label={showToast.label} onClose={closeToast} isDsc={true} />}
+        </SearchConsumer>
     );
 };
 
