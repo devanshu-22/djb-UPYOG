@@ -67,12 +67,12 @@
 
 // export default ServiceDoc;
 
-import { Card, CardSubHeader, CardText, Loader, SubmitBar } from "@djb25/digit-ui-react-components";
 import React from "react";
+import { ActionBar, Card, Loader, SubmitBar } from "@djb25/digit-ui-react-components";
 import { stringReplaceAll } from "../utils";
 
 const ServiceDoc = ({ t, config, onSelect }) => {
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  // const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
 
   const docType = config?.isMutation ? ["MutationDocuments"] : "Documents";
@@ -82,13 +82,7 @@ const ServiceDoc = ({ t, config, onSelect }) => {
   let docs = Documentsob?.ASSET?.Documents;
 
   return (
-    <React.Fragment>
-      <Card>
-        <CardSubHeader>{t("AST_REQ_SCREEN_LABEL")}</CardSubHeader>
-
-        <CardText style={{ color: "red", marginBottom: "20px" }}>{t("AST_DOCUMENT_ACCEPTED_PDF_JPG_PNG")}</CardText>
-      </Card>
-
+    <div className="employee-form-content">
       {isLoading && <Loader />}
 
       {Array.isArray(docs) &&
@@ -116,9 +110,10 @@ const ServiceDoc = ({ t, config, onSelect }) => {
             ))}
           </Card>
         ))}
-
-      <SubmitBar label={t("COMMON_NEXT")} onSubmit={onSelect} />
-    </React.Fragment>
+      <ActionBar>
+        <SubmitBar label={t("COMMON_NEXT")} onSubmit={onSelect} />
+      </ActionBar>
+    </div>
   );
 };
 

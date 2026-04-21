@@ -136,11 +136,15 @@ const EmployeeApp = ({ path, url, userType }) => {
 
             <PrivateRoute
               path={`${path}/registry/additionaldetails`}
-              component={(props) => (
-                <LayoutWrapper layoutClass="normal">
-                  <VendorCreate {...props} parentRoute={path} />
-                </LayoutWrapper>
-              )}
+              component={(props) => {
+                const isInfoPage = props.location.pathname.includes("/info");
+
+                return (
+                  <LayoutWrapper layoutClass={isInfoPage ? "action" : "normal"}>
+                    <VendorCreate {...props} parentRoute={path} />
+                  </LayoutWrapper>
+                );
+              }}
             />
 
             <PrivateRoute
