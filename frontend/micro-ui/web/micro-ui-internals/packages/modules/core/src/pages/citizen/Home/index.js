@@ -338,6 +338,12 @@ const Home = () => {
         Icon: <CaseIcon className="fill-path-primary-main" />,
         onClick: () => history.push(citizenServicesObj?.props?.[2]?.navigationUrl),
       },
+      {
+        name: t("EKYC_MODULE_NAME"),
+        description: t("Verify your identity and connection details"),
+        Icon: <DocumentIcon className="fill-path-primary-main" />,
+        onClick: () => history.push("/digit-ui/citizen/ekyc/create-kyc"),
+      },
       // {
       //     name: t("ACTION_TEST_WATER_AND_SEWERAGE"),
       //     description: t("Apply for new water connection"),
