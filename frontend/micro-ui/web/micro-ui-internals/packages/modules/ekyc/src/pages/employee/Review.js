@@ -171,14 +171,25 @@ const Review = () => {
   const propertyDetails = state.propertyDetails || {
     ownerType: sessionStorage.getItem("EKYC_OWNER_TYPE"),
     pidNumber: sessionStorage.getItem("EKYC_PID_NUMBER"),
-    connectionCategory: getSavedData("EKYC_TYPE_OF_CONNECTION_DATA"),
-    connectionType: getSavedData("EKYC_CONNECTION_CATEGORY_DATA"),
     userType: getSavedData("EKYC_USER_TYPE_DATA"),
     noOfFloors: getSavedData("EKYC_NO_OF_FLOORS_DATA"),
     propertyDocument: sessionStorage.getItem("EKYC_PROPERTY_DOC"),
     propertyDocumentFileStoreId: sessionStorage.getItem("EKYC_PROPERTY_DOC_FILESTORE_ID"),
     buildingPhoto: sessionStorage.getItem("EKYC_BUILDING_PHOTO"),
     buildingPhotoFileStoreId: sessionStorage.getItem("EKYC_BUILDING_PHOTO_FILESTORE_ID"),
+  };
+
+  const meterDetails = state.meterDetails || {
+    meterStatus: getSavedData("EKYC_METER_STATUS_DATA"),
+    workingStatus: getSavedData("EKYC_METER_WORKING_STATUS_DATA"),
+    meterLocation: sessionStorage.getItem("EKYC_METER_LOCATION"),
+    lastBillRaised: getSavedData("EKYC_LAST_BILL_RAISED_DATA"),
+    noBillReason: sessionStorage.getItem("EKYC_REASON_FOR_NO_BILL"),
+    sewerConnection: getSavedData("EKYC_SEWER_CONNECTION_DATA"),
+    connectionCategory: getSavedData("EKYC_TYPE_OF_CONNECTION_DATA"),
+    connectionType: getSavedData("EKYC_CONNECTION_CATEGORY_DATA"),
+    meterPhoto: sessionStorage.getItem("EKYC_METER_PHOTO"),
+    meterPhotoFileStoreId: sessionStorage.getItem("EKYC_METER_PHOTO_FILESTORE_ID"),
   };
 
   useEffect(() => {
@@ -241,6 +252,13 @@ const Review = () => {
         doorPhotoFileStoreId = await uploadFile(doorFile, tenantId);
       }
 
+      // ── 4. Upload meter photo ──────────────────────────────────────────────
+      let meterImageFileStoreId = meterDetails.meterPhotoFileStoreId || null;
+      if (!meterImageFileStoreId && meterDetails.meterPhoto) {
+        const meterFile = dataUrlToFile(meterDetails.meterPhoto, "meter_photo.jpg");
+        meterImageFileStoreId = await uploadFile(meterFile, tenantId);
+      }
+
       // ── 4. Build optimized request payload ────────────────────────────────
       // Note: RequestInfo is added automatically by the Digit Request utility
       const requestBody = {
@@ -266,6 +284,16 @@ const Review = () => {
         pincode: addressDetails.pincode || null,
         assembly: addressDetails.assembly || null,
         ward: addressDetails.ward || null,
+        // Meter Details
+        meterStatus: meterDetails.meterStatus?.value || null,
+        meterWorkingStatus: meterDetails.workingStatus?.value || null,
+        meterLocation: meterDetails.meterLocation || null,
+        lastBillRaised: meterDetails.lastBillRaised?.value || null,
+        noBillReason: meterDetails.noBillReason || null,
+        sewerConnection: meterDetails.sewerConnection?.value || null,
+        typeOfConnection: meterDetails.connectionCategory?.value || null,
+        connectionCategory: meterDetails.connectionType?.value || null,
+        meterImageFileStoreId: meterImageFileStoreId,
       };
 
       // ── 4. Call the update API using the new Hook ──────────────────────────
@@ -313,6 +341,10 @@ const Review = () => {
     history.push("/digit-ui/employee/ekyc/property-info", location.state);
   };
 
+  const handleEditMeter = () => {
+    history.push("/digit-ui/employee/ekyc/meter-details", location.state);
+  };
+
   return (
     <div className="ground-container employee-app-container form-container">
 
@@ -341,13 +373,14 @@ const Review = () => {
                 { label: t("EKYC_STEP_AADHAAR") || "Aadhaar", done: true, active: false },
                 { label: t("EKYC_STEP_ADDRESS") || "Address", done: true, active: false },
                 { label: t("EKYC_STEP_PROPERTY") || "Property", done: true, active: false },
+                { label: t("EKYC_STEP_METER") || "Meter", done: true, active: false },
                 { label: t("EKYC_STEP_REVIEW") || "Review", done: false, active: true },
               ].map((step, i) => (
                 <div key={i} style={{
                   display: "flex", gap: "10px", alignItems: "flex-start",
-                  position: "relative", paddingBottom: i < 3 ? "18px" : 0,
+                  position: "relative", paddingBottom: i < 4 ? "18px" : 0,
                 }}>
-                  {i < 3 && (
+                  {i < 4 && (
                     <div style={{
                       position: "absolute", left: "10px", top: "22px",
                       width: "1px", height: "calc(100% - 10px)", background: "#EAECF0",
@@ -479,6 +512,32 @@ const Review = () => {
                     { label: t("EKYC_CONNECTION_CATEGORY") || "Connection category", value: propertyDetails.connectionType?.label || null, isModified: isFieldModified("connectionCategory", propertyDetails.connectionType?.value) },
                     { label: t("EKYC_USER_TYPE") || "User type", value: propertyDetails.userType?.label || null, isModified: isFieldModified("userType", propertyDetails.userType?.value) },
                     { label: t("EKYC_NO_OF_FLOORS") || "No. of floors", value: propertyDetails.noOfFloors?.label || null, isModified: isFieldModified("noOfFloor", propertyDetails.noOfFloors?.value) },
+                  ]}
+                />
+
+                <hr style={{ margin: "20px 0", border: 0, borderTop: "1px solid #EAECF0" }} />
+
+                {/* ── Meter section head ── */}
+                <SectionHead
+                  icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z" /></svg>}
+                  label={t("EKYC_METER_DETAILS_HEADER") || "Meter details"}
+                />
+
+                <ReviewCard
+                  icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z" /></svg>}
+                  title={t("EKYC_METER_DETAILS_HEADER") || "Meter details"}
+                  onEdit={handleEditMeter}
+                  editLabel={t("CS_COMMON_EDIT") || "Edit"}
+                  t={t}
+                  rows={[
+                    { label: t("EKYC_METER_STATUS") || "Meter status", value: meterDetails.meterStatus?.label || null, isModified: isFieldModified("meterStatus", meterDetails.meterStatus?.value) },
+                    { label: t("EKYC_METER_WORKING_STATUS") || "Meter working status", value: meterDetails.workingStatus?.label || null, isModified: isFieldModified("meterWorkingStatus", meterDetails.workingStatus?.value) },
+                    { label: t("EKYC_METER_LOCATION") || "Meter location", value: meterDetails.meterLocation || null, isModified: isFieldModified("meterLocation", meterDetails.meterLocation) },
+                    { label: t("EKYC_LAST_BILL_RAISED") || "Last bill raised", value: meterDetails.lastBillRaised?.label || null, isModified: isFieldModified("lastBillRaised", meterDetails.lastBillRaised?.value) },
+                    { label: t("EKYC_REASON_FOR_NO_BILL") || "Reason for no bill", value: meterDetails.noBillReason || null, isModified: isFieldModified("noBillReason", meterDetails.noBillReason) },
+                    { label: t("EKYC_SEWER_CONNECTION") || "Sewer connection", value: meterDetails.sewerConnection?.label || null, isModified: isFieldModified("sewerConnection", meterDetails.sewerConnection?.value) },
+                    { label: t("EKYC_TYPE_OF_CONNECTION") || "Type of connection", value: meterDetails.connectionCategory?.label || null, isModified: isFieldModified("typeOfConnection", meterDetails.connectionCategory?.value) },
+                    { label: t("EKYC_CONNECTION_CATEGORY") || "Connection category", value: meterDetails.connectionType?.label || null, isModified: isFieldModified("connectionCategory", meterDetails.connectionType?.value) },
                   ]}
                 />
 

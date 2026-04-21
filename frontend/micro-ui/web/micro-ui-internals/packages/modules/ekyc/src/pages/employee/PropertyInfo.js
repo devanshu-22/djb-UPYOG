@@ -233,7 +233,7 @@ const PropertyInfo = () => {
     const cameraRef = useRef(null);
 
     const handleSaveAndContinue = () => {
-        history.push("/digit-ui/employee/ekyc/review", {
+        history.push("/digit-ui/employee/ekyc/meter-details", {
             ...flowState,
             propertyDetails: {
                 ownerType, pidNumber, connectionType,
@@ -301,10 +301,11 @@ const PropertyInfo = () => {
                             { label: t("EKYC_STEP_AADHAAR") || "Aadhaar", done: true, active: false },
                             { label: t("EKYC_STEP_ADDRESS") || "Address", done: true, active: false },
                             { label: t("EKYC_STEP_PROPERTY") || "Property", done: false, active: true },
+                            { label: t("EKYC_STEP_METER") || "Meter", done: false, active: false },
                             { label: t("EKYC_STEP_REVIEW") || "Review", done: false, active: false },
                         ].map((step, i) => (
-                            <div key={i} style={{ display: "flex", gap: "10px", alignItems: "flex-start", position: "relative", paddingBottom: i < 3 ? "18px" : 0 }}>
-                                {i < 3 && (
+                            <div key={i} style={{ display: "flex", gap: "10px", alignItems: "flex-start", position: "relative", paddingBottom: i < 4 ? "18px" : 0 }}>
+                                {i < 4 && (
                                     <div style={{ position: "absolute", left: "10px", top: "22px", width: "1px", height: "calc(100% - 10px)", background: "#EAECF0" }} />
                                 )}
                                 <div style={{
@@ -404,7 +405,7 @@ const PropertyInfo = () => {
 
                             {/* Dropdowns grid */}
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", marginBottom: "14px" }}>
-                                <div>
+                                {/* <div>
                                     <div style={{ fontSize: "11px", fontWeight: "600", color: "#667085", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "6px" }}>
                                         {t("EKYC_TYPE_OF_CONNECTION") || "Type of connection"}
                                     </div>
@@ -416,8 +417,8 @@ const PropertyInfo = () => {
                                         t={t}
                                         placeholder={t("EKYC_SELECT") || "Select"}
                                     />
-                                </div>
-                                <div>
+                                </div> */}
+                                {/* <div>
                                     <div style={{ fontSize: "11px", fontWeight: "600", color: "#667085", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "6px" }}>
                                         {t("EKYC_CONNECTION_CATEGORY") || "Connection category"}
                                     </div>
@@ -429,7 +430,7 @@ const PropertyInfo = () => {
                                         t={t}
                                         placeholder={t("EKYC_SELECT") || "Select"}
                                     />
-                                </div>
+                                </div> */}
                             </div>
 
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", marginBottom: "24px" }}>
