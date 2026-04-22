@@ -174,6 +174,7 @@ public class InboxService {
 
 	public InboxResponse fetchInboxData(InboxSearchCriteria criteria, RequestInfo requestInfo) {
 
+
 		ProcessInstanceSearchCriteria processCriteria = criteria.getProcessSearchCriteria();
 		HashMap moduleSearchCriteria = criteria.getModuleSearchCriteria();
 		processCriteria.setTenantId(criteria.getTenantId());
@@ -188,7 +189,9 @@ public class InboxService {
 
 		Integer totalCount = 0;
 		log.info(processCriteria.getModuleName().toString());
-		if (!(processCriteria.getModuleName().equals(SW) || processCriteria.getModuleName().equals(WS)))
+		if (!(processCriteria.getModuleName().equals(SW) || processCriteria.getModuleName().equals(WS)
+		))
+			//	|| processCriteria.getModuleName().equals(REQUEST_SERVICE_WATER_TANKER)))
 			totalCount = workflowService.getProcessCount(criteria.getTenantId(), requestInfo, processCriteria);
 //        Integer nearingSlaProcessCount = workflowService.getNearingSlaProcessCount(criteria.getTenantId(), requestInfo, processCriteria);
 		Integer nearingSlaProcessCount = 0;
@@ -197,7 +200,6 @@ public class InboxService {
 			nearingSlaProcessCount = workflowService.getNearingSlaProcessCount(criteria.getTenantId(), requestInfo,
 					processCriteria);
 		}
-
 		List<String> inputStatuses = new ArrayList<>();
 		if (!CollectionUtils.isEmpty(processCriteria.getStatus()))
 			inputStatuses = new ArrayList<>(processCriteria.getStatus());
@@ -495,7 +497,10 @@ public class InboxService {
 
 
 
-			/*
+
+
+
+	/*
 			   This block checks if the module name in processCriteria matches
 			   the REQUEST_SERVICE_WATER_TANKER. If true, it fetches the list of
 			   application numbers using the WTInboxFilterService.
@@ -507,20 +512,25 @@ public class InboxService {
 			   - If no application numbers are found, isSearchResultEmpty is set to true.
 			*/
 			if (!ObjectUtils.isEmpty(processCriteria.getModuleName())
+
 					&& processCriteria.getModuleName().equals(REQUEST_SERVICE_WATER_TANKER)) {
 
 				List<String> applicationNumbers = WTInboxFilterService.fetchApplicationNumbersFromSearcher(criteria,
 						StatusIdNameMap, requestInfo);
+
+				totalCount=applicationNumbers.size();
+
 				if (!CollectionUtils.isEmpty(applicationNumbers)) {
 					moduleSearchCriteria.put(BOOKING_NO_PARAM, applicationNumbers);
 					businessKeys.addAll(applicationNumbers);
-					 moduleSearchCriteria.remove(LOCALITY_PARAM);
+					moduleSearchCriteria.remove(LOCALITY_PARAM);
 					moduleSearchCriteria.remove(OFFSET_PARAM);
 					moduleSearchCriteria.remove(STATUS_PARAM);
 				} else {
 					isSearchResultEmpty = true;
 				}
 			}
+
 
 			/*
 			   This block checks if the module name in processCriteria matches
@@ -538,6 +548,7 @@ public class InboxService {
 
 				List<String> applicationNumbers = mtInboxFilterService.fetchApplicationNumbersFromSearcher(criteria,
 						StatusIdNameMap, requestInfo);
+
 				if (!CollectionUtils.isEmpty(applicationNumbers)) {
 					moduleSearchCriteria.put(BOOKING_NO_PARAM, applicationNumbers);
 					businessKeys.addAll(applicationNumbers);
@@ -1159,6 +1170,7 @@ public class InboxService {
 
 		}
 		log.info("statusCountMap size :::: " + statusCountMap.size());
+
 
 		response.setTotalCount(totalCount);
 		response.setNearingSlaCount(nearingSlaProcessCount);
