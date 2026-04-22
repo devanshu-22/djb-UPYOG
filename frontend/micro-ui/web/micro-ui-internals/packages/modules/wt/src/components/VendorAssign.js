@@ -4,7 +4,7 @@ import { useHistory } from "react-router-dom";
 import { Label, DatePicker, SubmitBar, Toast, Dropdown, UploadFile, CollapsibleCardPage } from "@djb25/digit-ui-react-components";
 import VerticalTimeline from "./VerticalTimeline";
 import SelectServiceType from "../pageComponents/SelectServiceType";
-
+import VendorMultiSelectDropdown from '../components/VendorMultiSelectDropdown'
 const VendorAssign = ({ parentUrl, heading }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const { t } = useTranslation();
@@ -27,7 +27,16 @@ const VendorAssign = ({ parentUrl, heading }) => {
     },
   });
 
+  const [selectedFillingPoints, setSelectedFillingPoints] = useState([]);
+
+  const { data: allFillingPointsData } = Digit.Hooks.wt.useFillPointSearch({
+    tenantId,
+    filters: { status: "ACTIVE" },
+  });
+  const allFillingPoints = allFillingPointsData?.fillingPoints || [];
+
   const { mutate: createWorkOrder } = Digit.Hooks.wt.useVendorWorkOrderCreate(tenantId);
+  const { mutate: mapFixedFilling } = Digit.Hooks.wt.useVendorFillingMap(tenantId);
 
   useEffect(() => {
     (async () => {
@@ -67,17 +76,43 @@ const VendorAssign = ({ parentUrl, heading }) => {
       },
     };
 
-    createWorkOrder(payload, {
-      onSuccess: (result) => {
-        setShowToast({ isError: false, label: t("ES_COMMON_SAVE_SUCCESS") });
-        setTimeout(() => {
-          history.push("/digit-ui/employee/vendor/search-vendor");
-        }, 3000);
-      },
-      onError: (err) => {
-        setShowToast({ isError: true, label: err?.response?.data?.Errors?.[0]?.message || t("ES_COMMON_ERROR_SAVING") });
-      },
-    });
+    const doCreateWorkOrder = () => {
+      createWorkOrder(payload, {
+        onSuccess: (result) => {
+          setShowToast({ isError: false, label: t("ES_COMMON_SAVE_SUCCESS") });
+          setTimeout(() => {
+            history.push("/digit-ui/employee/vendor/search-vendor");
+          }, 3000);
+        },
+        onError: (err) => {
+          setShowToast({ isError: true, label: err?.response?.data?.Errors?.[0]?.message || t("ES_COMMON_ERROR_SAVING") });
+        },
+      });
+    };
+
+    if (selectedFillingPoints && selectedFillingPoints.length > 0) {
+      const mapPayload = {
+        mappings: selectedFillingPoints.map(val => ({
+          tenantId: tenantId,
+          fillingPointId: val?.id || val?.bookingId || val?.fillingPointId,
+          vendorId: vendor?.code || vendor?.id,
+        })),
+      };
+
+      mapFixedFilling(mapPayload, {
+        onSuccess: () => {
+          doCreateWorkOrder();
+        },
+        onError: (err) => {
+          setShowToast({
+            isError: true,
+            label: err?.response?.data?.Errors?.[0]?.message || t("WT_FIXED_FILLING_MAPPING_FAIL"),
+          });
+        },
+      });
+    } else {
+      doCreateWorkOrder();
+    }
   };
 
   const isMobile = window.Digit.Utils.browser.isMobile();
@@ -88,7 +123,9 @@ const VendorAssign = ({ parentUrl, heading }) => {
     setFile(e.target.files[0]);
   }
 
-  const isFormDisabled = !vendor || !validFrom || !validTo || !selectedServiceType;
+  const isFormDisabled = !vendor || !validFrom || !validTo 
+  // commented out service type Pranav 22/04/2026
+  // || !selectedServiceType;
 
   return (
     <div className="employee-form-section-wrapper">
@@ -104,6 +141,7 @@ const VendorAssign = ({ parentUrl, heading }) => {
               </Label>
               <Dropdown t={t} option={vendorOptions} optionKey="name" select={setVendor} selected={vendor} placeholder={t("WT_SELECT_VENDOR")} />
             </div>
+
             <div style={{ display: "flex", flexDirection: "column" }}>
               <Label>
                 {`${t("COMMON_VALID_FROM_DATE")}`} <span className="astericColor">*</span>
@@ -130,13 +168,80 @@ const VendorAssign = ({ parentUrl, heading }) => {
                 error={error}
               />
             </div>
-            <SelectServiceType
+            {/* commented out service type Pranav 22/04/2026*/}
+            {/* <SelectServiceType
               t={t}
               config={{ key: "serviceType", label: t("WT_SELECT_SERVICE_TYPE") }}
               onSelect={onServiceTypeSelect}
               userType={userType}
               formData={{ serviceType: selectedServiceType }}
-            />
+            /> */}
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <Label>
+                {`${t("WT_FILLING_POINT")}`}
+              </Label>
+              <VendorMultiSelectDropdown
+                options={allFillingPoints}
+                optionsKey="fillingPointName"
+                selected={selectedFillingPoints}
+                onSelect={(values) => {
+                  const extractedValues = values?.map(v => Array.isArray(v) ? v[1] : v) || [];
+                  setSelectedFillingPoints(extractedValues);
+                }}
+                defaultLabel={t("SELECT_FILLING_POINT")}
+                defaultUnit={t("SELECTED")}
+                ServerStyle={{ textAlign: "left", width: "100%", minWidth: "250px", backgroundColor: "#fff" }}
+                isPropsNeeded={false}
+                
+              />
+
+              {selectedFillingPoints && selectedFillingPoints.length > 0 && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "12px", maxHeight: "120px", overflowY: "auto", padding: "4px" }}>
+                  {selectedFillingPoints.map((fp, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        backgroundColor: "#f4f4f4",
+                        border: "1px solid #ddd",
+                        borderRadius: "16px",
+                        padding: "4px 12px",
+                        fontSize: "14px",
+                        fontWeight: "500"
+                      }}
+                    >
+                      <span style={{ marginRight: "8px", color: "#333", maxWidth: "200px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        {t(fp?.fillingPointName || fp?.id)}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          const fpId = fp.id || fp.fillingPointId;
+                          setSelectedFillingPoints(prev => prev.filter(p => (p.id || p.fillingPointId) !== fpId));
+                        }}
+                        style={{
+                          background: "transparent",
+                          border: "none",
+                          color: "#888",
+                          cursor: "pointer",
+                          fontSize: "16px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          marginLeft: "auto",
+                          padding: "0"
+                        }}
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </CollapsibleCardPage>
 
