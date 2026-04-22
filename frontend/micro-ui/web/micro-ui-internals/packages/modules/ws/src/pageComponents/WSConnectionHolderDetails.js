@@ -72,8 +72,8 @@ const WSConnectionHolderDetails = ({ config, onSelect, userType, formData, setEr
     { name: "Father", code: "FATHER", i18nKey: "COMMON_MASTERS_OWNERTYPE_FATHER" },
   ];
 
-  const { data: Menu, isLoading: isSpecialcategoryLoading } = Digit.Hooks.pt.usePropertyMDMS(stateId, "PropertyTax", "OwnerType");
-  Menu ? Menu.sort((a, b) => a.name.localeCompare(b.name)) : "";
+  const { data: Menu, isLoading: isSpecialcategoryLoading } = Digit.Hooks.ws.useWSConfigMDMS.OwnerType(stateId);
+  Menu ? Menu.sort((a, b) => t(a.i18nKey).localeCompare(t(b.i18nKey))) : "";
 
   useEffect(() => {
     const data = connectionHolderDetails.map((e) => {
@@ -238,7 +238,7 @@ const ConnectionDetails = (_props) => {
   }, []);
 
   useEffect(() => {
-    if ((Object.entries(formValue).length > 0 && formValue?.name) || formValue?.uuid) {
+    if (Object.entries(formValue).length > 0) {
       const keys = Object.keys(formValue);
       const part = {};
       keys.forEach((key) => (part[key] = connectionHolderDetail[key]));
@@ -281,7 +281,7 @@ const ConnectionDetails = (_props) => {
   useEffect(() => {
     if (Object.keys(errors).length && !_.isEqual(formState.errors[config.key]?.type || {}, errors)) {
       setError(config.key, { type: errors });
-    } else if (!Object.keys(errors).length && formState.errors[config.key] && isErrors) {
+    } else if (!Object.keys(errors).length && formState.errors[config.key]) {
       clearErrors(config.key);
     }
   }, [errors]);

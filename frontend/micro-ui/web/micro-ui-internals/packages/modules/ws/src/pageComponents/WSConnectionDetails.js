@@ -50,7 +50,7 @@ const WSConnectionDetails = ({ config, onSelect, userType, formData, setError, f
 
   useEffect(() => {
     if (userType === "employee") {
-      onSelect(config.key, { ...formData[config.key], ...connectionDetails });
+      onSelect(config.key, connectionDetails);
     }
     if (connectionDetails?.[0]?.water) setWaterSewarageSelection({ water: true, sewerage: false });
 

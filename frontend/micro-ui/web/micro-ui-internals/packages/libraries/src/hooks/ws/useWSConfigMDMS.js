@@ -29,6 +29,35 @@ const useWSConfigMDMS = {
       { select: (d) => d["ws-services-masters"].WSCreateConfig, ...config }
     ),
 
+  ZROLocation: (tenantId, config) =>
+    useQuery(
+      [tenantId, "ZRO_LOCATION"],
+      () =>
+        MdmsService.getDataByCriteria(
+          tenantId,
+          {
+            details: {
+              tenantId: tenantId,
+              moduleDetails: [
+                {
+                  moduleName: "ws-services-masters",
+                  masterDetails: [
+                    {
+                      name: "ZROLocation",
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+          "WS"
+        ),
+      {
+        select: (d) => d["ws-services-masters"].ZROLocation,
+        ...config,
+      }
+    ),
+
   WSActivationConfig: (tenantId, config) =>
     useQuery(
       [tenantId, "FORM_WS_ACTIVATION_CONFIG"],
@@ -81,6 +110,35 @@ const useWSConfigMDMS = {
       { select: (d) => d["ws-services-masters"].WSDisconnectionConfig, ...config }
     ),
 
+  ConnectionCategory: (tenantId, config) =>
+    useQuery(
+      [tenantId, "CONNECTION_CATEGORY"],
+      () =>
+        MdmsService.getDataByCriteria(
+          tenantId,
+          {
+            details: {
+              tenantId: tenantId,
+              moduleDetails: [
+                {
+                  moduleName: "ws-services-masters",
+                  masterDetails: [
+                    {
+                      name: "connectionCategory",
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+          "WS"
+        ),
+      {
+        select: (d) => d["ws-services-masters"].connectionCategory,
+        ...config,
+      }
+    ),
+
   OwnerType: (tenantId, config) =>
     useQuery(
       [tenantId, "OWNER_TYPE"],
@@ -104,7 +162,15 @@ const useWSConfigMDMS = {
           },
           "WS"
         ),
-      { select: (d) => d?.["ws-services-masters"]?.OwnerType || d?.["ws-services-masters"]?.ownerType, ...config }
+      {
+        select: (d) =>
+          (d?.["ws-services-masters"]?.OwnerType || d?.["ws-services-masters"]?.ownerType)?.map((item) => ({
+            ...item,
+            i18nKey: item?.i18nKey || `PROPERTYTAX_OWNERTYPE_${item?.code}`,
+            code: item?.code || item?.value,
+          })),
+        ...config,
+      }
     ),
   getFormConfig: (tenantId, config) =>
     useQuery(
