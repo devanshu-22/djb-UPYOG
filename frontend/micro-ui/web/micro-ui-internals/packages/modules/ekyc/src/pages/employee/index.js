@@ -3,6 +3,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { Switch, useLocation } from "react-router-dom";
 import Inbox from "./Inbox";
+//import Mapping from "./Mapping";
 import Create from "./Create";
 import AadhaarVerification from "./AadhaarVerification";
 import AddressDetails from "./AddressDetails";
@@ -36,7 +37,7 @@ const EmployeeApp = ({ path }) => {
 
     return (
         <AppContainer>
-            <div className="ground-container employee-app-container">
+            <div className="ground-container employee-app-container employee-app-homepage-container">
                 <ModuleHeader
                     leftContent={
                         <React.Fragment>
@@ -65,6 +66,11 @@ const EmployeeApp = ({ path }) => {
                         path={`${path}/create-kyc`}
                         component={() => <Create />}
                     />
+
+                    {/* <PrivateRoute
+                        path={`${path}/mapping`}
+                        component={() => <Mapping />}
+                    /> */}
 
                     <PrivateRoute
                         path={`${path}/aadhaar-verification`}

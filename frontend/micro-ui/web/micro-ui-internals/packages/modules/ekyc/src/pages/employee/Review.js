@@ -346,8 +346,6 @@ const Review = () => {
   };
 
   return (
-    <div className="ground-container employee-app-container form-container">
-
       <Fragment>
         <div className="inbox-container">
           <style>{`
@@ -582,7 +580,6 @@ const Review = () => {
           />
         )}
       </Fragment>
-    </div>
   );
 };
 

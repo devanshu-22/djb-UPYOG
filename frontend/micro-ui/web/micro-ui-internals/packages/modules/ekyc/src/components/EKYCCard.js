@@ -24,6 +24,10 @@ const EKYCCard = () => {
                 label: t("EKYC_CREATE_KYC"),
                 link: `/digit-ui/employee/ekyc/create-kyc`
             },
+            // {
+            //     label: t("EKYC_MAPPING"),
+            //     link: `/digit-ui/employee/ekyc/mapping`
+            // }
         ]
     }
 
