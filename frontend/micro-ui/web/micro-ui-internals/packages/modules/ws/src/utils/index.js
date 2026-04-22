@@ -239,17 +239,37 @@ export const createPayloadOfWS = async (data) => {
   });
 
   const serviceType = data?.applicationSelection?.serviceType?.code;
-  const isWater = serviceType === "WATER" || serviceType === "BOTH";
-  const isSewerage = serviceType === "SEWERAGE" || serviceType === "BOTH";
+  const connectionDetailsArray = Array.isArray(data?.ConnectionDetails) ? data.ConnectionDetails : 
+                                 (data?.ConnectionDetails ? Object.values(data.ConnectionDetails).filter(i => typeof i === 'object') : []);
+  const connectionDetail = connectionDetailsArray?.[0] || data?.ConnectionDetails || {};
+
+  const isWater = serviceType === "WATER" || serviceType === "BOTH" || connectionDetail?.water;
+  const isSewerage = serviceType === "SEWERAGE" || serviceType === "BOTH" || connectionDetail?.sewerage;
+
+  const connectionDetailsObject = connectionDetail;
+  const useDetailsObject = data?.useDetails || connectionDetailsObject || {};
+  const connectionHolder = data?.ConnectionHolderDetails?.[0] || data?.ConnectionHolderDetails;
 
   let payload = {
-    water: isWater,
-    sewerage: isSewerage,
-    proposedTaps: data?.useDetails?.noOfTaps && Number(data?.useDetails?.noOfTaps),
-    proposedPipeSize: data?.useDetails?.proposedPipeSize?.size && Number(data?.useDetails?.proposedPipeSize?.size),
-    proposedWaterClosets: data?.useDetails?.proposedWaterClosets && Number(data?.useDetails?.proposedWaterClosets),
-    proposedToilets: data?.useDetails?.proposedToilets && Number(data?.useDetails?.proposedToilets),
-    connectionHolders: [
+    water: !!isWater,
+    sewerage: !!isSewerage,
+    proposedTaps: (data?.useDetails?.noOfTaps || connectionDetailsObject?.proposedTaps) && Number(data?.useDetails?.noOfTaps || connectionDetailsObject?.proposedTaps),
+    proposedPipeSize: (data?.useDetails?.proposedPipeSize?.size || connectionDetailsObject?.proposedPipeSize?.size || connectionDetailsObject?.proposedPipeSize?.code) && Number(data?.useDetails?.proposedPipeSize?.size || connectionDetailsObject?.proposedPipeSize?.size || connectionDetailsObject?.proposedPipeSize?.code),
+    proposedWaterClosets: (data?.useDetails?.proposedWaterClosets || connectionDetailsObject?.proposedWaterClosets) && Number(data?.useDetails?.proposedWaterClosets || connectionDetailsObject?.proposedWaterClosets),
+    proposedToilets: (data?.useDetails?.proposedToilets || connectionDetailsObject?.proposedToilets) && Number(data?.useDetails?.proposedToilets || connectionDetailsObject?.proposedToilets),
+    connectionHolders: connectionHolder ? [
+      {
+        correspondenceAddress: connectionHolder?.address || connectionHolder?.correspondenceAddress || "",
+        fatherOrHusbandName: connectionHolder?.guardian || connectionHolder?.fatherOrHusbandName || "",
+        gender: connectionHolder?.gender?.code || connectionHolder?.gender || "",
+        mobileNumber: connectionHolder?.mobileNumber || "",
+        name: connectionHolder?.name || "",
+        ownerType: connectionHolder?.ownerType?.code || connectionHolder?.ownerType || "",
+        relationship: connectionHolder?.relationship?.code || connectionHolder?.relationship || "OTHERS",
+        sameAsPropertyAddress: connectionHolder?.sameAsOwnerDetails || connectionHolder?.sameAsPropertyAddress || false,
+        emailId: connectionHolder?.emailId || "",
+      }
+    ] : [
       {
         correspondenceAddress: data?.propertyAddress?.address || "",
         fatherOrHusbandName: data?.applicant?.ParentorSpouse || "",
@@ -270,14 +290,14 @@ export const createPayloadOfWS = async (data) => {
     noOfWaterClosets: null,
     noOfToilets: null,
     additionalDetails: {
-      ...data?.useDetails,
+      ...useDetailsObject,
       ...data?.djbEmployee,
       ...data?.bankDetails,
-      zro: data?.zro?.code,
-      locality: data?.propertyAddress?.locality?.code,
+      zro: data?.zro?.code || data?.zro,
+      locality: data?.propertyAddress?.locality?.code || data?.cpt?.details?.address?.locality?.code,
       applicantType: data?.applicationSelection?.applicantType?.code,
-      connectionType: data?.applicationSelection?.connectionType?.code,
-      categoryType: data?.applicationSelection?.categoryType?.code,
+      connectionType: data?.applicationSelection?.connectionType?.code || connectionDetailsObject?.connectionType?.code || connectionDetailsObject?.connectionType || "Metered",
+      categoryType: data?.applicationSelection?.categoryType?.code || connectionHolder?.ownerType?.code || connectionHolder?.ownerType,
       subCategory: data?.applicationSelection?.subCategory?.code,
       domesticType: data?.applicationSelection?.domesticType?.code,
       temporaryConnection: data?.applicationSelection?.temporaryConnection?.code,
@@ -293,14 +313,14 @@ export const createPayloadOfWS = async (data) => {
       otherDocumentNumber: data?.documents?.otherDocumentNumber,
       detailsProvidedBy: "",
     },
-    tenantId: data?.cpt?.details?.tenantId || data?.propertyAddress?.city?.code,
+    tenantId: data?.cpt?.details?.tenantId?.split(".")[0] || data?.propertyAddress?.city?.code?.split(".")[0] || Digit.ULBService.getStateId(),
     processInstance: {
       action: "INITIATE",
     },
-    channel: "CFC_COUNTER",
+    channel: data?.channel || "CFC_COUNTER",
   };
-  sessionStorage.setItem("WS_DOCUMENTS_INOF", JSON.stringify(data?.documents));
-  sessionStorage.setItem("WS_PROPERTY_INOF", JSON.stringify(data?.cpt?.details));
+  sessionStorage.setItem("WS_DOCUMENTS_INOF", JSON.stringify(data?.documents || []));
+  sessionStorage.setItem("WS_PROPERTY_INOF", JSON.stringify(data?.cpt?.details || {}));
   /* use customiseCreateFormData hook to make some chnages to the water object */
   payload = Digit?.Customizations?.WS?.customiseCreatePayloadOfWS ? Digit?.Customizations?.WS?.customiseCreatePayloadOfWS(data, payload) : payload;
   return payload;
@@ -313,8 +333,8 @@ export const updatePayloadOfWS = async (data, type) => {
       ...data?.processInstance,
       action: "SUBMIT_APPLICATION",
     },
-    documents: JSON.parse(sessionStorage.getItem("WS_DOCUMENTS_INOF")),
-    property: JSON.parse(sessionStorage.getItem("WS_PROPERTY_INOF")),
+    documents: JSON.parse(sessionStorage.getItem("WS_DOCUMENTS_INOF") && sessionStorage.getItem("WS_DOCUMENTS_INOF") !== "undefined" ? sessionStorage.getItem("WS_DOCUMENTS_INOF") : "null"),
+    property: JSON.parse(sessionStorage.getItem("WS_PROPERTY_INOF") && sessionStorage.getItem("WS_PROPERTY_INOF") !== "undefined" ? sessionStorage.getItem("WS_PROPERTY_INOF") : "null"),
     connectionType: type === "WATER" ? data?.connectionType : "Non Metered",
   };
   /* use customiseCreateFormData hook to make some chnages to the water object */

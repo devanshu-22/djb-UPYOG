@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Switch, useLocation } from "react-router-dom";
-import { PrivateRoute, BreadcrumbHeader, PrintBtnCommon, Toast, MultiLink, LinkButton } from "@djb25/digit-ui-react-components";
+import { PrivateRoute, ModuleHeader, PrintBtnCommon, Toast, MultiLink, LinkButton } from "@djb25/digit-ui-react-components";
 
 import WSResponse from "./WSResponse";
 import Response from "./Response";
@@ -14,7 +14,7 @@ import { getFiles, getPDFData, getQueryStringParams } from "../../utils";
 
 import getModifyPDFData from "../../utils/getWsAckDataForModifyPdfs";
 
-const BILLSBreadCrumbs = ({ location }) => {
+const BILLSBreadCrumbs = ({ location, showPrint }) => {
   const { t } = useTranslation();
 
   const search = useLocation().search;
@@ -28,6 +28,8 @@ const BILLSBreadCrumbs = ({ location }) => {
   const applicationNumbercheck = new URLSearchParams(search).get("applicationNumber") || null;
   let isMobile = window.Digit.Utils.browser.isMobile();
   let requestParam = window.location.href.split("?")[1];
+  const receiptKey = "consolidatedreceipt";
+  const oldApplication = {};
 
   function findLastIndex(array, searchKey, searchValue) {
     var index = array
@@ -200,12 +202,12 @@ const BILLSBreadCrumbs = ({ location }) => {
     },
     {
       path: "/digit-ui/employee/module/details",
-      content: t("ES_TITLE_WATER_AND_SEWERAGE"),
+      label: t("ES_TITLE_WATER_AND_SEWERAGE"),
       show: location.pathname.includes("/create-application") || location.pathname.includes("/new-application"),
     },
     {
       path: "/digit-ui/employee/ws/create-application",
-      content: t("ES_COMMON_WS_DOCUMENTS_REQUIRED"),
+      label: t("ES_COMMON_WS_DOCUMENTS_REQUIRED"),
       show: location.pathname.includes("/create-application") || location.pathname.includes("/new-application"),
       rightContent: location.pathname.includes("/create-application") && (
         <div className="flex-center flex-gap-1 .cursorPointer" onClick={printDiv}>
@@ -216,67 +218,67 @@ const BILLSBreadCrumbs = ({ location }) => {
     },
     {
       path: "/digit-ui/employee/water/inbox",
-      content: t("ES_COMMON_BILLS_WATER_INBOX_LABEL"),
+      label: t("ES_COMMON_BILLS_WATER_INBOX_LABEL"),
       show: location.pathname.includes("/water/inbox") ? true : false,
     },
     {
       path: "/digit-ui/employee/ws/water/bill-amendment/inbox",
-      content: t("ES_COMMON_BILL_AMEND_WATER_INBOX_LABEL"),
+      label: t("ES_COMMON_BILL_AMEND_WATER_INBOX_LABEL"),
       show: location.pathname.includes("/water/bill-amendment/inbox") ? true : false,
     },
     {
       path: "/digit-ui/employee/ws/sewerage/bill-amendment/inbox",
-      content: t("ES_COMMON_BILL_AMEND_SEWERAGE_INBOX_LABEL"),
+      label: t("ES_COMMON_BILL_AMEND_SEWERAGE_INBOX_LABEL"),
       show: location.pathname.includes("/sewerage/bill-amendment/inbox") ? true : false,
     },
     {
       path: "/digit-ui/employee/ws/water/search-application",
-      content: fromScreen ? `${t(fromScreen)} / ${t("WS_SEARCH_APPLICATIONS")}` : t("WS_SEARCH_APPLICATIONS"),
+      label: fromScreen ? `${t(fromScreen)} / ${t("WS_SEARCH_APPLICATIONS")}` : t("WS_SEARCH_APPLICATIONS"),
       show: location.pathname.includes("/water/search-application") ? true : false,
       isBack: fromScreen && true,
     },
     {
       path: "/digit-ui/employee/ws/water/search-connection",
-      content: fromScreen ? `${t(fromScreen)} / ${t("WS_SEARCH_CONNECTION")}` : t("WS_SEARCH_CONNECTION"),
+      label: fromScreen ? `${t(fromScreen)} / ${t("WS_SEARCH_CONNECTION")}` : t("WS_SEARCH_CONNECTION"),
       show: location.pathname.includes("/water/search-connection") ? true : false,
       isBack: fromScreen && true,
     },
     {
       path: "/digit-ui/employee/ws/water/wns-search",
-      content: fromScreen ? `${t(fromScreen)} / ${t("WS_SEARCH_INTEGRATED_BILL")}` : t("WS_SEARCH_INTEGRATED_BILL"),
+      label: fromScreen ? `${t(fromScreen)} / ${t("WS_SEARCH_INTEGRATED_BILL")}` : t("WS_SEARCH_INTEGRATED_BILL"),
       show: location.pathname.includes("/water/wns-search") ? true : false,
       isBack: fromScreen && true,
     },
     {
       path: "/digit-ui/employee/ws/sewerage/search-application",
-      content: fromScreen ? `${t(fromScreen)} / ${t("WS_SEARCH_APPLICATIONS")}` : t("WS_SEARCH_APPLICATIONS"),
+      label: fromScreen ? `${t(fromScreen)} / ${t("WS_SEARCH_APPLICATIONS")}` : t("WS_SEARCH_APPLICATIONS"),
       show: location.pathname.includes("/sewerage/search-application") ? true : false,
       isBack: fromScreen && true,
     },
     {
       path: "/digit-ui/employee/ws/sewerage/search-connection",
-      content: fromScreen ? `${t(fromScreen)} / ${t("WS_SEARCH_CONNECTION")}` : t("WS_SEARCH_CONNECTION"),
+      label: fromScreen ? `${t(fromScreen)} / ${t("WS_SEARCH_CONNECTION")}` : t("WS_SEARCH_CONNECTION"),
       show: location.pathname.includes("/sewerage/search-connection") ? true : false,
       isBack: fromScreen && true,
     },
     {
       path: "/digit-ui/employee/sewerage/inbox",
-      content: t("ES_COMMON_BILLS_SEWERAGE_INBOX_LABEL"),
+      label: t("ES_COMMON_BILLS_SEWERAGE_INBOX_LABEL"),
       show: location.pathname.includes("/sewerage/inbox") ? true : false,
     },
     {
       path: "/digit-ui/employee/ws/new-application",
-      content: fromScreen ? `${t(fromScreen)} / ${t("ES_COMMON_WS_NEW_CONNECTION")}` : t("ES_COMMON_WS_NEW_CONNECTION"),
+      label: fromScreen ? `${t(fromScreen)} / ${t("ES_COMMON_WS_NEW_CONNECTION")}` : t("ES_COMMON_WS_NEW_CONNECTION"),
       show: location.pathname.includes("/new-application") ? true : false,
     },
     {
       path: `${location?.pathname}${location.search}`,
-      content: t("ACTION_TEST_RESPONSE"),
+      label: t("ACTION_TEST_RESPONSE"),
       show: location.pathname.includes("/ws-response") ? true : false,
     },
     {
       path: "/digit-ui/employee/ws/consumption-details",
-      content: fromScreen ? `${t(fromScreen)} / ${t("WS_VIEW_CONSUMPTION_DETAIL")}` : t("WS_VIEW_CONSUMPTION_DETAIL"),
+      label: fromScreen ? `${t(fromScreen)} / ${t("WS_VIEW_CONSUMPTION_DETAIL")}` : t("WS_VIEW_CONSUMPTION_DETAIL"),
       show: location.pathname.includes("/consumption-details") ? true : false,
       isBack: fromScreen && true,
     },
@@ -293,7 +295,7 @@ const BILLSBreadCrumbs = ({ location }) => {
             ? "/digit-ui/employee/ws/sewerage/search-application"
             : "/digit-ui/employee/ws/water/search-application"
           : "/digit-ui/employee/ws/application-details",
-      content: fromScreen ? `${t(fromScreen)} / ${t("WS_APPLICATION_DETAILS_HEADER")}` : t("WS_APPLICATION_DETAILS_HEADER"),
+      label: fromScreen ? `${t(fromScreen)} / ${t("WS_APPLICATION_DETAILS_HEADER")}` : t("WS_APPLICATION_DETAILS_HEADER"),
       show: location.pathname.includes("/application-details") ? true : false,
       isBack: sessionStorage.getItem("redirectedfromEDIT") !== "true" && fromScreen && true,
       rightContent: (
@@ -325,60 +327,60 @@ const BILLSBreadCrumbs = ({ location }) => {
             ? "/digit-ui/employee/ws/sewerage/search-application"
             : "/digit-ui/employee/ws/water/search-application"
           : "/digit-ui/employee/ws/modify-details",
-      content: fromScreen ? `${t(fromScreen)} / ${t("WS_APPLICATION_DETAILS_HEADER")}` : t("WS_APPLICATION_DETAILS_HEADER"),
+      label: fromScreen ? `${t(fromScreen)} / ${t("WS_APPLICATION_DETAILS_HEADER")}` : t("WS_APPLICATION_DETAILS_HEADER"),
       show: location.pathname.includes("/modify-details") ? true : false,
       isBack: sessionStorage.getItem("redirectedfromEDIT") !== "true" && fromScreen && true,
     },
     {
       path: "/digit-ui/employee/ws/disconnection-details",
-      content: fromScreen ? `${t(fromScreen)} / ${t("WS_APPLICATION_DETAILS_HEADER")}` : t("WS_APPLICATION_DETAILS_HEADER"),
+      label: fromScreen ? `${t(fromScreen)} / ${t("WS_APPLICATION_DETAILS_HEADER")}` : t("WS_APPLICATION_DETAILS_HEADER"),
       show: location.pathname.includes("/disconnection-details") ? true : false,
       isBack: fromScreen && true,
     },
     {
       path: "/digit-ui/employee/ws/connection-details",
-      content: fromScreen ? `${t(fromScreen)} / ${t("WS_COMMON_CONNECTION_DETAIL")}` : t("WS_COMMON_CONNECTION_DETAIL"),
+      label: fromScreen ? `${t(fromScreen)} / ${t("WS_COMMON_CONNECTION_DETAIL")}` : t("WS_COMMON_CONNECTION_DETAIL"),
       show: location.pathname.includes("/connection-details") ? true : false,
       isBack: fromScreen && true,
     },
     {
       path: "/digit-ui/employee/ws/edit-application",
-      content: `${t("WS_APPLICATION_DETAILS_HEADER")} / ${t("WS_APP_FOR_WATER_AND_SEWERAGE_EDIT_LABEL")}`,
+      label: `${t("WS_APPLICATION_DETAILS_HEADER")} / ${t("WS_APP_FOR_WATER_AND_SEWERAGE_EDIT_LABEL")}`,
       show: location.pathname.includes("/edit-application") ? true : false,
       isBack: true,
     },
     {
       path: `${location?.pathname}${location.search}`,
-      content: `${t("WS_APPLICATION_DETAILS_HEADER")} / ${t("WF_EMPLOYEE_NEWSW1_ACTIVATE_CONNECTION")}`,
+      label: `${t("WS_APPLICATION_DETAILS_HEADER")} / ${t("WF_EMPLOYEE_NEWSW1_ACTIVATE_CONNECTION")}`,
       show: location.pathname.includes("/activate-connection") ? true : false,
       isBack: true,
     },
     {
       path: `${location?.pathname}${location.search}`,
-      content: `${t("WS_APPLICATION_DETAILS_HEADER")} / ${t("WS_WATER_SEWERAGE_DISCONNECTION_EDIT_LABEL")}`,
+      label: `${t("WS_APPLICATION_DETAILS_HEADER")} / ${t("WS_WATER_SEWERAGE_DISCONNECTION_EDIT_LABEL")}`,
       show: location.pathname.includes("edit-disconnection-application") ? true : false,
       isBack: true,
     },
     {
       path: `${location?.pathname}${location.search}`,
-      content: `${t("WS_APPLICATION_DETAILS_HEADER")} / ${t("WS_WATER_SEWERAGE_DISCONNECTION_EDIT_LABEL")}`,
+      label: `${t("WS_APPLICATION_DETAILS_HEADER")} / ${t("WS_WATER_SEWERAGE_DISCONNECTION_EDIT_LABEL")}`,
       show: location.pathname.includes("config-by-disconnection-application") ? true : false,
       isBack: true,
     },
     {
       path: `${location?.pathname}${location.search}`,
-      content: `${t("WS_APPLICATION_DETAILS_HEADER")} / ${t("WS_WATER_SEWERAGE_DISCONNECTION_EDIT_LABEL")}`,
+      label: `${t("WS_APPLICATION_DETAILS_HEADER")} / ${t("WS_WATER_SEWERAGE_DISCONNECTION_EDIT_LABEL")}`,
       show: location.pathname.includes("resubmit-disconnection-application") ? true : false,
       isBack: true,
     },
     {
       path: `/digit-ui/employee/ws/new-disconnection/docsrequired`,
-      content: t("WS_NEW_DISCONNECTION_DOCS_REQUIRED"),
+      label: t("WS_NEW_DISCONNECTION_DOCS_REQUIRED"),
       show: location.pathname.includes("/new-disconnection/docsrequired") ? true : false,
     },
     {
       path: `/digit-ui/employee/ws/new-disconnection/application-form`,
-      content: isMobile
+      label: isMobile
         ? `${t("WS_NEW_DISCONNECTION_DOCS_REQUIRED")} / ${t("WS_NEW_DISCONNECTION_APPLICATION")}`
         : `${t("WS_NEW_DISCONNECTION_DOCS_REQUIRED")} / ${t("WS_NEW_DISCONNECTION_APPLICATION")}`,
       show: location.pathname.includes("/new-disconnection/application-form") ? true : false,
@@ -386,7 +388,7 @@ const BILLSBreadCrumbs = ({ location }) => {
     },
     {
       path: `${location?.pathname}${location.search}`,
-      content: `${t("WS_NEW_DISCONNECTION_RESPONSE")}`,
+      label: `${t("WS_NEW_DISCONNECTION_RESPONSE")}`,
       show: location.pathname.includes("/ws-disconnection-response") ? true : false,
       isBack: true,
     },
@@ -397,40 +399,40 @@ const BILLSBreadCrumbs = ({ location }) => {
     // },
     {
       path: `${location?.pathname}${location.search}`,
-      content: fromScreen ? `${t(fromScreen)} / ${t("WS_MODIFY_CONNECTION_BUTTON")}` : t("WS_MODIFY_CONNECTION_BUTTON"),
+      label: fromScreen ? `${t(fromScreen)} / ${t("WS_MODIFY_CONNECTION_BUTTON")}` : t("WS_MODIFY_CONNECTION_BUTTON"),
       show: location.pathname.includes("ws/modify-application") ? true : false,
       isBack: true,
     },
     {
       path: "/digit-ui/employee/ws/required-documents",
-      content: t("ES_COMMON_WS_DOCUMENTS_REQUIRED"),
+      label: t("ES_COMMON_WS_DOCUMENTS_REQUIRED"),
       show: location.pathname.includes("/required-documents") ? true : false,
     },
     {
       path: requestParam ? `/digit-ui/employee/ws/bill-amendment?${requestParam}` : "/digit-ui/employee/ws/bill-amendment",
-      content: t("WS_BILL_AMEND_APP"),
+      label: t("WS_BILL_AMEND_APP"),
       show: location.pathname.includes("ws/bill-amendment") && !IsEdit ? true : false,
     },
     {
       path: "/digit-ui/employee/ws/bill-amendment",
-      content: t("WS_BILL_AMEND_EDIT_APP"),
+      label: t("WS_BILL_AMEND_EDIT_APP"),
       show: location.pathname.includes("ws/bill-amendment") && IsEdit ? true : false,
     },
     {
       path: "/digit-ui/employee/ws/response",
-      content: t("WS_ACK_SCREEN"),
+      label: t("WS_ACK_SCREEN"),
       show: location.pathname.includes("/employee/ws/response") ? true : false,
       isclickable: false,
     },
     {
       path: "/digit-ui/employee/ws/generate-note-bill-amendment",
-      content: t("CS_TITLE_GENERATE_NOTE"),
+      label: t("CS_TITLE_GENERATE_NOTE"),
       show: location.pathname.includes("/generate-note-bill-amendment") ? true : false,
       //isclickable : false,
     },
     {
       path: "/digit-ui/employee/ws/water/bulk-bil",
-      content: t("CS_TITLE_BULK_BILL"),
+      label: t("CS_TITLE_BULK_BILL"),
       show: location.pathname.includes("/ws/water/bulk-bill") ? true : false,
       //isclickable : false,
     },
@@ -438,6 +440,10 @@ const BILLSBreadCrumbs = ({ location }) => {
 
   let lastCrumbIndex = findLastIndex(crumbs, "show", true);
   crumbs[lastCrumbIndex] = { ...crumbs[lastCrumbIndex], isclickable: false };
+
+  const getDynamicBreadcrumbs = () => {
+    return crumbs.filter((crumb) => crumb.show);
+  };
 
   return (
     <React.Fragment>
@@ -451,12 +457,7 @@ const BILLSBreadCrumbs = ({ location }) => {
           isDleteBtn={true}
         />
       )}
-      <BreadcrumbHeader
-        style={
-          window?.location.href.includes("/employee/ws/bill-amendment") || window?.location.href.includes("/employee/ws/response")
-            ? { marginLeft: "20px" }
-            : {}
-        }
+      <ModuleHeader
         leftContent={
           <React.Fragment>
             <ArrowLeft className="icon" />
@@ -464,7 +465,7 @@ const BILLSBreadCrumbs = ({ location }) => {
           </React.Fragment>
         }
         onLeftClick={() => window.history.back()}
-        breadcrumbs={crumbs}
+        breadcrumbs={getDynamicBreadcrumbs()}
       />
     </React.Fragment>
   );
@@ -479,6 +480,7 @@ const App = ({ path }) => {
   const WSApplicationBillAmendment = Digit?.ComponentRegistryService?.getComponent("WSApplicationBillAmendment");
   const WSRequiredDocuments = Digit?.ComponentRegistryService?.getComponent("WSRequiredDocuments");
   const WSNewApplication = Digit?.ComponentRegistryService?.getComponent("WSNewApplication");
+  const WSOLDApplication = Digit?.ComponentRegistryService?.getComponent("WSOLDApplication");
   const WSApplicationDetails = Digit?.ComponentRegistryService?.getComponent("WSApplicationDetails");
   const WSGetConnectionDetails = Digit?.ComponentRegistryService?.getComponent("WSGetConnectionDetails");
   const WSActivateConnection = Digit?.ComponentRegistryService?.getComponent("WSActivateConnection");
@@ -529,6 +531,8 @@ const App = ({ path }) => {
             <Switch>
               <PrivateRoute path={`${path}/create-application`} component={WSDocsRequired} />
               <PrivateRoute path={`${path}/new-application`} component={WSNewApplication} />
+              <PrivateRoute path={`${path}/old-application`} component={WSOLDApplication} />
+
               <PrivateRoute path={`${path}/edit-application`} component={WSEditApplication} />
               <PrivateRoute path={`${path}/edit-disconnection-application`} component={WSEditDisconnectionApplication} />
               <PrivateRoute path={`${path}/resubmit-disconnection-application`} component={WSResubmitDisconnection} />

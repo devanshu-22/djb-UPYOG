@@ -111,17 +111,17 @@ const DEFAULT_FORM_VALUES = {
     whatsAppNumber: "",
   },
   applicationSelection: {
-    serviceType: null,
-    applicantType: null,
-    connectionType: null,
-    categoryType: null,
-    subCategory: null,
+    serviceType: dropdownData.serviceTypes[0],
+    applicantType: dropdownData.applicantTypes[0],
+    connectionType: dropdownData.connectionTypes[0],
+    categoryType: dropdownData.categoryTypes[1],
+    subCategory: dropdownData.subCategories[0],
     temporaryConnection: null,
     ownerAuthorizationDoc: null,
     ownerContactNumber: "",
     ownerOtp: "",
     isOwnerVerified: false,
-    domesticType: null,
+    domesticType: { code: "INDIVIDUAL", name: "Individual" },
     commercialType: null,
   },
   djbEmployee: {
@@ -184,6 +184,7 @@ const DEFAULT_FORM_VALUES = {
     signatureFile: null,
     agree: false,
   },
+  zro: null,
   cpt: { id: "", details: null },
 };
 
@@ -330,7 +331,7 @@ const getStoredFormData = () => {
 };
 
 const buildDefaultValues = () => ({
-  zro: { value: "", error: "" },
+  zro: DEFAULT_FORM_VALUES.zro,
   typeOfRequest: DEFAULT_FORM_VALUES.typeOfRequest,
   connectionType: DEFAULT_FORM_VALUES.connectionType,
   applicant: { ...DEFAULT_FORM_VALUES.applicant },
@@ -352,15 +353,16 @@ const resolveNestedValue = (value, path) =>
     return accumulator[currentKey];
   }, value);
 
-const getDisplayValue = (value) => {
-  if (value === null || value === undefined || value === "") return "Not provided";
-  if (typeof value === "boolean") return value ? "Yes" : "No";
+const getDisplayValue = (value, t) => {
+  if (value === null || value === undefined || value === "") return t("CS_COMMON_NOT_AVAILABLE");
+  if (typeof value === "boolean") return value ? t("CS_COMMON_YES") : t("CS_COMMON_NO");
   if (typeof value === "object") {
     if (value?.fileName) return value.fileName;
-    if (value?.name) return value.name;
-    if (value?.code) return value.code;
+    if (value?.i18nKey) return t(value.i18nKey);
+    if (value?.name) return t(value.name);
+    if (value?.code) return t(value.code);
   }
-  return String(value);
+  return t(String(value));
 };
 
 const FieldBlock = ({ label, required, error, children, hint, isFullWidth }) => {
@@ -442,19 +444,20 @@ const handleView = async (fileStoreId, tenantId) => {
 };
 
 const PreviewItem = ({ label, value, isFullWidth }) => {
+  const { t } = useTranslation();
   const stateId = Digit.ULBService.getStateId();
   const isFile = value && typeof value === "object" && value?.fileStoreId;
 
   return (
     <div style={{ ...fieldWrapperStyle, ...(isFullWidth ? { gridColumn: "1 / -1" } : {}) }}>
-      <CardLabel style={{ fontWeight: "600", marginBottom: "0px" }}>{label}</CardLabel>
+      <CardLabel style={{ fontWeight: "600", marginBottom: "0px" }}>{t(label)}</CardLabel>
       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-        <CardText style={{ marginBottom: "0px", marginTop: "0px" }}>{getDisplayValue(value)}</CardText>
+        <CardText style={{ marginBottom: "0px", marginTop: "0px" }}>{getDisplayValue(value, t)}</CardText>
         {isFile && (
           <div
             onClick={() => handleView(value.fileStoreId, stateId)}
             style={{ cursor: "pointer", display: "flex", alignItems: "center", color: "#0B4B66" }}
-            title="View Document"
+            title={t("CS_COMMON_VIEW_DOCUMENT")}
           >
             <svg
               width="20"
@@ -518,9 +521,17 @@ const NewApplication = () => {
   const [waterAndSewerageBoth, setWaterAndSewerageBoth] = useState(null);
   const [propertyId, setPropertyId] = useState(new URLSearchParams(location.search).get("propertyId"));
   const initialFormValues = buildDefaultValues();
-  const [zro, setZro] = useState(initialFormValues.zro);
-  const [localFormState, setLocalFormState] = useState(false);
   const [city, setCity] = useState("");
+
+  const { data: ZROLocation } = Digit.Hooks.ws.useWSConfigMDMS.ZROLocation(tenantId);
+  const { data: ConnectionType } = Digit.Hooks.ws.useWSConfigMDMS.ConnectionCategory(tenantId);
+
+  const mappedZROLocation = useMemo(() => {
+    return ZROLocation?.map((item) => ({
+      ...item,
+      i18nKey: item?.i18nKey || item?.name || item?.code,
+    }));
+  }, [ZROLocation]);
 
   useEffect(() => {
     if (allCities && tenantId && !city) {
@@ -674,7 +685,7 @@ const NewApplication = () => {
   const subCategoryIsDomestic = selectedSubCategory?.code === "DOMESTIC";
 
   const selectedConnectionType = watch("applicationSelection.connectionType");
-  const connectionTypeIsTemporary = selectedConnectionType?.code === "TEMPORARY";
+  const connectionTypeIsTemporary = selectedConnectionType?.code === "Temporary";
   const selectedDomesticType = watch("applicationSelection.domesticType");
   const activeType = selectedSubCategory?.code === "DOMESTIC" ? selectedDomesticType : selectedCommercialType;
 
@@ -1098,29 +1109,6 @@ const NewApplication = () => {
     return <Loader />;
   }
 
-  const menu = [
-    {
-      i18nKey: "ASHOK VIHAR",
-      code: "ASHOK VIHAR",
-      value: "ASHOK VIHAR",
-    },
-    {
-      i18nKey: "BURARI",
-      code: "BURARI",
-      value: "BURARI",
-    },
-    {
-      i18nKey: "DWARKA",
-      code: "DWARKA",
-      value: "DWARKA",
-    },
-    {
-      i18nKey: "OKHLA",
-      code: "OKHLA",
-      value: "OKHLA",
-    },
-  ];
-
   return (
     <div>
       <style>
@@ -1203,7 +1191,7 @@ const NewApplication = () => {
       </style>
       {/* <Header>{t("New Water / Sewerage Application")}</Header> */}
 
-      <div style={{ display: "flex", alignItems: "flex-start", gap: "24px", marginBottom: "80px" }}>
+      <div className="employee-form-section-wrapper">
         {!previewMode && <VerticalTimeline config={timelineConfig} currentActiveIndex={currentStep - 1} showFinalStep={false} />}
 
         <div style={{ flex: "1", overflowY: "auto", minWidth: 0 }}>
@@ -1215,16 +1203,15 @@ const NewApplication = () => {
               isOpen={collapsedSections.application}
               onToggle={toggleSection}
               sectionKey="application"
-              title="Application Selection"
+              title={t("WS_APPLICATION_SELECTION")}
               sectionRef={sectionRefs.application}
             >
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">ZRO Location</CardLabel>
+                <CardLabel className="card-label-smaller">{t("WS_ZRO_LOCATION")}</CardLabel>
                 <div className="field">
                   <Controller
                     control={control}
                     name={"zro"}
-                    defaultValue={zro}
                     rules={{ required: t("REQUIRED_FIELD") }}
                     isMandatory={true}
                     render={(props) => (
@@ -1233,15 +1220,9 @@ const NewApplication = () => {
                           className="form-field"
                           selected={props.value}
                           disable={false}
-                          option={menu}
+                          option={mappedZROLocation}
                           errorStyle={!!getFieldError("zro")}
-                          select={(e) => {
-                            props.onChange(e);
-                            setZro((prev) => ({
-                              ...prev,
-                              value: e,
-                            }));
-                          }}
+                          select={props.onChange}
                           optionKey="i18nKey"
                           onBlur={props.onBlur}
                           t={t}
@@ -1251,10 +1232,10 @@ const NewApplication = () => {
                   />
                 </div>
               </LabelFieldPair>
-              {localFormState && zro.error && <CardLabelError>{zro.error}</CardLabelError>}
+              {getFieldError("zro") && <CardLabelError>{getFieldError("zro")?.message}</CardLabelError>}
 
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">Service Type</CardLabel>
+                <CardLabel className="card-label-smaller">{t("WS_SERVICE_TYPE")}</CardLabel>
                 <div className="field">
                   <Controller
                     control={control}
@@ -1282,7 +1263,7 @@ const NewApplication = () => {
               )}
 
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">Applicant Type</CardLabel>
+                <CardLabel className="card-label-smaller">{t("WS_APPLICANT_TYPE")}</CardLabel>
                 <div className="field">
                   <Controller
                     control={control}
@@ -1312,7 +1293,7 @@ const NewApplication = () => {
               {isTenantOrRelative && (
                 <React.Fragment>
                   <LabelFieldPair>
-                    <CardLabel className="card-label-smaller">Owner Authorization</CardLabel>
+                    <CardLabel className="card-label-smaller">{t("WS_OWNER_AUTHORIZATION")}</CardLabel>
                     <div className="field">
                       <Controller
                         control={control}
@@ -1333,7 +1314,7 @@ const NewApplication = () => {
                   </LabelFieldPair>
 
                   <LabelFieldPair>
-                    <CardLabel className="card-label-smaller">Owner Contact Number</CardLabel>
+                    <CardLabel className="card-label-smaller">{t("WS_OWNER_CONTACT_NUMBER")}</CardLabel>
                     <div className="field" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                       <div style={{ flex: 1 }}>
                         <TextInput
@@ -1361,10 +1342,10 @@ const NewApplication = () => {
                             }
                           }}
                         >
-                          {isOtpSent ? "Resend OTP" : "Verify"}
+                          {isOtpSent ? t("WS_RESEND_OTP") : t("WS_VERIFY")}
                         </button>
                       )}
-                      {isOwnerVerified && <span style={{ color: "green", fontSize: "14px", fontWeight: "600" }}>Verified ✓</span>}
+                      {isOwnerVerified && <span style={{ color: "green", fontSize: "14px", fontWeight: "600" }}>{t("WS_VERIFIED")} ✓</span>}
                     </div>
                   </LabelFieldPair>
                   {getFieldError("applicationSelection.ownerContactNumber") && (
@@ -1373,7 +1354,7 @@ const NewApplication = () => {
 
                   {isOtpSent && !isOwnerVerified && (
                     <LabelFieldPair>
-                      <CardLabel className="card-label-smaller">OTP Verification</CardLabel>
+                      <CardLabel className="card-label-smaller">{t("WS_OTP_VERIFICATION")}</CardLabel>
                       <div className="field" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                         <div style={{ flex: 1 }}>
                           <TextInput
@@ -1400,7 +1381,7 @@ const NewApplication = () => {
                             }
                           }}
                         >
-                          Confirm
+                          {t("WS_CONFIRM")}
                         </button>
                       </div>
                     </LabelFieldPair>
@@ -1412,7 +1393,7 @@ const NewApplication = () => {
               )}
 
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">Connection Type</CardLabel>
+                <CardLabel className="card-label-smaller">{t("WS_CONNECTION_TYPE")}</CardLabel>
                 <div className="field">
                   <Controller
                     control={control}
@@ -1424,7 +1405,7 @@ const NewApplication = () => {
                         className="form-field"
                         selected={props.value}
                         disable={false}
-                        option={dropdownData.connectionTypes}
+                        option={ConnectionType}
                         errorStyle={!!getFieldError("applicationSelection.connectionType")}
                         select={props.onChange}
                         optionKey="name"
@@ -1441,7 +1422,7 @@ const NewApplication = () => {
 
               {connectionTypeIsTemporary && (
                 <LabelFieldPair>
-                  <CardLabel className="card-label-smaller">Temporary Connection</CardLabel>
+                  <CardLabel className="card-label-smaller">{t("WS_TEMPORARY_CONNECTION")}</CardLabel>
                   <div className="field">
                     <Controller
                       control={control}
@@ -1470,7 +1451,7 @@ const NewApplication = () => {
               )}
 
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">Category Type</CardLabel>
+                <CardLabel className="card-label-smaller">{t("WS_CATEGORY_TYPE")}</CardLabel>
                 <div className="field">
                   <Controller
                     control={control}
@@ -1498,7 +1479,7 @@ const NewApplication = () => {
               )}
 
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">Water Demand Type</CardLabel>
+                <CardLabel className="card-label-smaller">{t("WS_WATER_DEMAND_TYPE")}</CardLabel>
                 <div className="field">
                   <Controller
                     control={control}
@@ -1527,7 +1508,7 @@ const NewApplication = () => {
 
               {subCategoryIsDomestic && (
                 <LabelFieldPair>
-                  <CardLabel className="card-label-smaller">Domestic Type</CardLabel>
+                  <CardLabel className="card-label-smaller">{t("WS_DOMESTIC_TYPE")}</CardLabel>
                   <div className="field">
                     <Controller
                       control={control}
@@ -1542,6 +1523,7 @@ const NewApplication = () => {
                             { code: "INDIVIDUAL", name: "Individual" },
                             { code: "ORGANIZATION", name: "Organization" },
                           ]}
+                          t={t}
                         />
                       )}
                     />
@@ -1554,7 +1536,7 @@ const NewApplication = () => {
 
               {subCategoryIsCommercial && (
                 <LabelFieldPair>
-                  <CardLabel className="card-label-smaller">Commercial Type</CardLabel>
+                  <CardLabel className="card-label-smaller">{t("WS_COMMERCIAL_TYPE")}</CardLabel>
                   <div className="field">
                     <Controller
                       control={control}
@@ -1581,21 +1563,21 @@ const NewApplication = () => {
           </div>
 
           <SectionCard
-            description="Enable this section only when the applicant is a Government Connection."
+            description={t("WS_GOVT_CONNECTION_DESC")}
             isOpen={collapsedSections.governmentEmployee}
             onToggle={toggleSection}
             sectionKey="governmentEmployee"
-            title="Government Connection"
+            title={t("WS_GOVERNMENT_CONNECTION")}
             sectionRef={sectionRefs.governmentEmployee}
           >
-            <FieldBlock label="Government Connection">
+            <FieldBlock label={t("WS_GOVERNMENT_CONNECTION")}>
               <Controller
                 control={control}
                 name="governmentEmployee.isGovernmentEmployee"
                 render={(props) => (
                   <CheckBox
                     checked={!!props.value}
-                    label="Applicant is a Government Connection"
+                    label={t("WS_APPLICANT_IS_GOVT_CONNECTION")}
                     onChange={(event) => props.onChange(event.target.checked)}
                   />
                 )}
@@ -1605,7 +1587,7 @@ const NewApplication = () => {
             {isGovernmentEmployee && (
               <React.Fragment>
                 <LabelFieldPair>
-                  <CardLabel className="card-label-smaller">Organization Name</CardLabel>
+                  <CardLabel className="card-label-smaller">{t("WS_ORGANIZATION_NAME")}</CardLabel>
                   <div className="field">
                     <TextInput
                       name="governmentEmployee.organizationName"
@@ -1619,7 +1601,7 @@ const NewApplication = () => {
                 )}
 
                 <LabelFieldPair>
-                  <CardLabel className="card-label-smaller">Nature of Work</CardLabel>
+                  <CardLabel className="card-label-smaller">{t("WS_NATURE_OF_WORK")}</CardLabel>
                   <div className="field">
                     <TextInput
                       name="governmentEmployee.natureOfWork"
@@ -1633,7 +1615,7 @@ const NewApplication = () => {
                 )}
 
                 <LabelFieldPair>
-                  <CardLabel className="card-label-smaller">Upload Document</CardLabel>
+                  <CardLabel className="card-label-smaller">{t("WS_UPLOAD_DOCUMENT")}</CardLabel>
                   <div className="field">
                     <Controller
                       control={control}
@@ -1659,11 +1641,11 @@ const NewApplication = () => {
           <div style={{ display: previewMode ? "none" : "block" }}>
             <React.Fragment>
               <SectionCard
-                description="Applicant name, organization details, and supporting ID proof."
+                description={t("WS_APPLICANT_DETAILS_DESC")}
                 isOpen={collapsedSections.applicant}
                 onToggle={toggleSection}
                 sectionKey="applicant"
-                title={applicantSectionTitle}
+                title={t(applicantSectionTitle)}
                 sectionRef={sectionRefs.applicant}
               >
                 <Controller
@@ -1674,7 +1656,7 @@ const NewApplication = () => {
                     <ProfileImageUpload
                       error={getFieldError("applicant.UploadPicture")?.message}
                       isUploading={!!uploadingFields["applicant.UploadPicture"]}
-                      label="Upload Picture"
+                      label="WS_UPLOAD_PICTURE"
                       onUpload={(event) => uploadFile(event, "applicant.UploadPicture", props.onChange)}
                       required
                       t={t}
@@ -1683,7 +1665,7 @@ const NewApplication = () => {
                   )}
                 />
 
-                <FieldBlock error={getFieldError("applicant.firstName")} label="First Name" required>
+                <FieldBlock error={getFieldError("applicant.firstName")} label={t("WS_FIRST_NAME")} required>
                   <TextInput
                     errorStyle={!!getFieldError("applicant.firstName")}
                     inputRef={register({
@@ -1694,7 +1676,7 @@ const NewApplication = () => {
                   />
                 </FieldBlock>
 
-                <FieldBlock error={getFieldError("applicant.middleName")} label="Middle Name">
+                <FieldBlock error={getFieldError("applicant.middleName")} label={t("WS_MIDDLE_NAME")}>
                   <TextInput
                     errorStyle={!!getFieldError("applicant.middleName")}
                     inputRef={register({
@@ -1704,7 +1686,7 @@ const NewApplication = () => {
                   />
                 </FieldBlock>
 
-                <FieldBlock error={getFieldError("applicant.lastName")} label="Last Name" required>
+                <FieldBlock error={getFieldError("applicant.lastName")} label={t("WS_LAST_NAME")} required>
                   <TextInput
                     errorStyle={!!getFieldError("applicant.lastName")}
                     inputRef={register({
@@ -1715,7 +1697,7 @@ const NewApplication = () => {
                   />
                 </FieldBlock>
 
-                <FieldBlock error={getFieldError("useDetails.gender")} label="Gender" required>
+                <FieldBlock error={getFieldError("useDetails.gender")} label={t("WS_GENDER")} required>
                   <Controller
                     control={control}
                     name="useDetails.gender"
@@ -1723,10 +1705,10 @@ const NewApplication = () => {
                     render={(props) => (
                       <Dropdown
                         option={[
-                          { name: "Male", code: "MALE" },
-                          { name: "Female", code: "FEMALE" },
+                          { name: "Male", code: "MALE", i18nKey: "MALE" },
+                          { name: "Female", code: "FEMALE", i18nKey: "FEMALE" },
                         ]}
-                        optionKey="name"
+                        optionKey="i18nKey"
                         selected={props.value}
                         select={props.onChange}
                         t={t}
@@ -1735,7 +1717,7 @@ const NewApplication = () => {
                   />
                 </FieldBlock>
 
-                <FieldBlock error={getFieldError("applicant.ParentorSpouse")} label="Parent/ spouse" required>
+                <FieldBlock error={getFieldError("applicant.ParentorSpouse")} label={t("WS_PARENT_OR_SPOUSE")} required>
                   <TextInput
                     errorStyle={!!getFieldError("applicant.ParentorSpouse")}
                     inputRef={register({
@@ -1746,7 +1728,7 @@ const NewApplication = () => {
                   />
                 </FieldBlock>
 
-                <FieldBlock error={getFieldError("contact.emailId")} label="Email ID" required>
+                <FieldBlock error={getFieldError("contact.emailId")} label={t("WS_EMAIL_ID")} required>
                   <TextInput
                     errorStyle={!!getFieldError("contact.emailId")}
                     inputRef={register({
@@ -1757,7 +1739,7 @@ const NewApplication = () => {
                   />
                 </FieldBlock>
 
-                <FieldBlock error={getFieldError("contact.mobileNumber")} label="Mobile Number" required>
+                <FieldBlock error={getFieldError("contact.mobileNumber")} label={t("WS_MOBILE_NUMBER")} required>
                   <TextInput
                     errorStyle={!!getFieldError("contact.mobileNumber")}
                     inputRef={register({
@@ -1769,7 +1751,7 @@ const NewApplication = () => {
                   />
                 </FieldBlock>
 
-                <FieldBlock error={getFieldError("contact.whatsAppNumber")} label="WhatsApp Number">
+                <FieldBlock error={getFieldError("contact.whatsAppNumber")} label={t("WS_WHATS_APP_NUMBER")}>
                   <TextInput
                     errorStyle={!!getFieldError("contact.whatsAppNumber")}
                     inputRef={register({
@@ -1782,21 +1764,21 @@ const NewApplication = () => {
               </SectionCard>
 
               <SectionCard
-                description="Enable this section only when the applicant is a DJB employee."
+                description={t("WS_DJB_EMPLOYEE_DESC")}
                 isOpen={collapsedSections.employee}
                 onToggle={toggleSection}
                 sectionKey="djbEmployee"
-                title="DJB Employee"
+                title={t("WS_DJB_EMPLOYEE")}
                 sectionRef={sectionRefs.djbEmployee}
               >
-                <FieldBlock label="DJB Employee">
+                <FieldBlock label={t("WS_DJB_EMPLOYEE")}>
                   <Controller
                     control={control}
                     name="djbEmployee.isDjbEmployee"
                     render={(props) => (
                       <CheckBox
                         checked={!!props.value}
-                        label="Applicant is a DJB Employee"
+                        label={t("WS_APPLICANT_IS_DJB_EMPLOYEE")}
                         onChange={(event) => props.onChange(event.target.checked)}
                       />
                     )}
@@ -1805,7 +1787,7 @@ const NewApplication = () => {
 
                 {isDjbEmployee && (
                   <React.Fragment>
-                    <FieldBlock error={getFieldError("djbEmployee.employeeId")} label="Employee ID" required={isDjbEmployee}>
+                    <FieldBlock error={getFieldError("djbEmployee.employeeId")} label={t("WS_EMPLOYEE_ID")} required={isDjbEmployee}>
                       <TextInput
                         errorStyle={!!getFieldError("djbEmployee.employeeId")}
                         inputRef={register({
@@ -1815,7 +1797,7 @@ const NewApplication = () => {
                       />
                     </FieldBlock>
 
-                    <FieldBlock error={getFieldError("djbEmployee.retirementDate")} label="Date of Retirement" required={isDjbEmployee}>
+                    <FieldBlock error={getFieldError("djbEmployee.retirementDate")} label={t("WS_DATE_OF_RETIREMENT")} required={isDjbEmployee}>
                       <Controller
                         control={control}
                         name="djbEmployee.retirementDate"
@@ -1827,7 +1809,7 @@ const NewApplication = () => {
                     <FieldBlock
                       error={getFieldError("djbEmployee.officeNameAndAddress")}
                       isFullWidth
-                      label="Office Name & Address"
+                      label={t("WS_OFFICE_NAME_AND_ADDRESS")}
                       required={isDjbEmployee}
                     >
                       <TextArea
@@ -1844,14 +1826,14 @@ const NewApplication = () => {
               </SectionCard>
 
               <SectionCard
-                description="Property location and administrative boundary details."
+                description={t("WS_PROPERTY_ADDRESS_DESC")}
                 isOpen={collapsedSections.address}
                 onToggle={toggleSection}
                 sectionKey="propertyAddress"
-                title="Property Address"
+                title={t("WS_PROPERTY_ADDRESS")}
                 sectionRef={sectionRefs.propertyAddress}
               >
-                <FieldBlock error={getFieldError("propertyAddress.city")} label="City">
+                {/* <FieldBlock error={getFieldError("propertyAddress.city")} label={t("WS_CITY")}>
                   <Controller
                     control={control}
                     name="propertyAddress.city"
@@ -1868,12 +1850,12 @@ const NewApplication = () => {
                         optionKey="i18nKey"
                         t={t}
                         style={{ width: "100%" }}
-                        placeholder={"Select"}
+                        placeholder={t("WS_SELECT")}
                       />
                     )}
                   />
-                </FieldBlock>
-                <FieldBlock error={getFieldError("propertyAddress.pinCode")} label="Pin Code" required>
+                </FieldBlock> */}
+                <FieldBlock error={getFieldError("propertyAddress.pinCode")} label={t("WS_PIN_CODE")} required>
                   <Controller
                     control={control}
                     name="propertyAddress.pinCode"
@@ -1902,7 +1884,7 @@ const NewApplication = () => {
                   />
                 </FieldBlock>
 
-                <FieldBlock error={getFieldError("propertyAddress.locality")} label="Locality" required>
+                <FieldBlock error={getFieldError("propertyAddress.locality")} label={t("WS_LOCALITY")} required>
                   <Controller
                     control={control}
                     name="propertyAddress.locality"
@@ -1930,33 +1912,48 @@ const NewApplication = () => {
                   />
                 </FieldBlock>
 
-                <FieldBlock error={getFieldError("propertyAddress.state")} label="State">
-                  <TextInput errorStyle={!!getFieldError("propertyAddress.state")} inputRef={register()} name="propertyAddress.state" />
+                <FieldBlock error={getFieldError("propertyAddress.state")} label={t("WS_STATE")}>
+                  <Controller
+                    control={control}
+                    name="propertyAddress.city"
+                    render={(props) => (
+                      <Dropdown
+                        className="form-field"
+                        selected={props.value || city}
+                        select={(val) => {
+                          setCity(val);
+                          props.onChange(val);
+                        }}
+                        option={allCities}
+                        optionCardStyles={{ overflowY: "auto", maxHeight: "300px" }}
+                        optionKey="i18nKey"
+                        t={t}
+                        style={{ width: "100%" }}
+                        placeholder={t("WS_SELECT")}
+                      />
+                    )}
+                  />
                 </FieldBlock>
 
-                {/* <FieldBlock error={getFieldError("propertyAddress.district")} label="District">
-                  <TextInput errorStyle={!!getFieldError("propertyAddress.district")} inputRef={register()} name="propertyAddress.district" />
-                </FieldBlock> */}
-
-                <FieldBlock error={getFieldError("propertyAddress.street")} label="Street">
+                <FieldBlock error={getFieldError("propertyAddress.street")} label={t("WS_STREET")}>
                   <TextInput errorStyle={!!getFieldError("propertyAddress.street")} inputRef={register()} name="propertyAddress.street" />
                 </FieldBlock>
 
-                <FieldBlock error={getFieldError("propertyAddress.houseNo")} label="House No">
+                <FieldBlock error={getFieldError("propertyAddress.houseNo")} label={t("WS_HOUSE_NO")}>
                   <TextInput errorStyle={!!getFieldError("propertyAddress.houseNo")} inputRef={register()} name="propertyAddress.houseNo" />
                 </FieldBlock>
 
-                <FieldBlock error={getFieldError("propertyAddress.block")} label="Block">
+                <FieldBlock error={getFieldError("propertyAddress.block")} label={t("WS_BLOCK")}>
                   <TextInput errorStyle={!!getFieldError("propertyAddress.block")} inputRef={register()} name="propertyAddress.block" />
                 </FieldBlock>
 
-                <FieldBlock error={getFieldError("propertyAddress.zone")} label="Zone">
+                <FieldBlock error={getFieldError("propertyAddress.zone")} label={t("WS_ZONE")}>
                   <TextInput errorStyle={!!getFieldError("propertyAddress.zone")} inputRef={register()} name="propertyAddress.zone" />
                 </FieldBlock>
-                <FieldBlock error={getFieldError("propertyAddress.landmark")} label="Landmark">
+                <FieldBlock error={getFieldError("propertyAddress.landmark")} label={t("WS_LANDMARK")}>
                   <TextInput errorStyle={!!getFieldError("propertyAddress.landmark")} inputRef={register()} name="propertyAddress.landmark" />
                 </FieldBlock>
-                <FieldBlock error={getFieldError("propertyAddress.address")} isFullWidth label="Address">
+                <FieldBlock error={getFieldError("propertyAddress.address")} isFullWidth label={t("WS_ADDRESS")}>
                   <TextArea
                     className={getFieldError("propertyAddress.address") ? "employee-card-input-error" : ""}
                     inputRef={register({
@@ -1969,14 +1966,14 @@ const NewApplication = () => {
               </SectionCard>
 
               <SectionCard
-                description="Usage attributes for the property and the requested water connection."
+                description={t("WS_USE_DETAILS_DESC")}
                 isOpen={collapsedSections.usage}
                 onToggle={toggleSection}
                 sectionKey="useDetails"
-                title="Property and Water Connection Use Details"
+                title={t("WS_PROPERTY_AND_WATER_CONNECTION_USE_DETAILS")}
                 sectionRef={sectionRefs.useDetails}
               >
-                <FieldBlock error={getFieldError("useDetails.propertyType")} label="Property Type" required>
+                <FieldBlock error={getFieldError("useDetails.propertyType")} label={t("WS_PROPERTY_TYPE")} required>
                   <Controller
                     control={control}
                     name="useDetails.propertyType"
@@ -1987,7 +1984,7 @@ const NewApplication = () => {
                   />
                 </FieldBlock>
 
-                <FieldBlock error={getFieldError("useDetails.plotArea")} label="Plot Area (Sq. m.)" required>
+                <FieldBlock error={getFieldError("useDetails.plotArea")} label={t("WS_PLOT_AREA")} required>
                   <TextInput
                     errorStyle={!!getFieldError("useDetails.plotArea")}
                     inputRef={register({
@@ -1998,7 +1995,7 @@ const NewApplication = () => {
                   />
                 </FieldBlock>
 
-                <FieldBlock error={getFieldError("useDetails.builtUpArea")} label="Built-up Area (Sq. m.)" required>
+                <FieldBlock error={getFieldError("useDetails.builtUpArea")} label={t("WS_BUILT_UP_AREA")} required>
                   <TextInput
                     errorStyle={!!getFieldError("useDetails.builtUpArea")}
                     inputRef={register({
@@ -2009,7 +2006,7 @@ const NewApplication = () => {
                   />
                 </FieldBlock>
 
-                <FieldBlock error={getFieldError("useDetails.noOfFloors")} label="Number of Floors" required>
+                <FieldBlock error={getFieldError("useDetails.noOfFloors")} label={t("WS_NUMBER_OF_FLOORS")} required>
                   <TextInput
                     errorStyle={!!getFieldError("useDetails.noOfFloors")}
                     inputRef={register({
@@ -2020,7 +2017,7 @@ const NewApplication = () => {
                   />
                 </FieldBlock>
 
-                <FieldBlock error={getFieldError("useDetails.NumberofDwellingUnits")} label="Number of Dwelling Units" required>
+                <FieldBlock error={getFieldError("useDetails.NumberofDwellingUnits")} label={t("WS_NUMBER_OF_DWELLING_UNITS")} required>
                   <TextInput
                     errorStyle={!!getFieldError("useDetails.NumberofDwellingUnits")}
                     inputRef={register({
@@ -2032,7 +2029,7 @@ const NewApplication = () => {
                 </FieldBlock>
 
                 {isHospitalProperty ? (
-                  <FieldBlock error={getFieldError("useDetails.hospitalBeds")} label="Number of Beds" required>
+                  <FieldBlock error={getFieldError("useDetails.hospitalBeds")} label={t("WS_NUMBER_OF_BEDS")} required>
                     <TextInput
                       errorStyle={!!getFieldError("useDetails.hospitalBeds")}
                       inputRef={register({
@@ -2044,7 +2041,7 @@ const NewApplication = () => {
                   </FieldBlock>
                 ) : null}
 
-                <FieldBlock error={getFieldError("useDetails.SelectYearofConstruction")} label="Select Year of Construction" required>
+                <FieldBlock error={getFieldError("useDetails.SelectYearofConstruction")} label={t("WS_SELECT_YEAR_OF_CONSTRUCTION")} required>
                   <Controller
                     control={control}
                     name="useDetails.SelectYearofConstruction"
@@ -2053,7 +2050,7 @@ const NewApplication = () => {
                   />
                 </FieldBlock>
 
-                <FieldBlock error={getFieldError("useDetails.WaterConnectionUsageType")} label="Water Connection Usage Type" required>
+                <FieldBlock error={getFieldError("useDetails.WaterConnectionUsageType")} label={t("WS_WATER_CONNECTION_USAGE_TYPE")} required>
                   <Controller
                     control={control}
                     name="useDetails.WaterConnectionUsageType"
@@ -2260,7 +2257,7 @@ const NewApplication = () => {
 
                 <FieldBlock error={getFieldError("propertyAddress.otherDocument")}></FieldBlock>
 
-                <FieldBlock error={getFieldError("declaration.submittedBy")} label="Submitted By *" required>
+                <FieldBlock error={getFieldError("declaration.submittedBy")} label="Submitted By" required>
                   <Controller
                     control={control}
                     name="declaration.submittedBy"

@@ -94,6 +94,7 @@ import SearchWaterConnectionIntegrated from "./pages/employee/SearchWaterConnect
 import SearchIntegrated from "./pages/employee/SearchIntegrated";
 import SearchWaterConnectionViewIntegrated from "./pages/employee/SearchWaterConnection/SearchWaterConnectionViewIntegrated";
 import BulkBillGeneration from "./pages/employee/BulkBillGeneration";
+import OLDApplication from "./pages/employee/OLD";
 
 export const WSModule = ({ stateCode, userType, tenants }) => {
   const tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || Digit.ULBService.getCurrentTenantId();
@@ -112,6 +113,7 @@ export const WSModule = ({ stateCode, userType, tenants }) => {
   if (isLoading) {
     return <Loader />;
   }
+  
 
   if (userType === "citizen") {
     return <CitizenApp path={path} stateCode={stateCode} />;
@@ -252,6 +254,7 @@ const componentsToRegister = {
   WSSearchIntegrated: SearchIntegrated,
   WSSearchWaterConnectionViewIntegrated: SearchWaterConnectionViewIntegrated,
   WSBulkBillGeneration: BulkBillGeneration,
+  WSOLDApplication: OLDApplication,
 };
 
 export const initWSComponents = () => {

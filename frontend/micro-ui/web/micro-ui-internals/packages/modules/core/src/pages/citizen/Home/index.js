@@ -344,12 +344,18 @@ const Home = () => {
         Icon: <DocumentIcon className="fill-path-primary-main" />,
         onClick: () => history.push("/digit-ui/citizen/ekyc/create-kyc"),
       },
-      // {
-      //     name: t("ACTION_TEST_WATER_AND_SEWERAGE"),
-      //     description: t("Apply for new water connection"),
-      //     Icon: <DropIcon/>,
-      //     onClick: () => history.push("/digit-ui/citizen")
-      // },
+      {
+        name: t("ACTION_TEST_APPLY_NEW_CONNECTION"),
+        description: t("Apply for a new water connection efficiently"),
+        Icon: <DropIcon className="fill-path-primary-main" />,
+        onClick: () => history.push("/digit-ui/citizen/ws/create-application"),
+      },
+      {
+        name: t("ACTION_TEST_WATER_AND_SEWERAGE"),
+        description: t("Apply for new water connection"),
+        Icon: <DropIcon className="fill-path-primary-main" />,
+        onClick: () => history.push("/digit-ui/citizen/ws/home"),
+      },
       {
         name: t(citizenServicesObj?.props?.[3]?.label) === "ACTION_TEST_CHB" ? t("Community Halls") : t(citizenServicesObj?.props?.[3]?.label),
         description: t("Book community halls for your events and functions"),
