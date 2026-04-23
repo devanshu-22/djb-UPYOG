@@ -187,7 +187,21 @@ public class InboxService {
 			processCriteria.setModuleName(BS_SW_MODULENAME);
 		}
 
+
+		Object mobile = moduleSearchCriteria.get(RequestServiceConstants.MOBILE_NUMBER_PARAM);
+		Object bookingNu= moduleSearchCriteria.get(BOOKING_NO_PARAM);
+
+		String mobileStr = (mobile != null && !mobile.toString().trim().isEmpty())
+				? mobile.toString()
+				: null;
+
+		String bookingStr = (bookingNu != null && !bookingNu.toString().trim().isEmpty())
+				? bookingNu.toString()
+				: null;
+
 		Integer totalCount = 0;
+
+		List<String> wtApplicationNumbers=null;
 		log.info(processCriteria.getModuleName().toString());
 		if (!(processCriteria.getModuleName().equals(SW) || processCriteria.getModuleName().equals(WS)
 		))
@@ -497,10 +511,7 @@ public class InboxService {
 
 
 
-
-
-
-	/*
+	        /*
 			   This block checks if the module name in processCriteria matches
 			   the REQUEST_SERVICE_WATER_TANKER. If true, it fetches the list of
 			   application numbers using the WTInboxFilterService.
@@ -511,18 +522,19 @@ public class InboxService {
 
 			   - If no application numbers are found, isSearchResultEmpty is set to true.
 			*/
+
 			if (!ObjectUtils.isEmpty(processCriteria.getModuleName())
 
-					&& processCriteria.getModuleName().equals(REQUEST_SERVICE_WATER_TANKER)) {
+					&& processCriteria.getModuleName().equals(REQUEST_SERVICE_WATER_TANKER)
 
-				List<String> applicationNumbers = WTInboxFilterService.fetchApplicationNumbersFromSearcher(criteria,
+			) {
+
+				 wtApplicationNumbers = WTInboxFilterService.fetchApplicationNumbersFromSearcher(criteria,
 						StatusIdNameMap, requestInfo);
 
-				totalCount=applicationNumbers.size();
-
-				if (!CollectionUtils.isEmpty(applicationNumbers)) {
-					moduleSearchCriteria.put(BOOKING_NO_PARAM, applicationNumbers);
-					businessKeys.addAll(applicationNumbers);
+				if (!CollectionUtils.isEmpty(wtApplicationNumbers)) {
+					moduleSearchCriteria.put(BOOKING_NO_PARAM, wtApplicationNumbers);
+					businessKeys.addAll(wtApplicationNumbers);
 					moduleSearchCriteria.remove(LOCALITY_PARAM);
 					moduleSearchCriteria.remove(OFFSET_PARAM);
 					moduleSearchCriteria.remove(STATUS_PARAM);
@@ -618,6 +630,7 @@ public class InboxService {
 				}
 			}
 
+
 			if (!ObjectUtils.isEmpty(processCriteria.getModuleName())
 					&& (processCriteria.getModuleName().equals(TL) || processCriteria.getModuleName().equals(BPAREG))) {
 				totalCount = tlInboxFilterService.fetchApplicationCountFromSearcher(criteria, StatusIdNameMap,
@@ -660,6 +673,8 @@ public class InboxService {
 					isSearchResultEmpty = true;
 				}
 			}
+
+
 
 			if (processCriteria != null && !ObjectUtils.isEmpty(processCriteria.getModuleName())
 					&& processCriteria.getModuleName().equals(NOC)) {
@@ -766,6 +781,8 @@ public class InboxService {
 				moduleSearchCriteria.put("isPropertyDetailsRequired", true);
 				processCriteria.setModuleName(BS_SW_MODULENAME);
 			}
+
+
 			/*
 			 * if(!ObjectUtils.isEmpty(processCriteria.getModuleName()) &&
 			 * processCriteria.getModuleName().equals(PT)){ Boolean isMobileNumberPresent =
@@ -820,11 +837,13 @@ public class InboxService {
 					&& !(processCriteria.getModuleName().equals(SW) || processCriteria.getModuleName().equals(WS))) {
 				businessObjects = fetchModuleObjects(moduleSearchCriteria, businessServiceName, criteria.getTenantId(),
 						requestInfo, srvMap);
+
 			}
 			Map<String, Object> businessMap = new HashMap<>();
 // Added below if condition to handle PGR response business object as the structure of response is different from others
+
 			if (businessServiceName.contains(PGRAiConstants.PGR_SERVICE)){
-				 businessMap = StreamSupport.stream(businessObjects.spliterator(), false)
+				businessMap = StreamSupport.stream(businessObjects.spliterator(), false)
 						.collect(Collectors.toMap(
 								s1 -> ((JSONObject) s1).getJSONObject("service").get(businessIdParam).toString(),
 								s1 -> s1,
@@ -832,12 +851,14 @@ public class InboxService {
 								LinkedHashMap::new
 						));
 
-			}else{
+			}
+			else{
 				businessMap = StreamSupport.stream(businessObjects.spliterator(), false)
 						.collect(Collectors.toMap(s1 -> ((JSONObject) s1).get(businessIdParam).toString(), s1 -> s1,
 								(e1, e2) -> e1, LinkedHashMap::new));
-			}
 
+
+			}
 
 			ArrayList businessIds = new ArrayList();
 			businessIds.addAll(businessMap.keySet());
@@ -1050,6 +1071,7 @@ public class InboxService {
 					totalCount += ((int) vTripMap.get(COUNT));
 				}
 			}
+			System.out.println("test11  "+totalCount);
 			List<String> requiredApplications = new ArrayList<>();
 			inboxes.forEach(inbox -> {
 				ProcessInstance inboxProcessInstance = inbox.getProcessInstance();
@@ -1171,6 +1193,14 @@ public class InboxService {
 		}
 		log.info("statusCountMap size :::: " + statusCountMap.size());
 
+		if(mobileStr==null&&bookingStr==null)
+		{
+
+		}
+		else
+			totalCount=wtApplicationNumbers.size();
+
+		//System.out.println(totalCount+"        "+wtApplicationNumbers.size());
 
 		response.setTotalCount(totalCount);
 		response.setNearingSlaCount(nearingSlaProcessCount);
@@ -1363,7 +1393,7 @@ public class InboxService {
 	private JSONArray fetchModuleObjects(HashMap moduleSearchCriteria, List<String> businessServiceName,
 										 String tenantId, RequestInfo requestInfo, Map<String, String> srvMap) {
 		JSONArray resutls = null;
-
+		//System.out.println("1   ");
 		if (CollectionUtils.isEmpty(srvMap) || StringUtils.isEmpty(srvMap.get("searchPath"))) {
 			throw new CustomException(ErrorConstants.INVALID_MODULE_SEARCH_PATH,
 					"search path not configured for the businessService : " + businessServiceName);
@@ -1384,7 +1414,7 @@ public class InboxService {
 			}
 
 		}
-
+		//System.out.println("2     ");
 		Set<String> searchParams = moduleSearchCriteria.keySet();
 		searchParams.forEach((param) -> {
 
@@ -1407,10 +1437,13 @@ public class InboxService {
 		});
 
 		log.info("\nfetchModuleObjects URL :::: " + url.toString());
-
+       //System.out.println(url+" ");
+		//System.out.println(requestInfo+" ");
 		RequestInfoWrapper requestInfoWrapper = RequestInfoWrapper.builder().requestInfo(requestInfo).build();
 		Object result = serviceRequestRepository.fetchResult(url, requestInfoWrapper);
 
+
+		//System.out.println("yyy   "+result);
 		LinkedHashMap responseMap;
 		try {
 			responseMap = mapper.convertValue(result, LinkedHashMap.class);
@@ -1418,8 +1451,10 @@ public class InboxService {
 			throw new CustomException(ErrorConstants.PARSING_ERROR,
 					"Failed to parse response of ProcessInstance Count");
 		}
-
+		//System.out.println("yyy   "+responseMap);
 		JSONObject jsonObject = new JSONObject(responseMap);
+
+		//System.out.println("test  "+srvMap);
 
 		try {
 			resutls = (JSONArray) jsonObject.getJSONArray(srvMap.get("dataRoot"));
