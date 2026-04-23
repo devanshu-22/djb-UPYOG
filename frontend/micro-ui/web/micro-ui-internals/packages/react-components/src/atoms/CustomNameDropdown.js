@@ -7,10 +7,11 @@ const TextField = (props) => {
 
   useEffect(() => {
     if (!props.keepNull)
-      if( props.selectedVal)
-        setValue(props.selectedVal)
-      else
-      { setValue(""); props.setFilter("") } 
+      if (props.selectedVal) setValue(props.selectedVal);
+      else {
+        setValue("");
+        props.setFilter("");
+      }
     else setValue("");
   }, [props.selectedVal, props.forceSet]);
 
@@ -76,7 +77,7 @@ const TextField = (props) => {
       autoFocus={props.autoFocus}
       placeholder={props.placeholder}
       autoComplete={"off"}
-      style={{...props.style, zIndex: "auto"}}
+      style={{ ...props.style, zIndex: "auto" }}
     />
   );
 };
@@ -147,10 +148,9 @@ const CustomNameDropdown = (props) => {
     onSelect(filteredOption[ind]);
   }
 
-  if(props.isBPAREG && selectedOption)
-  {
+  if (props.isBPAREG && selectedOption) {
     let isSelectedSameAsOptions = props.option?.filter((ob) => ob?.code === selectedOption?.code)?.length > 0;
-    if(!isSelectedSameAsOptions) setSelectedOption(null)
+    if (!isSelectedSameAsOptions) setSelectedOption(null);
   }
 
   return (
@@ -233,7 +233,7 @@ const CustomNameDropdown = (props) => {
               filteredOption.map((option, index) => {
                 return (
                   <div
-                    className={`cp profile-dropdown--item display: flex `}
+                    className={`cp profile-dropdown--item`}
                     style={
                       index === optionIndex
                         ? {
@@ -261,9 +261,7 @@ const CustomNameDropdown = (props) => {
                 );
               })}
             {filteredOption && filteredOption.length === 0 && (
-              <div className={`cp profile-dropdown--item display: flex `} key={"-1"} onClick={()=>{
-                
-              }}>
+              <div className={`cp profile-dropdown--item`} key={"-1"} onClick={() => {}}>
                 {<span> {props.t ? props.t("CMN_NOOPTION") : "CMN_NOOPTION"}</span>}
               </div>
             )}
