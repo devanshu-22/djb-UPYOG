@@ -12,7 +12,7 @@ const DEFAULT_REDIRECT_URL = "/digit-ui/citizen";
 const PropertySearchResults = ({ template, header, actionButtonLabel, isMutation, onSelect, config, clearParams = () => {}, stateCode, redirectToUrl, searchQuery }) => {
   const { t } = useTranslation();
   const modalRef = useRef();
-  const { mobileNumber, propertyIds, oldPropertyIds, locality, city,doorNo,name, PToffset } = Digit.Hooks.useQueryParams();
+  const { mobileNumber, propertyIds, oldPropertyIds, locality, city, tenantId: tId, doorNo,name, PToffset } = Digit.Hooks.useQueryParams();
   const filters = {};
   const [modalData, setShowModal] = useState(false);
 
@@ -64,17 +64,22 @@ const PropertySearchResults = ({ template, header, actionButtonLabel, isMutation
   // const auth = !!isMutation;    /*  to enable open search set false  */
   const auth =true;
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const scity = city ? city : searchQuery?.city;
+  const scity = city ? city : (tId ? tId : searchQuery?.city);
   const searchArgs = scity ? { tenantId: scity, filters, auth } : { filters, auth };
   const result = Digit.Hooks.pt.usePropertySearch(searchArgs,{privacy: Digit.Utils.getPrivacyObject()});
-  const consumerCode = result?.data?.Properties?.map((a) => a.propertyId).join(",");
-console.log("result",result)
+  const properties = result?.data?.Properties || result?.data?.properties || (Array.isArray(result?.data) ? result?.data : []);
+  const consumerCode = properties?.map?.((a) => a.propertyId || a.id).filter(id => id).join(",");
+
+  if (result.isSuccess && (!properties || properties.length === 0)) {
+    console.warn("Property Search: No properties found in result.data", result.data);
+  }
+
   const fetchBillParams = mobileNumber ? { mobileNumber, consumerCode } : { consumerCode };
 
   const paymentDetails = Digit.Hooks.useFetchBillsForBuissnessService(
     { businessService: "PT", ...fetchBillParams, tenantId: scity },
     {
-      enabled: consumerCode ? true : false,
+      enabled: !!(consumerCode && scity),
       retry: false,
     }
   );
@@ -89,10 +94,12 @@ console.log("result",result)
     return <Loader />;
   }
 
-  if (result.error || !consumerCode) {
+  if (result.error || (result.isSuccess && (!properties || properties.length === 0))) {
     return (
-      <div style={{height : "150px"}}>
-        <Card style={{display: "flex", justifyContent: "center", alignItems: "center", height: "100%"}}>{t("CS_PT_NO_PROPERTIES_FOUND")}</Card>
+      <div style={{ height: "150px" }}>
+        <Card style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
+          {t("CS_PT_NO_PROPERTIES_FOUND")}
+        </Card>
       </div>
     );
   }
@@ -118,9 +125,7 @@ console.log("result",result)
     }
   });
 
-  const arr = result?.data?.Properties?.filter((e) => e.status === "ACTIVE");
-console.log("arrarr",arr)
-  const searchResults = arr?.map((property) => {
+  const searchResults = (properties || [])?.map((property) => {
    
     let addr = property?.address || {};
     return {
@@ -243,7 +248,7 @@ console.log("arrarr",arr)
           </div>
         </Modal>
       ) : null}
-      {!searchResults?.length > 0 && <p style={{ marginLeft: "16px", marginTop: "16px" }}>{t("PT_NO_PROP_FOUND_MSG")}</p>}
+      {searchResults?.length === 0 && <p style={{ marginLeft: "16px", marginTop: "16px" }}>{t("PT_NO_PROP_FOUND_MSG")}</p>}
       {searchResults?.length !== 0 && (searchResults?.length == 5 || searchResults?.length == 50) && (locality || ( searchQuery && searchQuery.locality )) && (
           <div>
             <p style={{ marginLeft: "16px", marginTop: "16px" }}>

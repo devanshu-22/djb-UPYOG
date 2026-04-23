@@ -66,7 +66,10 @@ const OLDApplication = () => {
         // Manually reorder sections
         const reorderedBody = [];
         desiredComponentOrder.forEach(compName => {
-          const section = allCreateSections.find(s => s.body?.[0]?.component === compName);
+          const section = allCreateSections.find(s => {
+            const bodyComp = s.body?.[0]?.component;
+            return bodyComp === compName || (compName === "WSConnectionDetails" && bodyComp === "WSConnectionDetails");
+          });
           if (section) {
             // Override headers to match primary form if needed
             if (compName === "CPTPropertySearchNSummary") section.head = "WS_COMMON_PROPERTY_DETAILS";
@@ -75,13 +78,15 @@ const OLDApplication = () => {
             if (compName === "WSDocumentsEmployee") section.head = "WS_COMMON_DOCS";
             
             reorderedBody.push(section);
+          } else {
+            console.warn(`[WS] section for component ${compName} not found in allCreateSections`);
           }
         });
 
         // Add any remaining sections that were not in desiredComponentOrder
         allCreateSections.forEach(section => {
-          const compName = section.body?.[0]?.component;
-          if (!reorderedBody.find(r => r.body?.[0]?.component === compName)) {
+          const bodyComp = section.body?.[0]?.component;
+          if (!reorderedBody.find(r => r.body?.[0]?.component === bodyComp)) {
             reorderedBody.push(section);
           }
         });

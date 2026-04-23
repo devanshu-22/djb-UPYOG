@@ -137,17 +137,17 @@ const ApplicationDetails = () => {
     ) {
       return true;
     } else {
-      const connectionType = applicationDetails?.applicationData?.connectionType;
-      const noOfTaps = applicationDetails?.applicationData?.noOfTaps === 0 ? null : applicationDetails?.applicationData?.noOfTaps;
-      const pipeSize = applicationDetails?.applicationData?.pipeSize === 0 ? null : applicationDetails?.applicationData?.pipeSize;
+      const connectionType = applicationDetails?.applicationData?.connectionType || applicationDetails?.applicationData?.additionalDetails?.connectionType;
+      const noOfTaps = (applicationDetails?.applicationData?.noOfTaps === 0 ? null : applicationDetails?.applicationData?.noOfTaps) || applicationDetails?.applicationData?.proposedTaps;
+      const pipeSize = (applicationDetails?.applicationData?.pipeSize === 0 ? null : applicationDetails?.applicationData?.pipeSize) || applicationDetails?.applicationData?.proposedPipeSize;
       const waterSource = applicationDetails?.applicationData?.waterSource;
       const noOfWaterClosets =
-        applicationDetails?.applicationData?.noOfWaterClosets === 0 ? null : applicationDetails?.applicationData?.noOfWaterClosets;
-      const noOfToilets = applicationDetails?.applicationData?.noOfToilets === 0 ? null : applicationDetails?.applicationData?.noOfToilets;
+        (applicationDetails?.applicationData?.noOfWaterClosets === 0 ? null : applicationDetails?.applicationData?.noOfWaterClosets) || applicationDetails?.applicationData?.proposedWaterClosets;
+      const noOfToilets = (applicationDetails?.applicationData?.noOfToilets === 0 ? null : applicationDetails?.applicationData?.noOfToilets) || applicationDetails?.applicationData?.proposedToilets;
       const plumberDetails = applicationDetails?.applicationData?.additionalDetails?.detailsProvidedBy;
       const roadCuttingInfo = applicationDetails?.applicationData?.roadCuttingInfo;
 
-      if (!connectionType || !((noOfTaps && pipeSize && waterSource) || (noOfWaterClosets && noOfToilets)) || !plumberDetails || !roadCuttingInfo) {
+      if (!connectionType || !((noOfTaps && pipeSize && waterSource) || (noOfWaterClosets && noOfToilets))) {
         return false;
       }
       return true;

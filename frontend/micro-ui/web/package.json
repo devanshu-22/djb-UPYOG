@@ -13,7 +13,7 @@
     "node": ">=18"
   },
   "dependencies": {
-    "@djb25/digit-ui-css": "1.0.50",
+    "@djb25/digit-ui-css": "1.0.51",
     "@djb25/digit-ui-libraries": "1.0.0",
     "@djb25/digit-ui-module-bills": "1.0.1",
     "@djb25/digit-ui-module-common": "1.0.1",
@@ -31,7 +31,7 @@
     "@djb25/digit-ui-module-vendor": "1.0.24",
     "@djb25/digit-ui-module-wt": "1.0.33",
     "@djb25/digit-ui-module-asset": "1.0.6",
-    "@djb25/digit-ui-module-ws": "1.0.20",
+    "@djb25/digit-ui-module-ws": "1.0.21",
     "babel-loader": "9.1.2",
     "@djb25/digit-ui-module-formio": "1.0.0",
     "@djb25/digit-ui-module-ekyc": "1.0.8",
