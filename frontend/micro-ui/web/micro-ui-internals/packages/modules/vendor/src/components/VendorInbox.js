@@ -39,6 +39,7 @@ const getFillingPointIdentifiers = (fillingPoint) => {
 };
 
 const getRowFillingPointIdentifiers = (row = {}) => {
+  const getIdentifiers = (fp) => Array.isArray(fp) ? fp.flatMap(getFillingPointIdentifiers) : getFillingPointIdentifiers(fp);
   return Array.from(
     new Set([
       ...[
@@ -51,10 +52,9 @@ const getRowFillingPointIdentifiers = (row = {}) => {
       ]
         .filter((value) => value !== undefined && value !== null && value !== "")
         .map(String),
-      ...getFillingPointIdentifiers(row?.fillingPoint),
-      ...getFillingPointIdentifiers(row?.fillingPoint?.length ? row.fillingPoint[0] : row.fillingPoint),
-      ...getFillingPointIdentifiers(row?.dsoDetails?.fillingPoint),
-      ...getFillingPointIdentifiers(row?.fillingPointDetail),
+      ...getIdentifiers(row?.fillingPoint),
+      ...getIdentifiers(row?.dsoDetails?.fillingPoint),
+      ...getIdentifiers(row?.fillingPointDetail),
     ])
   );
 };
@@ -71,6 +71,10 @@ const getSelectedFillingPointOption = (row, fillingPoints = []) => {
 };
 
 const getFillingPointDisplayValue = (row = {}) => {
+  if (Array.isArray(row?.fillingPoint)) {
+    const list = row.fillingPoint.map(fp => fp?.fillingPointName || fp?.fillingPointId).filter(Boolean);
+    if (list.length > 0) return list.join(", ");
+  }
   return (
     row?.fillingPoint?.fillingPointName ||
     row?.dsoDetails?.fillingPoint?.fillingPointName ||
@@ -95,7 +99,10 @@ const getSelectedVendorOption = (row = {}, vendors = []) => {
 };
 
 const getVendorFillingPoints = (vendor = {}) => {
-  const fillingPointOptions = [vendor?.fillingPoint, ...(Array.isArray(vendor?.fillingPoints) ? vendor.fillingPoints : [])].filter(Boolean);
+  const fillingPointOptions = [
+    ...(Array.isArray(vendor?.fillingPoint) ? vendor.fillingPoint : [vendor?.fillingPoint]),
+    ...(Array.isArray(vendor?.fillingPoints) ? vendor.fillingPoints : [vendor?.fillingPoints])
+  ].filter(Boolean);
   const uniqueFillingPoints = new Map();
 
   fillingPointOptions.forEach((fillingPoint) => {
@@ -468,7 +475,9 @@ const VendorInbox = (props) => {
 
     if (existingVendor?.id) {
       const existingVendorVehicles = Array.isArray(existingVendor?.vehicles)
-        ? existingVendor.vehicles.map((vehicle) => (vehicle?.id === currentVehicle?.id ? { ...vehicle, vendorVehicleStatus: "INACTIVE" } : vehicle))
+        ? existingVendor.vehicles.map((vehicle) =>
+          vehicle?.id === currentVehicle?.id ? { ...vehicle, vendorVehicleStatus: "INACTIVE" } : vehicle
+        )
         : [];
 
       mutateVendor(getVendorPayloadForVehicle(existingVendor, existingVendorVehicles), {
@@ -617,35 +626,7 @@ const VendorInbox = (props) => {
 
   const allFillingPoints = allFillingPointsData?.fillingPoints || [];
 
-  const { mutate: mapFixedFilling } = Digit.Hooks.wt.useVendorFillingMap(tenantId);
 
-  const onFillingPointSelect = (row, value) => {
-    const payload = {
-      mappings: [
-        {
-          tenantId: tenantId,
-          fillingPointId: value?.id || value?.bookingId || value?.fillingPointId,
-          vendorId: row.original.id,
-        },
-      ],
-    };
-
-    mapFixedFilling(payload, {
-      onSuccess: () => {
-        setShowToast({ key: "success", label: "WT_FIXED_FILLING_MAPPING_SUCCESS" });
-        props.refetchData();
-        props.refetchVendor && props.refetchVendor();
-        setTimeout(closeToast, 5000);
-      },
-      onError: (err) => {
-        setShowToast({
-          key: "error",
-          label: err?.response?.data?.Errors?.[0]?.message || "WT_FIXED_FILLING_MAPPING_FAIL",
-        });
-        setTimeout(closeToast, 5000);
-      },
-    });
-  };
 
   //used for columns in table
   const columns = React.useMemo(() => {
@@ -707,25 +688,7 @@ const VendorInbox = (props) => {
           //     );
           //   },
           // },
-          {
-            Header: t("WT_FILLING_POINT"),
-            accessor: (row) => getFillingPointDisplayValue(row),
-            id: "fillingPoint",
-            minWidth: 250,
-            Cell: ({ row }) => {
-              return (
-                <Dropdown
-                  className="fsm-registry-dropdown"
-                  selected={getSelectedFillingPointOption(row.original, allFillingPoints)}
-                  option={allFillingPoints}
-                  select={(value) => onFillingPointSelect(row, value)}
-                  style={{ textAlign: "left", width: "100%", minWidth: "250px" }}
-                  optionKey="fillingPointName"
-                  t={t}
-                />
-              );
-            },
-          },
+        
 
           {
             Header: t("ES_VENDOR_INBOX_SERVICE_TYPE"),

@@ -56,7 +56,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 
 public class WTInboxFilterService {
-		
+
 		@Value("${egov.user.host}")
 		private String userHost;
 
@@ -74,13 +74,13 @@ public class WTInboxFilterService {
 
 		@Autowired
 		private RestTemplate restTemplate;
-		
+
 		@Autowired
 		private ObjectMapper mapper;
 
 		@Autowired
 		private ServiceRequestRepository serviceRequestRepository;
-		
+
 		/**
 		 * Fetches application numbers from the searcher service based on the provided search criteria.
 		 * It accommodates both module-specific and process-specific search parameters and integrates
@@ -92,104 +92,92 @@ public class WTInboxFilterService {
 		 * @return A list of application numbers matching the search criteria, or an empty list if no results are found.
 		 */
 
+		public List<String> fetchApplicationNumbersFromSearcher(
+				InboxSearchCriteria criteria,
+				HashMap<String, String> statusIdNameMap,
+				RequestInfo requestInfo) {
 
-		public List<String> fetchApplicationNumbersFromSearcher(InboxSearchCriteria criteria,
-				HashMap<String, String> StatusIdNameMap, RequestInfo requestInfo) {
 			List<String> applicationNumbers = new ArrayList<>();
+
 			HashMap moduleSearchCriteria = criteria.getModuleSearchCriteria();
 			ProcessInstanceSearchCriteria processCriteria = criteria.getProcessSearchCriteria();
-			Boolean isSearchResultEmpty = false;
-			Boolean isMobileNumberPresent = false;
-			List<String> userUUIDs = new ArrayList<>();
-			if (moduleSearchCriteria.containsKey(MOBILE_NUMBER_PARAM)) {
-				isMobileNumberPresent = true;
+
+
+			Map<String, Object> searcherRequest = new HashMap<>();
+			Map<String, Object> searchCriteria = new HashMap<>();
+
+			searchCriteria.put(TENANT_ID_PARAM, criteria.getTenantId());
+			searchCriteria.put(BUSINESS_SERVICE_PARAM, processCriteria.getBusinessService());
+
+
+			Object mobile = moduleSearchCriteria.get(MOBILE_NUMBER_PARAM);
+			Object bookingNo = moduleSearchCriteria.get(BOOKING_NO_PARAM);
+
+			String mobileStr = (mobile != null && !mobile.toString().trim().isEmpty())
+					? mobile.toString()
+					: " ";
+
+			String bookingStr = (bookingNo != null && !bookingNo.toString().trim().isEmpty())
+					? bookingNo.toString()
+					: " ";
+
+			searchCriteria.put(MOBILE_NUMBER_PARAM, mobileStr);
+			searchCriteria.put(BOOKING_NO_PARAM, bookingStr);
+
+			if (moduleSearchCriteria.containsKey(LOCALITY_PARAM)) {
+				searchCriteria.put(LOCALITY_PARAM, moduleSearchCriteria.get(LOCALITY_PARAM));
 			}
-			if (isMobileNumberPresent) {
-				String tenantId = criteria.getTenantId();
-				String mobileNumber = String.valueOf(moduleSearchCriteria.get(MOBILE_NUMBER_PARAM));
-				userUUIDs = fetchUserUUID(mobileNumber, requestInfo, tenantId);
-				Boolean isUserPresentForGivenMobileNumber = CollectionUtils.isEmpty(userUUIDs) ? false : true;
-				isSearchResultEmpty = !isMobileNumberPresent || !isUserPresentForGivenMobileNumber;
-				if (isSearchResultEmpty) {
-					return new ArrayList<>();
-				}
+
+			if (!ObjectUtils.isEmpty(processCriteria.getAssignee())) {
+				searchCriteria.put(ASSIGNEE_PARAM, processCriteria.getAssignee());
 			}
 
-			if (!isSearchResultEmpty) {
-				Object result = null;
-
-				Map<String, Object> searcherRequest = new HashMap<>();
-				Map<String, Object> searchCriteria = new HashMap<>();
-
-				searchCriteria.put(TENANT_ID_PARAM, criteria.getTenantId());
-				searchCriteria.put(BUSINESS_SERVICE_PARAM, processCriteria.getBusinessService());
-
-				// Accomodating module search criteria in searcher request
-				if (moduleSearchCriteria.containsKey(MOBILE_NUMBER_PARAM) && !CollectionUtils.isEmpty(userUUIDs)) {
-					searchCriteria.put(MOBILE_NUMBER_PARAM, moduleSearchCriteria.get(MOBILE_NUMBER_PARAM));
-				}
-				if (moduleSearchCriteria.containsKey(LOCALITY_PARAM)) {
-					searchCriteria.put(LOCALITY_PARAM, moduleSearchCriteria.get(LOCALITY_PARAM));
-				}
-				if (moduleSearchCriteria.containsKey(BOOKING_NO_PARAM)) {
-					searchCriteria.put(BOOKING_NO_PARAM, moduleSearchCriteria.get(BOOKING_NO_PARAM));
-				}
-
-				// Accomodating process search criteria in searcher request
-				if (!ObjectUtils.isEmpty(processCriteria.getAssignee())) {
-					searchCriteria.put(ASSIGNEE_PARAM, processCriteria.getAssignee());
-				}
-				if (!ObjectUtils.isEmpty(processCriteria.getStatus())) {
-					searchCriteria.put(STATUS_PARAM, processCriteria.getStatus());
-				} else {
-					if (StatusIdNameMap.values().size() > 0) {
-						if (CollectionUtils.isEmpty(processCriteria.getStatus())) {
-							searchCriteria.put(STATUS_PARAM, StatusIdNameMap.keySet());
-						}
-					}
-				}
-
-				// Paginating searcher results
-				searchCriteria.put(OFFSET_PARAM, criteria.getOffset());
-				searchCriteria.put(NO_OF_RECORDS_PARAM, criteria.getLimit());
-				moduleSearchCriteria.put(LIMIT_PARAM, criteria.getLimit());
-
-				searcherRequest.put(REQUESTINFO_PARAM, requestInfo);
-				searcherRequest.put(SEARCH_CRITERIA_PARAM, searchCriteria);
-
-				StringBuilder uri = new StringBuilder();
-				if (moduleSearchCriteria.containsKey(SORT_ORDER_PARAM)
-						&& moduleSearchCriteria.get(SORT_ORDER_PARAM).equals(DESC_PARAM)) {
-					uri.append(searcherHost).append(wtInboxSearcherDescEndpoint);
-				} else {
-					uri.append(searcherHost).append(wtInboxSearcherEndpoint);
-				}
-				log.info("Checking ----- ------" + searcherRequest);
-				result = restTemplate.postForObject(uri.toString(), searcherRequest, Map.class);
-//				applicationNumbers = JsonPath.read(result, "$.hallsBookingApplication.*.booking_no");
-//				ObjectMapper mapper = new ObjectMapper();
-				String jsonString = null;
-				try {
-					jsonString = mapper.writeValueAsString(result);
-				} catch (JsonGenerationException e) {
-					// TODO Auto-generated catch block
-					log.error("JSON Generation error: ", e);
-				} catch (JsonMappingException e) {
-					// TODO Auto-generated catch block
-					 log.error("JSON Mapping error: ", e);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					 log.error("IO Exception while converting result to JSON: ", e);
-				}
-				
-				// Use JsonPath to extract booking numbers
-				applicationNumbers = JsonPath.read(jsonString, "$.waterTankerBookingDetail[*].booking_no");
-				log.info("Booking Numbers: " + applicationNumbers);
-
+			if (!ObjectUtils.isEmpty(processCriteria.getStatus())) {
+				searchCriteria.put(STATUS_PARAM, processCriteria.getStatus());
+			} else if (!statusIdNameMap.isEmpty()) {
+				searchCriteria.put(STATUS_PARAM, statusIdNameMap.keySet());
 			}
+
+			searchCriteria.put(NO_OF_RECORDS_PARAM, criteria.getLimit());
+			searchCriteria.put(OFFSET_PARAM, criteria.getOffset());
+
+			searcherRequest.put(REQUESTINFO_PARAM, requestInfo);
+			searcherRequest.put(SEARCH_CRITERIA_PARAM, searchCriteria);
+
+			log.info("FINAL SEARCH REQUEST: " + searcherRequest);
+
+			StringBuilder uri = new StringBuilder();
+			if (moduleSearchCriteria.containsKey(SORT_ORDER_PARAM)
+					&& DESC_PARAM.equals(moduleSearchCriteria.get(SORT_ORDER_PARAM))) {
+				uri.append(searcherHost).append(wtInboxSearcherDescEndpoint);
+			} else {
+				uri.append(searcherHost).append(wtInboxSearcherEndpoint);
+			}
+
+
+			Map result = restTemplate.postForObject(uri.toString(), searcherRequest, Map.class);
+
+			log.info("Searcher Response: " + result);
+
+
+			ObjectMapper mapper = new ObjectMapper();
+			try {
+				String jsonString = mapper.writeValueAsString(result);
+                System.out.println(jsonString);
+				applicationNumbers = JsonPath.read(jsonString,
+						"$.waterTankerBookingDetail[*].booking_no");
+
+
+
+			} catch (Exception e) {
+				log.error("Error parsing response", e);
+			}
+
+			log.info("APPLICATION NUMBERS SIZE: " + applicationNumbers.size());
+
 			return applicationNumbers;
 		}
-		
+
 		/**
 		 * Fetches a list of user UUIDs for the given mobile number, tenant ID, and RequestInfo.
 		 * Utilizes a service request to retrieve user details from the user service.
@@ -223,5 +211,8 @@ public class WTInboxFilterService {
 			}
 			return userUuids;
 		}
+
+
+
 
 }

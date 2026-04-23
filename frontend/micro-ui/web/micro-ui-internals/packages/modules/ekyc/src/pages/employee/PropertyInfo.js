@@ -276,7 +276,7 @@ const PropertyInfo = () => {
         })) || [];
 
     return (
-        <div class="ground-container employee-app-container form-container">
+        <>
             <div className="inbox-container">
                 <style>{`
         @keyframes fadeSlideIn {
@@ -572,7 +572,7 @@ const PropertyInfo = () => {
                     onClose={() => setToast(null)}
                 />
             )}
-        </div>
+        </>
     );
 };
 
