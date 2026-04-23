@@ -105,7 +105,11 @@ module.exports = {
       6: "6px",
       10: "10px",
     },
-    extend: {},
+    extend: {
+      backgroundImage: {
+        "success-gradient": "linear-gradient(135deg, #1f5fa8, #0b2e5b)",
+      },
+    },
     digitv2: {
       lightTheme: {
         primary: "#667eea",
