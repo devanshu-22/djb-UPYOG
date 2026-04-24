@@ -102,7 +102,8 @@ public class VendorQueryBuilder {
 			+ " fp.id as fp_id, fp.filling_point_id as fp_filling_point_id, "
 			+ " fp.tenant_id as fp_tenant_id, fp.filling_point_name,  fp.emergency_name,  fp.ee_name, fp.ee_email, fp.ee_mobile, "
 			+ " fp.ae_name, fp.ae_email, fp.ae_mobile,  fp.je_name, fp.je_email, fp.je_mobile,  fp.createdby as fp_createdby, fp.lastmodifiedby as fp_lastmodifiedby, "
-	        + " fp.createdtime as fp_createdtime, fp.lastmodifiedtime as fp_lastmodifiedtime, "
+	        + " fp.createdtime as fp_createdtime, fp.lastmodifiedtime as fp_lastmodifiedtime,"
+			+ " vendor.id as vendor_pk_id, "
 			+  VAD_SELECT_COLUMNS
 		    + " FROM eg_vendor vendor "
 			+ " INNER JOIN eg_vendor_address vendor_address on  vendor_address.vendor_id=vendor.id "
@@ -114,9 +115,9 @@ public class VendorQueryBuilder {
 			+ VAD_JOIN;
 
 	private static final String PAGINATION_WRAPPER = "SELECT * FROM "
-			+ "(SELECT *, DENSE_RANK() OVER (ORDER BY SORT_BY SORT_ORDER) offset_ FROM " + "({})"
-			+ " result) result_offset " + " limit ? offset ?";
-
+			+ "(SELECT *, DENSE_RANK() OVER (ORDER BY vendor_pk_id) offset_ FROM ({})"
+			+ " result) result_offset "
+			+ "WHERE offset_ > ? AND offset_ <= ?";
 	private static final String COUNT_QUERY =
 			"SELECT COUNT(DISTINCT vendor.id) FROM eg_vendor vendor ";
 
@@ -285,43 +286,67 @@ public class VendorQueryBuilder {
 		}
 		return addPaginationWrapper(builder.toString(), preparedStmtList, criteria);
 	}
+//
+//	private String addPaginationWrapper(String query, List<Object> preparedStmtList, VendorSearchCriteria criteria) {
+//		int limit = config.getDefaultLimit();
+//		int offset = config.getDefaultOffset();
+//		String finalQuery = PAGINATION_WRAPPER.replace("{}", query);
+//
+//		if (criteria.getSortBy() != null && criteria.getSortBy().toString().equals("createdTime")) {
+//			finalQuery = finalQuery.replace("SORT_BY", "vendor_createdtime");
+//		} else if (criteria.getSortBy() != null) {
+//			finalQuery = finalQuery.replace("SORT_BY", criteria.getSortBy().toString());
+//		} else {
+//			finalQuery = finalQuery.replace("SORT_BY", "vendor_createdtime");
+//		}
+//
+//		if (criteria.getSortOrder() != null) {
+//			finalQuery = finalQuery.replace("SORT_ORDER", criteria.getSortOrder().toString());
+//		} else {
+//			finalQuery = finalQuery.replace("SORT_ORDER", " DESC ");
+//		}
+//
+//		if (criteria.getLimit() != null && criteria.getLimit() <= config.getMaxSearchLimit())
+//			limit = criteria.getLimit();
+//
+//		if (criteria.getLimit() != null && criteria.getLimit() > config.getMaxSearchLimit())
+//			limit = config.getMaxSearchLimit();
+//
+//		if (criteria.getOffset() != null)
+//			offset = criteria.getOffset();
+//
+//		if (limit == -1) {
+//			finalQuery = finalQuery.replace("WHERE offset_ > ? AND offset_ <= ?", "");
+//		} else {
+//			preparedStmtList.add(offset);
+//			preparedStmtList.add(offset + limit);
+//		}
+//
+//		return finalQuery;
+//	}
 
 	private String addPaginationWrapper(String query, List<Object> preparedStmtList, VendorSearchCriteria criteria) {
 		int limit = config.getDefaultLimit();
 		int offset = config.getDefaultOffset();
 		String finalQuery = PAGINATION_WRAPPER.replace("{}", query);
-		
-		if (criteria.getSortBy() != null && criteria.getSortBy().toString() == "createdTime") {
-			finalQuery = finalQuery.replace("SORT_BY", "vendor_createdTime");
-		} else if (criteria.getSortBy() != null) {
-			finalQuery = finalQuery.replace("SORT_BY", criteria.getSortBy().toString());
-		} else {
-			finalQuery = finalQuery.replace("SORT_BY", "vendor_createdTime");
-		}
-		if (criteria.getSortOrder() != null) {
-			finalQuery = finalQuery.replace("SORT_ORDER", criteria.getSortOrder().toString());
-		} else {
-			finalQuery = finalQuery.replace("SORT_ORDER", " DESC ");
-		}
+
 		if (criteria.getLimit() != null && criteria.getLimit() <= config.getMaxSearchLimit())
 			limit = criteria.getLimit();
 
-		if (criteria.getLimit() != null && criteria.getLimit() > config.getMaxSearchLimit()) {
+		if (criteria.getLimit() != null && criteria.getLimit() > config.getMaxSearchLimit())
 			limit = config.getMaxSearchLimit();
-		}
 
 		if (criteria.getOffset() != null)
 			offset = criteria.getOffset();
 
 		if (limit == -1) {
-			finalQuery = finalQuery.replace("limit ? offset ?", "");
+			finalQuery = finalQuery.replace("WHERE offset_ > ? AND offset_ <= ?", "");
 		} else {
-			preparedStmtList.add(limit);
 			preparedStmtList.add(offset);
+			preparedStmtList.add(offset + limit);
 		}
 
 		return finalQuery;
-
 	}
 
 	private void addClauseIfRequired(List<Object> values, StringBuilder queryString) {
