@@ -51,11 +51,11 @@ const WSPropertyDetails = ({ t, config, onSelect, userType, formData, setError, 
           </button>
         </div>
       </LabelFieldPair>
-      <Link to={`/digit-ui/employee/pt/search`}>
+      <Link to={`/digit-ui/${userType}/commonpt/search?redirectToUrl=${redirectBackUrl}`}>
         <LinkButton label={t("CPT_SEARCH_PROPERTY")} style={{ color: "#a82227", display: "inline-block" }} />
       </Link>
       &nbsp; | &nbsp;
-      <Link to={`/digit-ui/employee/pt/new-application`}>
+      <Link to={`/digit-ui/${userType}/commonpt/new-application?redirectToUrl=${redirectBackUrl}`}>
         <LinkButton label={t("CPT_CREATE_PROPERTY")} style={{ color: "#a82227", display: "inline-block" }} />
       </Link>
       {propertyDetails && propertyDetails?.Properties.length && (
@@ -81,7 +81,7 @@ const WSPropertyDetails = ({ t, config, onSelect, userType, formData, setError, 
               <p>{getPropertyAddress()}</p>
             </div>
           </LabelFieldPair>
-          <Link to={`/digit-ui/employee/commonpt/view-property?propertyId=${propertyId}&tenantId=${tenantId}`}>
+          <Link to={`/digit-ui/${userType}/commonpt/view-property?propertyId=${propertyId}&tenantId=${tenantId}`}>
             <LinkButton label={t("CPT_COMPLETE_PROPERTY_DETAILS")} style={{ color: "#a82227" }} />
           </Link>
         </React.Fragment>

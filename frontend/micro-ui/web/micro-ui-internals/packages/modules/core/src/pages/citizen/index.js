@@ -1,4 +1,4 @@
-import { BackButton, CitizenHomeCard, CitizenInfoLabel, PrivateRoute, AdvertisementModuleCard } from "@djb25/digit-ui-react-components";
+import { BackButton, CitizenHomeCard, CitizenInfoLabel, PrivateRoute, AdvertisementModuleCard, CollectionIcon } from "@djb25/digit-ui-react-components";
 import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Route, Switch, useRouteMatch, useHistory } from "react-router-dom";
@@ -101,7 +101,18 @@ const Home = ({
   newConfig = newConfig?.EdcrConfig ? newConfig?.EdcrConfig : newConfigEDCR;
 
   const hideSidebar = sidebarHiddenFor.some((e) => window.location.href.includes(e));
-  const appRoutes = modules.map(({ code, tenants }, index) => {
+
+  // Patch modules to include modules from linkData that might be missing from initData.modules
+  const allModules = [...modules];
+  if (linkData) {
+    Object.keys(linkData).forEach((key) => {
+      if (!allModules.find((m) => m.code.toUpperCase() === key.toUpperCase())) {
+        allModules.push({ code: key.toUpperCase(), tenants: [] });
+      }
+    });
+  }
+
+  const appRoutes = allModules.map(({ code, tenants }, index) => {
     const Module = Digit.ComponentRegistryService.getComponent(`${code}Module`);
     return Module ? (
       <Route key={index} path={`${path}/${code.toLowerCase()}`}>
@@ -130,8 +141,30 @@ const Home = ({
   });
   const Advertisement = advertisement || [];
 
-  const ModuleLevelLinkHomePages = modules.map(({ code, bannerImage }, index) => {
-    let Links = Digit.ComponentRegistryService.getComponent(`${code}Links`) || (() => <React.Fragment />);
+  const BillsLinks = ({ matchPath }) => {
+    const links = [
+      {
+        link: `${matchPath}/billSearch`,
+        i18nKey: t("ABG_SEARCH_BILL_COMMON_HEADER") || "Search Bill",
+      },
+      {
+        link: `${matchPath}/group-bill`,
+        i18nKey: t("ACTION_TEST_GROUP_BILLS") || "Group Bills",
+      },
+      {
+        link: `${matchPath}/cancel-bill`,
+        i18nKey: t("ACTION_TEST_CANCEL_BILL") || "Cancel Bill",
+      },
+      {
+        link: `${matchPath}/download-bill-pdf`,
+        i18nKey: t("ACTION_TEST_DOWNLOAD_BILL_PDF") || "Download Bill PDF",
+      }
+    ];
+    return <CitizenHomeCard header={t("ACTION_TEST_BILLGENIE") || "Bills Accounting"} links={links} Icon={() => <CollectionIcon className="fill-path-primary-main" />} />;
+  };
+
+  const ModuleLevelLinkHomePages = allModules.map(({ code, bannerImage }, index) => {
+    let Links = Digit.ComponentRegistryService.getComponent(`${code}Links`) || Digit.ComponentRegistryService.getComponent(`${code.charAt(0).toUpperCase() + code.slice(1).toLowerCase()}Links`) || (code.toUpperCase() === "BILLS" ? BillsLinks : (() => <React.Fragment />));
     let mdmsDataObj = isLinkDataFetched ? processLinkData(linkData, code, t) : undefined;
 
     //if (mdmsDataObj?.header === "ACTION_TEST_WS") {
@@ -164,10 +197,10 @@ const Home = ({
               <h1 style={{ width: "230px", marginTop: "15px" }}>{t("MODULE_" + code.toUpperCase())}</h1>
             )}
             <div className="moduleLinkHomePageModuleLinks">
-              {mdmsDataObj && (
+              {mdmsDataObj?.links?.filter((ele) => ele?.link)?.length > 0 ? (
                 <CitizenHomeCard
                   header={t(mdmsDataObj?.header)}
-                  links={mdmsDataObj?.links}
+                  links={mdmsDataObj?.links?.filter((ele) => ele?.link)?.sort((x, y) => x?.orderNumber - y?.orderNumber)}
                   Icon={() => <span />}
                   Info={
                     code === "OBPS"
@@ -182,8 +215,9 @@ const Home = ({
                   }
                   isInfo={code === "OBPS" ? true : false}
                 />
+              ) : (
+                <Links key={index} matchPath={`/digit-ui/citizen/${code.toLowerCase()}`} userType={"citizen"} />
               )}
-              {/* <Links key={index} matchPath={`/digit-ui/citizen/${code.toLowerCase()}`} userType={"citizen"} /> */}
             </div>
             {code?.toUpperCase() === "ADS" && (
               <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between" }}>

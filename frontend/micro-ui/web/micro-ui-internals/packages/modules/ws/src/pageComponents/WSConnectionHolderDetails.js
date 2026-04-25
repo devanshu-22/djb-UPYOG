@@ -299,10 +299,10 @@ const ConnectionDetails = (_props) => {
       ) {
         delete formStateErros["ConnectionHolderDetails"].type.emailId;
       }
-      if (Object.keys(formStateErros["ConnectionHolderDetails"].type).length === 0) {
+      if (formStateErros["ConnectionHolderDetails"]?.type && Object.keys(formStateErros["ConnectionHolderDetails"].type).length === 0) {
         delete formStateErros["ConnectionHolderDetails"].type;
       }
-      if (Object.keys(formStateErros["ConnectionHolderDetails"]).length === 0) {
+      if (formStateErros["ConnectionHolderDetails"] && Object.keys(formStateErros["ConnectionHolderDetails"]).length === 0) {
         delete formStateErros["ConnectionHolderDetails"];
       }
       sessionStorage.setItem("FORMSTATE_ERRORS", JSON.stringify(formStateErros));
@@ -512,6 +512,7 @@ const ConnectionDetails = (_props) => {
                           autoFocus={focusIndex.index === connectionHolderDetail?.key && focusIndex.type === "mobileNumber"}
                           errorStyle={localFormState.touched.mobileNumber && errors?.mobileNumber?.message}
                           onChange={(val) => {
+                            setMobileNumber(val);
                             props.onChange(val);
                             setFocusIndex({ index: connectionHolderDetail?.key, type: "mobileNumber" });
                           }}

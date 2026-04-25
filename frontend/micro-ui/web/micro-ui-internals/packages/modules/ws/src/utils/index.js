@@ -237,7 +237,6 @@ export const getFiles = async (filesArray, tenant) => {
 };
 
 export const createPayloadOfWS = async (data) => {
-  console.log(data, "yuyu");
   data?.cpt?.details?.owners?.forEach((owner) => {
     if (owner?.permanentAddress) owner.correspondenceAddress = owner?.permanentAddress;
   });
