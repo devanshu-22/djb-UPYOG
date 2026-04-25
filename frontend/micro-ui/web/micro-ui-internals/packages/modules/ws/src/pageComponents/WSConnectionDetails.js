@@ -26,12 +26,13 @@ const WSConnectionDetails = ({ config, onSelect, userType, formData, setError, f
   );
   const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
   const stateCode = Digit.ULBService.getStateId();
+  const tenantId = Digit.ULBService.getCurrentTenantId();
   const [isErrors, setIsErrors] = useState(false);
   const [waterSewarageSelection, setWaterSewarageSelection] = useState({ water: true, sewerage: false });
 
   const [pipeSizeList, setPipesizeList] = useState([]);
 
-  const { isWSServicesCalculationLoading, data: wsServicesCalculationData } = Digit.Hooks.ws.useMDMS(stateCode, "ws-services-calculation", [
+  const { isWSServicesCalculationLoading, data: wsServicesCalculationData } = Digit.Hooks.ws.useMDMS(tenantId, "ws-services-calculation", [
     "PipeSize",
   ]);
 

@@ -1,3 +1,5 @@
+import { use } from "react";
+
 export const stringReplaceAll = (str = "", searcher = "", replaceWith = "") => {
   if (searcher == "") return str;
   while (str && str.includes(searcher)) {
@@ -74,8 +76,7 @@ export const DownloadReceipt = async (payments, consumerCode, tenantId, business
   let response = null;
   if (payments?.fileStoreId) {
     response = { filestoreIds: [payments?.fileStoreId] };
-  }
-  else {
+  } else {
     response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "ws-onetime-receipt");
   }
   const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
@@ -94,17 +95,19 @@ export const getTransaltedLocality = (data) => {
 export const getQueryStringParams = (query) => {
   return query
     ? (/^[?#]/.test(query) ? query.slice(1) : query).split("&").reduce((params, param) => {
-      let [key, value] = param.split("=");
-      params[key] = value ? decodeURIComponent(value.replace(/\+/g, " ")) : "";
-      return params;
-    }, {})
+        let [key, value] = param.split("=");
+        params[key] = value ? decodeURIComponent(value.replace(/\+/g, " ")) : "";
+        return params;
+      }, {})
     : {};
 };
 
 export const getAddress = (address, t) => {
-  return `${address?.doorNo ? `${address?.doorNo}, ` : ""}${address?.street ? `${address?.street}, ` : ""}${address?.landmark ? `${address?.landmark}, ` : ""
-    }${address?.locality?.code ? t(`TENANTS_MOHALLA_${address?.locality?.code}`) : ""}${address?.city?.code || address?.city ? `, ${t(address?.city.code || address?.city)}` : ""
-    }${address?.pincode ? `, ${address.pincode}` : " "}`;
+  return `${address?.doorNo ? `${address?.doorNo}, ` : ""}${address?.street ? `${address?.street}, ` : ""}${
+    address?.landmark ? `${address?.landmark}, ` : ""
+  }${address?.locality?.code ? t(`TENANTS_MOHALLA_${address?.locality?.code}`) : ""}${
+    address?.city?.code || address?.city ? `, ${t(address?.city.code || address?.city)}` : ""
+  }${address?.pincode ? `, ${address.pincode}` : " "}`;
 };
 
 export const convertDateToEpoch = (dateString, dayStartOrEnd = "dayend") => {
@@ -234,13 +237,17 @@ export const getFiles = async (filesArray, tenant) => {
 };
 
 export const createPayloadOfWS = async (data) => {
+  console.log(data, "yuyu");
   data?.cpt?.details?.owners?.forEach((owner) => {
     if (owner?.permanentAddress) owner.correspondenceAddress = owner?.permanentAddress;
   });
 
   const serviceType = data?.applicationSelection?.serviceType?.code;
-  const connectionDetailsArray = Array.isArray(data?.ConnectionDetails) ? data.ConnectionDetails : 
-                                 (data?.ConnectionDetails ? Object.values(data.ConnectionDetails).filter(i => typeof i === 'object') : []);
+  const connectionDetailsArray = Array.isArray(data?.ConnectionDetails)
+    ? data.ConnectionDetails
+    : data?.ConnectionDetails
+    ? Object.values(data.ConnectionDetails).filter((i) => typeof i === "object")
+    : [];
   const connectionDetail = connectionDetailsArray?.[0] || data?.ConnectionDetails || {};
 
   const isWater = serviceType === "WATER" || serviceType === "BOTH" || connectionDetail?.water;
@@ -253,50 +260,91 @@ export const createPayloadOfWS = async (data) => {
   let payload = {
     water: !!isWater,
     sewerage: !!isSewerage,
-    proposedTaps: (data?.useDetails?.noOfTaps || connectionDetailsObject?.proposedTaps) && Number(data?.useDetails?.noOfTaps || connectionDetailsObject?.proposedTaps),
-    proposedPipeSize: (data?.useDetails?.proposedPipeSize?.size || connectionDetailsObject?.proposedPipeSize?.size || connectionDetailsObject?.proposedPipeSize?.code) && Number(data?.useDetails?.proposedPipeSize?.size || connectionDetailsObject?.proposedPipeSize?.size || connectionDetailsObject?.proposedPipeSize?.code),
-    proposedWaterClosets: (data?.useDetails?.proposedWaterClosets || connectionDetailsObject?.proposedWaterClosets) && Number(data?.useDetails?.proposedWaterClosets || connectionDetailsObject?.proposedWaterClosets),
-    proposedToilets: (data?.useDetails?.proposedToilets || connectionDetailsObject?.proposedToilets) && Number(data?.useDetails?.proposedToilets || connectionDetailsObject?.proposedToilets),
-    connectionHolders: connectionHolder ? [
-      {
-        correspondenceAddress: connectionHolder?.address || connectionHolder?.correspondenceAddress || "",
-        fatherOrHusbandName: connectionHolder?.guardian || connectionHolder?.fatherOrHusbandName || "",
-        gender: connectionHolder?.gender?.code || connectionHolder?.gender || "",
-        mobileNumber: connectionHolder?.mobileNumber || "",
-        name: connectionHolder?.name || "",
-        ownerType: connectionHolder?.ownerType?.code || connectionHolder?.ownerType || "",
-        relationship: connectionHolder?.relationship?.code || connectionHolder?.relationship || "OTHERS",
-        sameAsPropertyAddress: connectionHolder?.sameAsOwnerDetails || connectionHolder?.sameAsPropertyAddress || false,
-        emailId: connectionHolder?.emailId || "",
-      }
-    ] : [
-      {
-        correspondenceAddress: data?.propertyAddress?.address || "",
-        fatherOrHusbandName: data?.applicant?.ParentorSpouse || "",
-        gender: data?.useDetails?.gender?.code || "",
-        mobileNumber: data?.contact?.mobileNumber || "",
-        name: `${data?.applicant?.firstName} ${data?.applicant?.middleName || ""} ${data?.applicant?.lastName}`.replace(/\s+/g, " ").trim(),
-        ownerType: data?.applicationSelection?.categoryType?.code || "",
-        relationship: "OTHERS",
-        sameAsPropertyAddress: true,
-        emailId: data?.contact?.emailId || "",
-      },
-    ],
+    proposedTaps:
+      (data?.useDetails?.noOfTaps || connectionDetailsObject?.proposedTaps) &&
+      Number(data?.useDetails?.noOfTaps || connectionDetailsObject?.proposedTaps),
+    proposedPipeSize:
+      (data?.useDetails?.proposedPipeSize?.size ||
+        connectionDetailsObject?.proposedPipeSize?.size ||
+        connectionDetailsObject?.proposedPipeSize?.code) &&
+      Number(
+        data?.useDetails?.proposedPipeSize?.size || connectionDetailsObject?.proposedPipeSize?.size || connectionDetailsObject?.proposedPipeSize?.code
+      ),
+    proposedWaterClosets:
+      (data?.useDetails?.proposedWaterClosets || connectionDetailsObject?.proposedWaterClosets) &&
+      Number(data?.useDetails?.proposedWaterClosets || connectionDetailsObject?.proposedWaterClosets),
+    proposedToilets:
+      (data?.useDetails?.proposedToilets || connectionDetailsObject?.proposedToilets) &&
+      Number(data?.useDetails?.proposedToilets || connectionDetailsObject?.proposedToilets),
+    connectionHolders: connectionHolder
+      ? [
+          {
+            correspondenceAddress: connectionHolder?.address || connectionHolder?.correspondenceAddress || "",
+            fatherOrHusbandName: connectionHolder?.guardian || connectionHolder?.fatherOrHusbandName || "",
+            gender: connectionHolder?.gender?.code || connectionHolder?.gender || "",
+            mobileNumber: connectionHolder?.mobileNumber || data?.cpt?.details?.owners?.[0]?.mobileNumber || "",
+            name: connectionHolder?.name || "",
+            ownerType: connectionHolder?.ownerType?.code || connectionHolder?.ownerType || "",
+            relationship: connectionHolder?.relationship?.code || connectionHolder?.relationship || "OTHERS",
+            sameAsPropertyAddress: connectionHolder?.sameAsOwnerDetails || connectionHolder?.sameAsPropertyAddress || false,
+            emailId: connectionHolder?.emailId || "",
+          },
+        ]
+      : [
+          {
+            correspondenceAddress: data?.propertyAddress?.address || "",
+            fatherOrHusbandName: data?.applicant?.ParentorSpouse || "",
+            gender: data?.useDetails?.gender?.code || "",
+            mobileNumber: data?.contact?.mobileNumber || "",
+            name: `${data?.applicant?.firstName} ${data?.applicant?.middleName || ""} ${data?.applicant?.lastName}`.replace(/\s+/g, " ").trim(),
+            ownerType: data?.applicationSelection?.categoryType?.code || "",
+            relationship: "OTHERS",
+            sameAsPropertyAddress: true,
+            emailId: data?.contact?.emailId || "",
+          },
+        ],
     service: isWater && !isSewerage ? "Water" : !isWater && isSewerage ? "Sewerage" : "Water And Sewerage",
     property: data?.cpt?.details,
     propertyId: data?.cpt?.details?.propertyId,
+    roadCuttingInfo: data?.roadCuttingDetails
+      ?.filter((o) => o?.roadType?.code !== "")
+      .map((details) =>
+        details?.id && details?.id !== null
+          ? {
+              id: details?.id,
+              roadType: details?.roadType?.code,
+              roadCuttingArea: details?.area,
+              status: details?.status,
+            }
+          : {
+              roadType: details?.roadType?.code,
+              roadCuttingArea: details?.area,
+            }
+      ),
     roadCuttingArea: null,
     noOfTaps: null,
     noOfWaterClosets: null,
     noOfToilets: null,
+    plumberInfo: data?.plumberDetails
+      ?.filter((o) => o?.detailsProvidedBy?.code === "ULB" || o?.detailsProvidedBy === "ULB")
+      .map((details) => ({
+        licenseNo: details?.plumberLicenseNo,
+        name: details?.plumberName,
+        mobileNumber: details?.plumberMobileNo,
+      })),
     additionalDetails: {
       ...useDetailsObject,
       ...data?.djbEmployee,
       ...data?.bankDetails,
       zro: data?.zro?.code || data?.zro,
       locality: data?.propertyAddress?.locality?.code || data?.cpt?.details?.address?.locality?.code,
+      detailsProvidedBy: data?.plumberDetails?.[0]?.detailsProvidedBy?.code || data?.plumberDetails?.[0]?.detailsProvidedBy || "",
       applicantType: data?.applicationSelection?.applicantType?.code,
-      connectionType: data?.applicationSelection?.connectionType?.code || connectionDetailsObject?.connectionType?.code || connectionDetailsObject?.connectionType || "Metered",
+      connectionType:
+        data?.applicationSelection?.connectionType?.code ||
+        connectionDetailsObject?.connectionType?.code ||
+        connectionDetailsObject?.connectionType ||
+        "Metered",
       categoryType: data?.applicationSelection?.categoryType?.code || connectionHolder?.ownerType?.code || connectionHolder?.ownerType,
       subCategory: data?.applicationSelection?.subCategory?.code,
       domesticType: data?.applicationSelection?.domesticType?.code,
@@ -313,11 +361,11 @@ export const createPayloadOfWS = async (data) => {
       otherDocumentNumber: data?.documents?.otherDocumentNumber,
       detailsProvidedBy: "",
     },
-    tenantId: data?.cpt?.details?.tenantId?.split(".")[0] || data?.propertyAddress?.city?.code?.split(".")[0] || Digit.ULBService.getStateId(),
+    tenantId: Digit.ULBService.getCurrentTenantId(),
     processInstance: {
       action: "INITIATE",
     },
-    channel: data?.channel || "CFC_COUNTER",
+    channel: Digit.UserService.getType() === "CITIZEN" ? "CITIZEN" : "CFC_COUNTER",
   };
   sessionStorage.setItem("WS_DOCUMENTS_INOF", JSON.stringify(data?.documents || []));
   sessionStorage.setItem("WS_PROPERTY_INOF", JSON.stringify(data?.cpt?.details || {}));
@@ -333,8 +381,16 @@ export const updatePayloadOfWS = async (data, type) => {
       ...data?.processInstance,
       action: "SUBMIT_APPLICATION",
     },
-    documents: JSON.parse(sessionStorage.getItem("WS_DOCUMENTS_INOF") && sessionStorage.getItem("WS_DOCUMENTS_INOF") !== "undefined" ? sessionStorage.getItem("WS_DOCUMENTS_INOF") : "null"),
-    property: JSON.parse(sessionStorage.getItem("WS_PROPERTY_INOF") && sessionStorage.getItem("WS_PROPERTY_INOF") !== "undefined" ? sessionStorage.getItem("WS_PROPERTY_INOF") : "null"),
+    documents: JSON.parse(
+      sessionStorage.getItem("WS_DOCUMENTS_INOF") && sessionStorage.getItem("WS_DOCUMENTS_INOF") !== "undefined"
+        ? sessionStorage.getItem("WS_DOCUMENTS_INOF")
+        : "null"
+    ),
+    property: JSON.parse(
+      sessionStorage.getItem("WS_PROPERTY_INOF") && sessionStorage.getItem("WS_PROPERTY_INOF") !== "undefined"
+        ? sessionStorage.getItem("WS_PROPERTY_INOF")
+        : "null"
+    ),
     connectionType: type === "WATER" ? data?.connectionType : "Non Metered",
   };
   /* use customiseCreateFormData hook to make some chnages to the water object */
@@ -385,32 +441,34 @@ export const convertToEditWSUpdate = (data) => {
       auditDetails: data?.isEditApplication ? data?.auditDetails : waterResult?.auditDetails,
       processInstance: data?.isEditApplication
         ? {
-          ...data?.processInstance,
-          action: "RESUBMIT_APPLICATION",
-        }
+            ...data?.processInstance,
+            action: "RESUBMIT_APPLICATION",
+          }
         : {
-          ...waterResult?.processInstance,
-          action: "SUBMIT_APPLICATION",
-        },
+            ...waterResult?.processInstance,
+            action: "SUBMIT_APPLICATION",
+          },
       applicationType: data?.isEditApplication ? data?.applicationType : "MODIFY_WATER_CONNECTION",
       dateEffectiveFrom: convertDateToEpoch(Date.now() + 86400000),
-      connectionHolders: data?.isEditApplication ? (!data?.ConnectionHolderDetails?.isOwnerSame
-        ? [
-          {
-            correspondenceAddress: data?.ConnectionHolderDetails?.address || "",
-            fatherOrHusbandName: data?.ConnectionHolderDetails?.guardian || "",
-            gender: data?.ConnectionHolderDetails?.gender?.code || "",
-            mobileNumber: data?.ConnectionHolderDetails?.mobileNumber || "",
-            name: data?.ConnectionHolderDetails?.name || "",
-            emailId: data?.ConnectionHolderDetails?.emailId || "",
-            ownerType: data?.ConnectionHolderDetails?.specialCategoryType?.code || "",
-            relationship: data?.ConnectionHolderDetails?.relationship?.code || "",
-            sameAsPropertyAddress: data?.ConnectionHolderDetails?.sameAsOwnerDetails,
-          },
-        ]
-        : null) : waterResult?.connectionHolders,
+      connectionHolders: data?.isEditApplication
+        ? !data?.ConnectionHolderDetails?.isOwnerSame
+          ? [
+              {
+                correspondenceAddress: data?.ConnectionHolderDetails?.address || "",
+                fatherOrHusbandName: data?.ConnectionHolderDetails?.guardian || "",
+                gender: data?.ConnectionHolderDetails?.gender?.code || "",
+                mobileNumber: data?.ConnectionHolderDetails?.mobileNumber || "",
+                name: data?.ConnectionHolderDetails?.name || "",
+                emailId: data?.ConnectionHolderDetails?.emailId || "",
+                ownerType: data?.ConnectionHolderDetails?.specialCategoryType?.code || "",
+                relationship: data?.ConnectionHolderDetails?.relationship?.code || "",
+                sameAsPropertyAddress: data?.ConnectionHolderDetails?.sameAsOwnerDetails,
+              },
+            ]
+          : null
+        : waterResult?.connectionHolders,
       oldApplication: false,
-      channel: "CITIZEN",
+      channel: Digit.UserService.getType() === "CITIZEN" ? "CITIZEN" : "CFC_COUNTER",
       waterSource: (data?.isEditApplication ? data?.waterSource : waterResult?.waterSource) || null,
       meterId: (data?.isEditApplication ? data?.meterId : waterResult?.meterId) || null,
       meterInstallationDate: (data?.isEditApplication ? data?.meterInstallationDate : waterResult?.meterInstallationDate) || null,
@@ -502,32 +560,34 @@ export const convertToEditSWUpdate = (data) => {
       auditDetails: data?.isEditApplication ? data?.auditDetails : SewerageResult?.auditDetails,
       processInstance: data?.isEditApplication
         ? {
-          ...data?.processInstance,
-          action: "RESUBMIT_APPLICATION",
-        }
+            ...data?.processInstance,
+            action: "RESUBMIT_APPLICATION",
+          }
         : {
-          ...SewerageResult?.processInstance,
-          action: "SUBMIT_APPLICATION",
-        },
+            ...SewerageResult?.processInstance,
+            action: "SUBMIT_APPLICATION",
+          },
       applicationType: data?.isEditApplication ? data?.applicationType : "MODIFY_WATER_CONNECTION",
       dateEffectiveFrom: convertDateToEpoch(Date.now() + 86400000),
-      connectionHolders: data?.isEditApplication ? (!data?.ConnectionHolderDetails?.isOwnerSame
-        ? [
-          {
-            correspondenceAddress: data?.ConnectionHolderDetails?.address || "",
-            fatherOrHusbandName: data?.ConnectionHolderDetails?.guardian || "",
-            gender: data?.ConnectionHolderDetails?.gender?.code || "",
-            mobileNumber: data?.ConnectionHolderDetails?.mobileNumber || "",
-            name: data?.ConnectionHolderDetails?.name || "",
-            emailId: data?.ConnectionHolderDetails?.emailId || "",
-            ownerType: data?.ConnectionHolderDetails?.specialCategoryType?.code || "",
-            relationship: data?.ConnectionHolderDetails?.relationship?.code || "",
-            sameAsPropertyAddress: data?.ConnectionHolderDetails?.sameAsOwnerDetails,
-          },
-        ]
-        : null) : SewerageResult?.connectionHolders,
+      connectionHolders: data?.isEditApplication
+        ? !data?.ConnectionHolderDetails?.isOwnerSame
+          ? [
+              {
+                correspondenceAddress: data?.ConnectionHolderDetails?.address || "",
+                fatherOrHusbandName: data?.ConnectionHolderDetails?.guardian || "",
+                gender: data?.ConnectionHolderDetails?.gender?.code || "",
+                mobileNumber: data?.ConnectionHolderDetails?.mobileNumber || "",
+                name: data?.ConnectionHolderDetails?.name || "",
+                emailId: data?.ConnectionHolderDetails?.emailId || "",
+                ownerType: data?.ConnectionHolderDetails?.specialCategoryType?.code || "",
+                relationship: data?.ConnectionHolderDetails?.relationship?.code || "",
+                sameAsPropertyAddress: data?.ConnectionHolderDetails?.sameAsOwnerDetails,
+              },
+            ]
+          : null
+        : SewerageResult?.connectionHolders,
       oldApplication: false,
-      channel: "CITIZEN",
+      channel: Digit.UserService.getType() === "CITIZEN" ? "CITIZEN" : "CFC_COUNTER",
       waterSource: (data?.isEditApplication ? data?.waterSource : SewerageResult?.waterSource) || null,
       meterId: (data?.isEditApplication ? data?.meterId : SewerageResult?.meterId) || null,
       meterInstallationDate: (data?.isEditApplication ? data?.meterInstallationDate : SewerageResult?.meterInstallationDate) || null,
@@ -621,8 +681,7 @@ export const createPayloadOfWSDisconnection = async (data, storeData, service) =
     if (storeData?.applicationData?.plumberInfo?.[0]?.licenseNo) plumberInfoData.licenseNo = storeData?.applicationData?.plumberInfo?.[0]?.licenseNo;
     if (storeData?.applicationData?.plumberInfo?.[0]?.mobileNumber)
       plumberInfoData.mobileNumber = storeData?.applicationData?.plumberInfo?.[0]?.mobileNumber;
-    if (storeData?.applicationData?.plumberInfo?.[0]?.id)
-      plumberInfoData.id = storeData?.applicationData?.plumberInfo?.[0]?.id;
+    if (storeData?.applicationData?.plumberInfo?.[0]?.id) plumberInfoData.id = storeData?.applicationData?.plumberInfo?.[0]?.id;
     if (storeData?.applicationData?.plumberInfo?.[0]?.name) plumberInfoData.name = storeData?.applicationData?.plumberInfo?.[0]?.name;
     plumberInfo = [plumberInfoData];
   }
@@ -742,8 +801,7 @@ export const createPayloadOfWSReconnection = async (data, storeData, service) =>
     if (storeData?.applicationData?.plumberInfo?.[0]?.licenseNo) plumberInfoData.licenseNo = storeData?.applicationData?.plumberInfo?.[0]?.licenseNo;
     if (storeData?.applicationData?.plumberInfo?.[0]?.mobileNumber)
       plumberInfoData.mobileNumber = storeData?.applicationData?.plumberInfo?.[0]?.mobileNumber;
-    if (storeData?.applicationData?.plumberInfo?.[0]?.id)
-      plumberInfoData.id = storeData?.applicationData?.plumberInfo?.[0]?.id;
+    if (storeData?.applicationData?.plumberInfo?.[0]?.id) plumberInfoData.id = storeData?.applicationData?.plumberInfo?.[0]?.id;
     if (storeData?.applicationData?.plumberInfo?.[0]?.name) plumberInfoData.name = storeData?.applicationData?.plumberInfo?.[0]?.name;
     plumberInfo = [plumberInfoData];
   }
@@ -783,7 +841,7 @@ export const createPayloadOfWSReconnection = async (data, storeData, service) =>
       processInstance: {
         ...storeData?.applicationData?.processInstance,
         action: "INITIATE",
-        businessService: "WSReconnection"
+        businessService: "WSReconnection",
       },
       channel: user === "citizen" ? "CITIZEN" : "CFC_COUNTER",
     },
@@ -833,7 +891,7 @@ export const createPayloadOfWSReconnection = async (data, storeData, service) =>
       processInstance: {
         ...storeData?.applicationData?.processInstance,
         action: "INITIATE",
-        businessService: "SWReconnection"
+        businessService: "SWReconnection",
       },
       channel: user === "citizen" ? "CITIZEN" : "CFC_COUNTER",
     },
@@ -871,7 +929,7 @@ export const createPayloadOfWSReSubmitDisconnection = async (data, storeData, se
       },
       channel: "CITIZEN",
     },
-    disconnectRequest: true
+    disconnectRequest: true,
   };
 
   if (storeData.applicationData.connectionType) {
@@ -897,7 +955,7 @@ export const createPayloadOfWSReSubmitDisconnection = async (data, storeData, se
       },
       channel: "CITIZEN",
     },
-    disconnectRequest: true
+    disconnectRequest: true,
   };
 
   // if (storeData.applicationData.connectionType) {
@@ -1027,39 +1085,39 @@ export const getPDFData = (application, data, tenantInfo, t) => {
       {
         ...(application?.applicationType.includes("WATER")
           ? {
-            title: t("WS_COMMON_CONNECTION_DETAILS"),
-            values: [
-              {
-                title: t("WS_APPLY_FOR"),
-                value: application?.applicationType.includes("WATER") ? t("WS_WATER") : t("WS_SEWERAGE"),
-              },
-              {
-                title: t("WS_CONN_DETAIL_NO_OF_TAPS"),
-                value: application?.proposedTaps,
-              },
-              {
-                title: t("WS_CONN_DETAIL_PIPE_SIZE"),
-                value: application?.proposedPipeSize,
-              },
-            ],
-          }
+              title: t("WS_COMMON_CONNECTION_DETAILS"),
+              values: [
+                {
+                  title: t("WS_APPLY_FOR"),
+                  value: application?.applicationType.includes("WATER") ? t("WS_WATER") : t("WS_SEWERAGE"),
+                },
+                {
+                  title: t("WS_CONN_DETAIL_NO_OF_TAPS"),
+                  value: application?.proposedTaps,
+                },
+                {
+                  title: t("WS_CONN_DETAIL_PIPE_SIZE"),
+                  value: application?.proposedPipeSize,
+                },
+              ],
+            }
           : {
-            title: t("WS_COMMON_CONNECTION_DETAILS"),
-            values: [
-              {
-                title: t("WS_APPLY_FOR"),
-                value: application?.applicationType.includes("WATER") ? t("WS_WATER") : t("WS_SEWERAGE"),
-              },
-              {
-                title: t("WS_CONN_DETAIL_NO_OF_TOILETS"),
-                value: application?.proposedToilets,
-              },
-              {
-                title: t("WS_CONN_DETAIL_WATER_CLOSETS"),
-                value: application?.proposedWaterClosets,
-              },
-            ],
-          }),
+              title: t("WS_COMMON_CONNECTION_DETAILS"),
+              values: [
+                {
+                  title: t("WS_APPLY_FOR"),
+                  value: application?.applicationType.includes("WATER") ? t("WS_WATER") : t("WS_SEWERAGE"),
+                },
+                {
+                  title: t("WS_CONN_DETAIL_NO_OF_TOILETS"),
+                  value: application?.proposedToilets,
+                },
+                {
+                  title: t("WS_CONN_DETAIL_WATER_CLOSETS"),
+                  value: application?.proposedWaterClosets,
+                },
+              ],
+            }),
       },
       {
         title: t("WS_COMMON_CONNECTION_HOLDER_DETAILS_HEADER"),
@@ -1186,10 +1244,10 @@ export const convertApplicationData = (data, serviceType, modify = false, editBy
       proposedTaps: Number(data?.applicationData?.proposedTaps) || "",
       proposedPipeSize: data?.applicationData?.proposedPipeSize
         ? {
-          i18nKey: data?.applicationData?.proposedPipeSize,
-          code: data?.applicationData?.proposedPipeSize,
-          size: data?.applicationData?.proposedPipeSize,
-        }
+            i18nKey: data?.applicationData?.proposedPipeSize,
+            code: data?.applicationData?.proposedPipeSize,
+            size: data?.applicationData?.proposedPipeSize,
+          }
         : "",
       proposedToilets: data?.applicationData?.proposedToilets || "",
       proposedWaterClosets: data?.applicationData?.proposedWaterClosets || "",
@@ -1199,53 +1257,53 @@ export const convertApplicationData = (data, serviceType, modify = false, editBy
   const ConnectionHolderDetails =
     data?.applicationData?.connectionHolders?.length > 0
       ? [
-        {
-          sameAsOwnerDetails: false,
-          uuid: data?.applicationData?.connectionHolders?.[0]?.uuid,
-          name: data?.applicationData?.connectionHolders?.[0]?.name || "",
-          mobileNumber: data?.applicationData?.connectionHolders?.[0]?.mobileNumber || "",
-          emailId: data?.applicationData?.connectionHolders?.[0]?.emailId || "",
-          guardian: data?.applicationData?.connectionHolders?.[0]?.fatherOrHusbandName || "",
-          address: data?.applicationData?.connectionHolders?.[0]?.correspondenceAddress || "",
-          gender: data?.applicationData?.connectionHolders?.[0]?.gender
-            ? {
-              code: data?.applicationData?.connectionHolders?.[0]?.gender,
-              i18nKey: data?.applicationData?.connectionHolders?.[0]?.gender,
-            }
-            : "",
-          relationship: data?.applicationData?.connectionHolders?.[0]?.relationship
-            ? {
-              code: data?.applicationData?.connectionHolders?.[0]?.relationship,
-              i18nKey: data?.applicationData?.connectionHolders?.[0]?.relationship,
-            }
-            : "",
-          ownerType: data?.applicationData?.connectionHolders?.[0]?.ownerType
-            ? {
-              code: data?.applicationData?.connectionHolders?.[0]?.ownerType,
-              i18nKey: data?.applicationData?.connectionHolders?.[0]?.ownerType,
-            }
-            : "",
+          {
+            sameAsOwnerDetails: false,
+            uuid: data?.applicationData?.connectionHolders?.[0]?.uuid,
+            name: data?.applicationData?.connectionHolders?.[0]?.name || "",
+            mobileNumber: data?.applicationData?.connectionHolders?.[0]?.mobileNumber || "",
+            emailId: data?.applicationData?.connectionHolders?.[0]?.emailId || "",
+            guardian: data?.applicationData?.connectionHolders?.[0]?.fatherOrHusbandName || "",
+            address: data?.applicationData?.connectionHolders?.[0]?.correspondenceAddress || "",
+            gender: data?.applicationData?.connectionHolders?.[0]?.gender
+              ? {
+                  code: data?.applicationData?.connectionHolders?.[0]?.gender,
+                  i18nKey: data?.applicationData?.connectionHolders?.[0]?.gender,
+                }
+              : "",
+            relationship: data?.applicationData?.connectionHolders?.[0]?.relationship
+              ? {
+                  code: data?.applicationData?.connectionHolders?.[0]?.relationship,
+                  i18nKey: data?.applicationData?.connectionHolders?.[0]?.relationship,
+                }
+              : "",
+            ownerType: data?.applicationData?.connectionHolders?.[0]?.ownerType
+              ? {
+                  code: data?.applicationData?.connectionHolders?.[0]?.ownerType,
+                  i18nKey: data?.applicationData?.connectionHolders?.[0]?.ownerType,
+                }
+              : "",
 
-          documentId: "",
-          documentType: "",
-          file: "",
-        },
-      ]
+            documentId: "",
+            documentType: "",
+            file: "",
+          },
+        ]
       : [
-        {
-          sameAsOwnerDetails: true,
-          name: "",
-          gender: "",
-          mobileNumber: "",
-          guardian: "",
-          relationship: "",
-          address: "",
-          ownerType: "",
-          documentId: "",
-          documentType: "",
-          file: "",
-        },
-      ];
+          {
+            sameAsOwnerDetails: true,
+            name: "",
+            gender: "",
+            mobileNumber: "",
+            guardian: "",
+            relationship: "",
+            address: "",
+            ownerType: "",
+            documentId: "",
+            documentType: "",
+            file: "",
+          },
+        ];
 
   let documents = [];
   if (data?.applicationData?.documents) {
@@ -1277,39 +1335,39 @@ export const convertApplicationData = (data, serviceType, modify = false, editBy
   const connectionDetails =
     serviceType === "WATER"
       ? {
-        connectionType: data?.applicationData?.connectionType
-          ? {
-            code: data?.applicationData?.connectionType,
-            i18nKey: t(`WS_CONNECTIONTYPE_${stringReplaceAll(data?.applicationData?.connectionType?.toUpperCase(), " ", "_")}`),
-          }
-          : "",
-        waterSource: data?.applicationData?.waterSource
-          ? {
-            code: data?.applicationData?.waterSource,
-            i18nKey: t(
-              `WS_SERVICES_MASTERS_WATERSOURCE_${stringReplaceAll(data?.applicationData?.waterSource?.split(".")[0]?.toUpperCase(), " ", "_")}`
-            ),
-          }
-          : "",
-        sourceSubData: data?.applicationData?.waterSource
-          ? {
-            code: data?.applicationData?.waterSource,
-            i18nKey: t(`WS_SERVICES_MASTERS_WATERSOURCE_${sourceSubDataFilter}`),
-          }
-          : "",
-        pipeSize: data?.applicationData?.pipeSize
-          ? {
-            code: data?.applicationData?.pipeSize,
-            i18nKey: data?.applicationData?.pipeSize,
-            size: data?.applicationData?.pipeSize,
-          }
-          : "",
-        noOfTaps: data?.applicationData?.noOfTaps || "",
-      }
+          connectionType: data?.applicationData?.connectionType
+            ? {
+                code: data?.applicationData?.connectionType,
+                i18nKey: t(`WS_CONNECTIONTYPE_${stringReplaceAll(data?.applicationData?.connectionType?.toUpperCase(), " ", "_")}`),
+              }
+            : "",
+          waterSource: data?.applicationData?.waterSource
+            ? {
+                code: data?.applicationData?.waterSource,
+                i18nKey: t(
+                  `WS_SERVICES_MASTERS_WATERSOURCE_${stringReplaceAll(data?.applicationData?.waterSource?.split(".")[0]?.toUpperCase(), " ", "_")}`
+                ),
+              }
+            : "",
+          sourceSubData: data?.applicationData?.waterSource
+            ? {
+                code: data?.applicationData?.waterSource,
+                i18nKey: t(`WS_SERVICES_MASTERS_WATERSOURCE_${sourceSubDataFilter}`),
+              }
+            : "",
+          pipeSize: data?.applicationData?.pipeSize
+            ? {
+                code: data?.applicationData?.pipeSize,
+                i18nKey: data?.applicationData?.pipeSize,
+                size: data?.applicationData?.pipeSize,
+              }
+            : "",
+          noOfTaps: data?.applicationData?.noOfTaps || "",
+        }
       : {
-        noOfWaterClosets: data?.applicationData?.noOfWaterClosets || "",
-        noOfToilets: data?.applicationData?.noOfToilets || "",
-      };
+          noOfWaterClosets: data?.applicationData?.noOfWaterClosets || "",
+          noOfToilets: data?.applicationData?.noOfToilets || "",
+        };
 
   if (modify) {
     const activationDetails = [
@@ -1340,38 +1398,38 @@ export const convertApplicationData = (data, serviceType, modify = false, editBy
     const connectionDetails =
       serviceType === "WATER"
         ? {
-          connectionType: data?.applicationData?.connectionType
-            ? {
-              code: data?.applicationData?.connectionType,
-              i18nKey: t(`WS_CONNECTIONTYPE_${stringReplaceAll(data?.applicationData?.connectionType?.toUpperCase(), " ", "_")}`),
-            }
-            : "",
-          waterSource: data?.applicationData?.waterSource
-            ? {
-              code: data?.applicationData?.waterSource,
-              i18nKey: t(
-                `WS_SERVICES_MASTERS_WATERSOURCE_${stringReplaceAll(data?.applicationData?.waterSource?.split(".")[0]?.toUpperCase(), " ", "_")}`
-              ),
-            }
-            : "",
-          sourceSubData: data?.applicationData?.waterSource
-            ? {
-              code: data?.applicationData?.waterSource,
-              i18nKey: t(`WS_SERVICES_MASTERS_WATERSOURCE_${sourceSubDataFilter}`),
-            }
-            : "",
-          pipeSize: data?.applicationData?.pipeSize
-            ? {
-              code: data?.applicationData?.pipeSize,
-              i18nKey: data?.applicationData?.pipeSize,
-            }
-            : "",
-          noOfTaps: data?.applicationData?.noOfTaps || "",
-        }
+            connectionType: data?.applicationData?.connectionType
+              ? {
+                  code: data?.applicationData?.connectionType,
+                  i18nKey: t(`WS_CONNECTIONTYPE_${stringReplaceAll(data?.applicationData?.connectionType?.toUpperCase(), " ", "_")}`),
+                }
+              : "",
+            waterSource: data?.applicationData?.waterSource
+              ? {
+                  code: data?.applicationData?.waterSource,
+                  i18nKey: t(
+                    `WS_SERVICES_MASTERS_WATERSOURCE_${stringReplaceAll(data?.applicationData?.waterSource?.split(".")[0]?.toUpperCase(), " ", "_")}`
+                  ),
+                }
+              : "",
+            sourceSubData: data?.applicationData?.waterSource
+              ? {
+                  code: data?.applicationData?.waterSource,
+                  i18nKey: t(`WS_SERVICES_MASTERS_WATERSOURCE_${sourceSubDataFilter}`),
+                }
+              : "",
+            pipeSize: data?.applicationData?.pipeSize
+              ? {
+                  code: data?.applicationData?.pipeSize,
+                  i18nKey: data?.applicationData?.pipeSize,
+                }
+              : "",
+            noOfTaps: data?.applicationData?.noOfTaps || "",
+          }
         : {
-          noOfWaterClosets: data?.applicationData?.noOfWaterClosets || "",
-          noOfToilets: data?.applicationData?.noOfToilets || "",
-        };
+            noOfWaterClosets: data?.applicationData?.noOfWaterClosets || "",
+            noOfToilets: data?.applicationData?.noOfToilets || "",
+          };
     if (window.location.href.includes("modify-application-edit")) {
       DocumentsRequired = { documents: documents };
     } else {
@@ -1400,10 +1458,10 @@ export const convertApplicationData = (data, serviceType, modify = false, editBy
       {
         detailsProvidedBy: data?.applicationData?.additionalDetails?.detailsProvidedBy
           ? {
-            i18nKey: data?.applicationData?.additionalDetails?.detailsProvidedBy,
-            code: data?.applicationData?.additionalDetails?.detailsProvidedBy,
-            size: data?.applicationData?.additionalDetails?.detailsProvidedBy,
-          }
+              i18nKey: data?.applicationData?.additionalDetails?.detailsProvidedBy,
+              code: data?.applicationData?.additionalDetails?.detailsProvidedBy,
+              size: data?.applicationData?.additionalDetails?.detailsProvidedBy,
+            }
           : "",
         plumberName: data?.applicationData?.plumberInfo?.[0].name,
         plumberMobileNo: data?.applicationData?.plumberInfo?.[0].mobileNumber,
@@ -1413,39 +1471,39 @@ export const convertApplicationData = (data, serviceType, modify = false, editBy
 
     let roadCuttingDetails = data?.applicationData?.roadCuttingInfo
       ? data?.applicationData?.roadCuttingInfo?.map((rc, index) => {
-        return rc.id
-          ? {
-            key: index + "_" + Date.now(),
-            id: rc?.id,
-            roadType: {
-              i18nKey: `WS_ROADTYPE_` + rc?.roadType,
-              code: rc?.roadType,
-            },
-            area: rc?.roadCuttingArea,
-            status: rc?.status,
-          }
-          : {
-            key: index + "_" + Date.now(),
-            roadType: {
-              i18nKey: `WS_ROADTYPE_` + rc?.roadType,
-              code: rc?.roadType,
-            },
-            area: rc?.roadCuttingArea,
-            status: rc?.status,
-          };
-      })
+          return rc.id
+            ? {
+                key: index + "_" + Date.now(),
+                id: rc?.id,
+                roadType: {
+                  i18nKey: `WS_ROADTYPE_` + rc?.roadType,
+                  code: rc?.roadType,
+                },
+                area: rc?.roadCuttingArea,
+                status: rc?.status,
+              }
+            : {
+                key: index + "_" + Date.now(),
+                roadType: {
+                  i18nKey: `WS_ROADTYPE_` + rc?.roadType,
+                  code: rc?.roadType,
+                },
+                area: rc?.roadCuttingArea,
+                status: rc?.status,
+              };
+        })
       : [
-        {
-          key: 99999 + "_" + Date.now(),
-          id: null,
-          roadType: {
-            i18nKey: "",
-            code: "",
+          {
+            key: 99999 + "_" + Date.now(),
+            id: null,
+            roadType: {
+              i18nKey: "",
+              code: "",
+            },
+            area: "",
+            status: "",
           },
-          area: "",
-          status: "",
-        },
-      ];
+        ];
 
     if (editByConfig) {
       payload.connectionDetails = [connectionDetails];
@@ -1474,19 +1532,19 @@ export const convertEditApplicationDetails = async (data, appData, actionData) =
     proposedToilets: data?.ConnectionDetails?.[0]?.proposedToilets && Number(data?.ConnectionDetails?.[0]?.proposedToilets),
     connectionHolders: !data?.ConnectionHolderDetails?.[0]?.sameAsOwnerDetails
       ? [
-        {
-          ...appData?.applicationData?.connectionHolders?.[0],
-          correspondenceAddress: data?.ConnectionHolderDetails?.[0]?.address || "",
-          fatherOrHusbandName: data?.ConnectionHolderDetails?.[0]?.guardian || "",
-          gender: data?.ConnectionHolderDetails?.[0]?.gender?.code || "",
-          mobileNumber: data?.ConnectionHolderDetails?.[0]?.mobileNumber || "",
-          name: data?.ConnectionHolderDetails?.[0]?.name || "",
-          emailId: data?.ConnectionHolderDetails?.[0]?.emailId || "",
-          ownerType: data?.ConnectionHolderDetails?.[0]?.ownerType?.code || "",
-          relationship: data?.ConnectionHolderDetails?.[0]?.relationship?.code || "",
-          sameAsPropertyAddress: data?.ConnectionHolderDetails?.[0]?.sameAsOwnerDetails,
-        },
-      ]
+          {
+            ...appData?.applicationData?.connectionHolders?.[0],
+            correspondenceAddress: data?.ConnectionHolderDetails?.[0]?.address || "",
+            fatherOrHusbandName: data?.ConnectionHolderDetails?.[0]?.guardian || "",
+            gender: data?.ConnectionHolderDetails?.[0]?.gender?.code || "",
+            mobileNumber: data?.ConnectionHolderDetails?.[0]?.mobileNumber || "",
+            name: data?.ConnectionHolderDetails?.[0]?.name || "",
+            emailId: data?.ConnectionHolderDetails?.[0]?.emailId || "",
+            ownerType: data?.ConnectionHolderDetails?.[0]?.ownerType?.code || "",
+            relationship: data?.ConnectionHolderDetails?.[0]?.relationship?.code || "",
+            sameAsPropertyAddress: data?.ConnectionHolderDetails?.[0]?.sameAsOwnerDetails,
+          },
+        ]
       : null,
     property: data?.cpt?.details,
     processInstance: {
@@ -1539,10 +1597,10 @@ export const convertDisonnectApplicationData = (data, serviceType, editByConfig 
       {
         detailsProvidedBy: data?.applicationData?.additionalDetails?.detailsProvidedBy
           ? {
-            i18nKey: data?.applicationData?.additionalDetails?.detailsProvidedBy,
-            code: data?.applicationData?.additionalDetails?.detailsProvidedBy,
-            size: data?.applicationData?.additionalDetails?.detailsProvidedBy,
-          }
+              i18nKey: data?.applicationData?.additionalDetails?.detailsProvidedBy,
+              code: data?.applicationData?.additionalDetails?.detailsProvidedBy,
+              size: data?.applicationData?.additionalDetails?.detailsProvidedBy,
+            }
           : "",
         plumberName: data?.applicationData?.plumberInfo?.[0].name,
         plumberMobileNo: data?.applicationData?.plumberInfo?.[0].mobileNumber,
@@ -1564,25 +1622,32 @@ export const convertDisonnectEditApplicationDetails = async (data, appData, acti
   const docsData = docs ? JSON.parse(docs) : "";
   const documentsData = [];
 
-  docsData?.map(data => {
-    const doc = appData?.applicationData?.documents?.filter(appDoc => `${appDoc?.documentType?.split(".")?.[0]}.${appDoc?.documentType?.split(".")?.[1]}` == `${data?.documentType?.split(".")?.[0]}.${data?.documentType?.split(".")?.[1]}`);
-    let document = doc?.length > 0 ? {
-      auditDetails: null,
-      documentType: data?.documentType,
-      documentUid: doc?.[0]?.documentUid,
-      fileStoreId: data?.fileStoreId,
-      id: doc?.[0]?.id,
-      status: "ACTIVE"
-    } : data;
+  docsData?.map((data) => {
+    const doc = appData?.applicationData?.documents?.filter(
+      (appDoc) =>
+        `${appDoc?.documentType?.split(".")?.[0]}.${appDoc?.documentType?.split(".")?.[1]}` ==
+        `${data?.documentType?.split(".")?.[0]}.${data?.documentType?.split(".")?.[1]}`
+    );
+    let document =
+      doc?.length > 0
+        ? {
+            auditDetails: null,
+            documentType: data?.documentType,
+            documentUid: doc?.[0]?.documentUid,
+            fileStoreId: data?.fileStoreId,
+            id: doc?.[0]?.id,
+            status: "ACTIVE",
+          }
+        : data;
     documentsData.push(document);
-  })
+  });
 
   const plumberInfo = [
     {
       licenseNo: data?.plumberDetails?.[0]?.plumberLicenseNo,
       mobileNumber: data?.plumberDetails?.[0]?.plumberMobileNo,
       name: data?.plumberDetails?.[0]?.plumberName,
-      id: appData?.applicationData?.plumberInfo?.[0]?.id
+      id: appData?.applicationData?.plumberInfo?.[0]?.id,
     },
   ];
 

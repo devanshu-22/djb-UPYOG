@@ -559,6 +559,7 @@ const getUsageCategoryList = (tenantId, moduleCode, type) => ({
   },
 });
 
+
 const getPTPropertyTypeList = (tenantId, moduleCode, type) => ({
   type,
   details: {
@@ -1751,9 +1752,9 @@ const getUsageCategory = (MdmsRes) =>
   });
 
 const getPTPropertyType = (MdmsRes) =>
-  MdmsRes["PropertyTax"].UsageCategory.filter((PropertyType) => PropertyType.active).map((PTPropertyTypelist) => {
+  MdmsRes["PropertyTax"].PropertyType.filter((PropertyType) => PropertyType.active).map((PTPropertyTypelist) => {
     return {
-      ...UsageCategorylist,
+      ...PTPropertyTypelist,
       i18nKey: `COMMON_PROPTYPE_${stringReplaceAll(PTPropertyTypelist.code, ".", "_")}`,
     };
   });

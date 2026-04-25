@@ -623,32 +623,32 @@ export const WSSearch = {
             ? [
                 {
                   title: "WS_SERV_DETAIL_CONN_TYPE",
-                  value: wsDataDetails?.connectionType
-                    ? t(`WS_SERVICES_MASTERS_WATERSOURCE_${stringReplaceAll(wsDataDetails?.connectionType?.toUpperCase(), " ", "_")}`)
+                  value: (wsDataDetails?.connectionType || wsDataDetails?.additionalDetails?.connectionType)
+                    ? t(`WS_SERVICES_MASTERS_WATERSOURCE_${stringReplaceAll((wsDataDetails?.connectionType || wsDataDetails?.additionalDetails?.connectionType)?.toUpperCase(), " ", "_")}`)
                     : t("NA"),
                 },
-                { title: "WS_SERV_DETAIL_NO_OF_TAPS", value: wsDataDetails?.noOfTaps || t("NA") },
+                { title: "WS_SERV_DETAIL_NO_OF_TAPS", value: wsDataDetails?.noOfTaps || wsDataDetails?.proposedTaps || t("NA") },
                 {
                   title: "WS_SERV_DETAIL_WATER_SOURCE",
-                  value: wsDataDetails?.waterSource
-                    ? t(`WS_SERVICES_MASTERS_WATERSOURCE_${wsDataDetails?.waterSource?.toUpperCase()?.split(".")[0]}`)
+                  value: (wsDataDetails?.waterSource || wsDataDetails?.additionalDetails?.waterSource)
+                    ? t(`WS_SERVICES_MASTERS_WATERSOURCE_${(wsDataDetails?.waterSource || wsDataDetails?.additionalDetails?.waterSource)?.toUpperCase()?.split(".")[0]}`)
                     : t("NA"),
                 },
-                { title: "WS_PIPE_SIZE_IN_INCHES_LABEL", value: wsDataDetails?.pipeSize || t("NA") },
+                { title: "WS_PIPE_SIZE_IN_INCHES_LABEL", value: wsDataDetails?.pipeSize || wsDataDetails?.proposedPipeSize || t("NA") },
                 {
                   title: "WS_SERV_DETAIL_WATER_SUB_SOURCE",
-                  value: wsDataDetails?.waterSource ? t(`${wsDataDetails?.waterSource?.toUpperCase()?.split(".")[1]}`) : t("NA"),
+                  value: (wsDataDetails?.waterSource || wsDataDetails?.additionalDetails?.waterSource) ? t(`${(wsDataDetails?.waterSource || wsDataDetails?.additionalDetails?.waterSource)?.toUpperCase()?.split(".")[1]}`) : t("NA"),
                 },
               ]
             : [
                 {
                   title: "WS_SERV_DETAIL_CONN_TYPE",
-                  value: wsDataDetails?.connectionType
-                    ? t(`WS_SERVICES_MASTERS_WATERSOURCE_${stringReplaceAll(wsDataDetails?.connectionType?.toUpperCase(), " ", "_")}`)
+                  value: (wsDataDetails?.connectionType || wsDataDetails?.additionalDetails?.connectionType)
+                    ? t(`WS_SERVICES_MASTERS_WATERSOURCE_${stringReplaceAll((wsDataDetails?.connectionType || wsDataDetails?.additionalDetails?.connectionType)?.toUpperCase(), " ", "_")}`)
                     : t("NA"),
                 },
-                { title: "WS_NUMBER_WATER_CLOSETS_LABEL", value: wsDataDetails?.noOfWaterClosets || t("NA") },
-                { title: "WS_SERV_DETAIL_NO_OF_TOILETS", value: wsDataDetails?.noOfToilets || t("NA") },
+                { title: "WS_NUMBER_WATER_CLOSETS_LABEL", value: wsDataDetails?.noOfWaterClosets || wsDataDetails?.proposedWaterClosets || t("NA") },
+                { title: "WS_SERV_DETAIL_NO_OF_TOILETS", value: wsDataDetails?.noOfToilets || wsDataDetails?.proposedToilets || t("NA") },
               ],
         plumberDetails:
           wsDataDetails?.additionalDetails?.detailsProvidedBy === "ULB"

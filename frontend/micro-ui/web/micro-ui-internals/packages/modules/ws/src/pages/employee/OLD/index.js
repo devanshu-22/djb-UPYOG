@@ -60,6 +60,8 @@ const OLDApplication = () => {
           "CPTPropertySearchNSummary",
           "WSConnectionHolderDetails",
           "WSConnectionDetails",
+          "WSActivationPlumberDetails",
+          "WSRoadCuttingDetails",
           "WSDocumentsEmployee"
         ];
 
