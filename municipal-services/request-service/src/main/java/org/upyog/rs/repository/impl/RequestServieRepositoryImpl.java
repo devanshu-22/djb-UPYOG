@@ -251,8 +251,9 @@ public class RequestServieRepositoryImpl implements RequestServiceRepository {
 
 	private static final String INSERT_QUERY =
 			"INSERT INTO upyog_rs_water_tanker_filling_point_fixed_point_mapping " +
-					"(fixed_pt_name, filling_pt_name) VALUES (?, ?)";
-
+					"(fixed_pt_name, filling_pt_name) VALUES (?, ?) " +
+					"ON CONFLICT (fixed_pt_name) " +
+					"DO UPDATE SET filling_pt_name = EXCLUDED.filling_pt_name";
 
 	@Override
 	public void save(FixedFillingPointMapping mapping) {
