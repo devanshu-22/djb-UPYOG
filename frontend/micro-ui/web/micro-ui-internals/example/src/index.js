@@ -105,7 +105,7 @@ const enabledModules = [
 const initTokens = (stateCode) => {
   const userType = window.sessionStorage.getItem("userType") || process.env.REACT_APP_USER_TYPE || "CITIZEN";
 
-  const token = window.keycloak?.token || null;
+  // const token = window.keycloak?.token || null;
 
   const citizenInfo = window.localStorage.getItem("Citizen.user-info");
   const citizenTenantId = window.localStorage.getItem("Citizen.tenant-id") || stateCode;
@@ -119,7 +119,7 @@ const initTokens = (stateCode) => {
   window.Digit.SessionStorage.set("userType", userTypeInfo);
 
   if (userType !== "CITIZEN") {
-    window.Digit.SessionStorage.set("User", { access_token: token, info: userType !== "CITIZEN" ? JSON.parse(employeeInfo) : citizenInfo });
+    window.Digit.SessionStorage.set("User", { info: userType !== "CITIZEN" ? JSON.parse(employeeInfo) : citizenInfo });
   } else {
     // if (!window.Digit.SessionStorage.get("User")?.extraRoleInfo) window.Digit.SessionStorage.set("User", { access_token: token, info: citizenInfo });
   }

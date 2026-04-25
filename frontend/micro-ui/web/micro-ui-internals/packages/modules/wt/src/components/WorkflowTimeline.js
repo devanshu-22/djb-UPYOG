@@ -46,10 +46,7 @@ const WorkflowTimeline = ({ workflowDetails, hideTimeline, setHideTimeline }) =>
   };
 
   return (
-    <Card
-      className="workflow-timeline-card2 digit-form-composer"
-      style={{ background: "#fafafa", padding: "16px", height: hideTimeline ? "100%" : "" }}
-    >
+    <Card className="workflow-timeline-card2 digit-form-composer" style={{ background: "#fff", padding: "16px", height: hideTimeline ? "100%" : "" }}>
       <div className={`timeline-header-wrapper ${hideTimeline ? "collapsed" : ""}`}>
         {/* <Hamburger color="#000" handleClick={() => setHideTimeline(!hideTimeline)} /> */}
         <CardSubHeader

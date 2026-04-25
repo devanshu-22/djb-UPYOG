@@ -27,7 +27,7 @@ export const SelectPaymentType = (props) => {
   const { state = {} } = useLocation();
   const userInfo = Digit.UserService.getUser();
   const [showToast, setShowToast] = useState(null);
-  const { tenantId: __tenantId, authorization, workflow: wrkflow , consumerCode : connectionNo } = Digit.Hooks.useQueryParams();
+  const { tenantId: __tenantId, authorization, workflow: wrkflow, consumerCode: connectionNo } = Digit.Hooks.useQueryParams();
   const paymentAmount = state?.paymentAmount;
   const { t } = useTranslation();
   const history = useHistory();
@@ -36,16 +36,17 @@ export const SelectPaymentType = (props) => {
   let { consumerCode, businessService } = useParams();
   const tenantId = state?.tenantId || __tenantId || Digit.ULBService.getCurrentTenantId();
   const propertyId = state?.propertyId;
+  const kc = window.keycloak;
   const stateTenant = Digit.ULBService.getStateId();
   const { control, handleSubmit } = useForm();
-  const [Time, setTime ] = useState(0);
+  const [Time, setTime] = useState(0);
   const { data: menu, isLoading } = Digit.Hooks.useCommonMDMS(stateTenant, "DIGIT-UI", "PaymentGateway");
   const { data: paymentdetails, isLoading: paymentLoading } = Digit.Hooks.useFetchPayment(
     { tenantId: tenantId, consumerCode: wrkflow === "WNS" ? connectionNo : consumerCode, businessService },
     {}
   );
   if (window.location.href.includes("ISWSCON") || wrkflow === "WNS") consumerCode = decodeURIComponent(consumerCode);
-  if( wrkflow === "WNS") consumerCode = stringReplaceAll(consumerCode,"+","/")
+  if (wrkflow === "WNS") consumerCode = stringReplaceAll(consumerCode, "+", "/");
   useEffect(() => {
     if (paymentdetails?.Bill && paymentdetails.Bill.length == 0) {
       setShowToast({ key: true, label: "CS_BILL_NOT_FOUND" });
@@ -78,12 +79,17 @@ export const SelectPaymentType = (props) => {
           name: name || userInfo?.info?.name || billDetails?.payerName,
           mobileNumber: mobileNumber || userInfo?.info?.mobileNumber || billDetails?.mobileNumber,
           tenantId: billDetails?.tenantId,
-          emailId: "sriranjan.srivastava@owc.com"
+          emailId: "sriranjan.srivastava@owc.com",
         },
         // success
-        callbackUrl: window.location.href.includes("mcollect") || wrkflow === "WNS"
-          ? `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/success/${businessService}/${wrkflow === "WNS"? consumerCode:consumerCode}/${tenantId}?workflow=${wrkflow === "WNS"? wrkflow : "mcollect"}`
-          : `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/success/${businessService}/${wrkflow === "WNS"? encodeURIComponent(consumerCode):consumerCode}/${tenantId}?propertyId=${consumerCode}`,
+        callbackUrl:
+          window.location.href.includes("mcollect") || wrkflow === "WNS"
+            ? `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/success/${businessService}/${
+                wrkflow === "WNS" ? consumerCode : consumerCode
+              }/${tenantId}?workflow=${wrkflow === "WNS" ? wrkflow : "mcollect"}`
+            : `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/success/${businessService}/${
+                wrkflow === "WNS" ? encodeURIComponent(consumerCode) : consumerCode
+              }/${tenantId}?propertyId=${consumerCode}`,
         additionalDetails: {
           isWhatsapp: false,
         },
@@ -95,20 +101,18 @@ export const SelectPaymentType = (props) => {
       const redirectUrl = data?.Transaction?.redirectUrl;
       if (d?.paymentType == "AXIS") {
         window.location = redirectUrl;
-      }
-      else if (d?.paymentType == "NTTDATA") {
-        let redirect= redirectUrl.split("returnURL=")
-        let url=redirect[0].split("?")[1].split("&")
+      } else if (d?.paymentType == "NTTDATA") {
+        let redirect = redirectUrl.split("returnURL=");
+        let url = redirect[0].split("?")[1].split("&");
         const options = {
-          "atomTokenId": url[0].split("=")[1],
-          "merchId": url[1].split("=")[1],
-          "custEmail": "sriranjan.srivastava@owc.com",
-          "custMobile": url[3].split("=")[1],
-          "returnUrl": redirect[1]
-        }
-        let atom = new AtomPaynetz(options, 'uat');
-      }
-      else {
+          atomTokenId: url[0].split("=")[1],
+          merchId: url[1].split("=")[1],
+          custEmail: "sriranjan.srivastava@owc.com",
+          custMobile: url[3].split("=")[1],
+          returnUrl: redirect[1],
+        };
+        let atom = new AtomPaynetz(options, "uat");
+      } else {
         // new payment gatewayfor UPYOG pay
         try {
           const gatewayParam = redirectUrl
@@ -148,15 +152,14 @@ export const SelectPaymentType = (props) => {
           // override default date for UPYOG Custom pay
           gatewayParam["requestDateTime"] = gatewayParam["requestDateTime"]?.split(new Date().getFullYear()).join(`${new Date().getFullYear()} `);
 
-          gatewayParam["successUrl"]= redirectUrl?.split("successUrl=")?.[1]?.split("eg_pg_txnid=")?.[0]+'eg_pg_txnid=' +gatewayParam?.orderId;
-          gatewayParam["failUrl"]= redirectUrl?.split("failUrl=")?.[1]?.split("eg_pg_txnid=")?.[0]+'eg_pg_txnid=' +gatewayParam?.orderId;
+          gatewayParam["successUrl"] = redirectUrl?.split("successUrl=")?.[1]?.split("eg_pg_txnid=")?.[0] + "eg_pg_txnid=" + gatewayParam?.orderId;
+          gatewayParam["failUrl"] = redirectUrl?.split("failUrl=")?.[1]?.split("eg_pg_txnid=")?.[0] + "eg_pg_txnid=" + gatewayParam?.orderId;
           // gatewayParam["successUrl"]= data?.Transaction?.callbackUrl;
           // gatewayParam["failUrl"]= data?.Transaction?.callbackUrl;
 
           // var formdata = new FormData();
 
           for (var key of orderForNDSLPaymentSite) {
-
             // formdata.append(key,gatewayParam[key]);
 
             newForm.append(
@@ -170,14 +173,13 @@ export const SelectPaymentType = (props) => {
           $(document.body).append(newForm);
           newForm.submit();
 
-          makePayment(gatewayParam.txURL,newForm);
-
+          makePayment(gatewayParam.txURL, newForm);
         } catch (e) {
           console.log("Error in payment redirect ", e);
           //window.location = redirectionUrl;
         }
       }
-     // window.location = redirectUrl;
+      // window.location = redirectUrl;
     } catch (error) {
       let messageToShow = "CS_PAYMENT_UNKNOWN_ERROR_ON_SERVER";
       if (error.response?.data?.Errors?.[0]) {
@@ -188,7 +190,7 @@ export const SelectPaymentType = (props) => {
     }
   };
 
-  if (authorization === "true" && !userInfo.access_token) {
+  if (authorization === "true" && !kc.authenticated) {
     localStorage.clear();
     sessionStorage.clear();
     window.location.href = `/digit-ui/citizen/login?from=${encodeURIComponent(pathname + search)}`;
@@ -204,19 +206,28 @@ export const SelectPaymentType = (props) => {
       <form onSubmit={handleSubmit(onSubmit)}>
         <Header>{t("PAYMENT_CS_HEADER")}</Header>
         <Card>
-        {timerEnabledForBusinessService(businessService) && (
-            <CardSubHeader 
-              style={{ 
-                textAlign: 'right', 
-                fontSize: "24px"
+          {timerEnabledForBusinessService(businessService) && (
+            <CardSubHeader
+              style={{
+                textAlign: "right",
+                fontSize: "24px",
               }}
             >
-          <TimerServices businessService={businessService} setTime={setTime} timerValues={state?.timerValue} t={t} SlotSearchData={state?.SlotSearchData  } />
+              <TimerServices
+                businessService={businessService}
+                setTime={setTime}
+                timerValues={state?.timerValue}
+                t={t}
+                SlotSearchData={state?.SlotSearchData}
+              />
             </CardSubHeader>
           )}
           <div className="payment-amount-info" style={{ marginBottom: "26px" }}>
             <CardLabel className="dark">{t("PAYMENT_CS_TOTAL_AMOUNT_DUE")}</CardLabel>
-            <CardSectionHeader> ₹ { paymentAmount !== undefined ? Number(paymentAmount).toFixed(2) : Number(billDetails?.totalAmount).toFixed(2)}</CardSectionHeader>
+            <CardSectionHeader>
+              {" "}
+              ₹ {paymentAmount !== undefined ? Number(paymentAmount).toFixed(2) : Number(billDetails?.totalAmount).toFixed(2)}
+            </CardSectionHeader>
           </div>
           <CardLabel>{t("PAYMENT_CS_SELECT_METHOD")}</CardLabel>
           {menu?.length && (
@@ -227,7 +238,13 @@ export const SelectPaymentType = (props) => {
               render={(props) => <RadioButtons selectedOption={props.value} options={menu} onSelect={props.onChange} />}
             />
           )}
-          {!showToast && <SubmitBar label={t("PAYMENT_CS_BUTTON_LABEL")} submit={true} disabled={timerEnabledForBusinessService(businessService)? Time ===0:null} />}       
+          {!showToast && (
+            <SubmitBar
+              label={t("PAYMENT_CS_BUTTON_LABEL")}
+              submit={true}
+              disabled={timerEnabledForBusinessService(businessService) ? Time === 0 : null}
+            />
+          )}
         </Card>
       </form>
       <InfoBanner label={t("CS_COMMON_INFO")} text={t("CS_PAYMENT_REDIRECT_NOTICE")} />

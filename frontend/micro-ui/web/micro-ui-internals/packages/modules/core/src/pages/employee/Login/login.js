@@ -12,7 +12,7 @@ const Login = () => {
   const [error, setError] = useState(null);
 
   // Helper function to set employee details in localStorage
-  const setEmployeeDetail = (userObject, token, userType) => {
+  const setEmployeeDetail = (userObject, userType) => {
     const locale = JSON.parse(sessionStorage.getItem("Digit.locale"))?.value || "en_IN";
 
     const prefix = userType === "CITIZEN" ? "Citizen" : "Employee";
@@ -24,8 +24,6 @@ const Login = () => {
 
     localStorage.setItem("locale", locale);
     localStorage.setItem("Employee.locale", locale);
-    localStorage.setItem("token", token);
-    localStorage.setItem(`${prefix}.token`, token);
     localStorage.setItem("user-info", JSON.stringify(userObject));
     localStorage.setItem(`${prefix}.user-info`, JSON.stringify(userObject));
   };
@@ -82,7 +80,6 @@ const Login = () => {
         const finalUser = response?.data?.user?.[0] || userInfoFromFirstCall;
 
         setUser({
-          access_token: kc.token,
           info: finalUser,
         });
       } catch (err) {
@@ -102,7 +99,7 @@ const Login = () => {
       Digit.SessionStorage.set("User", user);
       Digit.UserService.setUser(user);
 
-      setEmployeeDetail(user?.info, user?.access_token, user?.info?.type);
+      setEmployeeDetail(user?.info, user?.info?.type);
 
       history.replace("/digit-ui/employee");
     } catch (err) {

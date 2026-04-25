@@ -4,7 +4,8 @@ import axios from "axios";
 export const logoutEGF = async () => {
   try {
     const user = UserService.getUser();
-    if (!user || !user.access_token) {
+    const kc = window.keycloak;
+    if (!user || !kc.token) {
       throw new Error("User or access token is missing");
     }
 
@@ -17,7 +18,7 @@ export const logoutEGF = async () => {
         did: null,
         key: null,
         msgId: null,
-        authToken: user.access_token,
+        authToken: kc.token,
         correlationId: null,
         userInfo: null,
       },

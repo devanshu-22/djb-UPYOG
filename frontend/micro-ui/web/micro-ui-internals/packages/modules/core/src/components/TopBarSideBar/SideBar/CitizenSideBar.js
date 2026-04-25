@@ -133,7 +133,8 @@ export const CitizenSideBar = ({
     ...SideBarMenu(t, closeSidebar, redirectToLoginPage, redirectToRegisterPage, redirectToScrutinyPage, isEmployee, storeData, tenantId),
   ];
   let profileItem;
-  if (isFetched && user && user.access_token) {
+  const kc = window.keycloak;
+  if (isFetched && user && kc.authenticated) {
     profileItem = <Profile info={user?.info} stateName={stateInfo?.name} t={t} />;
     menuItems = menuItems.filter((item) => item?.id !== "login-btn" && item?.id !== "register-btn" && item?.id !== "help-line");
     menuItems = [

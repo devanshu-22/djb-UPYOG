@@ -24,12 +24,12 @@ export const UserService = {
       const kc = window.keycloak;
 
       // 1️⃣ Call backend logout (optional but good practice)
-      if (user?.access_token) {
+      if (kc?.authenticated) {
         try {
           await ServiceRequest({
             serviceName: "logoutUser",
             url: Urls.UserLogout,
-            data: { access_token: user.access_token },
+            data: { access_token: kc?.token },
             auth: true,
             params: {
               tenantId: user?.info?.type?.toUpperCase() === "CITIZEN" ? Digit.ULBService.getStateId() : Digit.ULBService.getCurrentTenantId(),

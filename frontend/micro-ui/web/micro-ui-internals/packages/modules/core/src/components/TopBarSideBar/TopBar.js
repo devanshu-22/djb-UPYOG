@@ -111,8 +111,9 @@ const TopBar = ({
   // const urlsToDisableNotificationIcon = (pathname) =>
   //   !!window.keycloak?.token ? false : ["/digit-ui/citizen/select-language", "/digit-ui/citizen/select-location"].includes(pathname);
 
+  const kc = window.keycloak;
+  const loggedIn = kc.authenticated;
   if (CITIZEN) {
-    const loggedIn = userDetails?.access_token ? true : false;
     return (
       <div className="topbar" style={CITIZEN ? { left: "0px", width: "100%", backgroundColor: "#FFFFFF" } : { backgroundColor: "#FFFFFF" }}>
         {mobileView ? <Hamburger handleClick={updateSidebar} color="#9E9E9E" /> : null}
@@ -175,7 +176,6 @@ const TopBar = ({
       </div>
     );
   }
-  const loggedin = window.keycloak?.token ? true : false;
 
   return (
     <div className="topbar" style={{ backgroundColor: "#FFFFFF" }}>
@@ -208,13 +208,13 @@ const TopBar = ({
           </div>
         </div>
 
-        {!loggedin && (
+        {!loggedIn && (
           <p className="ulb" style={mobileView ? { fontSize: "14px", display: "inline-block" } : {}}>
             {t(`MYCITY_${stateInfo?.code?.toUpperCase()}_LABEL`)} {t(`MYCITY_STATECODE_LABEL`)}
           </p>
         )}
         {!mobileView && (
-          <div className={mobileView ? "right" : "topbar-right-section"} style={!loggedin ? { width: "80%" } : {}}>
+          <div className={mobileView ? "right" : "topbar-right-section"} style={!loggedIn ? { width: "80%" } : {}}>
             <div className="left hide-on-mobile">
               {!window.location.href.includes("employee/user/login") && !window.location.href.includes("employee/user/language-selection") && (
                 <ChangeCity dropdown={true} t={t} />
@@ -228,7 +228,7 @@ const TopBar = ({
             <div className="left">{showLanguageChange && <ChangeLanguage dropdown={true} />}</div>
             <div className="vertical-divider"></div>
 
-            {userDetails?.access_token && (
+            {kc.authenticated && (
               <div className="left" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 <EmployeeDesignationWrapper
                   userDetails={userDetails}

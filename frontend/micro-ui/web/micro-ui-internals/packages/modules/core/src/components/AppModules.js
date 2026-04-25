@@ -15,13 +15,13 @@ const getTenants = (codes, tenants) => {
 };
 
 export const AppModules = ({ stateCode, userType, modules, appTenants }) => {
-  const ComponentProvider = Digit.Contexts.ComponentProvider;
   const { path } = useRouteMatch();
   const location = useLocation();
 
   const user = Digit.UserService.getUser();
+  const kc = window.keycloak;
 
-  if (!user || !user?.access_token || !user?.info) {
+  if (!user || !kc.authenticated || !user?.info) {
     return <Redirect to={{ pathname: "/digit-ui/employee/user/login", state: { from: location.pathname + location.search } }} />;
   }
 
