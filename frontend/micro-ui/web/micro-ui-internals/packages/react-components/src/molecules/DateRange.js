@@ -34,10 +34,11 @@ function isStartDateFocused(focusNumber) {
 const DateRange = ({ values, onFilterChange, t, hideLabel = false }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [focusedRange, setFocusedRange] = useState([0, 0]);
+  const today = new Date();
   const [selectionRange, setSelectionRange] = useState({
     ...values,
-    startDate: values?.startDate,
-    endDate: values?.endDate,
+    startDate: values?.startDate || today,
+    endDate: values?.endDate || today,
   });
   const [isHovered, setIsHovered] = useState(false);
   const wrapperRef = useRef(null);

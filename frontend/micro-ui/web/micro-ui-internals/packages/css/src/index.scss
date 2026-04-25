@@ -958,3 +958,15 @@ input[type="number"] {
 .round-medium {
   border-radius: 6px;
 }
+
+.rdrDateDisplayItem {
+  input[readonly] {
+    border-radius: 4px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .rdrDefinedRangesWrapper {
+    display: none;
+  }
+}
