@@ -13,11 +13,12 @@ const usePropertySearchWithDue = ({ tenantId, filters, auth = true, configs }) =
     let consumerCodes = [];
     let formattedData = {};
     data.Properties.map((property) => {
-      property.status == "ACTIVE" && consumerCodes.push(property.propertyId);
+      if (property.status) consumerCodes.push(property.propertyId);
       property.units = property?.units?.filter((unit) => unit.active);
-      property.owners = property?.owners?.filter((owner) =>
-        (owner.status === property?.status) === "INWORKFLOW" && property?.creationReason === "MUTATION" ? "INACTIVE" : "ACTIVE"
-      );
+      property.owners = property?.owners?.filter((owner) => {
+        if (property?.status === "INWORKFLOW" && property?.creationReason === "MUTATION") return owner.status === "INACTIVE";
+        return owner.status === "ACTIVE";
+      });
       formattedData[property.propertyId] = {
         propertyId: property?.propertyId,
         name: property?.owners?.[0].name,

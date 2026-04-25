@@ -90,8 +90,9 @@ export const setOwnerDetailsLW = (data) => {
   document = [];
 
   data.ownershipCategory = data?.owners?.[0]?.ownershipCategory;
+  const ownershipCategoryCode = typeof data.ownershipCategory === "string" ? data.ownershipCategory : data.ownershipCategory?.code;
   
-  if (data.ownershipCategory.includes("INSTITUTIONALPRIVATE") || data.ownershipCategory.includes("INSTITUTIONALGOVERNMENT")) {
+  if (ownershipCategoryCode?.includes("INSTITUTIONALPRIVATE") || ownershipCategoryCode?.includes("INSTITUTIONALGOVERNMENT")) {
     institution.designation = owners?.[0]?.designation;
     institution.name = owners?.[0]?.institutionName;
     institution.type = owners?.[0]?.institutionType?.code?.split(".")?.[1];
@@ -170,7 +171,7 @@ export const convertToPropertyLightWeight = (data = {}) => {
       address: data.address,
       propertyType: propertyType,
       ...data.propertyDetails,
-      ownershipCategory: ownershipCategory,
+      ownershipCategory: typeof ownershipCategory === "string" ? ownershipCategory : ownershipCategory?.code,
       usageCategory: data?.assemblyDet?.usageCategoryMajor?.code,
       owners: [
         ...data.owners.map((owner, index)=>({
@@ -216,7 +217,8 @@ export const convertToPropertyLightWeight = (data = {}) => {
     },
   };
   
-  if (ownershipCategory.includes("INSTITUTIONALPRIVATE") || ownershipCategory.includes("INSTITUTIONALGOVERNMENT")) {
+  const ownershipCategoryCode = typeof ownershipCategory === "string" ? ownershipCategory : ownershipCategory?.code;
+  if (ownershipCategoryCode?.includes("INSTITUTIONALPRIVATE") || ownershipCategoryCode?.includes("INSTITUTIONALGOVERNMENT")) {
     formdata.Property.institution = data?.institution;
   }
   return formdata;
@@ -240,7 +242,7 @@ export const convertToUpdatePropertyLightWeight = (data = {}) => {
       tenantId: data.tenantId,
       address: data.address,
       propertyType: propertyType,
-      ownershipCategory: data?.ownershipCategory,
+      ownershipCategory: typeof data?.ownershipCategory === "string" ? data?.ownershipCategory : data?.ownershipCategory?.code,
       owners:  [
         ...data.owners.map((owner, index)=>({
           ...owner,

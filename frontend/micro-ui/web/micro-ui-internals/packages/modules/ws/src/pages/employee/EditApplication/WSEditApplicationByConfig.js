@@ -172,7 +172,7 @@ const WSEditApplicationByConfig = () => {
     const IsDetailsExists = sessionStorage.getItem("IsDetailsExists") ? JSON.parse(sessionStorage.getItem("IsDetailsExists")) : false;
     if (details?.applicationData?.id && !IsDetailsExists) {
       sessionStorage.setItem("appData", JSON.stringify(appData));
-      const convertAppData = await convertApplicationData(details, serviceType, false, false, t);
+      const convertAppData = await convertApplicationData(details, serviceType, false, true, t);
       setSessionFormData({ ...sessionFormData, ...convertAppData });
       setAppData({ ...convertAppData });
       sessionStorage.setItem("IsDetailsExists", JSON.stringify(true));
@@ -269,7 +269,7 @@ const WSEditApplicationByConfig = () => {
       setSubmitValve(false);
       sessionStorage.setItem("redirectedfromEDIT", true);
       sessionStorage.setItem("WS_SESSION_APPLICATION_DETAILS", JSON.stringify(convertAppData));
-      window.location.assign(`${window.location.origin}${state?.url}`);
+      window.location.assign(`${window.location.origin}${state?.url || `/digit-ui/employee/ws/application-details?applicationNumber=${applicationNumber}&service=${serviceType}`}`);
 
       // if (mutate) {
       //   mutate(reqDetails, {

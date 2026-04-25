@@ -21,7 +21,7 @@ const PropertyLocationDetails = ({ t, config, onSelect, userType, formData, form
   userType = userInfo?.type == "EMPLOYEE" ? "employee" : "citizen";
   const cityId = userInfo?.tenantId;
   const cityName = 'TENANT_TENANTS_' + userInfo?.tenantId.replace('.', '_').toUpperCase();
-  const cityObj = userType === 'employee' ? { code: cityId, name: t(cityName), i18nKey: cityName } : null;
+  const cityObj = (allCities || []).find(city => city.code === (userInfo?.tenantId || "dl.djb")) || { code: "dl.djb", name: t("TENANT_TENANTS_DL_DJB"), i18nKey: "TENANT_TENANTS_DL_DJB" };
 
   const [locationDetails, setLocationDetails] = React.useState({
     ...formData?.locationDet,
@@ -80,30 +80,31 @@ const PropertyLocationDetails = ({ t, config, onSelect, userType, formData, form
     <div>
       <LabelFieldPair>
         <CardLabel>{`${t('PT_PROP_CITY')}*`}</CardLabel>
-        <Controller
-          name=""
-          defaultValue={ locationDetails?.cityCode }
-          control={ control }
-          rules={{
-            required: t("REQUIRED_FIELD")
-          }}
-          render={({value, onBlur, onChange}) => (
-            <Dropdown
-              className="form-field"
-              selected={value}
-              disable={userType === "employee"}
-              option={allCities.sort((a,b) => (a.name > b.name)? 1 : (b.name>a.name)? -1 : 0)}
-              select={(value)=>{
-                onChange(value);
-                setLocationDetails({...locationDetails, cityCode: value})
-              }}
-              optionKey="code"
-              onBlur={onBlur}
-              t={t}
-            />
-          )} />
+        <div className="form-field">
+          <Controller
+            name="cityCode"
+            defaultValue={ locationDetails?.cityCode }
+            control={ control }
+            rules={{
+              required: t("REQUIRED_FIELD")
+            }}
+            render={({value, onBlur, onChange}) => (
+              <Dropdown
+                selected={value}
+                disable={true}
+                option={(allCities || []).sort((a,b) => (a.name > b.name)? 1 : (b.name>a.name)? -1 : 0)}
+                select={(value)=>{
+                  onChange(value);
+                  setLocationDetails({...locationDetails, cityCode: value})
+                }}
+                optionKey="code"
+                onBlur={onBlur}
+                t={t}
+              />
+            )} />
+        </div>
       </LabelFieldPair>
-      <CardLabelError style={errorStyle}>{touched?.cityCode ? errors?.cityCode?.message : ""}</CardLabelError>
+      {touched?.cityCode && errors?.cityCode?.message && <CardLabelError style={errorStyle}>{errors?.cityCode?.message}</CardLabelError>}
 
       <LabelFieldPair>
         <CardLabel>{`${t("PT_PROP_LOCALITY")}*`}</CardLabel>
@@ -131,7 +132,7 @@ const PropertyLocationDetails = ({ t, config, onSelect, userType, formData, form
             )} />
         </div>
       </LabelFieldPair>
-      <CardLabelError style={errorStyle}>{touched?.locality ? errors?.locality?.message : ""}</CardLabelError>
+      {touched?.locality && errors?.locality?.message && <CardLabelError style={errorStyle}>{errors?.locality?.message}</CardLabelError>}
 
       <LabelFieldPair>
         <CardLabel>{`${t("PT_HOUSE_DOOR_NO")}*`}</CardLabel>
@@ -162,7 +163,7 @@ const PropertyLocationDetails = ({ t, config, onSelect, userType, formData, form
             )} />
         </div>
       </LabelFieldPair>
-      <CardLabelError style={errorStyle}>{touched?.houseDoorNo ? errors?.houseDoorNo?.message : ""}</CardLabelError>
+      {touched?.houseDoorNo && errors?.houseDoorNo?.message && <CardLabelError style={errorStyle}>{errors?.houseDoorNo?.message}</CardLabelError>}
 
       <LabelFieldPair>
         <CardLabel>{`${t("PT_PROPERTY_ADDRESS_STREET_NAME")}*`}</CardLabel>
@@ -191,7 +192,7 @@ const PropertyLocationDetails = ({ t, config, onSelect, userType, formData, form
             )} />
         </div>
       </LabelFieldPair>
-      <CardLabelError style={errorStyle}>{touched?.buildingColonyName ? errors?.buildingColonyName?.message : ""}</CardLabelError>
+      {touched?.buildingColonyName && errors?.buildingColonyName?.message && <CardLabelError style={errorStyle}>{errors?.buildingColonyName?.message}</CardLabelError>}
 
       <LabelFieldPair>
         <CardLabel>{`${t("PT_LANDMARK_NAME")}`}</CardLabel>
@@ -219,7 +220,7 @@ const PropertyLocationDetails = ({ t, config, onSelect, userType, formData, form
             )} />
         </div>
       </LabelFieldPair>
-      <CardLabelError style={errorStyle}>{touched?.landmarkName ? errors?.landmarkName?.message : ""}</CardLabelError>
+      {touched?.landmarkName && errors?.landmarkName?.message && <CardLabelError style={errorStyle}>{errors?.landmarkName?.message}</CardLabelError>}
     </div>
   );
 };

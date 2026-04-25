@@ -6,19 +6,19 @@ import _ from "lodash";
 import { useTranslation } from "react-i18next";
 import { getPattern } from "../utils";
 
-const createPlumberDetails = () => [
-  {
-    plumberName: "",
-    plumberMobileNo: "",
-    plumberLicenseNo: "",
-    detailsProvidedBy: "",
-  },
-];
+const createPlumberDetails = () => ({
+  plumberName: "",
+  plumberMobileNo: "",
+  plumberLicenseNo: "",
+  detailsProvidedBy: "",
+});
 
 const WSActivationPlumberDetails = ({ config, onSelect, userType, formData, setError, formState, clearErrors }) => {
   const { t } = useTranslation();
   const filters = func.getQueryStringParams(location.search);
-  const [plumberDetails, setPlumberDetails] = useState(formData?.plumberDetails || [createPlumberDetails()]);
+  const [plumberDetails, setPlumberDetails] = useState(
+    formData?.plumberDetails?.length > 0 ? formData?.plumberDetails : [createPlumberDetails()]
+  );
   const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
   const [isErrors, setIsErrors] = useState(false);
 

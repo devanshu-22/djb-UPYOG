@@ -40,8 +40,8 @@ const WSActivationConnectionDetails = ({ config, onSelect, userType, formData, s
   const [waterSourceList, setWaterSourceList] = useState([]);
   const [waterSubSourceList, setWaterSubSourceList] = useState([]);
 
-  const { isMdmsLoading, data: mdmsData } = Digit.Hooks.ws.useMDMS(stateCode, "ws-services-masters", ["connectionType", "waterSource"]);
-  const { isWSServicesCalculationLoading, data: wsServicesCalculationData } = Digit.Hooks.ws.useMDMS(stateCode, "ws-services-calculation", [
+  const { isMdmsLoading, data: mdmsData } = Digit.Hooks.ws.useMDMS(tenantId, "ws-services-masters", ["connectionType", "waterSource"]);
+  const { isWSServicesCalculationLoading, data: wsServicesCalculationData } = Digit.Hooks.ws.useMDMS(tenantId, "ws-services-calculation", [
     "PipeSize",
   ]);
 
@@ -92,11 +92,6 @@ const WSActivationConnectionDetails = ({ config, onSelect, userType, formData, s
     }
   }, [mdmsData, wsServicesCalculationData]);
 
-  useEffect(() => {
-    if (userType === "employee") {
-      onSelect(config.key, { ...formData[config.key], ...connectionDetails });
-    }
-  }, [connectionDetails]);
 
   if (isMdmsLoading || isWSServicesCalculationLoading) return <Loader />;
 

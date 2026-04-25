@@ -34,12 +34,10 @@ const ChallanSearchResults = ({ template, header, actionButtonLabel }) => {
   if (locality !== "undefined") filters.locality = locality;
   if (doorNumber) filters.doorNo = doorNumber;
   if (consumerName) filters.ownerName = consumerName;
-  if (locality || ( searchQuery && searchQuery.locality ) ){
-    filters.limit = filter1.limit;
-    filters.sortOrder = filter1.sortOrder;
-    filters.sortBy = filter1.sortBy;
-    filters.offset = filter1.offset;
-  }
+  filters.limit = filter1.limit;
+  filters.sortOrder = filter1.sortOrder;
+  filters.sortBy = filter1.sortBy;
+  filters.offset = filter1.offset;
 
 
   filters = {...filters , searchType:"CONNECTION"}
@@ -68,7 +66,7 @@ const ChallanSearchResults = ({ template, header, actionButtonLabel }) => {
         )}
         <ResponseComposer data={searchResults} template={template} actionButtonLabel={actionButtonLabel} onSubmit={onSubmit} />
         {!searchResults?.length > 0 && <p style={{ marginLeft: "16px", marginTop: "16px" }}>{t("WS_NO_APP_FOUND_MSG")}</p>}
-        {searchResults?.length !== 0 && (searchResults?.length == 5 || searchResults?.length == 50) && (locality || ( searchQuery && searchQuery.locality )) && (
+        {searchResults?.length !== 0 && (searchResults?.length == 5 || searchResults?.length == 50) && locality && (
           <div>
             <p style={{ marginLeft: "16px", marginTop: "16px" }}>
               {t("WS_LOAD_MORE_MSG")}{" "}

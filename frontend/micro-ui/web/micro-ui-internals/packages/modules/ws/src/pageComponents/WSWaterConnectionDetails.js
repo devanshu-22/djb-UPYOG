@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import Timeline from "../components/Timeline";
 
 const WSWaterConnectionDetails = ({ t, config, userType, onSelect, formData }) => {
-  const tenantId = Digit.ULBService.getStateId();
+  const tenantId = Digit.ULBService.getCurrentTenantId();
   const [proposedTaps, setProposedTaps] = useState(formData?.waterConectionDetails?.proposedTaps || "");
   const [proposedPipeSize, setProposedPipeSize] = useState(formData?.waterConectionDetails?.proposedPipeSize || "");
   const [isDisableForNext, setIsDisableForNext] = useState(false);

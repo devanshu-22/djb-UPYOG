@@ -148,7 +148,7 @@ const SearchProperty = ({ config: propsConfig, onSelect, redirectToUrl }) => {
   const { data: propertyData, isLoading: propertyDataLoading, error, isSuccess, billData } = Digit.Hooks.pt.usePropertySearchWithDue({
     tenantId: searchData?.city,
     filters: searchData?.filters,
-    auth: true /*  to enable open search set false  */,
+    auth: false /*  to enable open search set false  */,
     configs: { enabled: Object.keys(searchData).length > 0, retry: false, retryOnMount: false, staleTime: Infinity },
   });
 

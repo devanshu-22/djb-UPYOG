@@ -36,17 +36,24 @@ const PropertySearchResults = ({ template, header, actionButtonLabel, isMutation
   };
   Digit.Hooks.useClickOutside(modalRef, closeModal, modalData);
 
-  if (mobileNumber || ( searchQuery && searchQuery.mobileNumber ) ) filters.mobileNumber = mobileNumber ? mobileNumber : searchQuery?.mobileNumber;
-  if (propertyIds || ( searchQuery && searchQuery.propertyIds ) ) filters.propertyIds = propertyIds ? propertyIds : searchQuery?.propertyIds;
-  if (oldPropertyIds || ( searchQuery && searchQuery.oldPropertyIds ) ) filters.oldPropertyIds = oldPropertyIds ? oldPropertyIds : searchQuery?.oldPropertyIds;
-  if (locality || ( searchQuery && searchQuery.locality ) ) filters.locality = locality ? locality : searchQuery?.locality;
-  if (doorNo || ( searchQuery && searchQuery.doorNo ) ) filters.doorNo = doorNo ? doorNo : searchQuery?.doorNo;
-  if (name || ( searchQuery && searchQuery.name ) ) filters.name = name ? name : searchQuery?.name;
-  if (locality || ( searchQuery && searchQuery.locality ) ){
-    filters.limit = filter1.limit;
-    filters.sortOrder = filter1.sortOrder;
-    filters.sortBy = filter1.sortBy;
-    filters.offset = filter1.offset;
+  const sbm = searchQuery?.mobileNumber || searchQuery?.mobileNo;
+  const spi = searchQuery?.propertyIds || searchQuery?.propertyId;
+  const sop = searchQuery?.oldPropertyIds || searchQuery?.oldPropertyId;
+
+  if (mobileNumber || sbm) filters.mobileNumber = mobileNumber ? mobileNumber : sbm;
+  if (propertyIds || spi) filters.propertyIds = propertyIds ? propertyIds : spi;
+  if (oldPropertyIds || sop) filters.oldPropertyIds = oldPropertyIds ? oldPropertyIds : sop;
+  if (locality || (searchQuery && searchQuery.locality)) filters.locality = locality ? locality : searchQuery?.locality;
+  if (doorNo || (searchQuery && searchQuery.doorNo)) filters.doorNo = doorNo ? doorNo : searchQuery?.doorNo;
+  if (name || (searchQuery && searchQuery.name)) filters.name = name ? name : searchQuery?.name;
+  
+  filters.limit = filter1.limit;
+  filters.sortOrder = filter1.sortOrder;
+  filters.sortBy = filter1.sortBy;
+  filters.offset = filter1.offset;
+
+  if (!filters.status) {
+    filters.status = "ACTIVE,INWORKFLOW";
   }
   
   const [owners, setOwners, clearOwners] = Digit.Hooks.useSessionStorage("PT_MUTATE_MULTIPLE_OWNERS", null);
@@ -62,9 +69,9 @@ const PropertySearchResults = ({ template, header, actionButtonLabel, isMutation
   }, []);
 
   // const auth = !!isMutation;    /*  to enable open search set false  */
-  const auth =true;
+  const auth = false;
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const scity = city ? city : (tId ? tId : searchQuery?.city);
+  const scity = city || tId || searchQuery?.city || tenantId;
   const searchArgs = scity ? { tenantId: scity, filters, auth } : { filters, auth };
   const result = Digit.Hooks.pt.usePropertySearch(searchArgs,{privacy: Digit.Utils.getPrivacyObject()});
   const properties = result?.data?.Properties || result?.data?.properties || (Array.isArray(result?.data) ? result?.data : []);
@@ -130,13 +137,19 @@ const PropertySearchResults = ({ template, header, actionButtonLabel, isMutation
     let addr = property?.address || {};
     return {
       property_id: property?.propertyId,
-      owner_name: (property?.owners || []).sort((a,b)=>a?.additionalDetails?.ownerSequence-b?.additionalDetails?.ownerSequence)?.[0]?.name,
-      property_address: [addr.doorNo || "", addr.buildingName || "", addr.street || "", t(`TENANTS_MOHALLA_${addr.locality?.code}`) || "", t(addr.tenantId) || ""]
+      owner_name: (property?.owners || []).sort((a, b) => (a?.additionalDetails?.ownerSequence || 0) - (b?.additionalDetails?.ownerSequence || 0))?.[0]?.name,
+      property_address: [
+        addr.doorNo || "",
+        addr.buildingName || "",
+        addr.street || "",
+        t(`TENANTS_MOHALLA_${addr.locality?.code}`) !== `TENANTS_MOHALLA_${addr.locality?.code}` ? t(`TENANTS_MOHALLA_${addr.locality?.code}`) : addr.locality?.name || "",
+        t(addr.tenantId) || ""
+      ]
         .filter((a) => a)
         .join(", "),
       total_due: payment[property?.propertyId]?.total_due || 0,
       bil_due__date: payment[property?.propertyId]?.bil_due__date || t("N/A"),
-      status:t(property.status),
+      status: t(property.status),
       owner_mobile: (property?.owners || [])[0]?.mobileNumber,
       address:property?.address,
       owners:property.owners,
@@ -211,7 +224,7 @@ const PropertySearchResults = ({ template, header, actionButtonLabel, isMutation
             {t(header)} ({searchResults?.length})
           </Header>
         )}
-        { <PrivacyInfoLabel t={t} /> }
+        { PrivacyInfoLabel && <PrivacyInfoLabel t={t} /> }
         <ResponseComposer data={searchResults} template={template} actionButtonLabel={actionButtonLabel}
         onSubmit={sendOtpToUser} />
       </div>

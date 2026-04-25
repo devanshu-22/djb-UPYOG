@@ -272,6 +272,7 @@ export const newConfig = [
     {
       head: "WS_COMMON_PLUMBER_DETAILS",
       isEditByConfigConnection: true,
+      isCreateConnection: true,
       body: [{
         type: "component",
         key: "plumberDetails",
@@ -282,6 +283,7 @@ export const newConfig = [
     {
       head: "WS_COMMON_ROAD_CUTTING_DETAILS",
       isEditByConfigConnection: true,
+      isCreateConnection: true,
       body: [{
         type: "component",
         key: "roadCuttingDetails",
@@ -348,7 +350,7 @@ export const newConfig = [
       isEditByConfigConnection: true,
       body: [
         {
-          component: "CPTPropertySearchNSummary",
+          component: "WSPropertySearchNSummary",
           withoutLabel: true,
           key: "cpt",
           type: "component",
@@ -417,6 +419,7 @@ export const newConfig = [
     {
       head: "WS_COMMON_PLUMBER_DETAILS",
       isEditByConfigConnection: true,
+      isCreateConnection: true,
       body: [{
         type: "component",
         key: "plumberDetails",
@@ -427,6 +430,7 @@ export const newConfig = [
     {
       head: "WS_COMMON_ROAD_CUTTING_DETAILS",
       isEditByConfigConnection: true,
+      isCreateConnection: true,
       body: [{
         type: "component",
         key: "roadCuttingDetails",
@@ -493,7 +497,7 @@ export const newConfig = [
       isEditByConfigConnection: true,
       body: [
         {
-          component: "CPTPropertySearchNSummary",
+          component: "WSPropertySearchNSummary",
           withoutLabel: true,
           key: "cpt",
           type: "component",
@@ -562,6 +566,7 @@ export const newConfig = [
     {
       head: "WS_COMMON_PLUMBER_DETAILS",
       isEditByConfigConnection: true,
+      isCreateConnection: true,
       body: [{
         type: "component",
         key: "plumberDetails",
@@ -572,6 +577,7 @@ export const newConfig = [
     {
       head: "WS_COMMON_ROAD_CUTTING_DETAILS",
       isEditByConfigConnection: true,
+      isCreateConnection: true,
       body: [{
         type: "component",
         key: "roadCuttingDetails",
@@ -638,7 +644,7 @@ export const newConfig = [
       isEditByConfigConnection: true,
       body: [
         {
-          component: "CPTPropertySearchNSummary",
+          component: "WSPropertySearchNSummary",
           withoutLabel: true,
           key: "cpt",
           type: "component",
@@ -707,6 +713,7 @@ export const newConfig = [
     {
       head: "WS_COMMON_PLUMBER_DETAILS",
       isEditByConfigConnection: true,
+      isCreateConnection: true,
       body: [{
         type: "component",
         key: "plumberDetails",
@@ -717,6 +724,7 @@ export const newConfig = [
     {
       head: "WS_COMMON_ROAD_CUTTING_DETAILS",
       isEditByConfigConnection: true,
+      isCreateConnection: true,
       body: [{
         type: "component",
         key: "roadCuttingDetails",

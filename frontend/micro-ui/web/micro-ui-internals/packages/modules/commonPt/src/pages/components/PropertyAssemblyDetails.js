@@ -1,38 +1,50 @@
 import React, { useEffect, useState } from "react";
-import { FormStep, TextInput, CardLabel, RadioButtons, LabelFieldPair, Dropdown, Menu, MobileNumber, CardLabelError } from "@djb25/digit-ui-react-components";
+import {
+  FormStep,
+  TextInput,
+  CardLabel,
+  RadioButtons,
+  LabelFieldPair,
+  Dropdown,
+  Menu,
+  MobileNumber,
+  CardLabelError,
+} from "@djb25/digit-ui-react-components";
 import { cardBodyStyle } from "../utils";
 import { useLocation, useRouteMatch } from "react-router-dom";
 import { stringReplaceAll } from "../utils";
 import { Controller, useForm } from "react-hook-form";
 import _ from "lodash";
 
-const PropertyAssemblyDetails = ({ t, config, onSelect, userType, formData, formState, ownerIndex, setError, clearErrors }) => {  
+const PropertyAssemblyDetails = ({ t, config, onSelect, userType, formData, formState, ownerIndex, setError, clearErrors }) => {
   const [assemblyDetails, setAssemblyDetails] = React.useState({
     ...formData.assemblyDet,
-    'BuildingType': formData?.PropertyType,
-    'floorarea': formData?.landArea,
-    'constructionArea': formData?.constructionArea,
-    'usageCategoryMajor': formData?.usageCategoryMajor && formData?.usageCategoryMajor?.code === "NONRESIDENTIAL.OTHERS"
-    ? { code: `${formData?.usageCategoryMajor?.code}`, i18nKey: `PROPERTYTAX_BILLING_SLAB_OTHERS` }
-    : formData?.usageCategoryMajor
+    BuildingType: formData?.PropertyType,
+    floorarea: formData?.landArea,
+    constructionArea: formData?.constructionArea,
+    usageCategoryMajor:
+      formData?.usageCategoryMajor && formData?.usageCategoryMajor?.code === "NONRESIDENTIAL.OTHERS"
+        ? { code: `${formData?.usageCategoryMajor?.code}`, i18nKey: `PROPERTYTAX_BILLING_SLAB_OTHERS` }
+        : formData?.usageCategoryMajor,
   });
   const [focusField, setFocusField] = React.useState("");
-  const stateId = Digit.ULBService.getStateId();
+  let tenantId = "dl.djb";
+
   const [isErrors, setIsErrors] = useState(false);
   const isMobile = window.Digit.Utils.browser.isMobile();
-  
+
   let proptype = [];
 
-  const { data: Menu = {}, isLoading } = Digit.Hooks.pt.usePropertyMDMS(stateId, "PropertyTax", "PTPropertyType") || {};
-  proptype = Menu?.PropertyTax?.PropertyType;
+  console.log("Calling usePropertyMDMS with tenantId:", tenantId);
 
-  const { data: Menu1 = {}, isLoading: menuLoading } = Digit.Hooks.pt.usePropertyMDMS(stateId, "PropertyTax", "UsageCategory") || {};
-  let usagecat = [];
-  usagecat = Menu1?.PropertyTax?.UsageCategory || [];
+  const { data: Menu = [], isLoading } = Digit.Hooks.pt.usePropertyMDMS(tenantId, "PropertyTax", "PTPropertyType") || {};
+  console.log("PropertyType Menu Data (transformed):", Menu);
+  proptype = Menu?.PropertyTax?.PropertyType || (Array.isArray(Menu) ? Menu : []);
 
-  // let index = 0;
-  // let assemblyDet = formData.assemblyDet;
-  // const assemblyDetStep = { ...assemblyDet, ...assemblyDetails };
+  const { data: Menu1 = [], isLoading: menuLoading } = Digit.Hooks.pt.usePropertyMDMS(tenantId, "PropertyTax", "UsageCategory") || {};
+  console.log("UsageCategory Menu Data (transformed):", Menu1);
+  let usagecat = Menu1?.PropertyTax?.UsageCategory || (Array.isArray(Menu1) ? Menu1 : []);
+
 
   function getPropertyTypeMenu(proptype) {
     if (userType === "employee") {
@@ -41,10 +53,10 @@ const PropertyAssemblyDetails = ({ t, config, onSelect, userType, formData, form
         ?.map((item) => ({ i18nKey: "COMMON_PROPTYPE_" + stringReplaceAll(item?.code, ".", "_"), code: item?.code }))
         ?.sort((a, b) => a.i18nKey.split("_").pop().localeCompare(b.i18nKey.split("_").pop()));
     } else {
+      let menu = [];
       if (Array.isArray(proptype) && proptype.length > 0) {
-        for (i = 0; i < proptype.length; i++) {
-          if (i != 1 && i != 4 && Array.isArray(proptype) && proptype.length > 0)
-            menu.push({ i18nKey: "COMMON_PROPTYPE_" + stringReplaceAll(proptype[i].code, ".", "_"), code: proptype[i].code });
+        for (let i = 0; i < proptype.length; i++) {
+          if (i != 1 && i != 4) menu.push({ i18nKey: "COMMON_PROPTYPE_" + stringReplaceAll(proptype[i].code, ".", "_"), code: proptype[i].code });
         }
       }
       menu.sort((a, b) => a.i18nKey.split("_").pop().localeCompare(b.i18nKey.split("_").pop()));
@@ -63,12 +75,13 @@ const PropertyAssemblyDetails = ({ t, config, onSelect, userType, formData, form
         });
       return catMenu;
     } else {
-      for (i = 0; i < 10; i++) {
+      let menu = [];
+      for (let i = 0; i < usagecat.length; i++) {
         if (
           Array.isArray(usagecat) &&
           usagecat.length > 0 &&
-          usagecat[i].code.split(".")[0] == "NONRESIDENTIAL" &&
-          usagecat[i].code.split(".").length == 2
+          usagecat[i]?.code?.split?.(".")[0] == "NONRESIDENTIAL" &&
+          usagecat[i]?.code?.split?.(".").length == 2
         ) {
           menu.push({ i18nKey: "PROPERTYTAX_BILLING_SLAB_" + usagecat[i].code.split(".")[1], code: usagecat[i].code });
         }
@@ -77,7 +90,16 @@ const PropertyAssemblyDetails = ({ t, config, onSelect, userType, formData, form
     }
   }
 
-  const { control, formState: { errors, touched }, trigger, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, getValues } = useForm();
+  const {
+    control,
+    formState: { errors, touched },
+    trigger,
+    watch,
+    setError: setLocalError,
+    clearErrors: clearLocalErrors,
+    setValue,
+    getValues,
+  } = useForm();
   const formValue = watch();
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
 
@@ -101,12 +123,11 @@ const PropertyAssemblyDetails = ({ t, config, onSelect, userType, formData, form
     }
 
     if (hasErrors) {
-      setError(config?.key, { type: errors })
+      setError(config?.key, { type: errors });
     } else {
       clearErrors(config?.key);
     }
 
-    
     trigger();
     setIsErrors(hasErrors);
     onSelect(config?.key, assemblyDetails);
@@ -123,8 +144,8 @@ const PropertyAssemblyDetails = ({ t, config, onSelect, userType, formData, form
   return (
     <div>
       <LabelFieldPair>
-        <CardLabel>{`${t('PT_PROP_TYPE')}*`}</CardLabel>
-        <div class="form-field">
+        <CardLabel>{`${t("PT_PROP_TYPE")}*`}</CardLabel>
+        <div className="form-field">
           <Controller
             name="BuildingType"
             control={control}
@@ -139,17 +160,18 @@ const PropertyAssemblyDetails = ({ t, config, onSelect, userType, formData, form
                 autoFocus={focusField === "BuildingType"}
                 select={(value) => {
                   props.onChange(value);
-                  setAssemblyDetails({ ...assemblyDetails, ['BuildingType']: value });
+                  setAssemblyDetails({ ...assemblyDetails, ["BuildingType"]: value });
                   setFocusField("BuildingType");
                 }}
                 optionKey="i18nKey"
                 onBlur={props?.onBlur}
                 t={t}
               />
-            )} />
+            )}
+          />
         </div>
       </LabelFieldPair>
-      <CardLabelError style={errorStyle}>{touched?.BuildingType ? errors?.BuildingType?.message : ""}</CardLabelError>
+      {touched?.BuildingType && errors?.BuildingType?.message && <CardLabelError style={errorStyle}>{errors?.BuildingType?.message}</CardLabelError>}
 
       <LabelFieldPair>
         <CardLabel>{`${t("PT_TOT_LAND_AREA")}*`}</CardLabel>
@@ -158,9 +180,9 @@ const PropertyAssemblyDetails = ({ t, config, onSelect, userType, formData, form
             name="floorarea"
             control={control}
             defaultValue={assemblyDetails?.floorarea}
-            rules={{ 
+            rules={{
               required: t("REQUIRED_FIELD"),
-              validate: (val)=> /^([0-9]){0,8}$/i.test(val) ? true : t("PT_TOT_LAND_AREA_ERROR_MESSAGE")
+              validate: (val) => (/^([0-9]){0,8}$/i.test(val) ? true : t("PT_TOT_LAND_AREA_ERROR_MESSAGE")),
             }}
             key={config?.key}
             render={(props) => (
@@ -173,8 +195,8 @@ const PropertyAssemblyDetails = ({ t, config, onSelect, userType, formData, form
                 value={props?.value}
                 autoFocus={focusField === "floorarea"}
                 onChange={(ev) => {
-                  props?.onChange(ev.target.value)
-                  setAssemblyDetails({ ...assemblyDetails, ['floorarea']: ev.target.value });
+                  props?.onChange(ev.target.value);
+                  setAssemblyDetails({ ...assemblyDetails, ["floorarea"]: ev.target.value });
                   setFocusField("floorarea");
                 }}
                 onBlur={props?.onBlur}
@@ -183,7 +205,7 @@ const PropertyAssemblyDetails = ({ t, config, onSelect, userType, formData, form
           />
         </div>
       </LabelFieldPair>
-      <CardLabelError style={errorStyle}>{touched?.floorarea ? errors?.floorarea?.message : ""}</CardLabelError>
+      {touched?.floorarea && errors?.floorarea?.message && <CardLabelError style={errorStyle}>{errors?.floorarea?.message}</CardLabelError>}
 
       <LabelFieldPair>
         <CardLabel>{`${t("PT_TOT_CONSTRUCTION_AREA")}*`}</CardLabel>
@@ -193,10 +215,13 @@ const PropertyAssemblyDetails = ({ t, config, onSelect, userType, formData, form
             control={control}
             defaultValue={assemblyDetails?.constructionArea}
             key={config?.key}
-            rules={{ 
+            rules={{
               required: t("REQUIRED_FIELD"),
-              validate: (val) => /^([0-9]){0,8}$/i.test(val) && assemblyDetails?.floorarea && parseInt(val) < parseInt(assemblyDetails?.floorarea) ? true: t("PT_TOT_CONSTRUCTION_AREA_ERROR_MESSAGE")
-             }}
+              validate: (val) =>
+                /^([0-9]){0,8}$/i.test(val) && assemblyDetails?.floorarea && parseInt(val) < parseInt(assemblyDetails?.floorarea)
+                  ? true
+                  : t("PT_TOT_CONSTRUCTION_AREA_ERROR_MESSAGE"),
+            }}
             render={(props) => (
               <TextInput
                 t={t}
@@ -208,8 +233,8 @@ const PropertyAssemblyDetails = ({ t, config, onSelect, userType, formData, form
                 autoFocus={focusField === "constructionArea"}
                 onChange={(ev) => {
                   props?.onChange(ev.target.value);
-                  setFocusField("constructionArea")
-                  setAssemblyDetails({ ...assemblyDetails, ['constructionArea']: ev.target.value });
+                  setFocusField("constructionArea");
+                  setAssemblyDetails({ ...assemblyDetails, ["constructionArea"]: ev.target.value });
                 }}
                 onBlur={props?.onBlur}
               />
@@ -217,7 +242,11 @@ const PropertyAssemblyDetails = ({ t, config, onSelect, userType, formData, form
           />
         </div>
       </LabelFieldPair>
-      <CardLabelError style={isMobile ? {...errorStyle,marginLeft:"0px"} : {...errorStyle}}>{touched?.constructionArea ? errors?.constructionArea?.message : ""}</CardLabelError>
+      {touched?.constructionArea && errors?.constructionArea?.message && (
+        <CardLabelError style={isMobile ? { ...errorStyle, marginLeft: "0px" } : { ...errorStyle }}>
+          {errors?.constructionArea?.message}
+        </CardLabelError>
+      )}
 
       <LabelFieldPair>
         <CardLabel>{`${t("PT_ASSESMENT_INFO_USAGE_TYPE")}*`}</CardLabel>
@@ -236,8 +265,8 @@ const PropertyAssemblyDetails = ({ t, config, onSelect, userType, formData, form
                 autoFocus={focusField === "usageCategoryMajor"}
                 select={(value) => {
                   props?.onChange(value);
-                  setFocusField("usageCategoryMajor")
-                  setAssemblyDetails({ ...assemblyDetails, ['usageCategoryMajor']: value });
+                  setFocusField("usageCategoryMajor");
+                  setAssemblyDetails({ ...assemblyDetails, ["usageCategoryMajor"]: value });
                 }}
                 optionKey="i18nKey"
                 onBlur={props?.onBlur}
@@ -247,7 +276,7 @@ const PropertyAssemblyDetails = ({ t, config, onSelect, userType, formData, form
           />
         </div>
       </LabelFieldPair>
-      <CardLabelError style={errorStyle}>{touched?.usageCategoryMajor ? errors?.usageCategoryMajor?.message : ""}</CardLabelError>
+      {touched?.usageCategoryMajor && errors?.usageCategoryMajor?.message && <CardLabelError style={errorStyle}>{errors?.usageCategoryMajor?.message}</CardLabelError>}
     </div>
   );
 };
