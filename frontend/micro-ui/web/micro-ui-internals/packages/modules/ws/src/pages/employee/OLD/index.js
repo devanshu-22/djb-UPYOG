@@ -210,6 +210,7 @@ const OLDApplication = () => {
       connectionType: { code: connDetail?.connectionType || "Metered" },
       applicantType: { code: "NONPTPRESSURE" }, // Default for legacy form
       categoryType: { code: data?.ConnectionHolderDetails?.[0]?.ownerType?.code || data?.ConnectionHolderDetails?.[0]?.ownerType || propertyDetails?.Properties?.[0]?.owners?.[0]?.ownerType || "NONE" },
+      ownerContactNumber: data?.ConnectionHolderDetails?.[0]?.mobileNumber || data?.cpt?.details?.owners?.[0]?.mobileNumber,
     };
 
     if (data?.ConnectionDetails?.[0]) {

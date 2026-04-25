@@ -41,10 +41,14 @@ export const BillsLinks = ({ matchPath }) => {
   const links = [
     {
       link: `${matchPath}/billSearch`,
-      i18nKey: t("ABG_SEARCH_BILL_COMMON_HEADER"),
+      i18nKey: t("ABG_SEARCH_BILL_COMMON_HEADER") || "Search Bill",
     },
+    {
+      link: `${matchPath}/billSearch`,
+      i18nKey: "Bills Accounting Links Test",
+    }
   ];
-  return <CitizenHomeCard header={t("ACTION_TEST_BILLGENIE")} links={links} Icon={() => <CollectionIcon className="fill-path-primary-main" />} />;
+  return <CitizenHomeCard header={t("ACTION_TEST_BILLGENIE") || "Bills Accounting"} links={links} Icon={() => <CollectionIcon className="fill-path-primary-main" />} />;
 };
 
 const componentsToRegister = {
@@ -60,6 +64,8 @@ const componentsToRegister = {
   SearchCitizenFilter,
   CitizenMobileInbox,
   BillsLinks,
+  BILLSLinks: BillsLinks,
+  BILLSModule: BillsModule,
   CancelBills,
   GroupBills,
   BILLS_INBOX_FILTER: (props) => <BillsFilter {...props} />,
