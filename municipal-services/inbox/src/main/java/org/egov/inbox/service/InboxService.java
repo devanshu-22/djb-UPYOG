@@ -234,6 +234,10 @@ public class InboxService {
 			dsoId = JsonPath.read(resultForDsoId, "$.vendor[0].id");
 
 		}
+
+
+
+		//System.out.println("test 1        "+totalCount);
 		if (!ObjectUtils.isEmpty(processCriteria.getAssignee())) {
 			assigneeUuid = assigneeUuid.append(processCriteria.getAssignee());
 			processCriteria.setStatus(null);
@@ -268,6 +272,7 @@ public class InboxService {
 		// Map<String,String> srvMap = (Map<String, String>)
 		// config.getServiceSearchMapping().get(businessServiceName.get(0));
 		Map<String, String> srvMap = fetchAppropriateServiceMap(businessServiceName, moduleName);
+//		System.out.println("test2222222            "+srvMap);
 		if (CollectionUtils.isEmpty(businessServiceName)) {
 			throw new CustomException(ErrorConstants.MODULE_SEARCH_INVLAID,
 					"Bussiness Service is mandatory for module search");
@@ -529,8 +534,17 @@ public class InboxService {
 
 			) {
 
-				 wtApplicationNumbers = WTInboxFilterService.fetchApplicationNumbersFromSearcher(criteria,
-						StatusIdNameMap, requestInfo);
+				if (processCriteria.getBusinessService().contains("watertanker-fixedpoint")) {
+
+					wtApplicationNumbers = WTInboxFilterService
+							.fetchApplicationNumbersFromSearcher(criteria, StatusIdNameMap, requestInfo);
+
+				} else {
+
+					wtApplicationNumbers = WTInboxFilterService
+							.fetchApplicationNumbersFromSearcher(criteria, StatusIdNameMap, requestInfo);
+				}
+
 
 				if (!CollectionUtils.isEmpty(wtApplicationNumbers)) {
 					moduleSearchCriteria.put(BOOKING_NO_PARAM, wtApplicationNumbers);
@@ -839,6 +853,7 @@ public class InboxService {
 						requestInfo, srvMap);
 
 			}
+
 			Map<String, Object> businessMap = new HashMap<>();
 // Added below if condition to handle PGR response business object as the structure of response is different from others
 
@@ -853,10 +868,32 @@ public class InboxService {
 
 			}
 			else{
-				businessMap = StreamSupport.stream(businessObjects.spliterator(), false)
-						.collect(Collectors.toMap(s1 -> ((JSONObject) s1).get(businessIdParam).toString(), s1 -> s1,
-								(e1, e2) -> e1, LinkedHashMap::new));
 
+				if (processCriteria.getBusinessService().contains("watertanker-fixedpoint")) {
+
+					businessMap = StreamSupport.stream(businessObjects.spliterator(), false)
+							.map(obj -> (JSONObject) obj)
+							.filter(obj -> obj.has("businessObject") &&
+									((JSONObject) obj.get("businessObject")).has("bookingNo"))
+							.collect(Collectors.toMap(
+									obj -> ((JSONObject) obj.get("businessObject"))
+											.getString("bookingNo")
+											.trim(),
+									obj -> obj,
+									(e1, e2) -> e1,
+									LinkedHashMap::new
+							));
+
+				} else {
+
+					businessMap = StreamSupport.stream(businessObjects.spliterator(), false)
+							.collect(Collectors.toMap(
+									s1 -> ((JSONObject) s1).get(businessIdParam).toString().trim(),
+									s1 -> s1,
+									(e1, e2) -> e1,
+									LinkedHashMap::new
+							));
+				}
 
 			}
 
@@ -1193,14 +1230,42 @@ public class InboxService {
 		}
 		log.info("statusCountMap size :::: " + statusCountMap.size());
 
-		if(mobileStr==null&&bookingStr==null)
+
+		if(processCriteria.getBusinessService().contains("watertanker-fixedpoint"))
 		{
+			Object fromDateObj = moduleSearchCriteria.get("fromDate");
+			Object toDateObj = moduleSearchCriteria.get("toDate");
 
+			Long fromDate;
+			Long toDate;
+
+			if (fromDateObj != null && !fromDateObj.toString().isEmpty()) {
+				fromDate = Long.valueOf(fromDateObj.toString());
+			} else {
+
+				fromDate = null;
+			}
+
+			if (toDateObj != null && !toDateObj.toString().isEmpty()) {
+				toDate = Long.valueOf(toDateObj.toString());
+			} else {
+				toDate = null;
+			}
+
+
+			if (mobileStr == null && bookingStr == null && fromDate==null && toDate==null)  {
+
+			} else
+				totalCount = wtApplicationNumbers.size();
 		}
-		else
-			totalCount=wtApplicationNumbers.size();
 
-		//System.out.println(totalCount+"        "+wtApplicationNumbers.size());
+
+		else {
+			if (mobileStr == null && bookingStr == null) {
+
+			} else
+				totalCount = wtApplicationNumbers.size();
+		}
 
 		response.setTotalCount(totalCount);
 		response.setNearingSlaCount(nearingSlaProcessCount);
