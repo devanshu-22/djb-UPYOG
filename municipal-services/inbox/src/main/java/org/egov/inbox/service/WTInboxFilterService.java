@@ -72,6 +72,9 @@ public class WTInboxFilterService {
 		@Value("${egov.searcher.wt.search.desc.path}")
 		private String wtInboxSearcherDescEndpoint;
 
+		@Value("${egov.searcher.wtf.search.desc.path}")
+		private String wtFixedPointInboxSearcherDescEndpoint;
+
 		@Autowired
 		private RestTemplate restTemplate;
 
@@ -102,13 +105,11 @@ public class WTInboxFilterService {
 			HashMap moduleSearchCriteria = criteria.getModuleSearchCriteria();
 			ProcessInstanceSearchCriteria processCriteria = criteria.getProcessSearchCriteria();
 
-
 			Map<String, Object> searcherRequest = new HashMap<>();
 			Map<String, Object> searchCriteria = new HashMap<>();
 
 			searchCriteria.put(TENANT_ID_PARAM, criteria.getTenantId());
 			searchCriteria.put(BUSINESS_SERVICE_PARAM, processCriteria.getBusinessService());
-
 
 			Object mobile = moduleSearchCriteria.get(MOBILE_NUMBER_PARAM);
 			Object bookingNo = moduleSearchCriteria.get(BOOKING_NO_PARAM);
@@ -123,6 +124,27 @@ public class WTInboxFilterService {
 
 			searchCriteria.put(MOBILE_NUMBER_PARAM, mobileStr);
 			searchCriteria.put(BOOKING_NO_PARAM, bookingStr);
+
+
+              // ADD DATE FILTER ONLY FOR FIXED POINT
+			if (processCriteria.getBusinessService().contains("watertanker-fixedpoint")) {
+
+
+				Object fromDateObj = moduleSearchCriteria.get("fromDate");
+				Object toDateObj = moduleSearchCriteria.get("toDate");
+
+				String fromDateStr = (fromDateObj != null && !fromDateObj.toString().trim().isEmpty())
+						? fromDateObj.toString()
+						: " ";
+
+				String toDateStr = (toDateObj != null && !toDateObj.toString().trim().isEmpty())
+						? toDateObj.toString()
+						: " ";
+
+				searchCriteria.put("fromDate", fromDateStr);
+				searchCriteria.put("toDate", toDateStr);
+
+			}
 
 			if (moduleSearchCriteria.containsKey(LOCALITY_PARAM)) {
 				searchCriteria.put(LOCALITY_PARAM, moduleSearchCriteria.get(LOCALITY_PARAM));
@@ -147,13 +169,21 @@ public class WTInboxFilterService {
 			log.info("FINAL SEARCH REQUEST: " + searcherRequest);
 
 			StringBuilder uri = new StringBuilder();
-			if (moduleSearchCriteria.containsKey(SORT_ORDER_PARAM)
-					&& DESC_PARAM.equals(moduleSearchCriteria.get(SORT_ORDER_PARAM))) {
-				uri.append(searcherHost).append(wtInboxSearcherDescEndpoint);
-			} else {
-				uri.append(searcherHost).append(wtInboxSearcherEndpoint);
-			}
 
+
+			if (processCriteria.getBusinessService().contains("watertanker-fixedpoint")) {
+
+				// fixed point endpoint
+				uri.append(searcherHost).append(wtFixedPointInboxSearcherDescEndpoint);
+
+			} else {
+				if (moduleSearchCriteria.containsKey(SORT_ORDER_PARAM)
+						&& DESC_PARAM.equals(moduleSearchCriteria.get(SORT_ORDER_PARAM))) {
+					uri.append(searcherHost).append(wtInboxSearcherDescEndpoint);
+				} else {
+					uri.append(searcherHost).append(wtInboxSearcherEndpoint);
+				}
+			}
 
 			Map result = restTemplate.postForObject(uri.toString(), searcherRequest, Map.class);
 
@@ -163,11 +193,8 @@ public class WTInboxFilterService {
 			ObjectMapper mapper = new ObjectMapper();
 			try {
 				String jsonString = mapper.writeValueAsString(result);
-                System.out.println(jsonString);
 				applicationNumbers = JsonPath.read(jsonString,
 						"$.waterTankerBookingDetail[*].booking_no");
-
-
 
 			} catch (Exception e) {
 				log.error("Error parsing response", e);
