@@ -1,18 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useLocation, useHistory } from "react-router-dom";
 import {
   ActionBar,
-  Card,
   CardLabel,
   CardLabelError,
   CardSectionSubText,
-  CardSubHeader,
   CardText,
   CheckBox,
   CollapsibleCardPage,
   DatePicker,
   Dropdown,
-  Header,
   RadioButtons,
   SubmitBar,
   TextArea,
@@ -26,10 +23,23 @@ import {
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { createPayloadOfWS, updatePayloadOfWS } from "../../../utils";
+import dropdownData from "../../../config/dropdown_data.json";
 
 const FORM_STORAGE_KEY = "WS_EMPLOYEE_NEW_APPLICATION_FORM";
 const MAX_FILE_SIZE = 5242880;
 const SUPPORTED_FILE_TYPES = /(\.pdf|\.png|\.jpe?g)$/i;
+
+const DECLARATION_POINTS = [
+  "I understand that sanction of connection does not acknowledge or confer any title, ownership or occupancy right in favour of the applicant.",
+  "I declare that there is no dispute on property and there is no stay from any court of law against obtaining water/ sewerage connection.",
+  "The Property on which connection is being applied is not booked/unauthorized/encroachment of Govt.Land/misuse etc.",
+  "I further undertake that in case of any dispute about the ownership of the property I will absolve DJB from any legal battle in the court of law as the water connection applied for is related to supply of potable water and not to decide the ownership of property.",
+  "I further undertake to pay the charges as and when demanded by DJB, and in the event of non-payment, DJB will be at liberty to disconnect the services being provided by DJB.",
+  "I further undertake that I have not taken 'DJB Employee Rebate' against any other Premise/Connection.",
+  "In case of variation in plot size as per document submitted by the undersigned and on actual measurement by DJB representative, difference of Infrastructure charge/any other charge on actual measurement will be paid by me.",
+  "In case connection is found non-feasible on technical ground as per any prevalent policy of DJB the water connection may be denied or if sanctioned inadvertently, the said sanction may be withdrawn and may be disconnected without any notice.",
+  "I hereby undertake that all the facts and documents submitted are true and correct, in case of any misrepresentation or wrong facts etc., sanction of connection may be disconnected without any notice..",
+];
 
 const NAME_PATTERN = /^[a-zA-Z\s.'-]{1,50}$/;
 const EMAIL_PATTERN = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
@@ -44,48 +54,16 @@ const COLLAPSIBLE_CONTENT_TAB = "__WS_SECTION_CONTENT__";
 
 const createOption = (code, name) => ({ code, name });
 
-const TYPE_OF_REQUEST_OPTIONS = [
-  createOption("NEW_CONNECTION", "New Connection"),
-  createOption("TEMPORARY_CONNECTION", "Temporary Connection"),
-  createOption("CHANGE_REQUEST", "Change Request"),
-];
-
-const CONNECTION_TYPE_OPTIONS = [createOption("METERED", "Metered"), createOption("NON_METERED", "Non Metered")];
-
-const LOCALITY_OPTIONS = [createOption("DWARKA", "Dwarka"), createOption("ROHINI", "Rohini"), createOption("KAROL_BAGH", "Karol Bagh")];
-
-const SUB_LOCALITY_OPTIONS = {
-  DWARKA: [createOption("SECTOR_6", "Sector 6"), createOption("SECTOR_10", "Sector 10"), createOption("SECTOR_12", "Sector 12")],
-  ROHINI: [createOption("SECTOR_3", "Sector 3"), createOption("SECTOR_8", "Sector 8"), createOption("SECTOR_16", "Sector 16")],
-  KAROL_BAGH: [createOption("DEV_NAGAR", "Dev Nagar"), createOption("PAHAR_GANJ", "Pahar Ganj"), createOption("PATEL_NAGAR", "Patel Nagar")],
-};
-
-const ASSEMBLY_OPTIONS = [
-  createOption("DWARKA_ASSEMBLY", "Dwarka Assembly"),
-  createOption("ROHINI_ASSEMBLY", "Rohini Assembly"),
-  createOption("KAROL_BAGH_ASSEMBLY", "Karol Bagh Assembly"),
-];
-
-const WARD_OPTIONS = [createOption("WARD_101", "Ward 101"), createOption("WARD_102", "Ward 102"), createOption("WARD_103", "Ward 103")];
-
-const PROPERTY_TYPE_OPTIONS = [
-  createOption("RESIDENTIAL", "Residential"),
-  createOption("COMMERCIAL", "Commercial"),
-  createOption("INDUSTRIAL", "Industrial"),
-  createOption("INSTITUTIONAL", "Institutional"),
-  createOption("HOSPITAL_NURSING_HOME", "Hospital / Nursing Home"),
-];
-
-const WATER_CONNECTION_CATEGORY_OPTIONS = [
-  createOption("DOMESTIC", "Domestic"),
-  createOption("NON_DOMESTIC", "Non-Domestic"),
-  createOption("MIXED_USE", "Mixed Use"),
-];
+const SUB_LOCALITY_OPTIONS = {};
 
 const WATER_CONNECTION_USED_BY_OPTIONS = [
-  createOption("OWNER", "Owner"),
-  createOption("TENANT", "Tenant"),
-  createOption("AUTHORIZED_OCCUPIER", "Authorized Occupier"),
+  createOption("5 Star Hotel", "5 Star Hotel"),
+  createOption("4/5 Star Hotel", "4/5 Star Hotel"),
+  createOption("Ex-Army Service", "Ex-Army Service"),
+  createOption("General", "General"),
+  createOption("Bank", "Bank"),
+  createOption("Airport", "Airport"),
+  createOption("Govt. College", "Govt. College"),
 ];
 
 const PROOF_OF_IDENTITY_OPTIONS = [
@@ -103,17 +81,12 @@ const OWNERSHIP_STATUS_OPTIONS = [
   createOption("GOVERNMENT_ALLOTTED", "Government Allotted"),
 ];
 
-const SUBMITTED_BY_OPTIONS = [
-  createOption("APPLICANT", "Applicant"),
-  createOption("AUTHORIZED_SIGNATORY", "Authorized Signatory"),
-  createOption("DJB_COUNTER", "DJB Counter"),
-];
-
 const DEFAULT_SECTION_STATE = {
   application: true,
   applicant: true,
   contact: true,
-  employee: true,
+  djbEmployee: true,
+  governmentEmployee: true,
   address: true,
   usage: true,
   bank: true,
@@ -129,15 +102,27 @@ const DEFAULT_FORM_VALUES = {
     firstName: "",
     middleName: "",
     lastName: "",
-    fatherOrHusbandName: "",
-    isGovernmentOrganization: false,
+    ParentorSpouse: "",
     applicantIdProofFile: null,
-    governmentOrganizationName: "",
   },
   contact: {
     emailId: "",
     mobileNumber: "",
-    officeNumber: "",
+    whatsAppNumber: "",
+  },
+  applicationSelection: {
+    serviceType: dropdownData.serviceTypes[0],
+    applicantType: dropdownData.applicantTypes[0],
+    connectionType: dropdownData.connectionTypes[0],
+    categoryType: dropdownData.categoryTypes[1],
+    subCategory: dropdownData.subCategories[0],
+    temporaryConnection: null,
+    ownerAuthorizationDoc: null,
+    ownerContactNumber: "",
+    ownerOtp: "",
+    isOwnerVerified: false,
+    domesticType: { code: "INDIVIDUAL", name: "Individual" },
+    commercialType: null,
   },
   djbEmployee: {
     isDjbEmployee: false,
@@ -145,12 +130,24 @@ const DEFAULT_FORM_VALUES = {
     retirementDate: "",
     officeNameAndAddress: "",
   },
+  governmentEmployee: {
+    isGovernmentEmployee: false,
+    organizationName: "",
+    natureOfWork: "",
+    organizationDocument: null,
+  },
   propertyAddress: {
     address: "",
     landmark: "",
     pinCode: "",
     locality: null,
     subLocality: null,
+    state: "",
+    district: "",
+    city: "",
+    street: "",
+    houseNo: "",
+    block: "",
     assembly: null,
     ward: null,
   },
@@ -161,7 +158,10 @@ const DEFAULT_FORM_VALUES = {
     plotArea: "",
     builtUpArea: "",
     waterConnectionCategory: null,
-    waterConnectionUsedBy: null,
+    gender: null,
+    NumberofDwellingUnits: "",
+    SelectYearofConstruction: null,
+    WaterConnectionUsageType: null,
   },
   bankDetails: {
     bankName: "",
@@ -182,9 +182,9 @@ const DEFAULT_FORM_VALUES = {
   declaration: {
     submittedBy: null,
     signatureFile: null,
-    captcha: "",
     agree: false,
   },
+  zro: null,
   cpt: { id: "", details: null },
 };
 
@@ -210,15 +210,103 @@ const actionBarStyle = {
   flexWrap: "wrap",
 };
 
-const captchaBoxStyle = {
-  background: "#F3F7F9",
-  border: "1px dashed #0B4B66",
-  borderRadius: "4px",
-  fontFamily: "monospace",
-  fontSize: "20px",
-  fontWeight: "700",
-  letterSpacing: "4px",
-  padding: "12px 16px",
+const ProfileImagePreview = ({ fileStoreId }) => {
+  const [imageUrl, setImageUrl] = useState(null);
+
+  useEffect(() => {
+    const fetchImageUrl = async () => {
+      if (fileStoreId) {
+        try {
+          const tenantId = Digit.ULBService.getStateId();
+          const response = await Digit.UploadServices.Filefetch([fileStoreId], tenantId);
+          const url = response?.data?.fileStoreIds?.[0]?.url;
+          if (url) {
+            let differentFormats = url?.split(",") || [];
+            let fileURL = "";
+            differentFormats.map((link) => {
+              if (!link.includes("large") && !link.includes("medium") && !link.includes("small")) {
+                fileURL = link;
+              }
+            });
+            setImageUrl(fileURL || differentFormats[0]);
+          }
+        } catch (err) {
+          console.error("Error fetching image URL:", err);
+          setImageUrl(null);
+        }
+      }
+    };
+    fetchImageUrl();
+  }, [fileStoreId]);
+
+  if (!imageUrl) return null;
+  return <img src={imageUrl} alt="Profile" style={{ width: "100%", height: "100%", objectFit: "cover" }} />;
+};
+
+const ProfileImageUpload = ({ value, onUpload, isUploading, error, t, label, required }) => {
+  const fileInputRef = React.useRef(null);
+  const fileStoreId = value?.fileStoreId;
+  const [imageUrl, setImageUrl] = useState(null);
+
+  useEffect(() => {
+    const fetchImageUrl = async () => {
+      if (fileStoreId) {
+        try {
+          const tenantId = Digit.ULBService.getStateId();
+          const response = await Digit.UploadServices.Filefetch([fileStoreId], tenantId);
+          const url = response?.data?.fileStoreIds?.[0]?.url;
+          if (url) {
+            let differentFormats = url?.split(",") || [];
+            let fileURL = "";
+            differentFormats.map((link) => {
+              if (!link.includes("large") && !link.includes("medium") && !link.includes("small")) {
+                fileURL = link;
+              }
+            });
+            setImageUrl(fileURL || differentFormats[0]);
+          }
+        } catch (err) {
+          console.error("Error fetching image URL:", err);
+          setImageUrl(null);
+        }
+      } else {
+        setImageUrl(null);
+      }
+    };
+    fetchImageUrl();
+  }, [fileStoreId]);
+
+  const handleEditClick = () => {
+    fileInputRef.current.click();
+  };
+
+  return (
+    <div className="avatar-upload-container">
+      {label && <CardLabel style={{ textAlign: "center", marginBottom: "16px", fontWeight: "700" }}>{`${t(label)}${required ? "*" : ""}`}</CardLabel>}
+      <div className="avatar-wrapper">
+        <div className="avatar-circle" onClick={handleEditClick}>
+          {imageUrl ? (
+            <img src={imageUrl} alt="Profile" />
+          ) : (
+            <div className="avatar-placeholder">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+            </div>
+          )}
+        </div>
+        <div className="avatar-edit-icon" onClick={handleEditClick}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0B4B66" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+          </svg>
+        </div>
+      </div>
+      <input type="file" ref={fileInputRef} style={{ display: "none" }} accept="image/*" onChange={onUpload} />
+      {isUploading && <div style={{ fontSize: "14px", marginTop: "8px", color: "#505A5F" }}>Uploading...</div>}
+      {error && <CardLabelError style={{ textAlign: "center", marginTop: "8px" }}>{error}</CardLabelError>}
+    </div>
+  );
 };
 
 const linkButtonStyle = {
@@ -242,19 +330,21 @@ const getStoredFormData = () => {
   }
 };
 
-const buildDefaultValues = (savedFormData = {}) => ({
-  typeOfRequest: savedFormData?.typeOfRequest || DEFAULT_FORM_VALUES.typeOfRequest,
-  connectionType: savedFormData?.connectionType || DEFAULT_FORM_VALUES.connectionType,
-  applicant: { ...DEFAULT_FORM_VALUES.applicant, ...(savedFormData?.applicant || {}) },
-  contact: { ...DEFAULT_FORM_VALUES.contact, ...(savedFormData?.contact || {}) },
-  djbEmployee: { ...DEFAULT_FORM_VALUES.djbEmployee, ...(savedFormData?.djbEmployee || {}) },
-  propertyAddress: { ...DEFAULT_FORM_VALUES.propertyAddress, ...(savedFormData?.propertyAddress || {}) },
-  useDetails: { ...DEFAULT_FORM_VALUES.useDetails, ...(savedFormData?.useDetails || {}) },
-  bankDetails: { ...DEFAULT_FORM_VALUES.bankDetails, ...(savedFormData?.bankDetails || {}) },
-  rainWaterHarvesting: { ...DEFAULT_FORM_VALUES.rainWaterHarvesting, ...(savedFormData?.rainWaterHarvesting || {}) },
-  documents: { ...DEFAULT_FORM_VALUES.documents, ...(savedFormData?.documents || {}) },
-  declaration: { ...DEFAULT_FORM_VALUES.declaration, ...(savedFormData?.declaration || {}) },
-  cpt: savedFormData?.cpt || { id: "", details: null },
+const buildDefaultValues = () => ({
+  zro: DEFAULT_FORM_VALUES.zro,
+  typeOfRequest: DEFAULT_FORM_VALUES.typeOfRequest,
+  connectionType: DEFAULT_FORM_VALUES.connectionType,
+  applicant: { ...DEFAULT_FORM_VALUES.applicant },
+  contact: { ...DEFAULT_FORM_VALUES.contact },
+  djbEmployee: { ...DEFAULT_FORM_VALUES.djbEmployee },
+  propertyAddress: { ...DEFAULT_FORM_VALUES.propertyAddress },
+  useDetails: { ...DEFAULT_FORM_VALUES.useDetails },
+  bankDetails: { ...DEFAULT_FORM_VALUES.bankDetails },
+  rainWaterHarvesting: { ...DEFAULT_FORM_VALUES.rainWaterHarvesting },
+  applicationSelection: { ...DEFAULT_FORM_VALUES.applicationSelection },
+  documents: { ...DEFAULT_FORM_VALUES.documents },
+  declaration: { ...DEFAULT_FORM_VALUES.declaration },
+  cpt: { id: "", details: null },
 });
 
 const resolveNestedValue = (value, path) =>
@@ -263,24 +353,16 @@ const resolveNestedValue = (value, path) =>
     return accumulator[currentKey];
   }, value);
 
-const getDisplayValue = (value) => {
-  if (value === null || value === undefined || value === "") return "Not provided";
-  if (typeof value === "boolean") return value ? "Yes" : "No";
+const getDisplayValue = (value, t) => {
+  if (value === null || value === undefined || value === "") return t("CS_COMMON_NOT_AVAILABLE");
+  if (typeof value === "boolean") return value ? t("CS_COMMON_YES") : t("CS_COMMON_NO");
   if (typeof value === "object") {
     if (value?.fileName) return value.fileName;
-    if (value?.name) return value.name;
-    if (value?.code) return value.code;
+    if (value?.i18nKey) return t(value.i18nKey);
+    if (value?.name) return t(value.name);
+    if (value?.code) return t(value.code);
   }
-  return String(value);
-};
-
-const generateCaptcha = () => {
-  const characters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let captcha = "";
-  for (let index = 0; index < 6; index += 1) {
-    captcha += characters.charAt(Math.floor(Math.random() * characters.length));
-  }
-  return captcha;
+  return t(String(value));
 };
 
 const FieldBlock = ({ label, required, error, children, hint, isFullWidth }) => {
@@ -294,9 +376,42 @@ const FieldBlock = ({ label, required, error, children, hint, isFullWidth }) => 
   );
 };
 
-const SectionCard = ({ title, description, isOpen = true, children }) => {
+const SectionCard = ({ title, description, isOpen = true, children, sectionRef, sectionKey, onEditClick }) => {
   return (
-    <div className="ws-new-application-collapsible" style={{ marginBottom: "16px" }}>
+    <div className="ws-new-application-collapsible" style={{ marginBottom: "16px", position: "relative" }} ref={sectionRef} data-section={sectionKey}>
+      {onEditClick && (
+        <div
+          onClick={onEditClick}
+          style={{
+            position: "absolute",
+            top: "20px",
+            right: "50px",
+            zIndex: 10,
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "4px",
+            color: "#0B4B66",
+            fontSize: "14px",
+            fontWeight: "600",
+          }}
+          title="Edit Section"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+          </svg>
+          Edit
+        </div>
+      )}
       <CollapsibleCardPage defaultOpen={isOpen} defaultTab={COLLAPSIBLE_CONTENT_TAB} tabs={[COLLAPSIBLE_CONTENT_TAB]} title={title}>
         {() => (
           <React.Fragment>
@@ -309,11 +424,57 @@ const SectionCard = ({ title, description, isOpen = true, children }) => {
   );
 };
 
+const handleView = async (fileStoreId, tenantId) => {
+  try {
+    const response = await Digit.UploadServices.Filefetch([fileStoreId], tenantId);
+    const url = response?.data?.fileStoreIds?.[0]?.url;
+    if (url) {
+      const differentFormats = url?.split(",") || [];
+      let fileURL = "";
+      differentFormats.map((link) => {
+        if (!link.includes("large") && !link.includes("medium") && !link.includes("small")) {
+          fileURL = link;
+        }
+      });
+      window.open(fileURL || differentFormats[0], "_blank");
+    }
+  } catch (error) {
+    console.error("Error fetching file URL:", error);
+  }
+};
+
 const PreviewItem = ({ label, value, isFullWidth }) => {
+  const { t } = useTranslation();
+  const stateId = Digit.ULBService.getStateId();
+  const isFile = value && typeof value === "object" && value?.fileStoreId;
+
   return (
     <div style={{ ...fieldWrapperStyle, ...(isFullWidth ? { gridColumn: "1 / -1" } : {}) }}>
-      <CardLabel style={{ fontWeight: "600", marginBottom: "0px" }}>{label}</CardLabel>
-      <CardText style={{ marginBottom: "0px", marginTop: "0px" }}>{getDisplayValue(value)}</CardText>
+      <CardLabel style={{ fontWeight: "600", marginBottom: "0px" }}>{t(label)}</CardLabel>
+      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <CardText style={{ marginBottom: "0px", marginTop: "0px" }}>{getDisplayValue(value, t)}</CardText>
+        {isFile && (
+          <div
+            onClick={() => handleView(value.fileStoreId, stateId)}
+            style={{ cursor: "pointer", display: "flex", alignItems: "center", color: "#0B4B66" }}
+            title={t("CS_COMMON_VIEW_DOCUMENT")}
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
@@ -341,6 +502,7 @@ const NewApplication = () => {
   const { t } = useTranslation();
   const history = useHistory();
   const location = useLocation();
+  const { data: allCities, isLoading } = Digit.Hooks.useTenants();
 
   const stateId = Digit.ULBService.getStateId();
   const tenantId = Digit.ULBService.getCurrentTenantId() || Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code;
@@ -349,17 +511,132 @@ const NewApplication = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [collapsedSections, setCollapsedSections] = useState(DEFAULT_SECTION_STATE);
   const [showToast, setShowToast] = useState(null);
-  const [generatedCaptcha, setGeneratedCaptcha] = useState(generateCaptcha());
   const [uploadingFields, setUploadingFields] = useState({});
+  const [isOtpSent, setIsOtpSent] = useState(false);
+  const [otpError, setOtpError] = useState(null);
 
   // API Integration States
   const [isEnableLoader, setIsEnableLoader] = useState(false);
   const [appDetails, setAppDetails] = useState({});
   const [waterAndSewerageBoth, setWaterAndSewerageBoth] = useState(null);
   const [propertyId, setPropertyId] = useState(new URLSearchParams(location.search).get("propertyId"));
-  const [zro, setZro] = useState({ value: "", error: "" });
+  const initialFormValues = buildDefaultValues();
+  const [city, setCity] = useState("");
 
-  const initialFormValues = buildDefaultValues(getStoredFormData());
+  const { data: ZROLocation } = Digit.Hooks.ws.useWSConfigMDMS.ZROLocation(tenantId);
+  const { data: ConnectionType } = Digit.Hooks.ws.useWSConfigMDMS.ConnectionCategory(tenantId);
+
+  const mappedZROLocation = useMemo(() => {
+    return ZROLocation?.map((item) => ({
+      ...item,
+      i18nKey: item?.i18nKey || item?.name || item?.code,
+    }));
+  }, [ZROLocation]);
+
+  useEffect(() => {
+    if (allCities && tenantId && !city) {
+      const currentCity = allCities?.find((c) => c.code === tenantId);
+      if (currentCity) {
+        setCity(currentCity);
+        setValue("propertyAddress.city", currentCity);
+      }
+    }
+  }, [allCities, tenantId]);
+
+  const { data: egovLocationData } = Digit.Hooks.useCommonMDMS(tenantId, "egov-location", ["TenantBoundary"]);
+
+  const boundaryData = useMemo(() => {
+    const tenantBoundary = egovLocationData?.["egov-location"]?.TenantBoundary || [];
+    const revenueData = tenantBoundary.find((item) => item?.hierarchyType?.code === "REVENUE");
+    const boundary = revenueData?.boundary || [];
+    return Array.isArray(boundary) ? boundary : [boundary];
+  }, [egovLocationData]);
+
+  const structuredLocalityData = useMemo(() => {
+    let localities = [];
+    const boundaries = Array.isArray(boundaryData) ? boundaryData : boundaryData ? [boundaryData] : [];
+
+    const extractLocalities = (node, zone = null, ward = null) => {
+      if (!node) return;
+
+      let currentZone = zone;
+      let currentWard = ward;
+
+      if (node.label === "Zone" || node.label === "ZONE") {
+        currentZone = node.localname || node.code || node.name;
+      }
+      if (node.label === "Ward" || node.label === "WARD" || node.label === "Block" || node.label === "BLOCK") {
+        currentWard = node.code || node.localname || node.name;
+      }
+
+      if (node.label === "Locality" || node.label === "LOCALITY") {
+        localities.push({
+          ...node,
+          name: node.localname || node.name || node.code,
+          i18nKey: node.i18nKey || `${tenantId.replace(".", "_")}_REVENUE_${node.code}`.toUpperCase(),
+          zone: currentZone,
+          ward: currentWard,
+        });
+      }
+      if (node.children && node.children.length > 0) {
+        node.children.forEach((child) => extractLocalities(child, currentZone, currentWard));
+      }
+    };
+
+    boundaries.forEach((rootNode) => extractLocalities(rootNode));
+
+    return localities;
+  }, [boundaryData, tenantId]);
+
+  const fetchedPincodes = useMemo(() => {
+    const pinSet = new Set();
+    structuredLocalityData.forEach((loc) => {
+      if (loc.pincode) {
+        const pins = Array.isArray(loc.pincode) ? loc.pincode : [loc.pincode];
+        pins.forEach((p) => {
+          if (p) {
+            const sanitizedPin = p.toString().split(".")[0];
+            pinSet.add(sanitizedPin);
+          }
+        });
+      }
+    });
+
+    return Array.from(pinSet)
+      .sort()
+      .map((pin) => ({
+        code: pin,
+        name: pin,
+        i18nKey: pin,
+      }));
+  }, [structuredLocalityData]);
+
+  // Refs for auto-stepper
+  const sectionRefs = {
+    application: React.useRef(null),
+    applicant: React.useRef(null),
+    contact: React.useRef(null),
+    djbEmployee: React.useRef(null),
+    governmentEmployee: React.useRef(null),
+    propertyAddress: React.useRef(null),
+    useDetails: React.useRef(null),
+    bankDetails: React.useRef(null),
+    documents: React.useRef(null),
+    declaration: React.useRef(null),
+  };
+
+  // Current Year
+  const currentYear = new Date().getFullYear();
+
+  // Generate 1970 to Current Year
+  const yearOptions = [];
+  for (let year = 1970; year <= currentYear; year++) {
+    yearOptions.push({
+      i18nKey: `${year}`,
+      code: `${year}`,
+      value: `${year}`,
+    });
+  }
 
   const {
     register,
@@ -371,7 +648,7 @@ const NewApplication = () => {
     clearErrors,
     reset,
     getValues,
-    formState: { errors, localFormState },
+    formState: { errors },
   } = useForm({
     defaultValues: initialFormValues,
     shouldUnregister: false, // Ensures values persist during preview mode
@@ -380,12 +657,92 @@ const NewApplication = () => {
   const formValues = watch();
   const isGovernmentOrganization = watch("applicant.isGovernmentOrganization");
   const isDjbEmployee = watch("djbEmployee.isDjbEmployee");
+  const isGovernmentEmployee = watch("governmentEmployee.isGovernmentEmployee");
   const selectedPropertyType = watch("useDetails.propertyType");
   const selectedLocality = watch("propertyAddress.locality");
   const selectedSubLocality = watch("propertyAddress.subLocality");
-  const subLocalityOptions = selectedLocality ? SUB_LOCALITY_OPTIONS[selectedLocality.code] || [] : [];
+  const pCode = watch("propertyAddress.pinCode");
+
+  const filteredLocalities = useMemo(() => {
+    if (!pCode) return structuredLocalityData;
+    return structuredLocalityData.filter((loc) => {
+      if (!loc.pincode) return false;
+      const pins = Array.isArray(loc.pincode) ? loc.pincode : [loc.pincode];
+      return pins.some((p) => p.toString() === pCode);
+    });
+  }, [structuredLocalityData, pCode]);
+
+  const selectedSubCategory = watch("applicationSelection.subCategory");
+  const selectedCommercialType = watch("applicationSelection.commercialType");
+  const subCategoryIsCommercial = selectedSubCategory?.code === "COMMERCIAL";
+  const commercialTypeIsGov = selectedCommercialType?.code === "GOV";
   const hasPendingUpload = Object.values(uploadingFields).some(Boolean);
-  const isHospitalProperty = selectedPropertyType?.code === "HOSPITAL_NURSING_HOME";
+  const isHospitalProperty = selectedPropertyType?.code === "HOSPITAL" || selectedPropertyType?.code === "HOSPITAL_NURSING_HOME";
+
+  const selectedApplicantType = watch("applicationSelection.applicantType");
+  const isTenantOrRelative = selectedApplicantType?.code === "TENANT" || selectedApplicantType?.code === "RELATIVE";
+  const isOwnerVerified = watch("applicationSelection.isOwnerVerified");
+  const subCategoryIsDomestic = selectedSubCategory?.code === "DOMESTIC";
+
+  const selectedConnectionType = watch("applicationSelection.connectionType");
+  const connectionTypeIsTemporary = selectedConnectionType?.code === "Temporary";
+  const selectedDomesticType = watch("applicationSelection.domesticType");
+  const activeType = selectedSubCategory?.code === "DOMESTIC" ? selectedDomesticType : selectedCommercialType;
+
+  const applicantSectionTitle = useMemo(() => {
+    if (activeType?.code === "INDIVIDUAL") return "Applicant Details";
+    if (activeType?.code === "ORGANIZATION") return "Authorized Person Details";
+    return "Details of Applicant";
+  }, [activeType]);
+
+  const timelineConfig = [
+    { sectionId: "application", route: "application-selection", actions: "Application Selection" },
+    { sectionId: "applicant", route: "applicant-details", actions: applicantSectionTitle },
+    ...(isDjbEmployee ? [{ sectionId: "djbEmployee", route: "djb-employee", actions: "For DJB Employee" }] : []),
+    ...(isGovernmentEmployee ? [{ sectionId: "governmentEmployee", route: "government-employee", actions: "For Government Employee" }] : []),
+    { sectionId: "propertyAddress", route: "property-address", actions: "Property Address" },
+    { sectionId: "useDetails", route: "use-details", actions: "Property & Connection Use Details" },
+    { sectionId: "bankDetails", route: "bank-details", actions: "Bank Details" },
+    { sectionId: "documents", route: "documents", actions: "Documents to be Attached" },
+    { sectionId: "declaration", route: "declaration", actions: "Declaration/Undertaking" },
+    { sectionId: "Review", route: "review", actions: "Review Application" },
+  ].map((step, index) => ({
+    ...step,
+    timeLine: [{ actions: step.actions, currentStep: index + 1 }],
+  }));
+
+  // Auto-stepper intersection observer
+  useEffect(() => {
+    if (previewMode) return;
+
+    const observerOptions = {
+      root: null,
+      rootMargin: "-20% 0px -50% 0px", // Focus on the upper half of the screen
+      threshold: [0, 0.1, 0.5, 1.0],
+    };
+
+    const handleIntersection = (entries) => {
+      // Find the entry that has the largest intersection ratio
+      const mostVisible = entries.reduce((prev, current) => {
+        return current.intersectionRatio > (prev ? prev.intersectionRatio : 0) ? current : prev;
+      }, null);
+
+      if (mostVisible && mostVisible.isIntersecting) {
+        const sectionKey = mostVisible.target.getAttribute("data-section");
+        const stepIndex = timelineConfig.findIndex((c) => c.sectionId === sectionKey);
+        if (stepIndex !== -1) {
+          setCurrentStep(stepIndex + 1);
+        }
+      }
+    };
+
+    const observer = new IntersectionObserver(handleIntersection, observerOptions);
+    Object.values(sectionRefs).forEach((ref) => {
+      if (ref.current) observer.observe(ref.current);
+    });
+
+    return () => observer.disconnect();
+  }, [previewMode, sectionRefs, timelineConfig]);
 
   // --- API HOOKS ---
   const { data: propertyDetails, isLoading: isPropertyLoading } = Digit.Hooks.pt.usePropertySearch(
@@ -397,11 +754,6 @@ const NewApplication = () => {
   const { mutate: waterUpdateMutation } = Digit.Hooks.ws.useWSApplicationActions("WATER");
   const { mutate: sewerageMutation } = Digit.Hooks.ws.useWaterCreateAPI("SEWERAGE");
   const { mutate: sewerageUpdateMutation } = Digit.Hooks.ws.useWSApplicationActions("SEWERAGE");
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.sessionStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(formValues));
-  }, [formValues]);
 
   useEffect(() => {
     if (!isGovernmentOrganization) {
@@ -422,6 +774,17 @@ const NewApplication = () => {
   }, [isDjbEmployee, setValue, clearErrors]);
 
   useEffect(() => {
+    if (!isGovernmentEmployee) {
+      setValue("governmentEmployee.organizationName", "");
+      setValue("governmentEmployee.natureOfWork", "");
+      setValue("governmentEmployee.organizationDocument", null);
+      clearErrors("governmentEmployee.organizationName");
+      clearErrors("governmentEmployee.natureOfWork");
+      clearErrors("governmentEmployee.organizationDocument");
+    }
+  }, [isGovernmentEmployee, setValue, clearErrors]);
+
+  useEffect(() => {
     if (!isHospitalProperty) {
       setValue("useDetails.hospitalBeds", "");
       clearErrors("useDetails.hospitalBeds");
@@ -429,11 +792,35 @@ const NewApplication = () => {
   }, [isHospitalProperty, setValue, clearErrors]);
 
   useEffect(() => {
-    const isValidSubLocality = selectedSubLocality ? subLocalityOptions.some((option) => option.code === selectedSubLocality.code) : true;
-    if (!isValidSubLocality) {
-      setValue("propertyAddress.subLocality", null);
+    if (!isTenantOrRelative) {
+      setValue("applicationSelection.ownerAuthorizationDoc", null);
+      setValue("applicationSelection.ownerContactNumber", "");
+      setValue("applicationSelection.ownerOtp", "");
+      setValue("applicationSelection.isOwnerVerified", false);
+      setIsOtpSent(false);
+      clearErrors("applicationSelection.ownerAuthorizationDoc");
+      clearErrors("applicationSelection.ownerContactNumber");
+      clearErrors("applicationSelection.ownerOtp");
     }
-  }, [selectedLocality?.code, selectedSubLocality?.code, setValue]);
+  }, [isTenantOrRelative, setValue, clearErrors]);
+
+  useEffect(() => {
+    if (!subCategoryIsDomestic) {
+      setValue("applicationSelection.domesticType", null);
+      clearErrors("applicationSelection.domesticType");
+    }
+  }, [subCategoryIsDomestic, setValue, clearErrors]);
+
+  useEffect(() => {
+    if (!connectionTypeIsTemporary) {
+      setValue("applicationSelection.temporaryConnection", null);
+      clearErrors("applicationSelection.temporaryConnection");
+    }
+  }, [connectionTypeIsTemporary, setValue, clearErrors]);
+
+  useEffect(() => {
+    // Logic for subLocality was removed as it is replaced by MDMS locality logic
+  }, [selectedLocality?.code, setValue]);
 
   const closeToast = () => setShowToast(null);
   const closeToastOfError = () => setShowToast(null);
@@ -446,12 +833,6 @@ const NewApplication = () => {
   };
 
   const getFieldError = (fieldName) => resolveNestedValue(errors, fieldName);
-
-  const refreshCaptcha = () => {
-    setGeneratedCaptcha(generateCaptcha());
-    setValue("declaration.captcha", "");
-    clearErrors("declaration.captcha");
-  };
 
   const uploadFile = async (event, fieldName, onChange) => {
     const file = event?.target?.files?.[0];
@@ -503,22 +884,11 @@ const NewApplication = () => {
     }
   };
 
-  const validateCaptcha = (data) => {
-    if (data?.declaration?.captcha?.trim()?.toUpperCase() !== generatedCaptcha) {
-      setError("declaration.captcha", { type: "manual", message: "Captcha does not match." });
-      setShowToast({ warning: true, message: "Captcha does not match." });
-      return false;
-    }
-    clearErrors("declaration.captcha");
-    return true;
-  };
-
   const onPreview = (data) => {
     if (hasPendingUpload) {
       setShowToast({ warning: true, message: "Please wait for all file uploads to complete." });
       return;
     }
-    if (!validateCaptcha(data)) return;
     setPreviewMode(true);
     scrollToTop();
   };
@@ -528,7 +898,6 @@ const NewApplication = () => {
       setShowToast({ warning: true, message: "Please wait for all file uploads to complete." });
       return;
     }
-    if (!validateCaptcha(data)) return;
 
     if (!propertyDetails?.Properties?.[0]) {
       setShowToast({ key: "error", message: "ERR_INVALID_PROPERTY_ID" });
@@ -707,10 +1076,26 @@ const NewApplication = () => {
     scrollToTop();
   };
 
+  const handleSectionEdit = (sectionKey) => {
+    setPreviewMode(false);
+    setTimeout(() => {
+      const element = sectionRefs[sectionKey]?.current;
+      if (element) {
+        const headerOffset = 100;
+        const elementPosition = element.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: "smooth",
+        });
+      }
+    }, 100);
+  };
+
   const onReset = () => {
     reset(DEFAULT_FORM_VALUES);
     setPreviewMode(false);
-    setGeneratedCaptcha(generateCaptcha());
     setCollapsedSections(DEFAULT_SECTION_STATE);
     setUploadingFields({});
     setShowToast(null);
@@ -724,29 +1109,6 @@ const NewApplication = () => {
     return <Loader />;
   }
 
-  const menu = [
-    {
-      i18nKey: "ASHOK VIHAR",
-      code: "ASHOK VIHAR",
-      value: "ASHOK VIHAR",
-    },
-    {
-      i18nKey: "BURARI",
-      code: "BURARI",
-      value: "BURARI",
-    },
-    {
-      i18nKey: "DWARKA",
-      code: "DWARKA",
-      value: "DWARKA",
-    },
-    {
-      i18nKey: "OKHLA",
-      code: "OKHLA",
-      value: "OKHLA",
-    },
-  ];
-
   return (
     <div>
       <style>
@@ -758,153 +1120,552 @@ const NewApplication = () => {
           .ws-new-application-collapsible .collapsible-card-tab-content {
             padding: 0;
           }
+
+          .avatar-upload-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            grid-column: 1 / -1;
+          }
+
+          .avatar-wrapper {
+            position: relative;
+            width: 120px;
+            height: 120px;
+          }
+
+          .avatar-circle {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid #E5E7EB;
+            overflow: hidden;
+            background-color: #F3F4F6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+          }
+
+          .avatar-circle:hover {
+            border-color: #0B4B66;
+            opacity: 0.9;
+          }
+
+          .avatar-circle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+
+          .avatar-placeholder {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+
+          .avatar-edit-icon {
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            background: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid #E5E7EB;
+            cursor: pointer;
+            transition: all 0.2s ease;
+          }
+
+          .avatar-edit-icon:hover {
+            transform: scale(1.1);
+            background-color: #F9FAFB;
+          }
         `}
       </style>
-      <Header>{t("New Water / Sewerage Application")}</Header>
+      {/* <Header>{t("New Water / Sewerage Application")}</Header> */}
 
-      <div style={{ display: "flex", alignItems: "flex-start", gap: "24px" }}>
-        <VerticalTimeline
-          config={[
-            { route: "application-selection", timeLine: [{ actions: "Application Selection", currentStep: 1 }] },
-            { route: "applicant-details", timeLine: [{ actions: "Details of Applicant", currentStep: 2 }] },
-            { route: "contact-details", timeLine: [{ actions: "Contact Details", currentStep: 3 }] },
-            { route: "djb-employee", timeLine: [{ actions: "For DJB Employee", currentStep: 4 }] },
-            { route: "property-address", timeLine: [{ actions: "Property Address", currentStep: 5 }] },
-            { route: "use-details", timeLine: [{ actions: "Property & Connection Use Details", currentStep: 6 }] },
-            { route: "bank-details", timeLine: [{ actions: "Bank Details", currentStep: 7 }] },
-            { route: "rain-water-harvesting", timeLine: [{ actions: "Rain Water Harvesting", currentStep: 8 }] },
-            { route: "documents", timeLine: [{ actions: "Documents to be Attached", currentStep: 9 }] },
-            { route: "declaration", timeLine: [{ actions: "Declaration / Undertaking", currentStep: 10 }] },
-          ]}
-          currentActiveIndex={currentStep - 1}
-          showFinalStep={false}
-        />
+      <div className="employee-form-section-wrapper">
+        {!previewMode && <VerticalTimeline config={timelineConfig} currentActiveIndex={currentStep - 1} showFinalStep={false} />}
 
         <div style={{ flex: "1", overflowY: "auto", minWidth: 0 }}>
           {/* <Card style={{ marginBottom: "16px" }}>
           <CardSubHeader>{previewMode ? t("Preview Application") : t("Application Form")}</CardSubHeader>
         </Card> */}
+          <div style={{ display: previewMode ? "none" : "block" }}>
+            <SectionCard
+              isOpen={collapsedSections.application}
+              onToggle={toggleSection}
+              sectionKey="application"
+              title={t("WS_APPLICATION_SELECTION")}
+              sectionRef={sectionRefs.application}
+            >
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller">{t("WS_ZRO_LOCATION")}</CardLabel>
+                <div className="field">
+                  <Controller
+                    control={control}
+                    name={"zro"}
+                    rules={{ required: t("REQUIRED_FIELD") }}
+                    isMandatory={true}
+                    render={(props) => (
+                      <div>
+                        <Dropdown
+                          className="form-field"
+                          selected={props.value}
+                          disable={false}
+                          option={mappedZROLocation}
+                          errorStyle={!!getFieldError("zro")}
+                          select={props.onChange}
+                          optionKey="i18nKey"
+                          onBlur={props.onBlur}
+                          t={t}
+                        />
+                      </div>
+                    )}
+                  />
+                </div>
+              </LabelFieldPair>
+              {getFieldError("zro") && <CardLabelError>{getFieldError("zro")?.message}</CardLabelError>}
+
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller">{t("WS_SERVICE_TYPE")}</CardLabel>
+                <div className="field">
+                  <Controller
+                    control={control}
+                    name={"applicationSelection.serviceType"}
+                    rules={{ required: t("REQUIRED_FIELD") }}
+                    isMandatory={true}
+                    render={(props) => (
+                      <Dropdown
+                        className="form-field"
+                        selected={props.value}
+                        disable={false}
+                        option={dropdownData.serviceTypes}
+                        errorStyle={!!getFieldError("applicationSelection.serviceType")}
+                        select={props.onChange}
+                        optionKey="name"
+                        onBlur={props.onBlur}
+                        t={t}
+                      />
+                    )}
+                  />
+                </div>
+              </LabelFieldPair>
+              {getFieldError("applicationSelection.serviceType") && (
+                <CardLabelError>{getFieldError("applicationSelection.serviceType")?.message}</CardLabelError>
+              )}
+
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller">{t("WS_APPLICANT_TYPE")}</CardLabel>
+                <div className="field">
+                  <Controller
+                    control={control}
+                    name={"applicationSelection.applicantType"}
+                    rules={{ required: t("REQUIRED_FIELD") }}
+                    isMandatory={true}
+                    render={(props) => (
+                      <Dropdown
+                        className="form-field"
+                        selected={props.value}
+                        disable={false}
+                        option={dropdownData.applicantTypes}
+                        errorStyle={!!getFieldError("applicationSelection.applicantType")}
+                        select={props.onChange}
+                        optionKey="name"
+                        onBlur={props.onBlur}
+                        t={t}
+                      />
+                    )}
+                  />
+                </div>
+              </LabelFieldPair>
+              {getFieldError("applicationSelection.applicantType") && (
+                <CardLabelError>{getFieldError("applicationSelection.applicantType")?.message}</CardLabelError>
+              )}
+
+              {isTenantOrRelative && (
+                <React.Fragment>
+                  <LabelFieldPair>
+                    <CardLabel className="card-label-smaller">{t("WS_OWNER_AUTHORIZATION")}</CardLabel>
+                    <div className="field">
+                      <Controller
+                        control={control}
+                        name="applicationSelection.ownerAuthorizationDoc"
+                        rules={{ required: isTenantOrRelative ? "Owner Authorization is required" : false }}
+                        render={(props) => (
+                          <FileUploadField
+                            error={getFieldError("applicationSelection.ownerAuthorizationDoc")}
+                            id="owner-auth-doc"
+                            isUploading={!!uploadingFields["applicationSelection.ownerAuthorizationDoc"]}
+                            onDelete={() => clearUploadedFile("applicationSelection.ownerAuthorizationDoc", props.onChange)}
+                            onUpload={(event) => uploadFile(event, "applicationSelection.ownerAuthorizationDoc", props.onChange)}
+                            value={props.value}
+                          />
+                        )}
+                      />
+                    </div>
+                  </LabelFieldPair>
+
+                  <LabelFieldPair>
+                    <CardLabel className="card-label-smaller">{t("WS_OWNER_CONTACT_NUMBER")}</CardLabel>
+                    <div className="field" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <div style={{ flex: 1 }}>
+                        <TextInput
+                          name="applicationSelection.ownerContactNumber"
+                          inputRef={register({
+                            required: isTenantOrRelative ? "Owner Contact Number is required" : false,
+                            pattern: { value: MOBILE_PATTERN, message: "Enter a valid 10-digit mobile number." },
+                          })}
+                          errorStyle={!!getFieldError("applicationSelection.ownerContactNumber")}
+                          maxlength={10}
+                          disable={isOwnerVerified}
+                        />
+                      </div>
+                      {!isOwnerVerified && (
+                        <button
+                          type="button"
+                          style={linkButtonStyle}
+                          onClick={() => {
+                            const mobile = watch("applicationSelection.ownerContactNumber");
+                            if (MOBILE_PATTERN.test(mobile)) {
+                              setIsOtpSent(true);
+                              setOtpError(null);
+                            } else {
+                              setError("applicationSelection.ownerContactNumber", { type: "manual", message: "Enter a valid mobile number first." });
+                            }
+                          }}
+                        >
+                          {isOtpSent ? t("WS_RESEND_OTP") : t("WS_VERIFY")}
+                        </button>
+                      )}
+                      {isOwnerVerified && <span style={{ color: "green", fontSize: "14px", fontWeight: "600" }}>{t("WS_VERIFIED")} ✓</span>}
+                    </div>
+                  </LabelFieldPair>
+                  {getFieldError("applicationSelection.ownerContactNumber") && (
+                    <CardLabelError>{getFieldError("applicationSelection.ownerContactNumber")?.message}</CardLabelError>
+                  )}
+
+                  {isOtpSent && !isOwnerVerified && (
+                    <LabelFieldPair>
+                      <CardLabel className="card-label-smaller">{t("WS_OTP_VERIFICATION")}</CardLabel>
+                      <div className="field" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                        <div style={{ flex: 1 }}>
+                          <TextInput
+                            name="applicationSelection.ownerOtp"
+                            inputRef={register({
+                              required: isOtpSent ? "OTP is required" : false,
+                            })}
+                            errorStyle={!!getFieldError("applicationSelection.ownerOtp") || !!otpError}
+                            maxlength={6}
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          style={linkButtonStyle}
+                          onClick={() => {
+                            const otp = watch("applicationSelection.ownerOtp");
+                            if (otp && otp.length === 6) {
+                              setValue("applicationSelection.isOwnerVerified", true);
+                              setIsOtpSent(false);
+                              setOtpError(null);
+                              clearErrors("applicationSelection.ownerOtp");
+                            } else {
+                              setOtpError("Enter 6 digit OTP");
+                            }
+                          }}
+                        >
+                          {t("WS_CONFIRM")}
+                        </button>
+                      </div>
+                    </LabelFieldPair>
+                  )}
+                  {(getFieldError("applicationSelection.ownerOtp") || otpError) && (
+                    <CardLabelError>{getFieldError("applicationSelection.ownerOtp")?.message || otpError}</CardLabelError>
+                  )}
+                </React.Fragment>
+              )}
+
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller">{t("WS_CONNECTION_TYPE")}</CardLabel>
+                <div className="field">
+                  <Controller
+                    control={control}
+                    name={"applicationSelection.connectionType"}
+                    rules={{ required: t("REQUIRED_FIELD") }}
+                    isMandatory={true}
+                    render={(props) => (
+                      <Dropdown
+                        className="form-field"
+                        selected={props.value}
+                        disable={false}
+                        option={ConnectionType}
+                        errorStyle={!!getFieldError("applicationSelection.connectionType")}
+                        select={props.onChange}
+                        optionKey="name"
+                        onBlur={props.onBlur}
+                        t={t}
+                      />
+                    )}
+                  />
+                </div>
+              </LabelFieldPair>
+              {getFieldError("applicationSelection.connectionType") && (
+                <CardLabelError>{getFieldError("applicationSelection.connectionType")?.message}</CardLabelError>
+              )}
+
+              {connectionTypeIsTemporary && (
+                <LabelFieldPair>
+                  <CardLabel className="card-label-smaller">{t("WS_TEMPORARY_CONNECTION")}</CardLabel>
+                  <div className="field">
+                    <Controller
+                      control={control}
+                      name={"applicationSelection.temporaryConnection"}
+                      rules={{ required: connectionTypeIsTemporary ? t("REQUIRED_FIELD") : false }}
+                      isMandatory={true}
+                      render={(props) => (
+                        <Dropdown
+                          className="form-field"
+                          selected={props.value}
+                          disable={false}
+                          option={dropdownData.temporaryConnectionTypes}
+                          errorStyle={!!getFieldError("applicationSelection.temporaryConnection")}
+                          select={props.onChange}
+                          optionKey="name"
+                          onBlur={props.onBlur}
+                          t={t}
+                        />
+                      )}
+                    />
+                  </div>
+                </LabelFieldPair>
+              )}
+              {connectionTypeIsTemporary && getFieldError("applicationSelection.temporaryConnection") && (
+                <CardLabelError>{getFieldError("applicationSelection.temporaryConnection")?.message}</CardLabelError>
+              )}
+
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller">{t("WS_CATEGORY_TYPE")}</CardLabel>
+                <div className="field">
+                  <Controller
+                    control={control}
+                    name={"applicationSelection.subCategory"}
+                    rules={{ required: t("REQUIRED_FIELD") }}
+                    isMandatory={true}
+                    render={(props) => (
+                      <Dropdown
+                        className="form-field"
+                        selected={props.value}
+                        disable={false}
+                        option={dropdownData.subCategories}
+                        errorStyle={!!getFieldError("applicationSelection.subCategory")}
+                        select={props.onChange}
+                        optionKey="name"
+                        onBlur={props.onBlur}
+                        t={t}
+                      />
+                    )}
+                  />
+                </div>
+              </LabelFieldPair>
+              {getFieldError("applicationSelection.subCategory") && (
+                <CardLabelError>{getFieldError("applicationSelection.subCategory")?.message}</CardLabelError>
+              )}
+
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller">{t("WS_WATER_DEMAND_TYPE")}</CardLabel>
+                <div className="field">
+                  <Controller
+                    control={control}
+                    name={"applicationSelection.categoryType"}
+                    rules={{ required: t("REQUIRED_FIELD") }}
+                    isMandatory={true}
+                    render={(props) => (
+                      <Dropdown
+                        className="form-field"
+                        selected={props.value}
+                        disable={false}
+                        option={dropdownData.categoryTypes}
+                        errorStyle={!!getFieldError("applicationSelection.categoryType")}
+                        select={props.onChange}
+                        optionKey="name"
+                        onBlur={props.onBlur}
+                        t={t}
+                      />
+                    )}
+                  />
+                </div>
+              </LabelFieldPair>
+              {getFieldError("applicationSelection.categoryType") && (
+                <CardLabelError>{getFieldError("applicationSelection.categoryType")?.message}</CardLabelError>
+              )}
+
+              {subCategoryIsDomestic && (
+                <LabelFieldPair>
+                  <CardLabel className="card-label-smaller">{t("WS_DOMESTIC_TYPE")}</CardLabel>
+                  <div className="field">
+                    <Controller
+                      control={control}
+                      name="applicationSelection.domesticType"
+                      rules={{ required: subCategoryIsDomestic ? t("REQUIRED_FIELD") : false }}
+                      render={(props) => (
+                        <RadioButtons
+                          onSelect={props.onChange}
+                          selectedOption={props.value}
+                          optionsKey="name"
+                          options={[
+                            { code: "INDIVIDUAL", name: "Individual" },
+                            { code: "ORGANIZATION", name: "Organization" },
+                          ]}
+                          t={t}
+                        />
+                      )}
+                    />
+                  </div>
+                </LabelFieldPair>
+              )}
+              {subCategoryIsDomestic && getFieldError("applicationSelection.domesticType") && (
+                <CardLabelError>{getFieldError("applicationSelection.domesticType")?.message}</CardLabelError>
+              )}
+
+              {subCategoryIsCommercial && (
+                <LabelFieldPair>
+                  <CardLabel className="card-label-smaller">{t("WS_COMMERCIAL_TYPE")}</CardLabel>
+                  <div className="field">
+                    <Controller
+                      control={control}
+                      name={"applicationSelection.commercialType"}
+                      rules={{ required: t("REQUIRED_FIELD") }}
+                      isMandatory={true}
+                      render={(props) => (
+                        <RadioButtons
+                          onSelect={props.onChange}
+                          selectedOption={props.value}
+                          options={[
+                            { code: "INDIVIDUAL", name: "Individual" },
+                            { code: "ORGANIZATION", name: "Organization" },
+                          ]}
+                          optionsKey="name"
+                          t={t}
+                        />
+                      )}
+                    />
+                  </div>
+                </LabelFieldPair>
+              )}
+            </SectionCard>
+          </div>
 
           <SectionCard
-            isOpen={collapsedSections.application}
+            description={t("WS_GOVT_CONNECTION_DESC")}
+            isOpen={collapsedSections.governmentEmployee}
             onToggle={toggleSection}
-            sectionKey="application"
-            title="Application Selection"
+            sectionKey="governmentEmployee"
+            title={t("WS_GOVERNMENT_CONNECTION")}
+            sectionRef={sectionRefs.governmentEmployee}
           >
-            <LabelFieldPair>
-              <CardLabel className="card-label-smaller">ZRO Location</CardLabel>
-              <div className="field">
-                <Controller
-                  control={control}
-                  name={"zro"}
-                  defaultValue={zro}
-                  rules={{ required: t("REQUIRED_FIELD") }}
-                  isMandatory={true}
-                  render={(props) => (
-                    <div>
-                      <Dropdown
-                        className="form-field"
-                        selected={getValues("gender")}
-                        disable={false}
-                        option={menu}
-                        errorStyle={!!getFieldError("zro")}
-                        select={(e) => {
-                          setZro((prev) => ({
-                            ...prev,
-                            value: e,
-                          }));
-                        }}
-                        optionKey="i18nKey"
-                        onBlur={props.onBlur}
-                        t={t}
-                      />
-                    </div>
-                  )}
-                />
-              </div>
-            </LabelFieldPair>
-            {localFormState && zro.error && <CardLabelError>{zro.error}</CardLabelError>}
+            <FieldBlock label={t("WS_GOVERNMENT_CONNECTION")}>
+              <Controller
+                control={control}
+                name="governmentEmployee.isGovernmentEmployee"
+                render={(props) => (
+                  <CheckBox
+                    checked={!!props.value}
+                    label={t("WS_APPLICANT_IS_GOVT_CONNECTION")}
+                    onChange={(event) => props.onChange(event.target.checked)}
+                  />
+                )}
+              />
+            </FieldBlock>
 
-            <LabelFieldPair>
-              <CardLabel className="card-label-smaller">Type of Request</CardLabel>
-              <div className="field">
-                <Controller
-                  control={control}
-                  name={"zro"}
-                  defaultValue={zro}
-                  rules={{ required: t("REQUIRED_FIELD") }}
-                  isMandatory={true}
-                  render={(props) => (
-                    <div>
-                      <Dropdown
-                        className="form-field"
-                        selected={getValues("gender")}
-                        disable={false}
-                        option={TYPE_OF_REQUEST_OPTIONS}
-                        errorStyle={!!getFieldError("zro")}
-                        select={(e) => {
-                          setZro((prev) => ({
-                            ...prev,
-                            value: e,
-                          }));
-                        }}
-                        optionKey="name"
-                        onBlur={props.onBlur}
-                        t={t}
-                      />
-                    </div>
-                  )}
-                />
-              </div>
-            </LabelFieldPair>
-            {localFormState && zro.error && <CardLabelError>{zro.error}</CardLabelError>}
+            {isGovernmentEmployee && (
+              <React.Fragment>
+                <LabelFieldPair>
+                  <CardLabel className="card-label-smaller">{t("WS_ORGANIZATION_NAME")}</CardLabel>
+                  <div className="field">
+                    <TextInput
+                      name="governmentEmployee.organizationName"
+                      inputRef={register({ required: isGovernmentEmployee ? "Organization Name is required" : false })}
+                      errorStyle={!!getFieldError("governmentEmployee.organizationName")}
+                    />
+                  </div>
+                </LabelFieldPair>
+                {getFieldError("governmentEmployee.organizationName") && (
+                  <CardLabelError>{getFieldError("governmentEmployee.organizationName")?.message}</CardLabelError>
+                )}
 
-            <LabelFieldPair>
-              <CardLabel className="card-label-smaller">Connection Type</CardLabel>
-              <div className="field">
-                <Controller
-                  control={control}
-                  name={"zro"}
-                  defaultValue={zro}
-                  rules={{ required: t("REQUIRED_FIELD") }}
-                  isMandatory={true}
-                  render={(props) => (
-                    <div>
-                      <Dropdown
-                        className="form-field"
-                        selected={getValues("gender")}
-                        disable={false}
-                        option={CONNECTION_TYPE_OPTIONS}
-                        errorStyle={!!getFieldError("zro")}
-                        select={(e) => {
-                          setZro((prev) => ({
-                            ...prev,
-                            value: e,
-                          }));
-                        }}
-                        optionKey="name"
-                        onBlur={props.onBlur}
-                        t={t}
-                      />
-                    </div>
-                  )}
-                />
-              </div>
-            </LabelFieldPair>
-            {localFormState && zro.error && <CardLabelError>{zro.error}</CardLabelError>}
+                <LabelFieldPair>
+                  <CardLabel className="card-label-smaller">{t("WS_NATURE_OF_WORK")}</CardLabel>
+                  <div className="field">
+                    <TextInput
+                      name="governmentEmployee.natureOfWork"
+                      inputRef={register({ required: isGovernmentEmployee ? "Nature of Work is required" : false })}
+                      errorStyle={!!getFieldError("governmentEmployee.natureOfWork")}
+                    />
+                  </div>
+                </LabelFieldPair>
+                {getFieldError("governmentEmployee.natureOfWork") && (
+                  <CardLabelError>{getFieldError("governmentEmployee.natureOfWork")?.message}</CardLabelError>
+                )}
+
+                <LabelFieldPair>
+                  <CardLabel className="card-label-smaller">{t("WS_UPLOAD_DOCUMENT")}</CardLabel>
+                  <div className="field">
+                    <Controller
+                      control={control}
+                      name="governmentEmployee.organizationDocument"
+                      rules={{ required: isGovernmentEmployee ? "Document is required" : false }}
+                      render={(props) => (
+                        <FileUploadField
+                          error={getFieldError("governmentEmployee.organizationDocument")}
+                          id="govt-org-doc"
+                          isUploading={!!uploadingFields["governmentEmployee.organizationDocument"]}
+                          onDelete={() => clearUploadedFile("governmentEmployee.organizationDocument", props.onChange)}
+                          onUpload={(event) => uploadFile(event, "governmentEmployee.organizationDocument", props.onChange)}
+                          value={props.value}
+                        />
+                      )}
+                    />
+                  </div>
+                </LabelFieldPair>
+              </React.Fragment>
+            )}
           </SectionCard>
 
           <div style={{ display: previewMode ? "none" : "block" }}>
             <React.Fragment>
-
               <SectionCard
-                description="Applicant name, organization details, and supporting ID proof."
+                description={t("WS_APPLICANT_DETAILS_DESC")}
                 isOpen={collapsedSections.applicant}
                 onToggle={toggleSection}
                 sectionKey="applicant"
-                title="Details of Applicant"
+                title={t(applicantSectionTitle)}
+                sectionRef={sectionRefs.applicant}
               >
-                <FieldBlock error={getFieldError("applicant.firstName")} label="First Name" required>
+                <Controller
+                  control={control}
+                  name="applicant.UploadPicture"
+                  rules={{ validate: (value) => !!value || "Applicant Picture is required." }}
+                  render={(props) => (
+                    <ProfileImageUpload
+                      error={getFieldError("applicant.UploadPicture")?.message}
+                      isUploading={!!uploadingFields["applicant.UploadPicture"]}
+                      label="WS_UPLOAD_PICTURE"
+                      onUpload={(event) => uploadFile(event, "applicant.UploadPicture", props.onChange)}
+                      required
+                      t={t}
+                      value={props.value}
+                    />
+                  )}
+                />
+
+                <FieldBlock error={getFieldError("applicant.firstName")} label={t("WS_FIRST_NAME")} required>
                   <TextInput
                     errorStyle={!!getFieldError("applicant.firstName")}
                     inputRef={register({
@@ -915,7 +1676,7 @@ const NewApplication = () => {
                   />
                 </FieldBlock>
 
-                <FieldBlock error={getFieldError("applicant.middleName")} label="Middle Name">
+                <FieldBlock error={getFieldError("applicant.middleName")} label={t("WS_MIDDLE_NAME")}>
                   <TextInput
                     errorStyle={!!getFieldError("applicant.middleName")}
                     inputRef={register({
@@ -925,7 +1686,7 @@ const NewApplication = () => {
                   />
                 </FieldBlock>
 
-                <FieldBlock error={getFieldError("applicant.lastName")} label="Last Name" required>
+                <FieldBlock error={getFieldError("applicant.lastName")} label={t("WS_LAST_NAME")} required>
                   <TextInput
                     errorStyle={!!getFieldError("applicant.lastName")}
                     inputRef={register({
@@ -936,76 +1697,38 @@ const NewApplication = () => {
                   />
                 </FieldBlock>
 
-                <FieldBlock error={getFieldError("applicant.fatherOrHusbandName")} label="Father / Husband Name" required>
-                  <TextInput
-                    errorStyle={!!getFieldError("applicant.fatherOrHusbandName")}
-                    inputRef={register({
-                      pattern: { value: NAME_PATTERN, message: "Use letters only." },
-                      required: "Father / Husband Name is required.",
-                    })}
-                    name="applicant.fatherOrHusbandName"
-                  />
-                </FieldBlock>
-
-                <FieldBlock label="Government Organization">
+                <FieldBlock error={getFieldError("useDetails.gender")} label={t("WS_GENDER")} required>
                   <Controller
                     control={control}
-                    name="applicant.isGovernmentOrganization"
+                    name="useDetails.gender"
+                    rules={{ required: "Gender is required." }}
                     render={(props) => (
-                      <CheckBox
-                        checked={!!props.value}
-                        label="Applicant belongs to a Government Organization"
-                        onChange={(event) => props.onChange(event.target.checked)}
+                      <Dropdown
+                        option={[
+                          { name: "Male", code: "MALE", i18nKey: "MALE" },
+                          { name: "Female", code: "FEMALE", i18nKey: "FEMALE" },
+                        ]}
+                        optionKey="i18nKey"
+                        selected={props.value}
+                        select={props.onChange}
+                        t={t}
                       />
                     )}
                   />
                 </FieldBlock>
 
-                {isGovernmentOrganization ? (
-                  <FieldBlock
-                    error={getFieldError("applicant.governmentOrganizationName")}
-                    isFullWidth
-                    label="Name of Government Organization"
-                    required
-                  >
-                    <TextInput
-                      errorStyle={!!getFieldError("applicant.governmentOrganizationName")}
-                      inputRef={register({
-                        required: isGovernmentOrganization ? "Government Organization Name is required." : false,
-                      })}
-                      name="applicant.governmentOrganizationName"
-                    />
-                  </FieldBlock>
-                ) : null}
+                <FieldBlock error={getFieldError("applicant.ParentorSpouse")} label={t("WS_PARENT_OR_SPOUSE")} required>
+                  <TextInput
+                    errorStyle={!!getFieldError("applicant.ParentorSpouse")}
+                    inputRef={register({
+                      pattern: { value: NAME_PATTERN, message: "Use letters only." },
+                      required: "Parent/ spouse Name is required.",
+                    })}
+                    name="applicant.ParentorSpouse"
+                  />
+                </FieldBlock>
 
-                <Controller
-                  control={control}
-                  name="applicant.applicantIdProofFile"
-                  rules={{ validate: (value) => !!value || "Applicant ID Proof is required." }}
-                  render={(props) => (
-                    <FileUploadField
-                      error={getFieldError("applicant.applicantIdProofFile")}
-                      helperText="Max size 5 MB. Allowed types: PDF, PNG, JPG, JPEG."
-                      id="applicant-id-proof"
-                      isUploading={!!uploadingFields["applicant.applicantIdProofFile"]}
-                      label="Upload ID Proof"
-                      onDelete={() => clearUploadedFile("applicant.applicantIdProofFile", props.onChange)}
-                      onUpload={(event) => uploadFile(event, "applicant.applicantIdProofFile", props.onChange)}
-                      required
-                      value={props.value}
-                    />
-                  )}
-                />
-              </SectionCard>
-
-              <SectionCard
-                description="Basic communication details for the application."
-                isOpen={collapsedSections.contact}
-                onToggle={toggleSection}
-                sectionKey="contact"
-                title="Contact Details"
-              >
-                <FieldBlock error={getFieldError("contact.emailId")} label="Email ID" required>
+                <FieldBlock error={getFieldError("contact.emailId")} label={t("WS_EMAIL_ID")} required>
                   <TextInput
                     errorStyle={!!getFieldError("contact.emailId")}
                     inputRef={register({
@@ -1016,7 +1739,7 @@ const NewApplication = () => {
                   />
                 </FieldBlock>
 
-                <FieldBlock error={getFieldError("contact.mobileNumber")} label="Mobile Number" required>
+                <FieldBlock error={getFieldError("contact.mobileNumber")} label={t("WS_MOBILE_NUMBER")} required>
                   <TextInput
                     errorStyle={!!getFieldError("contact.mobileNumber")}
                     inputRef={register({
@@ -1028,82 +1751,209 @@ const NewApplication = () => {
                   />
                 </FieldBlock>
 
-                <FieldBlock error={getFieldError("contact.officeNumber")} label="Office No.">
+                <FieldBlock error={getFieldError("contact.whatsAppNumber")} label={t("WS_WHATS_APP_NUMBER")}>
                   <TextInput
-                    errorStyle={!!getFieldError("contact.officeNumber")}
+                    errorStyle={!!getFieldError("contact.whatsAppNumber")}
                     inputRef={register({
-                      pattern: { value: OFFICE_PATTERN, message: "Enter a valid office number." },
+                      pattern: { value: MOBILE_PATTERN, message: "Enter a valid 10-digit WhatsApp number." },
                     })}
-                    name="contact.officeNumber"
+                    maxlength={10}
+                    name="contact.whatsAppNumber"
                   />
                 </FieldBlock>
               </SectionCard>
 
               <SectionCard
-                description="Enable this section only when the applicant is a DJB employee."
+                description={t("WS_DJB_EMPLOYEE_DESC")}
                 isOpen={collapsedSections.employee}
                 onToggle={toggleSection}
-                sectionKey="employee"
-                title="For DJB Employee"
+                sectionKey="djbEmployee"
+                title={t("WS_DJB_EMPLOYEE")}
+                sectionRef={sectionRefs.djbEmployee}
               >
-                <FieldBlock label="DJB Employee">
+                <FieldBlock label={t("WS_DJB_EMPLOYEE")}>
                   <Controller
                     control={control}
                     name="djbEmployee.isDjbEmployee"
                     render={(props) => (
                       <CheckBox
                         checked={!!props.value}
-                        label="Applicant is a DJB Employee"
+                        label={t("WS_APPLICANT_IS_DJB_EMPLOYEE")}
                         onChange={(event) => props.onChange(event.target.checked)}
                       />
                     )}
                   />
                 </FieldBlock>
 
-                <FieldBlock error={getFieldError("djbEmployee.employeeId")} label="Employee ID" required={isDjbEmployee}>
-                  <TextInput
-                    errorStyle={!!getFieldError("djbEmployee.employeeId")}
-                    inputRef={register({
-                      required: isDjbEmployee ? "Employee ID is required." : false,
-                    })}
-                    name="djbEmployee.employeeId"
-                  />
-                </FieldBlock>
+                {isDjbEmployee && (
+                  <React.Fragment>
+                    <FieldBlock error={getFieldError("djbEmployee.employeeId")} label={t("WS_EMPLOYEE_ID")} required={isDjbEmployee}>
+                      <TextInput
+                        errorStyle={!!getFieldError("djbEmployee.employeeId")}
+                        inputRef={register({
+                          required: isDjbEmployee ? "Employee ID is required." : false,
+                        })}
+                        name="djbEmployee.employeeId"
+                      />
+                    </FieldBlock>
 
-                <FieldBlock error={getFieldError("djbEmployee.retirementDate")} label="Date of Retirement" required={isDjbEmployee}>
-                  <Controller
-                    control={control}
-                    name="djbEmployee.retirementDate"
-                    rules={{ required: isDjbEmployee ? "Date of Retirement is required." : false }}
-                    render={(props) => <DatePicker date={props.value} onChange={props.onChange} />}
-                  />
-                </FieldBlock>
+                    <FieldBlock error={getFieldError("djbEmployee.retirementDate")} label={t("WS_DATE_OF_RETIREMENT")} required={isDjbEmployee}>
+                      <Controller
+                        control={control}
+                        name="djbEmployee.retirementDate"
+                        rules={{ required: isDjbEmployee ? "Date of Retirement is required." : false }}
+                        render={(props) => <DatePicker date={props.value} onChange={props.onChange} />}
+                      />
+                    </FieldBlock>
 
-                <FieldBlock
-                  error={getFieldError("djbEmployee.officeNameAndAddress")}
-                  isFullWidth
-                  label="Office Name & Address"
-                  required={isDjbEmployee}
-                >
-                  <TextArea
-                    className={getFieldError("djbEmployee.officeNameAndAddress") ? "employee-card-input-error" : ""}
-                    inputRef={register({
-                      required: isDjbEmployee ? "Office Name & Address is required." : false,
-                    })}
-                    name="djbEmployee.officeNameAndAddress"
-                    style={{ minHeight: "96px" }}
-                  />
-                </FieldBlock>
+                    <FieldBlock
+                      error={getFieldError("djbEmployee.officeNameAndAddress")}
+                      isFullWidth
+                      label={t("WS_OFFICE_NAME_AND_ADDRESS")}
+                      required={isDjbEmployee}
+                    >
+                      <TextArea
+                        className={getFieldError("djbEmployee.officeNameAndAddress") ? "employee-card-input-error" : ""}
+                        inputRef={register({
+                          required: isDjbEmployee ? "Office Name & Address is required." : false,
+                        })}
+                        name="djbEmployee.officeNameAndAddress"
+                        style={{ minHeight: "96px" }}
+                      />
+                    </FieldBlock>
+                  </React.Fragment>
+                )}
               </SectionCard>
 
               <SectionCard
-                description="Property location and administrative boundary details."
+                description={t("WS_PROPERTY_ADDRESS_DESC")}
                 isOpen={collapsedSections.address}
                 onToggle={toggleSection}
-                sectionKey="address"
-                title="Property Address"
+                sectionKey="propertyAddress"
+                title={t("WS_PROPERTY_ADDRESS")}
+                sectionRef={sectionRefs.propertyAddress}
               >
-                <FieldBlock error={getFieldError("propertyAddress.address")} isFullWidth label="Address" required>
+                {/* <FieldBlock error={getFieldError("propertyAddress.city")} label={t("WS_CITY")}>
+                  <Controller
+                    control={control}
+                    name="propertyAddress.city"
+                    render={(props) => (
+                      <Dropdown
+                        className="form-field"
+                        selected={props.value || city}
+                        select={(val) => {
+                          setCity(val);
+                          props.onChange(val);
+                        }}
+                        option={allCities}
+                        optionCardStyles={{ overflowY: "auto", maxHeight: "300px" }}
+                        optionKey="i18nKey"
+                        t={t}
+                        style={{ width: "100%" }}
+                        placeholder={t("WS_SELECT")}
+                      />
+                    )}
+                  />
+                </FieldBlock> */}
+                <FieldBlock error={getFieldError("propertyAddress.pinCode")} label={t("WS_PIN_CODE")} required>
+                  <Controller
+                    control={control}
+                    name="propertyAddress.pinCode"
+                    rules={{ required: "Pin Code is required." }}
+                    render={(props) => (
+                      <Dropdown
+                        option={fetchedPincodes}
+                        optionKey="i18nKey"
+                        selected={
+                          fetchedPincodes?.find((p) => p.code === props.value) ||
+                          (props.value ? { code: props.value, name: props.value, i18nKey: props.value } : null)
+                        }
+                        select={(val) => {
+                          const newPin = val?.code;
+                          if (newPin !== props.value) {
+                            setValue("propertyAddress.locality", null);
+                            setValue("propertyAddress.zone", "");
+                            setValue("propertyAddress.block", "");
+                            setValue("propertyAddress.address", "");
+                          }
+                          props.onChange(newPin);
+                        }}
+                        t={t}
+                      />
+                    )}
+                  />
+                </FieldBlock>
+
+                <FieldBlock error={getFieldError("propertyAddress.locality")} label={t("WS_LOCALITY")} required>
+                  <Controller
+                    control={control}
+                    name="propertyAddress.locality"
+                    rules={{ required: "Locality is required." }}
+                    render={(props) => (
+                      <Dropdown
+                        option={filteredLocalities}
+                        optionKey="i18nKey"
+                        selected={props.value}
+                        select={(val) => {
+                          props.onChange(val);
+                          if (val?.zone) setValue("propertyAddress.zone", val.zone);
+                          if (val?.ward) setValue("propertyAddress.block", val.ward);
+                          if (val?.localname) setValue("propertyAddress.address", val.localname);
+                          if (val?.pincode) {
+                            const p = Array.isArray(val.pincode) ? val.pincode[0] : val.pincode;
+                            if (p) {
+                              setValue("propertyAddress.pinCode", p.toString().split(".")[0]);
+                            }
+                          }
+                        }}
+                        t={t}
+                      />
+                    )}
+                  />
+                </FieldBlock>
+
+                <FieldBlock error={getFieldError("propertyAddress.state")} label={t("WS_STATE")}>
+                  <Controller
+                    control={control}
+                    name="propertyAddress.city"
+                    render={(props) => (
+                      <Dropdown
+                        className="form-field"
+                        selected={props.value || city}
+                        select={(val) => {
+                          setCity(val);
+                          props.onChange(val);
+                        }}
+                        option={allCities}
+                        optionCardStyles={{ overflowY: "auto", maxHeight: "300px" }}
+                        optionKey="i18nKey"
+                        t={t}
+                        style={{ width: "100%" }}
+                        placeholder={t("WS_SELECT")}
+                      />
+                    )}
+                  />
+                </FieldBlock>
+
+                <FieldBlock error={getFieldError("propertyAddress.street")} label={t("WS_STREET")}>
+                  <TextInput errorStyle={!!getFieldError("propertyAddress.street")} inputRef={register()} name="propertyAddress.street" />
+                </FieldBlock>
+
+                <FieldBlock error={getFieldError("propertyAddress.houseNo")} label={t("WS_HOUSE_NO")}>
+                  <TextInput errorStyle={!!getFieldError("propertyAddress.houseNo")} inputRef={register()} name="propertyAddress.houseNo" />
+                </FieldBlock>
+
+                <FieldBlock error={getFieldError("propertyAddress.block")} label={t("WS_BLOCK")}>
+                  <TextInput errorStyle={!!getFieldError("propertyAddress.block")} inputRef={register()} name="propertyAddress.block" />
+                </FieldBlock>
+
+                <FieldBlock error={getFieldError("propertyAddress.zone")} label={t("WS_ZONE")}>
+                  <TextInput errorStyle={!!getFieldError("propertyAddress.zone")} inputRef={register()} name="propertyAddress.zone" />
+                </FieldBlock>
+                <FieldBlock error={getFieldError("propertyAddress.landmark")} label={t("WS_LANDMARK")}>
+                  <TextInput errorStyle={!!getFieldError("propertyAddress.landmark")} inputRef={register()} name="propertyAddress.landmark" />
+                </FieldBlock>
+                <FieldBlock error={getFieldError("propertyAddress.address")} isFullWidth label={t("WS_ADDRESS")}>
                   <TextArea
                     className={getFieldError("propertyAddress.address") ? "employee-card-input-error" : ""}
                     inputRef={register({
@@ -1113,88 +1963,50 @@ const NewApplication = () => {
                     style={{ minHeight: "96px" }}
                   />
                 </FieldBlock>
-
-                <FieldBlock error={getFieldError("propertyAddress.landmark")} label="Landmark">
-                  <TextInput errorStyle={!!getFieldError("propertyAddress.landmark")} inputRef={register()} name="propertyAddress.landmark" />
-                </FieldBlock>
-
-                <FieldBlock error={getFieldError("propertyAddress.pinCode")} label="Pin Code" required>
-                  <TextInput
-                    errorStyle={!!getFieldError("propertyAddress.pinCode")}
-                    inputRef={register({
-                      pattern: { value: PINCODE_PATTERN, message: "Enter a valid 6-digit pin code." },
-                      required: "Pin Code is required.",
-                    })}
-                    maxlength={6}
-                    name="propertyAddress.pinCode"
-                  />
-                </FieldBlock>
-
-                <FieldBlock error={getFieldError("propertyAddress.locality")} label="Locality" required>
-                  <Controller
-                    control={control}
-                    name="propertyAddress.locality"
-                    rules={{ required: "Locality is required." }}
-                    render={(props) => <Dropdown option={LOCALITY_OPTIONS} optionKey="name" selected={props.value} select={props.onChange} t={t} />}
-                  />
-                </FieldBlock>
-
-                <FieldBlock error={getFieldError("propertyAddress.subLocality")} label="Sub Locality" required>
-                  <Controller
-                    control={control}
-                    name="propertyAddress.subLocality"
-                    rules={{ required: "Sub Locality is required." }}
-                    render={(props) => (
-                      <Dropdown
-                        disable={!selectedLocality}
-                        option={subLocalityOptions}
-                        optionKey="name"
-                        selected={props.value}
-                        select={props.onChange}
-                        t={t}
-                      />
-                    )}
-                  />
-                </FieldBlock>
-
-                <FieldBlock error={getFieldError("propertyAddress.assembly")} label="Assembly" required>
-                  <Controller
-                    control={control}
-                    name="propertyAddress.assembly"
-                    rules={{ required: "Assembly is required." }}
-                    render={(props) => <Dropdown option={ASSEMBLY_OPTIONS} optionKey="name" selected={props.value} select={props.onChange} t={t} />}
-                  />
-                </FieldBlock>
-
-                <FieldBlock error={getFieldError("propertyAddress.ward")} label="Ward" required>
-                  <Controller
-                    control={control}
-                    name="propertyAddress.ward"
-                    rules={{ required: "Ward is required." }}
-                    render={(props) => <Dropdown option={WARD_OPTIONS} optionKey="name" selected={props.value} select={props.onChange} t={t} />}
-                  />
-                </FieldBlock>
               </SectionCard>
 
               <SectionCard
-                description="Usage attributes for the property and the requested water connection."
+                description={t("WS_USE_DETAILS_DESC")}
                 isOpen={collapsedSections.usage}
                 onToggle={toggleSection}
-                sectionKey="usage"
-                title="Property and Water Connection Use Details"
+                sectionKey="useDetails"
+                title={t("WS_PROPERTY_AND_WATER_CONNECTION_USE_DETAILS")}
+                sectionRef={sectionRefs.useDetails}
               >
-                <FieldBlock error={getFieldError("useDetails.propertyType")} label="Property Type" required>
+                <FieldBlock error={getFieldError("useDetails.propertyType")} label={t("WS_PROPERTY_TYPE")} required>
                   <Controller
                     control={control}
                     name="useDetails.propertyType"
                     rules={{ required: "Property Type is required." }}
                     render={(props) => (
-                      <Dropdown option={PROPERTY_TYPE_OPTIONS} optionKey="name" selected={props.value} select={props.onChange} t={t} />
+                      <Dropdown option={dropdownData.propertyTypes} optionKey="name" selected={props.value} select={props.onChange} t={t} />
                     )}
                   />
                 </FieldBlock>
 
-                <FieldBlock error={getFieldError("useDetails.noOfFloors")} label="No. of Floors" required>
+                <FieldBlock error={getFieldError("useDetails.plotArea")} label={t("WS_PLOT_AREA")} required>
+                  <TextInput
+                    errorStyle={!!getFieldError("useDetails.plotArea")}
+                    inputRef={register({
+                      pattern: { value: DECIMAL_PATTERN, message: "Enter a valid numeric value." },
+                      required: "Plot Area is required.",
+                    })}
+                    name="useDetails.plotArea"
+                  />
+                </FieldBlock>
+
+                <FieldBlock error={getFieldError("useDetails.builtUpArea")} label={t("WS_BUILT_UP_AREA")} required>
+                  <TextInput
+                    errorStyle={!!getFieldError("useDetails.builtUpArea")}
+                    inputRef={register({
+                      pattern: { value: DECIMAL_PATTERN, message: "Enter a valid numeric value." },
+                      required: "Built Up Area is required.",
+                    })}
+                    name="useDetails.builtUpArea"
+                  />
+                </FieldBlock>
+
+                <FieldBlock error={getFieldError("useDetails.noOfFloors")} label={t("WS_NUMBER_OF_FLOORS")} required>
                   <TextInput
                     errorStyle={!!getFieldError("useDetails.noOfFloors")}
                     inputRef={register({
@@ -1205,8 +2017,19 @@ const NewApplication = () => {
                   />
                 </FieldBlock>
 
+                <FieldBlock error={getFieldError("useDetails.NumberofDwellingUnits")} label={t("WS_NUMBER_OF_DWELLING_UNITS")} required>
+                  <TextInput
+                    errorStyle={!!getFieldError("useDetails.NumberofDwellingUnits")}
+                    inputRef={register({
+                      pattern: { value: DECIMAL_PATTERN, message: "Enter a valid numeric value." },
+                      required: "Built Up Area is required.",
+                    })}
+                    name="useDetails.NumberofDwellingUnits"
+                  />
+                </FieldBlock>
+
                 {isHospitalProperty ? (
-                  <FieldBlock error={getFieldError("useDetails.hospitalBeds")} label="No. of Beds for Hospitals & Nursing Home" required>
+                  <FieldBlock error={getFieldError("useDetails.hospitalBeds")} label={t("WS_NUMBER_OF_BEDS")} required>
                     <TextInput
                       errorStyle={!!getFieldError("useDetails.hospitalBeds")}
                       inputRef={register({
@@ -1218,44 +2041,20 @@ const NewApplication = () => {
                   </FieldBlock>
                 ) : null}
 
-                <FieldBlock error={getFieldError("useDetails.plotArea")} label="Plot Area in Sqm" required>
-                  <TextInput
-                    errorStyle={!!getFieldError("useDetails.plotArea")}
-                    inputRef={register({
-                      pattern: { value: DECIMAL_PATTERN, message: "Enter a valid numeric value." },
-                      required: "Plot Area is required.",
-                    })}
-                    name="useDetails.plotArea"
-                  />
-                </FieldBlock>
-
-                <FieldBlock error={getFieldError("useDetails.builtUpArea")} label="Built Up Area" required>
-                  <TextInput
-                    errorStyle={!!getFieldError("useDetails.builtUpArea")}
-                    inputRef={register({
-                      pattern: { value: DECIMAL_PATTERN, message: "Enter a valid numeric value." },
-                      required: "Built Up Area is required.",
-                    })}
-                    name="useDetails.builtUpArea"
-                  />
-                </FieldBlock>
-
-                <FieldBlock error={getFieldError("useDetails.waterConnectionCategory")} label="Water Connection Category" required>
+                <FieldBlock error={getFieldError("useDetails.SelectYearofConstruction")} label={t("WS_SELECT_YEAR_OF_CONSTRUCTION")} required>
                   <Controller
                     control={control}
-                    name="useDetails.waterConnectionCategory"
-                    rules={{ required: "Water Connection Category is required." }}
-                    render={(props) => (
-                      <Dropdown option={WATER_CONNECTION_CATEGORY_OPTIONS} optionKey="name" selected={props.value} select={props.onChange} t={t} />
-                    )}
+                    name="useDetails.SelectYearofConstruction"
+                    rules={{ required: "Select Year of Construction is required." }}
+                    render={(props) => <Dropdown option={yearOptions} optionKey="value" selected={props.value} select={props.onChange} t={t} />}
                   />
                 </FieldBlock>
 
-                <FieldBlock error={getFieldError("useDetails.waterConnectionUsedBy")} label="Water Connection Used By" required>
+                <FieldBlock error={getFieldError("useDetails.WaterConnectionUsageType")} label={t("WS_WATER_CONNECTION_USAGE_TYPE")} required>
                   <Controller
                     control={control}
-                    name="useDetails.waterConnectionUsedBy"
-                    rules={{ required: "Water Connection Used By is required." }}
+                    name="useDetails.WaterConnectionUsageType"
+                    rules={{ required: "Water Connection Usage Type is required." }}
                     render={(props) => (
                       <Dropdown option={WATER_CONNECTION_USED_BY_OPTIONS} optionKey="name" selected={props.value} select={props.onChange} t={t} />
                     )}
@@ -1267,8 +2066,9 @@ const NewApplication = () => {
                 description="Refund or payment-linked bank account details."
                 isOpen={collapsedSections.bank}
                 onToggle={toggleSection}
-                sectionKey="bank"
+                sectionKey="bankDetails"
                 title="Bank Details"
+                sectionRef={sectionRefs.bankDetails}
               >
                 <FieldBlock error={getFieldError("bankDetails.bankName")} label="Name of the Bank" required>
                   <TextInput
@@ -1317,33 +2117,12 @@ const NewApplication = () => {
               </SectionCard>
 
               <SectionCard
-                description="Optional rain water harvesting certificate request."
-                isOpen={collapsedSections.rainWaterHarvesting}
-                onToggle={toggleSection}
-                sectionKey="rainWaterHarvesting"
-                title="Rain Water Harvesting"
-              >
-                <FieldBlock isFullWidth label="Apply for RWH Adequacy Certificate">
-                  <Controller
-                    control={control}
-                    name="rainWaterHarvesting.applyForAdequacyCertificate"
-                    render={(props) => (
-                      <CheckBox
-                        checked={!!props.value}
-                        label="Apply for RWH Adequacy Certificate"
-                        onChange={(event) => props.onChange(event.target.checked)}
-                      />
-                    )}
-                  />
-                </FieldBlock>
-              </SectionCard>
-
-              <SectionCard
                 description="Documents to be attached. Maximum allowed file size is 5 MB."
                 isOpen={collapsedSections.documents}
                 onToggle={toggleSection}
                 sectionKey="documents"
                 title="Documents to be Attached"
+                sectionRef={sectionRefs.documents}
               >
                 <FieldBlock error={getFieldError("documents.proofOfIdentity")} label="Proof of Identity" required>
                   <Controller
@@ -1353,6 +2132,14 @@ const NewApplication = () => {
                     render={(props) => (
                       <Dropdown option={PROOF_OF_IDENTITY_OPTIONS} optionKey="name" selected={props.value} select={props.onChange} t={t} />
                     )}
+                  />
+                </FieldBlock>
+
+                <FieldBlock error={getFieldError("propertyAddress.proofOfIdentity")} label="Proof of Identity Document" required>
+                  <TextInput
+                    errorStyle={!!getFieldError("propertyAddress.proofOfIdentity")}
+                    inputRef={register()}
+                    name="propertyAddress.proofOfIdentity"
                   />
                 </FieldBlock>
 
@@ -1375,7 +2162,9 @@ const NewApplication = () => {
                   )}
                 />
 
-                <FieldBlock error={getFieldError("documents.ownershipStatus")} label="Ownership Status" required>
+                <FieldBlock error={getFieldError("propertyAddress.otherDocument")}></FieldBlock>
+
+                <FieldBlock error={getFieldError("documents.ownershipStatus")} label="Ownership Proof" required>
                   <Controller
                     control={control}
                     name="documents.ownershipStatus"
@@ -1383,6 +2172,14 @@ const NewApplication = () => {
                     render={(props) => (
                       <Dropdown option={OWNERSHIP_STATUS_OPTIONS} optionKey="name" selected={props.value} select={props.onChange} t={t} />
                     )}
+                  />
+                </FieldBlock>
+
+                <FieldBlock error={getFieldError("propertyAddress.ownershipStatus")} label="Proof of Identity Ownership Document" required>
+                  <TextInput
+                    errorStyle={!!getFieldError("propertyAddress.ownershipStatus")}
+                    inputRef={register()}
+                    name="propertyAddress.ownershipStatus"
                   />
                 </FieldBlock>
 
@@ -1405,6 +2202,27 @@ const NewApplication = () => {
                   )}
                 />
 
+                <FieldBlock error={getFieldError("propertyAddress.otherDocument")}></FieldBlock>
+
+                <FieldBlock error={getFieldError("documents.otherDocument")} label="Other Document" required>
+                  <Controller
+                    control={control}
+                    name="documents.otherDocument"
+                    rules={{ required: "Other Document is required." }}
+                    render={(props) => (
+                      <Dropdown option={OWNERSHIP_STATUS_OPTIONS} optionKey="name" selected={props.value} select={props.onChange} t={t} />
+                    )}
+                  />
+                </FieldBlock>
+
+                <FieldBlock error={getFieldError("propertyAddress.otherDocument")} label="Other Document" required>
+                  <TextInput
+                    errorStyle={!!getFieldError("propertyAddress.otherDocument")}
+                    inputRef={register()}
+                    name="propertyAddress.otherDocument"
+                  />
+                </FieldBlock>
+
                 <Controller
                   control={control}
                   name="documents.otherDocumentFile"
@@ -1422,21 +2240,39 @@ const NewApplication = () => {
                   )}
                 />
               </SectionCard>
-
               <SectionCard
-                description="Final undertaking details before preview and submit."
+                description="Declaration and undertaking to be signed by the applicant."
                 isOpen={collapsedSections.declaration}
                 onToggle={toggleSection}
                 sectionKey="declaration"
-                title="Declaration / Undertaking"
+                title="Declaration/Undertaking"
+                sectionRef={sectionRefs.declaration}
               >
+                {DECLARATION_POINTS.map((point, index) => (
+                  <p key={index}>
+                    <span>{String(index + 1)}.</span>
+                    <span>{point}</span>
+                  </p>
+                ))}
+
+                <FieldBlock error={getFieldError("propertyAddress.otherDocument")}></FieldBlock>
+
                 <FieldBlock error={getFieldError("declaration.submittedBy")} label="Submitted By" required>
                   <Controller
                     control={control}
                     name="declaration.submittedBy"
-                    rules={{ required: "Submitted By is required." }}
+                    rules={{ required: "Submission type is required." }}
                     render={(props) => (
-                      <Dropdown option={SUBMITTED_BY_OPTIONS} optionKey="name" selected={props.value} select={props.onChange} t={t} />
+                      <Dropdown
+                        option={[
+                          { code: "SELF", name: "SELF" },
+                          { code: "RELATIVE", name: "Relative" },
+                        ]}
+                        optionKey="name"
+                        selected={props.value}
+                        select={props.onChange}
+                        t={t}
+                      />
                     )}
                   />
                 </FieldBlock>
@@ -1444,11 +2280,10 @@ const NewApplication = () => {
                 <Controller
                   control={control}
                   name="declaration.signatureFile"
-                  rules={{ validate: (value) => !!value || "Upload Signature is required." }}
+                  rules={{ validate: (value) => !!value || "Signature upload is required." }}
                   render={(props) => (
                     <FileUploadField
                       error={getFieldError("declaration.signatureFile")}
-                      helperText="Max size 5 MB. Allowed types: PDF, PNG, JPG, JPEG."
                       id="signature-file"
                       isUploading={!!uploadingFields["declaration.signatureFile"]}
                       label="Upload Signature"
@@ -1459,36 +2294,6 @@ const NewApplication = () => {
                     />
                   )}
                 />
-
-                <FieldBlock isFullWidth label="Captcha" required>
-                  <div style={{ display: "flex", gap: "16px", flexWrap: "wrap", alignItems: "center" }}>
-                    <div style={captchaBoxStyle}>{generatedCaptcha}</div>
-                    <button type="button" onClick={refreshCaptcha} style={linkButtonStyle}>
-                      Refresh Captcha
-                    </button>
-                  </div>
-                </FieldBlock>
-
-                <FieldBlock error={getFieldError("declaration.captcha")} label="Enter Captcha" required>
-                  <TextInput
-                    errorStyle={!!getFieldError("declaration.captcha")}
-                    inputRef={register({
-                      required: "Captcha is required.",
-                    })}
-                    name="declaration.captcha"
-                  />
-                </FieldBlock>
-
-                <FieldBlock error={getFieldError("declaration.agree")} isFullWidth label="Declaration" required>
-                  <Controller
-                    control={control}
-                    name="declaration.agree"
-                    rules={{ validate: (value) => value || "Please accept the declaration to continue." }}
-                    render={(props) => (
-                      <CheckBox checked={!!props.value} label="I Agree" onChange={(event) => props.onChange(event.target.checked)} />
-                    )}
-                  />
-                </FieldBlock>
               </SectionCard>
             </React.Fragment>
           </div>
@@ -1501,9 +2306,34 @@ const NewApplication = () => {
                 onToggle={toggleSection}
                 sectionKey="application"
                 title="Application Selection"
+                onEditClick={() => handleSectionEdit("application")}
               >
-                <PreviewItem label="Type of Request" value={formValues?.typeOfRequest} />
-                <PreviewItem label="Connection Type" value={formValues?.connectionType} />
+                <PreviewItem label="ZRO Location" value={formValues?.zro} />
+                <PreviewItem label="Service Type" value={formValues?.applicationSelection?.serviceType} />
+                <PreviewItem label="Applicant Type" value={formValues?.applicationSelection?.applicantType} />
+                <PreviewItem label="Connection Type" value={formValues?.applicationSelection?.connectionType} />
+                {formValues?.applicationSelection?.connectionType?.code === "TEMPORARY" && (
+                  <PreviewItem label="Temporary Connection" value={formValues?.applicationSelection?.temporaryConnection} />
+                )}
+                {isTenantOrRelative && (
+                  <React.Fragment>
+                    <PreviewItem label="Owner Authorization" value={formValues?.applicationSelection?.ownerAuthorizationDoc} />
+                    <PreviewItem label="Owner Contact Number" value={formValues?.applicationSelection?.ownerContactNumber} />
+                  </React.Fragment>
+                )}
+                <PreviewItem label="Category Type" value={formValues?.applicationSelection?.categoryType} />
+                <PreviewItem label="Sub Category" value={formValues?.applicationSelection?.subCategory} />
+                {formValues?.applicationSelection?.subCategory?.code === "DOMESTIC" && (
+                  <PreviewItem label="Domestic Type" value={formValues?.applicationSelection?.domesticType} />
+                )}
+                {formValues?.applicationSelection?.subCategory?.code === "COMMERCIAL" && (
+                  <React.Fragment>
+                    <PreviewItem label="Commercial Type" value={formValues?.applicationSelection?.commercialType} />
+                    <PreviewItem label="Organization Name" value={formValues?.applicationSelection?.govtOrganization?.organizationName} />
+                    <PreviewItem label="Nature of Work" value={formValues?.applicationSelection?.govtOrganization?.natureOfWork} />
+                    <PreviewItem label="Organization Document" value={formValues?.applicationSelection?.govtOrganization?.organizationDocument} />
+                  </React.Fragment>
+                )}
               </SectionCard>
 
               <SectionCard
@@ -1511,37 +2341,43 @@ const NewApplication = () => {
                 isOpen={collapsedSections.applicant}
                 onToggle={toggleSection}
                 sectionKey="applicant"
-                title="Details of Applicant"
+                title={applicantSectionTitle}
+                onEditClick={() => handleSectionEdit("applicant")}
               >
+                <div style={{ gridColumn: "1 / -1", display: "flex", justifyContent: "center", marginBottom: "16px" }}>
+                  <div className="avatar-wrapper" style={{ cursor: "default" }}>
+                    <div className="avatar-circle" style={{ cursor: "default" }}>
+                      {formValues?.applicant?.UploadPicture?.fileStoreId ? (
+                        <ProfileImagePreview fileStoreId={formValues?.applicant?.UploadPicture?.fileStoreId} />
+                      ) : (
+                        <div className="avatar-placeholder">
+                          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                            <circle cx="12" cy="7" r="4" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
                 <PreviewItem label="First Name" value={formValues?.applicant?.firstName} />
                 <PreviewItem label="Middle Name" value={formValues?.applicant?.middleName} />
                 <PreviewItem label="Last Name" value={formValues?.applicant?.lastName} />
-                <PreviewItem label="Father / Husband Name" value={formValues?.applicant?.fatherOrHusbandName} />
-                <PreviewItem label="Government Organization" value={formValues?.applicant?.isGovernmentOrganization} />
-                {formValues?.applicant?.isGovernmentOrganization ? (
-                  <PreviewItem isFullWidth label="Name of Government Organization" value={formValues?.applicant?.governmentOrganizationName} />
-                ) : null}
-                <PreviewItem isFullWidth label="Uploaded ID Proof" value={formValues?.applicant?.applicantIdProofFile} />
-              </SectionCard>
-
-              <SectionCard
-                description="Communication details captured in the application."
-                isOpen={collapsedSections.contact}
-                onToggle={toggleSection}
-                sectionKey="contact"
-                title="Contact Details"
-              >
+                <PreviewItem label="Gender" value={formValues?.useDetails?.gender} />
+                <PreviewItem label="Parent/ spouse" value={formValues?.applicant?.ParentorSpouse} />
                 <PreviewItem label="Email ID" value={formValues?.contact?.emailId} />
                 <PreviewItem label="Mobile Number" value={formValues?.contact?.mobileNumber} />
-                <PreviewItem label="Office No." value={formValues?.contact?.officeNumber} />
+                <PreviewItem label="WhatsApp Number" value={formValues?.contact?.whatsAppNumber} />
+                <PreviewItem isFullWidth label="Uploaded ID Proof" value={formValues?.documents?.identityProofFile} />
               </SectionCard>
 
               <SectionCard
                 description="DJB employee-specific information."
-                isOpen={collapsedSections.employee}
+                isOpen={collapsedSections.djbEmployee}
                 onToggle={toggleSection}
-                sectionKey="employee"
+                sectionKey="djbEmployee"
                 title="For DJB Employee"
+                onEditClick={() => handleSectionEdit("djbEmployee")}
               >
                 <PreviewItem label="DJB Employee" value={formValues?.djbEmployee?.isDjbEmployee} />
                 {formValues?.djbEmployee?.isDjbEmployee ? (
@@ -1553,20 +2389,40 @@ const NewApplication = () => {
                 ) : null}
               </SectionCard>
 
+              {formValues?.governmentEmployee?.isGovernmentEmployee && (
+                <SectionCard
+                  description="Government employee organization details."
+                  isOpen={collapsedSections.governmentEmployee}
+                  onToggle={toggleSection}
+                  sectionKey="governmentEmployee"
+                  title="For Government Employee"
+                  onEditClick={() => handleSectionEdit("governmentEmployee")}
+                >
+                  <PreviewItem label="Organization Name" value={formValues?.governmentEmployee?.organizationName} />
+                  <PreviewItem label="Nature of Work" value={formValues?.governmentEmployee?.natureOfWork} />
+                  <PreviewItem label="Organization Document" value={formValues?.governmentEmployee?.organizationDocument} />
+                </SectionCard>
+              )}
+
               <SectionCard
                 description="Property address and administrative boundary values."
                 isOpen={collapsedSections.address}
                 onToggle={toggleSection}
                 sectionKey="address"
                 title="Property Address"
+                onEditClick={() => handleSectionEdit("propertyAddress")}
               >
-                <PreviewItem isFullWidth label="Address" value={formValues?.propertyAddress?.address} />
-                <PreviewItem label="Landmark" value={formValues?.propertyAddress?.landmark} />
                 <PreviewItem label="Pin Code" value={formValues?.propertyAddress?.pinCode} />
+                <PreviewItem label="State" value={formValues?.propertyAddress?.state} />
+                <PreviewItem label="District" value={formValues?.propertyAddress?.district} />
+                <PreviewItem label="City" value={formValues?.propertyAddress?.city} />
                 <PreviewItem label="Locality" value={formValues?.propertyAddress?.locality} />
-                <PreviewItem label="Sub Locality" value={formValues?.propertyAddress?.subLocality} />
-                <PreviewItem label="Assembly" value={formValues?.propertyAddress?.assembly} />
-                <PreviewItem label="Ward" value={formValues?.propertyAddress?.ward} />
+                <PreviewItem label="Street" value={formValues?.propertyAddress?.street} />
+                <PreviewItem label="House No" value={formValues?.propertyAddress?.houseNo} />
+                <PreviewItem label="Block" value={formValues?.propertyAddress?.block} />
+                <PreviewItem label="Zone" value={formValues?.propertyAddress?.zone} />
+                <PreviewItem label="Landmark" value={formValues?.propertyAddress?.landmark} />
+                <PreviewItem isFullWidth label="Address" value={formValues?.propertyAddress?.address} />
               </SectionCard>
 
               <SectionCard
@@ -1575,16 +2431,19 @@ const NewApplication = () => {
                 onToggle={toggleSection}
                 sectionKey="usage"
                 title="Property and Water Connection Use Details"
+                onEditClick={() => handleSectionEdit("useDetails")}
               >
                 <PreviewItem label="Property Type" value={formValues?.useDetails?.propertyType} />
-                <PreviewItem label="No. of Floors" value={formValues?.useDetails?.noOfFloors} />
-                {formValues?.useDetails?.propertyType?.code === "HOSPITAL_NURSING_HOME" ? (
-                  <PreviewItem label="No. of Beds for Hospitals & Nursing Home" value={formValues?.useDetails?.hospitalBeds} />
+                <PreviewItem label="Plot Area (Sq. m.)" value={formValues?.useDetails?.plotArea} />
+                <PreviewItem label="Built-up Area (Sq. m.)" value={formValues?.useDetails?.builtUpArea} />
+                <PreviewItem label="Number of Floors" value={formValues?.useDetails?.noOfFloors} />
+                <PreviewItem label="Number of Dwelling Units" value={formValues?.useDetails?.NumberofDwellingUnits} />
+                {formValues?.useDetails?.propertyType?.code === "HOSPITAL" ||
+                formValues?.useDetails?.propertyType?.code === "HOSPITAL_NURSING_HOME" ? (
+                  <PreviewItem label="No. of Beds" value={formValues?.useDetails?.hospitalBeds} />
                 ) : null}
-                <PreviewItem label="Plot Area in Sqm" value={formValues?.useDetails?.plotArea} />
-                <PreviewItem label="Built Up Area" value={formValues?.useDetails?.builtUpArea} />
-                <PreviewItem label="Water Connection Category" value={formValues?.useDetails?.waterConnectionCategory} />
-                <PreviewItem label="Water Connection Used By" value={formValues?.useDetails?.waterConnectionUsedBy} />
+                <PreviewItem label="Year of Construction" value={formValues?.useDetails?.SelectYearofConstruction} />
+                <PreviewItem label="Water Connection Usage Type" value={formValues?.useDetails?.WaterConnectionUsageType} />
               </SectionCard>
 
               <SectionCard
@@ -1593,6 +2452,7 @@ const NewApplication = () => {
                 onToggle={toggleSection}
                 sectionKey="bank"
                 title="Bank Details"
+                onEditClick={() => handleSectionEdit("bankDetails")}
               >
                 <PreviewItem label="Name of the Bank" value={formValues?.bankDetails?.bankName} />
                 <PreviewItem label="Name of the Branch" value={formValues?.bankDetails?.branchName} />
@@ -1601,25 +2461,12 @@ const NewApplication = () => {
               </SectionCard>
 
               <SectionCard
-                description="Rain water harvesting request status."
-                isOpen={collapsedSections.rainWaterHarvesting}
-                onToggle={toggleSection}
-                sectionKey="rainWaterHarvesting"
-                title="Rain Water Harvesting"
-              >
-                <PreviewItem
-                  isFullWidth
-                  label="Apply for RWH Adequacy Certificate"
-                  value={formValues?.rainWaterHarvesting?.applyForAdequacyCertificate}
-                />
-              </SectionCard>
-
-              <SectionCard
                 description="Uploaded supporting documents."
                 isOpen={collapsedSections.documents}
                 onToggle={toggleSection}
                 sectionKey="documents"
                 title="Documents to be Attached"
+                onEditClick={() => handleSectionEdit("documents")}
               >
                 <PreviewItem label="Proof of Identity" value={formValues?.documents?.proofOfIdentity} />
                 <PreviewItem label="Upload Identity Proof" value={formValues?.documents?.identityProofFile} />
@@ -1629,16 +2476,16 @@ const NewApplication = () => {
               </SectionCard>
 
               <SectionCard
-                description="Declaration and undertaking details."
+                description="Applicant declaration details."
                 isOpen={collapsedSections.declaration}
                 onToggle={toggleSection}
                 sectionKey="declaration"
-                title="Declaration / Undertaking"
+                title="Declaration/Undertaking"
+                onEditClick={() => handleSectionEdit("declaration")}
               >
                 <PreviewItem label="Submitted By" value={formValues?.declaration?.submittedBy} />
-                <PreviewItem label="Upload Signature" value={formValues?.declaration?.signatureFile} />
-                <PreviewItem label="Entered Captcha" value={formValues?.declaration?.captcha} />
-                <PreviewItem label="I Agree" value={formValues?.declaration?.agree} />
+                <PreviewItem isFullWidth label="Signature" value={formValues?.declaration?.signatureFile} />
+                <PreviewItem label="Agreed" value={formValues?.declaration?.agree ? "Yes" : "No"} />
               </SectionCard>
             </React.Fragment>
           )}

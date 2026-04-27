@@ -72,7 +72,7 @@ public class Vendor {
 	private List<VendorWorkOrder> vendorWorkOrder = null;
 
 	@JsonProperty("fillingPoint")
-	private FillingPoint fillingPoint;
+	private List<FillingPoint> fillingPoint = null;
 
 	@JsonProperty("drivers")
 	@Valid
@@ -80,6 +80,9 @@ public class Vendor {
 
 	@JsonProperty("additionalDetails")
 	private Object additionalDetails = null;
+
+	@JsonProperty("vendorAdditionalDetails")
+	private VendorAdditionalDetails vendorAdditionalDetails;
 
 	@SafeHtml
 	@JsonProperty("source")

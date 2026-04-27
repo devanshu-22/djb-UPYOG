@@ -592,6 +592,18 @@
   }
 }
 
+.input-fields {
+  .mobile-input {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  h4 {
+    margin-bottom: 0;
+  }
+}
+
 .document-clear-all {
   grid-area: 2/2;
   display: flex;

@@ -24,8 +24,7 @@ import { initLibraries } from "@djb25/digit-ui-libraries";
 import { HRMSModule, initHRMSComponents } from "@djb25/digit-ui-module-hrms";
 // import { initFormioComponents } from "@djb25/digit-ui-module-formio";
 // import { FormioModule } from "@djb25/digit-ui-module-formio";
-import { initEkycComponents } from "@djb25/digit-ui-module-ekyc";
-import { EkycModule } from "@djb25/digit-ui-module-ekyc";
+import { initEkycComponents, EkycModule, EkycLinks } from "@djb25/digit-ui-module-ekyc";
 
 // import {
 //   TLModule,
@@ -131,6 +130,7 @@ window.Digit.ComponentRegistryService.setupRegistry({
   // TLLinks,
   // FormioModule,
   EkycModule,
+  EkycLinks,
   ReceiptsModule,
   // PTRModule,
   // PTRLinks,

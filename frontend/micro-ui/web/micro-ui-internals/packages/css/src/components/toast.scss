@@ -7,7 +7,7 @@
   gap: 16px;
   border-radius: 4px;
   min-height: 48px;
-  @apply fixed flex bg-success leading-7 z-20 items-center pl-md pr-sm;
+  @apply fixed flex bg-success-gradient leading-7 z-20 items-center pl-md pr-sm;
 
   svg {
     height: 20px;

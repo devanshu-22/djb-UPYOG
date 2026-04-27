@@ -49,6 +49,7 @@
 
 @media (min-width: 780px) {
   .search-form-wrapper {
+    display: flex;
     .pt-form-field {
       width: 30% !important;
       margin-bottom: 20px;
@@ -580,6 +581,10 @@
   color: #444;
   background: #fff;
   padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-radius: 0 0 12px 12px;
 }
 
 .finance-breadcrumb {

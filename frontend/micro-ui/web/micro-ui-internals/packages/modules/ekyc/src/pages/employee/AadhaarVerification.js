@@ -327,7 +327,6 @@ const AadhaarVerification = () => {
   };
 
   return (
-    <div className="ground-container employee-app-container form-container">
       <div className="inbox-container">
         <style>{`
         @keyframes fadeSlideIn {
@@ -366,6 +365,7 @@ const AadhaarVerification = () => {
               { label: t("EKYC_STEP_AADHAAR") || "Aadhaar", done: showAddressSection, active: !showAddressSection },
               { label: t("EKYC_STEP_ADDRESS") || "Address", done: addressData !== null, active: showAddressSection && addressData === null },
               { label: t("EKYC_STEP_PROPERTY") || "Property", done: false, active: false },
+              { label: t("EKYC_STEP_METER") || "Meter", done: false, active: false },
               { label: t("EKYC_STEP_REVIEW") || "Review", done: false, active: false },
             ].map((step, i) => (
               <div className="ekyc-sidebar-step" key={i}>
@@ -374,7 +374,7 @@ const AadhaarVerification = () => {
                     ? <CheckIcon size={11} color="#fff" />
                     : i + 1}
                 </div>
-                {i < 3 && <div className="ekyc-step-line" />}
+                {i < 4 && <div className="ekyc-step-line" />}
                 <div className={`ekyc-step-label${step.done ? " done" : step.active ? " active" : ""}`}>
                   {step.label}
                 </div>
@@ -561,6 +561,7 @@ const AadhaarVerification = () => {
               <div>
                 <div className="ekyc-field-label">
                   {t("EKYC_WHATSAPP_NUMBER") || "WhatsApp Number"}
+                  <span style={styles.optionalTag}>{t("EKYC_OPTIONAL") || "Optional"}</span>
                 </div>
                 <IconInput
                   icon={<WhatsappIcon size={15} />}
@@ -641,7 +642,6 @@ const AadhaarVerification = () => {
           </Card>
         </div>
       </div>
-    </div>
   );
 };
 

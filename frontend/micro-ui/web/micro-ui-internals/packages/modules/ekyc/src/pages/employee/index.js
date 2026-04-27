@@ -3,10 +3,12 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { Switch, useLocation } from "react-router-dom";
 import Inbox from "./Inbox";
+//import Mapping from "./Mapping";
 import Create from "./Create";
 import AadhaarVerification from "./AadhaarVerification";
 import AddressDetails from "./AddressDetails";
 import PropertyInfo from "./PropertyInfo";
+import MeterDetails from "./MeterDetails";
 import Review from "./Review";
 
 const EmployeeApp = ({ path }) => {
@@ -23,6 +25,7 @@ const EmployeeApp = ({ path }) => {
         if (pathname.includes("/aadhaar-verification")) return "EKYC_AADHAAR_VERIFICATION";
         if (pathname.includes("/address-details")) return "EKYC_ADDRESS_DETAILS";
         if (pathname.includes("/property-info")) return "EKYC_PROPERTY_INFO";
+        if (pathname.includes("/meter-details")) return "EKYC_METER_DETAILS";
         if (pathname.includes("/review")) return "EKYC_REVIEW";
         return "ES_COMMON_INBOX";
     };
@@ -34,7 +37,7 @@ const EmployeeApp = ({ path }) => {
 
     return (
         <AppContainer>
-            <div className="ground-container employee-app-container">
+            <div className="ground-container employee-app-container employee-app-homepage-container">
                 <ModuleHeader
                     leftContent={
                         <React.Fragment>
@@ -64,6 +67,11 @@ const EmployeeApp = ({ path }) => {
                         component={() => <Create />}
                     />
 
+                    {/* <PrivateRoute
+                        path={`${path}/mapping`}
+                        component={() => <Mapping />}
+                    /> */}
+
                     <PrivateRoute
                         path={`${path}/aadhaar-verification`}
                         component={() => <AadhaarVerification />}
@@ -77,6 +85,11 @@ const EmployeeApp = ({ path }) => {
                     <PrivateRoute
                         path={`${path}/property-info`}
                         component={() => <PropertyInfo />}
+                    />
+
+                    <PrivateRoute
+                        path={`${path}/meter-details`}
+                        component={() => <MeterDetails />}
                     />
                     
                     <PrivateRoute

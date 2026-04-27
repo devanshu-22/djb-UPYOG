@@ -95,6 +95,8 @@ public class WaterTankerFixedPointQueryBuilder {
         query.append(" WHERE ad.type = ? ");
         preparedStmtList.add("FIXED-POINT");
 
+        //query.append(" WHERE ad.fixed_point_id IS NOT NULL ");
+
         if (criteria.getMobileNumber() != null && !criteria.getMobileNumber().trim().isEmpty()) {
             query.append(" AND ad.mobile_number = ? ");
             preparedStmtList.add(criteria.getMobileNumber());
@@ -104,6 +106,16 @@ public class WaterTankerFixedPointQueryBuilder {
             query.append(" AND ad.name ILIKE ? ");
             preparedStmtList.add("%" + criteria.getName() + "%");
         }
+
+//        if (criteria.getFromDate() != null) {
+//            query.append(" AND ad.createdtime >= ? ");
+//            preparedStmtList.add(criteria.getFromDate());
+//        }
+//
+//        if (criteria.getToDate() != null) {
+//            query.append(" AND ad.createdtime <= ? ");
+//            preparedStmtList.add(criteria.getToDate());
+//        }
 
         query.append(" ORDER BY ad.fixed_point_id ASC ");
 
@@ -143,6 +155,16 @@ public class WaterTankerFixedPointQueryBuilder {
             query.append(" AND ad.name ILIKE ? ");
             preparedStmtList.add("%" + criteria.getName() + "%");
         }
+//
+//        if (criteria.getFromDate() != null) {
+//            query.append(" AND ad.createdtime >= ? ");
+//            preparedStmtList.add(criteria.getFromDate());
+//        }
+//
+//        if (criteria.getToDate() != null) {
+//            query.append(" AND ad.createdtime <= ? ");
+//            preparedStmtList.add(criteria.getToDate());
+//        }
 
         return query.toString();
     }

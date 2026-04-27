@@ -148,17 +148,19 @@ public class FillingPointServiceImpl implements FillingPointService {
     }
     public List<FillingPointVendorMap> mapVendor(FillingPointVendorMapRequest request) {
 
-        for (FillingPointVendorMap map : request.getMappings()) {
-
+        // 1. Validate: Ensure all vendor IDs in the request actually exist in the system
+        request.getMappings().forEach(map -> {
             vendorUtil.validateVendor(map.getVendorId(), map.getTenantId());
+        });
 
-            if (vendorMapRepository.isVendorAlreadyMapped(map.getVendorId())) {
-                throw new CustomException("VENDOR_ALREADY_MAPPED",
-                        "Vendor is already mapped to a filling point");
-            }
-        }
+        // 2. Enrichment: Assign UUIDs and AuditDetails to new mappings
         enrichmentUtil.enrichCreate(request);
+
+        // 3. Push to Kafka
+        // The Persister will handle the "Delete old, Insert new" logic
+        // based on the Topic configuration.
         producer.push(config.getSaveFillingPointVendorMappingTopic(), request);
+
         return request.getMappings();
     }
 }

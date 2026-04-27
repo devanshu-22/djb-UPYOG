@@ -20,12 +20,14 @@ const WSRoadCuttingDetails = ({ config, onSelect, userType, formData, setError, 
 
   const isEditScreen = pathname.includes("/modify-application/");
 
-  const stateCode = Digit.ULBService.getStateId();
+  const tenantId = Digit.ULBService.getCurrentTenantId();
   const { isMdmsLoading, data: mdmsData } = Digit.Hooks.ws.useMDMS(
-    stateCode,
+    tenantId,
     window.location.href.includes("sewerage") ? "sw-services-calculation" : "ws-services-calculation",
     ["RoadType"]
   );
+
+  console.log(mdmsData,"yuyu")
 
   const [roadCuttingDetails, setRoadCuttingDetails] = useState(formData?.roadCuttingDetails || [createRoadCuttingDetails()]);
   const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
@@ -109,11 +111,13 @@ const RoadCuttForm = (_props) => {
   const { errors } = localFormState;
 
   const roadCuttingTypeMenu = useMemo(() => {
-    const RoadTypes = window.location.href.includes("sewerage")
-      ? mdmsData?.["sw-services-calculation"]?.RoadType
-      : mdmsData?.["ws-services-calculation"]?.RoadType || [];
-    const filteredRoadTypes = RoadTypes.filter((data) => data?.isActive === true); // Filter out road types with isActive: true
-    filteredRoadTypes.forEach((data) => (data.i18nKey = `WS_ROADTYPE_${stringReplaceAll(data?.code?.toUpperCase(), " ", "_")}`));
+    const calculationModule = window.location.href.includes("sewerage") ? "sw-services-calculation" : "ws-services-calculation";
+    
+    // Check both paths: mdmsData[calculationModule].RoadType and mdmsData.MdmsRes[calculationModule].RoadType (if wrapped)
+    const RoadTypes = mdmsData?.[calculationModule]?.RoadType || mdmsData?.MdmsRes?.[calculationModule]?.RoadType || [];
+    
+    const filteredRoadTypes = Array.isArray(RoadTypes) ? RoadTypes.filter((data) => data?.isActive === true || data?.active === true) : []; 
+    filteredRoadTypes.forEach((data) => (data.i18nKey = data.i18nKey || `WS_ROADTYPE_${stringReplaceAll(data?.code?.toUpperCase(), " ", "_")}`));
     return filteredRoadTypes;
   }, [mdmsData]);
 

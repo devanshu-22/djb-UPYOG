@@ -1,6 +1,19 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useGlobalFilter, usePagination, useRowSelect, useSortBy, useTable } from "react-table";
-import { ArrowBack, ArrowForward, ArrowToFirst, ArrowToLast } from "./svgindex";
+import {
+  ArrowBack,
+  ArrowForward,
+  ArrowToFirst,
+  ArrowToLast,
+  ChevronDown,
+  IconClose,
+  IconDownload,
+  IconSearch,
+  IconSortAsc,
+  IconSortDesc,
+  IconSortNeutral,
+  LayoutGrid,
+} from "./svgindex";
 
 const noop = () => {};
 
@@ -50,56 +63,6 @@ const T = {
   fontBody: "'DM Sans', 'Segoe UI', ui-sans-serif, sans-serif",
   fontMono: "'JetBrains Mono', 'Fira Code', ui-monospace, monospace",
 };
-
-/* ─── Icons ──────────────────────────────────────────────────────────────────── */
-const IconSortNeutral = () => (
-  <svg
-    width="13"
-    height="13"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2.2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    style={{ opacity: 0.3 }}
-  >
-    <path d="M7 16V4m0 0L3 8m4-4 4 4" />
-    <path d="M17 8v12m0 0 4-4m-4 4-4-4" />
-  </svg>
-);
-const IconSortAsc = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 19V5m0 0-7 7m7-7 7 7" />
-  </svg>
-);
-const IconSortDesc = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 5v14m0 0 7-7m-7 7-7-7" />
-  </svg>
-);
-
-const IconSearch = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="11" cy="11" r="8" />
-    <line x1="21" y1="21" x2="16.65" y2="16.65" />
-  </svg>
-);
-
-const IconDownload = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 3v12" />
-    <path d="m7 10 5 5 5-5" />
-    <path d="M4 20h16" />
-  </svg>
-);
-
-const IconClose = ({ color = "currentColor" }) => (
-  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="18" y1="6" x2="6" y2="18" />
-    <line x1="6" y1="6" x2="18" y2="18" />
-  </svg>
-);
 
 const flattenColumnsForExport = (columnDefs = []) =>
   (Array.isArray(columnDefs) ? columnDefs : []).reduce((acc, column) => {
@@ -330,7 +293,7 @@ const Table = ({
     page, // current page rows
     canPreviousPage,
     canNextPage,
-    pageOptions,
+    // pageOptions,
     pageCount,
     gotoPage,
     nextPage,
@@ -398,7 +361,7 @@ const Table = ({
   const tref = useRef();
 
   // ── Pagination display values — original logic, untouched ────────────────
-  const rangeStart = pageIndex * pageSize + 1;
+  // const rangeStart = pageIndex * pageSize + 1;
   const rangeEnd = manualPagination
     ? (currentPage + 1) * pageSizeLimit > totalRecords
       ? totalRecords
@@ -722,21 +685,7 @@ const Table = ({
               <tr>
                 <td colSpan={tableColumns.length + (showAutoSerialNo ? 1 : 0)} style={{ padding: "48px 20px", textAlign: "center" }}>
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
-                    <svg
-                      width="44"
-                      height="44"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke={T.textMuted}
-                      strokeWidth="1.2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      style={{ opacity: 0.4 }}
-                    >
-                      <rect x="3" y="3" width="18" height="18" rx="2" />
-                      <line x1="3" y1="9" x2="21" y2="9" />
-                      <line x1="9" y1="21" x2="9" y2="9" />
-                    </svg>
+                    <LayoutGrid />
                     <p style={{ margin: 0, fontSize: 14, fontWeight: 500, color: T.textMuted }}>{t ? t("CS_NO_DATA") : "No records found"}</p>
                   </div>
                 </td>
@@ -864,18 +813,7 @@ const Table = ({
               ))}
             </select>
             <span style={{ position: "absolute", right: 15, pointerEvents: "none", lineHeight: 0, color: T.textMuted }}>
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
+              <ChevronDown />
             </span>
           </div>
 

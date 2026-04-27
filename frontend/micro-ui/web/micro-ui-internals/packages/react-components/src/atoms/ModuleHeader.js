@@ -76,19 +76,11 @@
 
 // export default ModuleHeader;
 
-
 import React, { useState } from "react";
 import { useHistory, Link } from "react-router-dom";
-import { HomeIcon } from "./svgindex";
+import { ChevronForwardOutline, HomeIcon } from "./svgindex";
 
-const ModuleHeader = ({
-  leftContent,
-  breadcrumbs = [],
-  rightContent,
-  onLeftClick,
-  wrapperClass = "",
-  containerClass = "",
-}) => {
+const ModuleHeader = ({ leftContent, breadcrumbs = [], rightContent, onLeftClick, wrapperClass = "", containerClass = "" }) => {
   const history = useHistory();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -105,31 +97,23 @@ const ModuleHeader = ({
   return (
     <div className={`module-header ${wrapperClass}`}>
       <div className={`header-bottom-section ${containerClass}`}>
-
-        <button className="hamburger-btn"
-          onClick={() => history.push("/digit-ui/employee")}><HomeIcon /></button>
+        <button className="hamburger-btn" onClick={() => history.push("/digit-ui/employee")}>
+          <HomeIcon />
+        </button>
         {/* Hamburger */}
-        <button
-          className="hamburger-btn"
-          onClick={() => setMenuOpen(!menuOpen)}
-        >
+        <button className="hamburger-btn" onClick={() => setMenuOpen(!menuOpen)}>
           ☰
         </button>
 
         {/* Desktop Back Button */}
         {leftContent && (
-          <div
-            className="left-section desktop-back"
-            onClick={onLeftClick}
-            style={{ cursor: onLeftClick ? "pointer" : "default" }}
-          >
+          <div className="left-section desktop-back" onClick={onLeftClick} style={{ cursor: onLeftClick ? "pointer" : "default" }}>
             {leftContent}
           </div>
         )}
 
         {/* Right Section */}
         <div className="right-section">
-
           {/* Breadcrumbs */}
           <div className="breadcrumbs">
             {breadcrumbs.map((item, index) => {
@@ -151,42 +135,31 @@ const ModuleHeader = ({
                   ) : null}
 
                   {item.label && (
-                    <span
-                      onClick={handleClick}
-                      style={{ cursor: "pointer", marginLeft: "4px" }}
-                    >
+                    <span onClick={handleClick} style={{ cursor: "pointer", marginLeft: "4px" }}>
                       {item.label}
                     </span>
                   )}
 
                   {index !== breadcrumbs.length - 1 && (
-                    <span className="iconn">&gt;</span>
+                    <span className="iconn">
+                      <ChevronForwardOutline />
+                    </span>
                   )}
                 </React.Fragment>
               );
             })}
           </div>
 
-          {rightContent && (
-            <div className="extra-right-content">
-              {rightContent}
-            </div>
-          )}
-
+          {rightContent && <div className="extra-right-content">{rightContent}</div>}
         </div>
 
         {/* Mobile Menu */}
         <div className={`mobile-menu ${menuOpen ? "open" : ""}`}>
-
           {/* Back Button ONLY here for mobile */}
 
-          <div
-            className="mobile-back"
-            onClick={handleBackClick}
-          >
+          <div className="mobile-back" onClick={handleBackClick}>
             Back
           </div>
-
 
           <div className="mobile-breadcrumbs">
             {breadcrumbs.map((item, index) => {
@@ -205,14 +178,8 @@ const ModuleHeader = ({
             })}
           </div>
 
-          {rightContent && (
-            <div className="mobile-actions">
-              {rightContent}
-            </div>
-          )}
-
+          {rightContent && <div className="mobile-actions">{rightContent}</div>}
         </div>
-
       </div>
     </div>
   );

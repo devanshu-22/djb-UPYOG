@@ -22,7 +22,7 @@ const WSConnectionDetails = ({ config, onSelect, userType, formData, setError, f
   const { t } = useTranslation();
   const { pathname } = useLocation();
   const [connectionDetails, setConnectionDetails] = useState(
-    formData?.ConnectionDetails ? [formData?.ConnectionDetails?.[0]] : [createConnectionDetails()]
+    formData?.ConnectionDetails?.length > 0 ? [formData?.ConnectionDetails?.[0]] : [createConnectionDetails()]
   );
   const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
   const stateCode = Digit.ULBService.getStateId();
@@ -50,7 +50,7 @@ const WSConnectionDetails = ({ config, onSelect, userType, formData, setError, f
 
   useEffect(() => {
     if (userType === "employee") {
-      onSelect(config.key, { ...formData[config.key], ...connectionDetails });
+      onSelect(config.key, connectionDetails);
     }
     if (connectionDetails?.[0]?.water) setWaterSewarageSelection({ water: true, sewerage: false });
 

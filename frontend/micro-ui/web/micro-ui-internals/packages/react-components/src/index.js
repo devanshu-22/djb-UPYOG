@@ -182,6 +182,15 @@ import {
   UploadCloudIcon,
   CalendarIcon,
   LuCalendarIcon,
+  ChevronForwardOutline,
+  IconSortNeutral,
+  IconSortAsc,
+  IconSortDesc,
+  IconSearch,
+  IconDownload,
+  IconClose,
+  ChevronDown,
+  LayoutGrid,
 } from "./atoms/svgindex";
 import Table from "./atoms/Table";
 import TelePhone from "./atoms/TelePhone";
@@ -504,4 +513,13 @@ export {
   CalendarIcon,
   LuCalendarIcon,
   SideBar,
+  ChevronForwardOutline,
+  IconSortNeutral,
+  IconSortAsc,
+  IconSortDesc,
+  IconSearch,
+  IconDownload,
+  IconClose,
+  ChevronDown,
+  LayoutGrid,
 };

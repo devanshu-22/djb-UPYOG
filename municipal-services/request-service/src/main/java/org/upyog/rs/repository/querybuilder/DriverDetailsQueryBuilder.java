@@ -15,7 +15,7 @@ public class DriverDetailsQueryBuilder {
             .append("urad.name AS applicant_name, urad.mobile_number AS applicant_mobile, urad.email_id AS applicant_email, ")
             .append("uraddr.house_no, uraddr.address_line_1, uraddr.address_line_2, uraddr.street_name, uraddr.landmark, ")
             .append("uraddr.city, uraddr.pincode, uraddr.latitude, uraddr.longitude, uraddr.locality_code AS address_locality_code, ")
-            .append("edt.id AS trip_id, edt.booking_id AS trip_booking_id, edt.booking_no AS trip_booking_no, ")
+            .append("edt.id AS trip_id, edt.booking_id AS trip_booking_id, edt.booking_no AS trip_booking_no, edt.divert_file_store_id, edt.divert_long, edt.divert_lat, edt.divert_remark, ")
             .append("edt.tanker_type AS trip_tanker_type, edt.vendor_id AS trip_vendor_id, edt.vehicle_id AS trip_vehicle_id, ")
             .append("edt.driver_id AS trip_driver_id, edt.current_status AS trip_current_status, ")
             .append("edt.jefilestoreid, edt.remark_updated_by_role,")

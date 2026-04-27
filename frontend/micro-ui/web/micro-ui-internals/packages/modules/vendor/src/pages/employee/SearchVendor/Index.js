@@ -17,11 +17,11 @@ const SearchVendor = () => {
   const [driverIds, setDriverIds] = useState("");
   const [tableData, setTableData] = useState([]);
 
-  const userInfo = Digit.UserService.getUser();
+  // const userInfo = Digit.UserService.getUser();
 
   let paginationParms = { limit: pageSize, offset: pageOffset, sortBy: sortParams?.[0]?.id, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" };
 
-  const { data: dsoData, isLoading: isLoading, isSuccess: isDsoSuccess, error: dsoError, refetch } =
+  const { data: dsoData, isLoading, isSuccess, error, refetch } =
     tab === "VEHICLE"
       ? Digit.Hooks.fsm.useVehiclesSearch({
           //
@@ -83,26 +83,25 @@ const SearchVendor = () => {
 
   useEffect(() => {
     refetch();
+    refetchVendor();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     refetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, sortParams, pageOffset, pageSize]);
 
   useEffect(() => {
     if (dsoData?.vehicle && tab === "VEHICLE") {
       let vehicleIds = "";
-      dsoData.vehicle.map((data) => {
-        vehicleIds += `${data.id},`;
-      });
+      dsoData.vehicle.map((data) => (vehicleIds += `${data.id},`));
       setVehicleIds(vehicleIds);
       setTableData(dsoData.vehicle);
     }
     if (dsoData?.driver && tab === "DRIVER") {
       let driverIds = "";
-      dsoData.driver.map((data) => {
-        driverIds += `${data.id},`;
-      });
+      dsoData.driver.map((data) => (driverIds += `${data.id},`));
       setDriverIds(driverIds);
       setTableData(dsoData?.driver);
     }
@@ -116,6 +115,8 @@ const SearchVendor = () => {
         activeDrivers: dso.drivers?.filter((driver) => driver.status === "ACTIVE"),
         allVehicles: dso.vehicles,
         dsoDetails: dso,
+        vendorAdditionalDetails: dso.vendorAdditionalDetails,
+        fillingPoint: dso.fillingPoint,
         vehicles: dso.vehicles
           ?.filter((vehicle) => vehicle.status === "ACTIVE")
           ?.map((vehicle) => ({
@@ -130,10 +131,12 @@ const SearchVendor = () => {
       }));
       setTableData(tableData);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dsoData]);
 
   useEffect(() => {
     if (vehicleIds !== "" || driverIds !== "") refetchVendor();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [vehicleIds, driverIds]);
 
   useEffect(() => {
@@ -166,6 +169,7 @@ const SearchVendor = () => {
         setDriverIds("");
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [vendorData, dsoData]);
 
   //functions to handle search, pagination, sorting and filter
@@ -234,11 +238,6 @@ const SearchVendor = () => {
   const refetchVendorData = () => {
     refetchVendor();
   };
-
-  useEffect(() => {
-    refetch();
-    refetchVendor();
-  }, []);
 
   return (
     <React.Fragment>

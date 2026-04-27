@@ -113,6 +113,11 @@ public class DriverDetailsRowMapper implements RowMapper<RequestDetailsByDriverI
             trip.setFinalKM(rs.getLong("final_km"));
             trip.setTotalKM(rs.getLong("total_km"));
 
+            trip.setDivertLong(rs.getBigDecimal("divert_long"));
+            trip.setDivertLat(rs.getBigDecimal("divert_lat"));
+            trip.setDivertFileStoreId(rs.getString("divert_file_store_id"));
+            trip.setDivertRemark(rs.getString("divert_remark"));
+
             AuditDetails audit = AuditDetails.builder()
                     .createdBy(rs.getString("trip_created_by"))
                     .lastModifiedBy(rs.getString("trip_last_modified_by"))

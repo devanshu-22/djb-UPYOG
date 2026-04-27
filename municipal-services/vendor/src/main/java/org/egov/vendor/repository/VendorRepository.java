@@ -52,15 +52,22 @@ public class VendorRepository {
 		producer.push(configuration.getSaveVendorVehicleDriverTopic(), vendorRequest);
 	}
 
-	public VendorResponse getVendorData(VendorSearchCriteria vendorSearchCriteria) {
+	public VendorResponse getVendorData(VendorSearchCriteria criteria) {
 		List<Object> preparedStmtList = new ArrayList<>();
-		String query = vendorQueryBuilder.getVendorSearchQuery(vendorSearchCriteria, preparedStmtList);
-		log.info("Get vendors query ::=>" + query.toString());
-		List<Vendor> vendorData = jdbcTemplate.query(query, preparedStmtList.toArray(), vendorrowMapper);
-		return VendorResponse.builder().vendor(vendorData).totalCount(Integer.valueOf(vendorrowMapper.getFullCount()))
+		// Get Data
+		String query = vendorQueryBuilder.getVendorSearchQuery(criteria, preparedStmtList);
+		List<Vendor> vendors = jdbcTemplate.query(query, preparedStmtList.toArray(), vendorrowMapper);
+
+		// Get Accurate Count
+		List<Object> countPreparedStmtList = new ArrayList<>();
+		String countQuery = vendorQueryBuilder.getSearchCountQuery(criteria, countPreparedStmtList);
+		Integer totalCount = jdbcTemplate.queryForObject(countQuery, countPreparedStmtList.toArray(), Integer.class);
+
+		return VendorResponse.builder()
+				.vendor(vendors)
+				.totalCount(totalCount)
 				.build();
 	}
-
 	public List<String> getDrivers(String id, String status) {
 		List<String> ids = null;
 		List<Object> preparedStmtList = new ArrayList<>();
