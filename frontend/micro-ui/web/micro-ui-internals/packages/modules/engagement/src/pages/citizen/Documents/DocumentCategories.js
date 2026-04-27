@@ -1,6 +1,6 @@
 import { AppContainer, Card, CardCaption, Header, Loader, PrevIcon } from "@djb25/digit-ui-react-components";
 import React, { useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useHistory, Redirect, useLocation } from "react-router-dom";
 import Searchbar from "../../../components/Documents/Searchbar";
 import { useDebounce } from "../../../hooks/useDebounce";
 import { renderDocsList } from "./DocumentList";
@@ -23,8 +23,10 @@ const Accordion = ({ t, title, count, onClick, children }) => {
 
 const DocumentCategories = ({ t, parentRoute }) => {
   const history = useHistory();
+  const location = useLocation();
   const [searchValue, setSearchValue] = useState("");
   const tenantIds = Digit.ULBService.getCitizenCurrentTenant();
+  const kc = window.keycloak;
 
   const debouncedSearchQuery = useDebounce(searchValue, 700);
 
@@ -50,7 +52,7 @@ const DocumentCategories = ({ t, parentRoute }) => {
     }
   );
 
-  if (!Digit.UserService?.getUser()?.access_token) {
+  if (!kc.authenticated) {
     return <Redirect to={{ pathname: `/digit-ui/citizen/login`, state: { from: location.pathname + location.search } }} />;
   }
 

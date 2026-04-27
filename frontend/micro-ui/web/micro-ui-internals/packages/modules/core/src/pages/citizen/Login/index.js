@@ -5,7 +5,7 @@ import axios from "axios";
 import { fetchUserDetails } from "../../../../../../libraries/src/services/elements/UserDetails";
 
 // Helper to set user details in localStorage
-const setUserDetail = (userObject, token, userType) => {
+const setUserDetail = (userObject, userType) => {
   const locale = JSON.parse(sessionStorage.getItem("Digit.locale"))?.value || "en_IN";
 
   const prefix = userType === "CITIZEN" ? "Citizen" : "Employee";
@@ -15,8 +15,8 @@ const setUserDetail = (userObject, token, userType) => {
   localStorage.setItem("citizen.userRequestObject", JSON.stringify(userObject));
   localStorage.setItem("locale", locale);
   localStorage.setItem(`${prefix}.locale`, locale);
-  localStorage.setItem("token", token);
-  localStorage.setItem(`${prefix}.token`, token);
+  // localStorage.setItem("token", token);
+  // localStorage.setItem(`${prefix}.token`, token);
   localStorage.setItem("user-info", JSON.stringify(userObject));
   localStorage.setItem(`${prefix}.user-info`, JSON.stringify(userObject));
 };
@@ -84,7 +84,6 @@ const Login = () => {
         const finalUser = response?.data?.user?.[0] || userInfoFromFirstCall;
 
         setUser({
-          access_token: kc.token,
           info: finalUser,
         });
       } catch (err) {
@@ -111,7 +110,7 @@ const Login = () => {
         user.info.roles = user.info.roles.filter((r) => r.tenantId === tenantId);
       }
 
-      setUserDetail(user.info, user.access_token, user.info.type);
+      setUserDetail(user.info, user.info.type);
 
       // Redirect based on user type from API response
       const userType = (user.info.type || "").toUpperCase();

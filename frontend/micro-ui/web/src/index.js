@@ -21,7 +21,7 @@ window.process = {
 
 const user = window.Digit.SessionStorage.get("User");
 
-if (!user || !user.access_token || !user.info) {
+if (!user || !user.info) {
   // login detection
 
   const parseValue = (value) => {
@@ -37,29 +37,33 @@ if (!user || !user.access_token || !user.info) {
     return value && value !== "undefined" ? parseValue(value) : null;
   };
 
-  const token = getFromStorage("token");
+  // const token = getFromStorage("token");
 
-  const citizenToken = getFromStorage("Citizen.token");
-  const citizenInfo = getFromStorage("Citizen.user-info");
+  // const citizenToken = getFromStorage("Citizen.token");
+  // const citizenInfo = getFromStorage("Citizen.user-info");
   const citizenTenantId = getFromStorage("Citizen.tenant-id");
 
-  const employeeToken = getFromStorage("Employee.token");
-  const employeeInfo = getFromStorage("Employee.user-info");
+  // const employeeToken = getFromStorage("Employee.token");
+  // const employeeInfo = getFromStorage("Employee.user-info");
   const employeeTenantId = getFromStorage("Employee.tenant-id");
 
-  const userType = token === citizenToken ? "citizen" : "employee";
+  const userInfo = getFromStorage("user-info");
+
+  // const userType = token === citizenToken ? "citizen" : "employee";
+  const userType = userInfo.type;
   window.Digit.SessionStorage.set("user_type", userType);
   window.Digit.SessionStorage.set("userType", userType);
 
-  const getUserDetails = (access_token, info) => ({
-    token: access_token,
-    access_token,
-    info,
-  });
+  // const getUserDetails = (access_token, info) => ({
+  //   token: access_token,
+  //   access_token,
+  //   info,
+  // });
 
-  const userDetails =
-    userType === "citizen" ? getUserDetails(citizenToken, citizenInfo) : getUserDetails(employeeToken, employeeInfo);
+  // const userDetails =
+  //   userType === "citizen" ? getUserDetails(citizenToken, citizenInfo) : getUserDetails(employeeToken, employeeInfo);
 
+  const userDetails = userInfo?.type ? userInfo.type : "CITIZEN";
   window.Digit.SessionStorage.set("User", userDetails);
   window.Digit.SessionStorage.set("Citizen.tenantId", citizenTenantId);
   window.Digit.SessionStorage.set("Employee.tenantId", employeeTenantId);

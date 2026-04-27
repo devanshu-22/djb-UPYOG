@@ -7,18 +7,19 @@ const EventsListOnGround = ({ variant, parentRoute }) => {
   const { t } = useTranslation();
   const location = useLocation();
   const history = useHistory();
+  const kc = window.keycloak;
 
   const tenantId = Digit.ULBService.getCitizenCurrentTenant();
   const { data: { unreadCount: preVisitUnseenEventsCount } = {}, isSuccess: preVisitUnseenEventsCountLoaded } = Digit.Hooks.useNotificationCount({
     tenantId,
     config: {
-      enabled: !!Digit.UserService?.getUser()?.access_token,
+      enabled: kc.authenticated,
     },
   });
 
   const { data: EventsData, isLoading: EventsDataLoading } = Digit.Hooks.useEvents({ tenantId, variant });
 
-  if (!Digit.UserService?.getUser()?.access_token) {
+  if (!kc.authenticated) {
     localStorage.clear();
     sessionStorage.clear();
     return <Redirect to={{ pathname: `/digit-ui/citizen/login`, state: { from: location.pathname + location.search } }} />;

@@ -1,19 +1,19 @@
 import { Clock, Header, Loader, MapMarker, OnGroundEventCard } from "@djb25/digit-ui-react-components";
 import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Redirect, useHistory, useLocation, useParams } from "react-router-dom";
+import { Redirect, useLocation, useParams } from "react-router-dom";
 
 const EventDetails = () => {
   const { t } = useTranslation();
   const location = useLocation();
-  const history = useHistory();
+  const kc = window.keycloak;
   const { id: EventId } = useParams();
 
   const tenantId = Digit.ULBService.getCitizenCurrentTenant();
 
   const { data: EventsData, isLoading: EventsDataLoading } = Digit.Hooks.useEvents({ tenantId, variant: "events" });
 
-  if (!Digit.UserService?.getUser()?.access_token) {
+  if (!kc.authenticated) {
     localStorage.clear();
     sessionStorage.clear();
     return <Redirect to={{ pathname: `/digit-ui/citizen/login`, state: { from: location.pathname + location.search } }} />;

@@ -19,7 +19,7 @@ const BillDetails = ({ paymentRules, businessService }) => {
   const tenantId = state?.tenantId || _tenantId || Digit.UserService.getUser().info?.tenantId;
   const propertyId = state?.propertyId;
   const applicationNumber = state?.applicationNumber;
-  const [Time, setTime ] = useState(0);
+  const [Time, setTime] = useState(0);
 
   if (wrkflow === "WNS" && consumerCode.includes("?")) consumerCode = consumerCode.substring(0, consumerCode.indexOf("?"));
   const { data, isLoading } = state?.bill
@@ -29,7 +29,7 @@ const BillDetails = ({ paymentRules, businessService }) => {
         businessService,
         consumerCode: wrkflow === "WNS" ? stringReplaceAll(consumerCode, "+", "/") : consumerCode,
       });
-     
+
   let Useruuid = data?.Bill?.[0]?.userId || "";
   let requestCriteria = [
     "/user/_search",
@@ -43,7 +43,7 @@ const BillDetails = ({ paymentRules, businessService }) => {
   ];
 
   const { isLoading: isUserLoading, data: userData, revalidate } = Digit.Hooks.useCustomAPIHook(...requestCriteria);
-  
+
   const { isLoading: isFSMLoading, isError, error, data: application, error: errorApplication } = Digit.Hooks.fsm.useApplicationDetail(
     t,
     tenantId,
@@ -51,8 +51,8 @@ const BillDetails = ({ paymentRules, businessService }) => {
     { enabled: pathname.includes("FSM") ? true : false },
     "CITIZEN"
   );
-  
-  let { minAmountPayable, isAdvanceAllowed } = paymentRules; 
+
+  let { minAmountPayable, isAdvanceAllowed } = paymentRules;
   minAmountPayable = wrkflow === "WNS" ? 100 : minAmountPayable;
   const billDetails = bill?.billDetails?.sort((a, b) => b.fromPeriod - a.fromPeriod)?.[0] || [];
   const Arrears =
@@ -78,21 +78,15 @@ const BillDetails = ({ paymentRules, businessService }) => {
       from = new Date(billDetails.fromPeriod).getFullYear().toString();
       to = new Date(billDetails.toPeriod).getFullYear().toString();
       if (from === to) {
-        if(window.location.href.includes("BPA"))
-        {
-          if(new Date(data?.Bill?.[0]?.billDate).getMonth()+1 < 4)
-          {
-            let newfrom =  (parseInt(from)-1).toString();
+        if (window.location.href.includes("BPA")) {
+          if (new Date(data?.Bill?.[0]?.billDate).getMonth() + 1 < 4) {
+            let newfrom = (parseInt(from) - 1).toString();
             return "FY " + newfrom + "-" + to;
-          }
-          else
-          {
-            let newTo = (parseInt(to)+1).toString();
+          } else {
+            let newTo = (parseInt(to) + 1).toString();
             return "FY " + from + "-" + newTo;
           }
-        }
-        else
-        return "FY " + from;
+        } else return "FY " + from;
       }
       return "FY " + from + "-" + to;
     } else return "N/A";
@@ -107,8 +101,9 @@ const BillDetails = ({ paymentRules, businessService }) => {
   const [amount, setAmount] = useState(getTotal());
   const [paymentAllowed, setPaymentAllowed] = useState(true);
   const [formError, setError] = useState("");
+  const kc = window.keycloak;
 
-  if (authorization === "true" && !userInfo?.access_token) {
+  if (authorization === "true" && !kc?.authenticated) {
     localStorage.clear();
     sessionStorage.clear();
     window.location.href = `/digit-ui/citizen/login?from=${encodeURIComponent(pathname + search)}`;
@@ -130,7 +125,11 @@ const BillDetails = ({ paymentRules, businessService }) => {
   }, [paymentType, amount]);
 
   useEffect(() => {
-    if (!isFSMLoading && (application?.pdfData?.applicationStatus === "PENDING_APPL_FEE_PAYMENT_CITIZEN" || application?.pdfData?.applicationStatus ==="PENDING_APPL_FEE_PAYMENT")) {
+    if (
+      !isFSMLoading &&
+      (application?.pdfData?.applicationStatus === "PENDING_APPL_FEE_PAYMENT_CITIZEN" ||
+        application?.pdfData?.applicationStatus === "PENDING_APPL_FEE_PAYMENT")
+    ) {
       setPaymentAllowed(true);
       setPaymentType(t("CS_PAYMENT_ADV_COLLECTION"));
     }
@@ -141,12 +140,14 @@ const BillDetails = ({ paymentRules, businessService }) => {
       let requiredBill = data.Bill.filter((e) => e.consumerCode == (wrkflow === "WNS" ? stringReplaceAll(consumerCode, "+", "/") : consumerCode))[0];
       setBill(requiredBill);
     }
-  }, [isLoading]); 
+  }, [isLoading]);
 
   const onSubmit = () => {
     let paymentAmount =
       paymentType === t("CS_PAYMENT_FULL_AMOUNT")
-        ? businessService === "FSM.TRIP_CHARGES"?application?.pdfData?.advanceAmount:getTotal()
+        ? businessService === "FSM.TRIP_CHARGES"
+          ? application?.pdfData?.advanceAmount
+          : getTotal()
         : amount || businessService === "FSM.TRIP_CHARGES"
         ? application?.pdfData?.advanceAmount
         : amount;
@@ -156,33 +157,39 @@ const BillDetails = ({ paymentRules, businessService }) => {
         tenantId: billDetails.tenantId,
       });
     } else if (wrkflow === "WNS") {
-      history.push(`/digit-ui/citizen/payment/billDetails/${businessService}/${consumerCode}/${paymentAmount}?workflow=WNS&ConsumerName=${ConsumerName}`, {
-        paymentAmount,
-        tenantId: billDetails.tenantId,
-        name: bill.payerName,
-        mobileNumber: bill.mobileNumber && bill.mobileNumber?.includes("*") ? userData?.user?.[0]?.mobileNumber : bill.mobileNumber,
-      });
+      history.push(
+        `/digit-ui/citizen/payment/billDetails/${businessService}/${consumerCode}/${paymentAmount}?workflow=WNS&ConsumerName=${ConsumerName}`,
+        {
+          paymentAmount,
+          tenantId: billDetails.tenantId,
+          name: bill.payerName,
+          mobileNumber: bill.mobileNumber && bill.mobileNumber?.includes("*") ? userData?.user?.[0]?.mobileNumber : bill.mobileNumber,
+        }
+      );
     } else if (businessService === "PT") {
       history.push(`/digit-ui/citizen/payment/billDetails/${businessService}/${consumerCode}/${paymentAmount}`, {
         paymentAmount,
         tenantId: billDetails.tenantId,
         name: bill.payerName,
-        mobileNumber: bill.mobileNumber && bill.mobileNumber?.includes("*") ? userData?.user?.[0]?.mobileNumber : bill.mobileNumber,      });
-    } 
-    else if (timerEnabledForBusinessService(businessService)) {
-      history.push(`/digit-ui/citizen/payment/collect/${businessService}/${consumerCode}`, {
-        paymentAmount, 
-        tenantId: billDetails.tenantId, 
-        propertyId: propertyId ,
-        timerValue:state?.timerValue,
-        SlotSearchData:state?.SlotSearchData,
+        mobileNumber: bill.mobileNumber && bill.mobileNumber?.includes("*") ? userData?.user?.[0]?.mobileNumber : bill.mobileNumber,
       });
-      } 
-    else {
-      history.push(`/digit-ui/citizen/payment/collect/${businessService}/${consumerCode}`, { paymentAmount, tenantId: billDetails.tenantId, propertyId: propertyId });
+    } else if (timerEnabledForBusinessService(businessService)) {
+      history.push(`/digit-ui/citizen/payment/collect/${businessService}/${consumerCode}`, {
+        paymentAmount,
+        tenantId: billDetails.tenantId,
+        propertyId: propertyId,
+        timerValue: state?.timerValue,
+        SlotSearchData: state?.SlotSearchData,
+      });
+    } else {
+      history.push(`/digit-ui/citizen/payment/collect/${businessService}/${consumerCode}`, {
+        paymentAmount,
+        tenantId: billDetails.tenantId,
+        propertyId: propertyId,
+      });
     }
   };
-  
+
   const onChangeAmount = (value) => {
     setError("");
     if (isNaN(value) || value.includes(".")) {
@@ -202,21 +209,27 @@ const BillDetails = ({ paymentRules, businessService }) => {
       <Header>{t("CS_PAYMENT_BILL_DETAILS")}</Header>
       <Card>
         <div>
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <KeyNote
-            keyValue={t(businessService == "PT.MUTATION" ? "PDF_STATIC_LABEL_MUATATION_NUMBER_LABEL" : label)}
-            note={wrkflow === "WNS" ? stringReplaceAll(consumerCode, "+", "/") : consumerCode}
-          />
-          {timerEnabledForBusinessService(businessService) && (
-            <CardSubHeader 
-              style={{ 
-                textAlign: 'right', 
-                fontSize: "24px"
-              }}
-            >
-            <TimerServices businessService={businessService} setTime={setTime} timerValues={state?.timerValue} t={t} SlotSearchData={state?.SlotSearchData}/>
-            </CardSubHeader>
-          )}
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <KeyNote
+              keyValue={t(businessService == "PT.MUTATION" ? "PDF_STATIC_LABEL_MUATATION_NUMBER_LABEL" : label)}
+              note={wrkflow === "WNS" ? stringReplaceAll(consumerCode, "+", "/") : consumerCode}
+            />
+            {timerEnabledForBusinessService(businessService) && (
+              <CardSubHeader
+                style={{
+                  textAlign: "right",
+                  fontSize: "24px",
+                }}
+              >
+                <TimerServices
+                  businessService={businessService}
+                  setTime={setTime}
+                  timerValues={state?.timerValue}
+                  t={t}
+                  SlotSearchData={state?.SlotSearchData}
+                />
+              </CardSubHeader>
+            )}
           </div>
           {businessService !== "PT.MUTATION" && businessService !== "FSM.TRIP_CHARGES" && (
             <KeyNote keyValue={t("CS_PAYMENT_BILLING_PERIOD")} note={getBillingPeriod()} />
@@ -231,8 +244,9 @@ const BillDetails = ({ paymentRules, businessService }) => {
             <div>
               <KeyNote keyValue={t("ES_PAYMENT_DETAILS_TOTAL_AMOUNT")} note={application?.pdfData?.totalAmount} />
               <KeyNote keyValue={t("ES_PAYMENT_DETAILS_ADV_AMOUNT")} note={application?.pdfData?.advanceAmount} />
-              {application?.pdfData?.applicationStatus !== "PENDING_APPL_FEE_PAYMENT_CITIZEN" || application?.pdfData?.applicationStatus !== "PENDING_APPL_FEE_PAYMENT" ? (
-                <KeyNote keyValue={t("FSM_DUE_AMOUNT_TO_BE_PAID")} note={application?.pdfData?.totalAmount-application?.pdfData?.advanceAmount} />
+              {application?.pdfData?.applicationStatus !== "PENDING_APPL_FEE_PAYMENT_CITIZEN" ||
+              application?.pdfData?.applicationStatus !== "PENDING_APPL_FEE_PAYMENT" ? (
+                <KeyNote keyValue={t("FSM_DUE_AMOUNT_TO_BE_PAID")} note={application?.pdfData?.totalAmount - application?.pdfData?.advanceAmount} />
               ) : null}
             </div>
           ) : (
@@ -265,7 +279,7 @@ const BillDetails = ({ paymentRules, businessService }) => {
             >
               ₹
             </span>
-            {console.log(bill,"bill")}
+            {console.log(bill, "bill")}
             {paymentType !== t("CS_PAYMENT_FULL_AMOUNT") ? (
               businessService === "FSM.TRIP_CHARGES" ? (
                 <TextInput className="text-indent-xl" onChange={() => {}} value={getAdvanceAmount()} disable={true} />
@@ -274,9 +288,9 @@ const BillDetails = ({ paymentRules, businessService }) => {
               )
             ) : businessService === "FSM.TRIP_CHARGES" ? (
               <TextInput className="text-indent-xl" value={application?.pdfData?.advanceAmount} onChange={() => {}} disable={true} />
-            ):((
+            ) : (
               <TextInput className="text-indent-xl" value={getTotal()} onChange={() => {}} disable={true} />
-            ))}
+            )}
             {formError === "CS_CANT_PAY_BELOW_MIN_AMOUNT" ? (
               <span className="card-label-error">
                 {t(formError)}: {"₹" + minAmountPayable}

@@ -2,6 +2,7 @@ import React from "react";
 import { Route, Redirect } from "react-router-dom";
 
 export const PrivateRoute = ({ component: Component, roles, ...rest }) => {
+  const kc = window.keycloak;
   return (
     <Route
       {...rest}
@@ -15,7 +16,7 @@ export const PrivateRoute = ({ component: Component, roles, ...rest }) => {
             return "/digit-ui/citizen/login";
           }
         }
-        if (!user || !user.access_token) {
+        if (!user || !kc?.authenticated) {
           // not logged in so redirect to login page with the return url
           return <Redirect to={{ pathname: getLoginRedirectionLink(), state: { from: props.location.pathname + props.location.search } }} />;
         }

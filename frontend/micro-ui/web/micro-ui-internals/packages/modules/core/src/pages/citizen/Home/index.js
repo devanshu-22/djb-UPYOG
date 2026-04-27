@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
-  StandaloneSearchBar,
   Loader,
-  CardBasedOptions,
   ComplaintIcon,
   PTIcon,
   CaseIcon,
@@ -12,16 +10,11 @@ import {
   DocumentIcon,
   HelpIcon,
   WhatsNewCard,
-  OBPSIcon,
-  WSICon,
   CHBIcon,
 } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
-import { CitizenSideBar } from "../../../components/TopBarSideBar/SideBar/CitizenSideBar";
-import StaticCitizenSideBar from "../../../components/TopBarSideBar/SideBar/StaticCitizenSideBar";
 import ChatBot from "./ChatBot";
-import { ModuleCarousel, engagementModuleCodes } from "../../../components/Home";
 // const Home = () => {
 //   const { t } = useTranslation();
 //   const history = useHistory();
@@ -32,7 +25,6 @@ import { ModuleCarousel, engagementModuleCodes } from "../../../components/Home"
 
 //   const conditionsToDisableNotificationCountTrigger = () => {
 //     if (Digit.UserService?.getUser()?.info?.type === "EMPLOYEE") return false;
-//     if (!Digit.UserService?.getUser()?.access_token) return false;
 //     return true;
 //   };
 
@@ -227,12 +219,12 @@ const Home = () => {
   const { data: { stateInfo, uiHomePage } = {}, isLoading } = Digit.Hooks.useStore.getInitData();
   const userInfo = Digit.UserService.getUser();
   const name = userInfo?.info?.name;
-  let isMobile = window.Digit.Utils.browser.isMobile();
   if (window.Digit.SessionStorage.get("TL_CREATE_TRADE")) window.Digit.SessionStorage.set("TL_CREATE_TRADE", {});
 
   const conditionsToDisableNotificationCountTrigger = () => {
+    const kc = window.keycloak;
     if (Digit.UserService?.getUser()?.info?.type === "EMPLOYEE") return false;
-    if (!Digit.UserService?.getUser()?.access_token) return false;
+    if (!kc.authenticated) return false;
     return true;
   };
 
@@ -250,44 +242,44 @@ const Home = () => {
       : history.push(`/digit-ui/citizen/select-location`);
   }
 
-  const appBannerWebObj = uiHomePage?.appBannerDesktop;
-  const appBannerMobObj = uiHomePage?.appBannerMobile;
+  // const appBannerWebObj = uiHomePage?.appBannerDesktop;
+  // const appBannerMobObj = uiHomePage?.appBannerMobile;
   const citizenServicesObj = uiHomePage?.citizenServicesCard;
   const infoAndUpdatesObj = uiHomePage?.informationAndUpdatesCard;
-  const whatsAppBannerWebObj = uiHomePage?.whatsAppBannerDesktop;
-  const whatsAppBannerMobObj = uiHomePage?.whatsAppBannerMobile;
+  // const whatsAppBannerWebObj = uiHomePage?.whatsAppBannerDesktop;
+  // const whatsAppBannerMobObj = uiHomePage?.whatsAppBannerMobile;
   const whatsNewSectionObj = uiHomePage?.whatsNewSection;
 
-  const handleClickOnWhatsAppBanner = (obj) => {
-    window.open(obj?.navigationUrl);
-  };
+  // const handleClickOnWhatsAppBanner = (obj) => {
+  //   window.open(obj?.navigationUrl);
+  // };
   /* set citizen details to enable backward compatiable */
-  const setCitizenDetail = (userObject, token, tenantId) => {
+  const setCitizenDetail = (userObject, tenantId) => {
     let locale = JSON.parse(sessionStorage.getItem("Digit.initData"))?.value?.selectedLanguage;
     localStorage.setItem("Citizen.tenant-id", tenantId);
     localStorage.setItem("tenant-id", tenantId);
     localStorage.setItem("citizen.userRequestObject", JSON.stringify(userObject));
     localStorage.setItem("locale", locale);
     localStorage.setItem("Citizen.locale", locale);
-    localStorage.setItem("token", token);
-    localStorage.setItem("Citizen.token", token);
     localStorage.setItem("user-info", JSON.stringify(userObject));
     localStorage.setItem("Citizen.user-info", JSON.stringify(userObject));
   };
 
-  useEffect(async () => {
-    //sessionStorage.setItem("DigiLocker.token1","cf87055822e4aa49b0ba74778518dc400a0277e5")
-    if (window.location.href.includes("code")) {
-      let code = window.location.href.split("=")[1].split("&")[0];
-      let TokenReq = {
-        dlReqRef: localStorage.getItem("code_verfier_register"),
-        code: code,
-        module: "SSO",
-      };
-      const { ResponseInfo, UserRequest: info, ...tokens } = await Digit.DigiLockerService.token({ TokenReq });
-      setUser({ info, ...tokens });
-      setCitizenDetail(info, tokens?.access_token, info?.tenantId);
-    }
+  useEffect(() => {
+    (async () => {
+      //sessionStorage.setItem("DigiLocker.token1","cf87055822e4aa49b0ba74778518dc400a0277e5")
+      if (window.location.href.includes("code")) {
+        let code = window.location.href.split("=")[1].split("&")[0];
+        let TokenReq = {
+          dlReqRef: localStorage.getItem("code_verfier_register"),
+          code: code,
+          module: "SSO",
+        };
+        const { ResponseInfo, UserRequest: info, ...tokens } = await Digit.DigiLockerService.token({ TokenReq });
+        setUser({ info, ...tokens });
+        setCitizenDetail(info, info?.tenantId);
+      }
+    })();
   }, []);
 
   useEffect(() => {
@@ -296,7 +288,7 @@ const Home = () => {
     }
     Digit.SessionStorage.set("citizen.userRequestObject", user);
     Digit.UserService.setUser(user);
-    setCitizenDetail(user?.info, user?.access_token, "pg");
+    setCitizenDetail(user?.info, "pg");
     const redirectPath = location.state?.from || DEFAULT_REDIRECT_URL;
     if (!Digit.ULBService.getCitizenCurrentTenant(true)) {
       history.replace("/digit-ui/citizen/select-location", {
@@ -426,32 +418,6 @@ const Home = () => {
     });
   };
 
-  const greetingIcons = {
-    sun: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth="1.8" strokeLinecap="round" width="32" height="32">
-        <circle cx="12" cy="12" r="5" />
-        <line x1="12" y1="1" x2="12" y2="3" />
-        <line x1="12" y1="21" x2="12" y2="23" />
-        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-        <line x1="1" y1="12" x2="3" y2="12" />
-        <line x1="21" y1="12" x2="23" y2="12" />
-        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-      </svg>
-    ),
-    "cloud-sun": (
-      <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth="1.8" strokeLinecap="round" width="32" height="32">
-        <path d="M12 2v2M4.93 4.93l1.41 1.41M2 12h2M19.07 4.93l-1.41 1.41" />
-        <path d="M17 12a5 5 0 00-9.9-1H6a4 4 0 000 8h11a3 3 0 000-6z" />
-      </svg>
-    ),
-    moon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth="1.8" strokeLinecap="round" width="32" height="32">
-        <path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z" />
-      </svg>
-    ),
-  };
   // Add this component inside Home.jsx, above the return
   const AnalogClock = () => {
     const [time, setTime] = React.useState(new Date());

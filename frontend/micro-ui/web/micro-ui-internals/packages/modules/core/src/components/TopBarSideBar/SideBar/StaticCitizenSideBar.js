@@ -216,8 +216,9 @@ const StaticCitizenSideBar = ({ linkData, islinkDataLoading }) => {
     return <Item />;
   };
   let profileItem;
+  const kc = window.keycloak;
 
-  if (isFetched && user && user.access_token) {
+  if (isFetched && user && kc.authenticated) {
     profileItem = <Profile info={user?.info} stateName={stateInfo?.name} t={t} />;
     menuItems = menuItems.filter((item) => item?.id !== "login-btn" && item?.id !== "register-btn" && item?.id !== "help-line");
     menuItems = [
