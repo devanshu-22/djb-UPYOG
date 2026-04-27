@@ -269,10 +269,11 @@ public class InboxService {
 		List<Inbox> inboxes = new ArrayList<Inbox>();
 		InboxResponse response = new InboxResponse();
 		JSONArray businessObjects = null;
+		//System.out.println("test11      "+businessServiceName+"   "+moduleName);
 		// Map<String,String> srvMap = (Map<String, String>)
 		// config.getServiceSearchMapping().get(businessServiceName.get(0));
 		Map<String, String> srvMap = fetchAppropriateServiceMap(businessServiceName, moduleName);
-//		System.out.println("test2222222            "+srvMap);
+   	//System.out.println("test2222222      "+srvMap);
 		if (CollectionUtils.isEmpty(businessServiceName)) {
 			throw new CustomException(ErrorConstants.MODULE_SEARCH_INVLAID,
 					"Bussiness Service is mandatory for module search");
@@ -495,6 +496,8 @@ public class InboxService {
 
 			   - If no application numbers are found, isSearchResultEmpty is set to true.
 			*/
+
+		//	System.out.println("test22222222222   ");
 			if (!ObjectUtils.isEmpty(processCriteria.getModuleName())
 					&& processCriteria.getModuleName().equals(SV_SERVICES)) {
 
@@ -538,7 +541,7 @@ public class InboxService {
 
 					wtApplicationNumbers = WTInboxFilterService
 							.fetchApplicationNumbersFromSearcher(criteria, StatusIdNameMap, requestInfo);
-
+					//System.out.println(wtApplicationNumbers);
 				} else {
 
 					wtApplicationNumbers = WTInboxFilterService
@@ -868,24 +871,6 @@ public class InboxService {
 
 			}
 			else{
-
-				if (processCriteria.getBusinessService().contains("watertanker-fixedpoint")) {
-
-					businessMap = StreamSupport.stream(businessObjects.spliterator(), false)
-							.map(obj -> (JSONObject) obj)
-							.filter(obj -> obj.has("businessObject") &&
-									((JSONObject) obj.get("businessObject")).has("bookingNo"))
-							.collect(Collectors.toMap(
-									obj -> ((JSONObject) obj.get("businessObject"))
-											.getString("bookingNo")
-											.trim(),
-									obj -> obj,
-									(e1, e2) -> e1,
-									LinkedHashMap::new
-							));
-
-				} else {
-
 					businessMap = StreamSupport.stream(businessObjects.spliterator(), false)
 							.collect(Collectors.toMap(
 									s1 -> ((JSONObject) s1).get(businessIdParam).toString().trim(),
@@ -894,8 +879,6 @@ public class InboxService {
 									LinkedHashMap::new
 							));
 				}
-
-			}
 
 			ArrayList businessIds = new ArrayList();
 			businessIds.addAll(businessMap.keySet());
@@ -1108,7 +1091,7 @@ public class InboxService {
 					totalCount += ((int) vTripMap.get(COUNT));
 				}
 			}
-			System.out.println("test11  "+totalCount);
+			//System.out.println("test11  "+totalCount);
 			List<String> requiredApplications = new ArrayList<>();
 			inboxes.forEach(inbox -> {
 				ProcessInstance inboxProcessInstance = inbox.getProcessInstance();

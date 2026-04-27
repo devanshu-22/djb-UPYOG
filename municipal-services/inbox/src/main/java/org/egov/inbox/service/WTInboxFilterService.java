@@ -185,10 +185,10 @@ public class WTInboxFilterService {
 				}
 			}
 
+
 			Map result = restTemplate.postForObject(uri.toString(), searcherRequest, Map.class);
 
 			log.info("Searcher Response: " + result);
-
 
 			ObjectMapper mapper = new ObjectMapper();
 			try {
