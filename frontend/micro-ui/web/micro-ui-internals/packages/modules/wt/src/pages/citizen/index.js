@@ -1,7 +1,7 @@
-import { AppContainer, BackButton, PrivateRoute, ModuleHeader, ArrowLeft, HomeIcon } from "@djb25/digit-ui-react-components";
+import { AppContainer, BackButton, PrivateRoute, ModuleHeader, ArrowLeft, HomeIcon, CitizenHomeCard, CHBIcon, PropertyHouse } from "@djb25/digit-ui-react-components";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Redirect, Switch, useRouteMatch, useLocation } from "react-router-dom";
+import { Redirect, Switch, useRouteMatch, useLocation, useHistory } from "react-router-dom";
 import { APPLICATION_PATH } from "../../utils";
 import SearchApp from "../employee/SearchApp";
 
@@ -9,6 +9,7 @@ import SearchApp from "../employee/SearchApp";
 const App = () => {
   const { t } = useTranslation();
   const location = useLocation();
+  const history = useHistory();
   const { path, url, ...match } = useRouteMatch();
   const WTCreate = Digit?.ComponentRegistryService?.getComponent("WTCreate");
   const WTApplicationDetails = Digit?.ComponentRegistryService?.getComponent("WTApplicationDetails");
@@ -16,8 +17,6 @@ const App = () => {
   const TPApplicationDetails = Digit?.ComponentRegistryService?.getComponent("TPApplicationDetails");
   const WTMyApplications = Digit?.ComponentRegistryService?.getComponent("WTMyApplications");
   const Inbox = Digit.ComponentRegistryService.getComponent("WTEmpInbox");
-  const WTCard = Digit.ComponentRegistryService.getComponent("WTCitizenCard");
-  const MTCard = Digit.ComponentRegistryService.getComponent("MTCitizenCard");
   const ApplicationDetails = Digit?.ComponentRegistryService?.getComponent("ApplicationDetails");
 
   const getDynamicBreadcrumbs = () => {
@@ -126,7 +125,24 @@ const App = () => {
                 path={`${path}/wt-Vendor`}
                 component={() =>
                   Digit.UserService.hasAccess(["WT_VENDOR"]) ? (
-                    <WTCard parentRoute={path} />
+                    <div style={{ display: "flex", gap: "24px", flexWrap: "wrap", width: "100%", padding: "8px 0" }}>
+                      <CitizenHomeCard
+                        header={t("WT_MODULE_NAME")}
+                        links={[
+                          { i18nKey: t("ES_COMMON_INBOX"), link: `${APPLICATION_PATH}/citizen/wt/inbox` },
+                          { i18nKey: t("ES_COMMON_APPLICATION_SEARCH"), link: `${APPLICATION_PATH}/citizen/wt/my-bookings` },
+                          { i18nKey: t("WT_REQUEST_TANKER"), link: `${APPLICATION_PATH}/citizen/wt/request-service` },
+                        ]}
+                        Icon={() => <CHBIcon className="fill-path-primary-main" />}
+                      />
+                      <CitizenHomeCard
+                        header={t("TITLE_VENDOR_MANAGEMENT")}
+                        links={[
+                          { i18nKey: t("SEARCH_VENDOR"), link: `${APPLICATION_PATH}/citizen/vendor/search-vendor` },
+                        ]}
+                        Icon={() => <PropertyHouse className="fill-path-primary-main" />}
+                      />
+                    </div>
                   ) : (
                     <Redirect
                       to={{
@@ -141,7 +157,24 @@ const App = () => {
                 path={`${path}/mt-Vendor`}
                 component={() =>
                   Digit.UserService.hasAccess(["MT_VENDOR"]) ? (
-                    <MTCard parentRoute={path} />
+                    <div style={{ display: "flex", gap: "24px", flexWrap: "wrap", width: "100%", padding: "8px 0" }}>
+                      <CitizenHomeCard
+                        header={t("ACTION_TEST_MT")}
+                        links={[
+                          { i18nKey: t("ES_COMMON_INBOX"), link: `${APPLICATION_PATH}/citizen/wt/mt/inbox` },
+                          { i18nKey: t("ES_COMMON_APPLICATION_SEARCH"), link: `${APPLICATION_PATH}/citizen/wt/mt/my-bookings` },
+                          { i18nKey: t("MT_REQUEST_TANKER"), link: `${APPLICATION_PATH}/citizen/wt/request-service` },
+                        ]}
+                        Icon={() => <CHBIcon className="fill-path-primary-main" />}
+                      />
+                      <CitizenHomeCard
+                        header={t("TITLE_VENDOR_MANAGEMENT")}
+                        links={[
+                          { i18nKey: t("SEARCH_VENDOR"), link: `${APPLICATION_PATH}/citizen/vendor/search-vendor` },
+                        ]}
+                        Icon={() => <PropertyHouse className="fill-path-primary-main" />}
+                      />
+                    </div>
                   ) : (
                     <Redirect
                       to={{

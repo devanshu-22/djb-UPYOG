@@ -39,12 +39,12 @@ const EmployeeApp = ({
   useEffect(() => {
     Digit.UserService.setType("employee");
 
-    // Redirect Citizens to the citizen site
+    // Redirect Citizens to the citizen site (except allowed modules)
     const userType = userDetails?.info?.type?.toUpperCase();
-    if (userType === "CITIZEN") {
+    if (userType === "CITIZEN" && !location.pathname.includes("/vendor/")) {
       history.push("/digit-ui/citizen");
     }
-  }, [userDetails, history]);
+  }, [userDetails, history, location.pathname]);
   // sourceUrl = "https://s3.ap-south-1.amazonaws.com/egov-qa-assets";
   // const pdfUrl = "https://pg-egov-assets.s3.ap-south-1.amazonaws.com/Upyog+Code+and+Copyright+License_v1.pdf";
 

@@ -1,49 +1,33 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useHistory } from "react-router-dom";
 import { EmployeeModuleCard, PropertyHouse } from "@djb25/digit-ui-react-components";
 
 const VENDORCard = () => {
   const { t } = useTranslation();
+  const history = useHistory();
 
   const [total, setTotal] = useState("-");
 
+  const isCitizen = window.location.pathname.toLowerCase().includes("citizen");
 
 
-
-  if (!Digit.Utils.vendorAccess()) {
+  const hasAccess = Digit.Utils.vendorAccess() || Digit.UserService.hasAccess(["WT_VENDOR", "MT_VENDOR"]);
+  if (!hasAccess) {
     return null;
   }
   const links = [
-    // {
-    //   count: isLoading ? "0" : total?.totalCount,
-    //   label: t("Inbox"),
-    //   link: `/digit-ui/employee/asset/assetservice/inbox`,
-    // },
-    // {
-    //   label: t("ADDITIONAL_VENDOR_DETAILS"),
-    //   link: `/digit-ui/employee/vendor/registry/additionaldetails`
-    // },
     {
       label: t("VENDOR_NEW_REGISTERATION"),
-      link: `/digit-ui/employee/vendor/registry/new-vendor`
+      link: isCitizen ? `/digit-ui/citizen/vendor/registry/new-vendor` : `/digit-ui/employee/vendor/registry/new-vendor`
     },
     {
       label: t("SEARCH_VENDOR"),
-      link: `/digit-ui/employee/vendor/search-vendor`
+      link: isCitizen ? `/digit-ui/citizen/vendor/search-vendor` : `/digit-ui/employee/vendor/search-vendor`
     },
-    // {
-    //   label: t("MY_ASSET_APPLICATION"),
-    //   link: `/digit-ui/employee/asset/assetservice/my-asset`,
-    // }
-    // {
-    //   label: t("AST_REPORT"),
-    //   link: `/digit-ui/employee/asset/assetservice/report`,
-    // }
-
   ]
 
-  const VENDORRole = Digit.UserService.hasAccess(["WT_VENDOR"]) ;
-
+  const VENDORRole = Digit.UserService.hasAccess(["WT_VENDOR"]);
 
   const propsForModuleCard = {
     Icon: <PropertyHouse />,
@@ -52,12 +36,21 @@ const VENDORCard = () => {
       {
         count: total?.totalCount,
         label: t("Inbox"),
-        link: `/digit-ui/employee/asset/assetservice/inbox`
+        link: isCitizen ? `/digit-ui/citizen/vendor/search-vendor` : `/digit-ui/employee/vendor/search-vendor`,
       },
-
     ],
     links: links.filter(link => !link?.role || VENDORRole),
+    ...(isCitizen ? { onDetailsClick: () => history.push("/digit-ui/citizen/vendor/search-vendor") } : {}),
   };
+
+
+  if (isCitizen) {
+    return (
+      <div className="wt-citizen-card-premium">
+        <EmployeeModuleCard {...propsForModuleCard} />
+      </div>
+    );
+  }
 
   return <EmployeeModuleCard {...propsForModuleCard} />;
 };

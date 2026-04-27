@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import axios from "axios";
 
 import { fetchUserDetails } from "../../../../../../libraries/src/services/elements/UserDetails";
@@ -23,6 +23,7 @@ const setUserDetail = (userObject, token, userType) => {
 
 const Login = () => {
   const history = useHistory();
+  const location = useLocation();
 
   const [user, setUser] = useState(null);
   const [error, setError] = useState(null);
@@ -116,8 +117,12 @@ const Login = () => {
       const userType = (user.info.type || "").toUpperCase();
       let redirectPath = userType === "CITIZEN" ? "/digit-ui/citizen" : "/digit-ui/employee";
 
-      // Override with "from" query param if present
-      if (window.location.href.includes("from=")) {
+      // Override with location.state.from (passed by vendor/module login redirects)
+      if (location?.state?.from) {
+        redirectPath = location.state.from;
+      }
+      // Override with "from" query param if present (fallback)
+      else if (window.location.href.includes("from=")) {
         redirectPath = decodeURIComponent(window.location.href.split("from=")[1]) || redirectPath;
       }
 

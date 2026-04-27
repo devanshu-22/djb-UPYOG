@@ -326,18 +326,18 @@ const Home = () => {
         Icon: <CHBIcon className="fill-path-primary-main" />,
         onClick: () => history.push("/digit-ui/citizen/wt-home"),
       },
-      {
-        name: t(citizenServicesObj?.props?.[1]?.label),
-        description: t("Pay your property tax and register property"),
-        Icon: <PTIcon className="fill-path-primary-main" />,
-        onClick: () => history.push(citizenServicesObj?.props?.[1]?.navigationUrl),
-      },
-      {
-        name: t(citizenServicesObj?.props?.[2]?.label),
-        description: t("View and manage your pending applications"),
-        Icon: <CaseIcon className="fill-path-primary-main" />,
-        onClick: () => history.push(citizenServicesObj?.props?.[2]?.navigationUrl),
-      },
+      // {
+      //   name: t(citizenServicesObj?.props?.[1]?.label),
+      //   description: t("Pay your property tax and register property"),
+      //   Icon: <PTIcon className="fill-path-primary-main" />,
+      //   onClick: () => history.push(citizenServicesObj?.props?.[1]?.navigationUrl),
+      // },
+      // {
+      //   name: t(citizenServicesObj?.props?.[2]?.label),
+      //   description: t("View and manage your pending applications"),
+      //   Icon: <CaseIcon className="fill-path-primary-main" />,
+      //   onClick: () => history.push(citizenServicesObj?.props?.[2]?.navigationUrl),
+      // },
       {
         name: t("EKYC_MODULE_NAME"),
         description: t("Verify your identity and connection details"),
@@ -356,12 +356,12 @@ const Home = () => {
         Icon: <DropIcon className="fill-path-primary-main" />,
         onClick: () => history.push("/digit-ui/citizen/ws/home"),
       },
-      {
-        name: t(citizenServicesObj?.props?.[3]?.label) === "ACTION_TEST_CHB" ? t("Community Halls") : t(citizenServicesObj?.props?.[3]?.label),
-        description: t("Book community halls for your events and functions"),
-        Icon: <CHBIcon className="fill-path-primary-main" />,
-        onClick: () => history.push(citizenServicesObj?.props?.[3]?.navigationUrl),
-      },
+      // {
+      //   name: t(citizenServicesObj?.props?.[3]?.label) === "ACTION_TEST_CHB" ? t("Community Halls") : t(citizenServicesObj?.props?.[3]?.label),
+      //   description: t("Book community halls for your events and functions"),
+      //   Icon: <CHBIcon className="fill-path-primary-main" />,
+      //   onClick: () => history.push(citizenServicesObj?.props?.[3]?.navigationUrl),
+      // },
     ],
     styles: { display: "flex", flexWrap: "wrap", justifyContent: "flex-start", width: "100%" },
   };
