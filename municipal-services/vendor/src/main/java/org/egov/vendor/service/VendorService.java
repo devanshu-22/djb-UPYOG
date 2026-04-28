@@ -3,13 +3,16 @@ package org.egov.vendor.service;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
 import org.egov.common.contract.request.RequestInfo;
+import org.egov.common.contract.request.Role;
 import org.egov.tracer.model.CustomException;
 import org.egov.vendor.config.VendorConfiguration;
 import org.egov.vendor.driver.web.model.Driver;
@@ -234,6 +237,7 @@ public class VendorService {
 		UserDetailResponse userDetailResponse;
 
 		vendorValidator.validateSearch(requestInfo, criteria);
+		applyRoleBasedSearchRestrictions(criteria, requestInfo);
 
 		if (criteria.getMobileNumber() != null) {
 			userDetailResponse = userService.getOwner(criteria, requestInfo);
@@ -272,7 +276,51 @@ public class VendorService {
 		}
 
 		return vendorResponse;
+	}
+	private void applyRoleBasedSearchRestrictions(VendorSearchCriteria criteria, RequestInfo requestInfo) {
+		// 1. Guard Clause: If Employee or system call, allow unrestricted search
+		if (isEmployeeUser(requestInfo) || requestInfo == null || requestInfo.getUserInfo() == null) {
+			return;
+		}
 
+		// 2. Identify the logged-in User
+		String loggedInUuid = requestInfo.getUserInfo().getUuid();
+
+		// 3. Security Restriction: Force search by UUID
+		// For CITIZEN/VENDOR types, the UUID is the only reliable unencrypted identifier.
+		if (StringUtils.hasLength(loggedInUuid)) {
+			log.info("Restricting search to owner UUID: {}", loggedInUuid);
+
+			// Ensure the Vendor can ONLY see their own records by overriding OwnerIds
+			criteria.setOwnerIds(Collections.singletonList(loggedInUuid));
+
+			/* * 4. CRITICAL FIX: Clear the MobileNumber from criteria.
+			 * The mobileNumber in requestInfo.getUserInfo() is ENCRYPTED for Vendors.
+			 * We MUST nullify it here so the subsequent service logic (userService.getOwner)
+			 * is not triggered with an encrypted string, which would cause an empty result.
+			 */
+			criteria.setMobileNumber(null);
+		} else {
+			// Safety check: if for some reason UUID is missing for a non-employee, block the search
+			throw new CustomException("AUTH_ERROR", "User UUID not found in session. Search restricted.");
+		}
+	}
+
+	private boolean isEmployeeUser(RequestInfo requestInfo) {
+		if (requestInfo == null || requestInfo.getUserInfo() == null) {
+			return false;
+		}
+
+		// Check by Type (Standard eGov logic)
+		if (VendorConstants.EMPLOYEE.equalsIgnoreCase(requestInfo.getUserInfo().getType())) {
+			return true;
+		}
+
+		// Check by Role Code (Defensive logic)
+		return !CollectionUtils.isEmpty(requestInfo.getUserInfo().getRoles()) &&
+				requestInfo.getUserInfo().getRoles().stream()
+						.map(Role::getCode)
+						.anyMatch(role -> role.equalsIgnoreCase("EMPLOYEE") || role.equalsIgnoreCase("SUPERUSER") || role.equalsIgnoreCase("WT_CEMP") );
 	}
 
 	private VendorSearchCriteria getCriteria(VendorSearchCriteria criteria, RequestInfo requestInfo) {
