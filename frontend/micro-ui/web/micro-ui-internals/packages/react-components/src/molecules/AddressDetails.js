@@ -52,6 +52,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
   );
   const [zone, setZone] = useState(formData?.zone || formData?.address?.zone || "");
   const [block, setBlock] = useState(formData?.block || formData?.address?.block || "");
+  const [assembly, setAssembly] = useState(formData?.assembly || formData?.address?.assembly || "");
   const [selectedAddress, setSelectedAddress] = useState("");
   const { control } = useForm();
   const location = useLocation();
@@ -82,17 +83,21 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
     let localities = [];
     const boundaries = Array.isArray(boundaryData) ? boundaryData : boundaryData ? [boundaryData] : [];
 
-    const extractLocalities = (node, zone = null, ward = null) => {
+    const extractLocalities = (node, zone = null, ward = null, assembly = null) => {
       if (!node) return;
 
       let currentZone = zone;
       let currentWard = ward;
+      let currentAssembly = assembly;
 
       if (node.label === "Zone" || node.label === "ZONE") {
         currentZone = node.localname || node.code || node.name;
       }
       if (node.label === "Ward" || node.label === "WARD" || node.label === "Block" || node.label === "BLOCK") {
         currentWard = node.code || node.localname || node.name;
+      }
+      if (node.label === "Assembly Constituency" || node.label === "ASSEMBLY_CONSTITUENCY") {
+        currentAssembly = node.code || node.localname || node.name;
       }
 
       // Specifically target nodes that are officially labeled as Locality
@@ -103,11 +108,12 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
           i18nKey: node.i18nKey || `${tenantId.replace(".", "_")}_REVENUE_${node.code}`.toUpperCase(),
           zone: currentZone,
           ward: currentWard,
+          assembly: currentAssembly,
         });
       }
       // Always traverse down in case there are nested boundaries underneath
       if (node.children && node.children.length > 0) {
-        node.children.forEach((child) => extractLocalities(child, currentZone, currentWard));
+        node.children.forEach((child) => extractLocalities(child, currentZone, currentWard, currentAssembly));
       }
     };
 
@@ -173,6 +179,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
       addressType,
       latitude,
       longitude,
+      assembly,
       zone,
       block,
     };
@@ -200,12 +207,13 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
         addressType,
         latitude,
         longitude,
+        assembly,
         zone,
         block,
       };
       onSelect(addressStep);
     }
-  }, [pincode, city, locality, houseNo, landmark, addressLine1, addressLine2, streetName, addressType, latitude, longitude, zone, block]);
+  }, [pincode, city, locality, houseNo, landmark, addressLine1, addressLine2, streetName, addressType, latitude, longitude, zone, block, assembly]);
 
   useEffect(() => {
     if (selectedAddress && Object.keys(selectedAddress).length) {
@@ -219,6 +227,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
       setAddressLine2(selectedAddress.address2);
       setLatitude(selectedAddress.latitude);
       setLongitude(selectedAddress.longitude);
+      setAssembly(selectedAddress.assembly);
       setZone(selectedAddress.zone);
       setBlock(selectedAddress.block);
       setAddressType(allOptions?.find((ele) => ele.code === selectedAddress.addressType));
@@ -322,6 +331,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
               const newPin = val?.code;
               if (newPin !== pincode) {
                 setLocality(null);
+                setAssembly("");
                 setZone("");
                 setBlock("");
                 setLatitude("");
@@ -357,14 +367,17 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
                   if (val?.longitude) setLongitude(val.longitude);
                   if (val?.localname) setAddressLine1(val.localname);
                   if (val?.name) setAddressLine2(val.name);
+                  if (val?.assembly) setAssembly(val.assembly);
                   if (val?.zone) setZone(val.zone);
-                  if (val?.ward) setBlock(val.ward);
+                  if (val?.ward) {
+                    setBlock(val.ward);
+                  }
                   if (val?.pincode) {
                     const p = Array.isArray(val.pincode) ? val.pincode[0] : val.pincode;
-                  if (p) {
-                    const sanitizedPin = p.toString().split(".")[0];
-                    setPincode(sanitizedPin);
-                  }
+                    if (p) {
+                      const sanitizedPin = p.toString().split(".")[0];
+                      setPincode(sanitizedPin);
+                    }
                   }
                 }}
                 option={filteredLocalities}
@@ -532,6 +545,36 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
             className="form-field"
           />
         </div>
+        <div>
+          <CardLabel>
+            {`${t("ASSEMBLY")}`} <span className="check-page-link-button">*</span>
+          </CardLabel>
+          <TextInput
+            t={t}
+            type={"text"}
+            isMandatory={false}
+            name="assembly"
+            value={assembly}
+            style={{ width: "100%" }}
+            placeholder={"Enter Assembly"}
+            onChange={(e) => setAssembly(e.target.value)}
+          />
+        </div>
+        {/* <div>
+          <CardLabel>
+            {`${t("WARD")}`} <span className="check-page-link-button">*</span>
+          </CardLabel>
+          <TextInput
+            t={t}
+            type={"text"}
+            isMandatory={false}
+            name="ward"
+            value={ward}
+            style={{ width: "100%" }}
+            placeholder={"Enter Ward"}
+            onChange={(e) => setWard(e.target.value)}
+          />
+        </div> */}
         <div>
           <CardLabel>
             {`${t("BLOCK")}`} <span className="check-page-link-button">*</span>
