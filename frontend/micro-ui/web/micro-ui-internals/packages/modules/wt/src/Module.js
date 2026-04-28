@@ -88,7 +88,7 @@ export const WTLinks = ({ matchPath, userType }) => {
     },
     {
       link: `${matchPath}/wt/wt-Vendor`,
-      i18nKey: t("WT_VENDOR_LOGIN"),
+      i18nKey: t("Vendor Management"),
     },
   ];
 

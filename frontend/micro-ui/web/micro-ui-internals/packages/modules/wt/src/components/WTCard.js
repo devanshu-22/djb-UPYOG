@@ -15,6 +15,10 @@ import { APPLICATION_PATH } from "../utils";
 const WTCard = () => {
   const { t } = useTranslation();
   const tenantId = Digit.ULBService.getCurrentTenantId();
+  const emergencyRequestLabel =
+    t("WT_EMERGENCY_WATER_TANKER_REQUEST") !== "WT_EMERGENCY_WATER_TANKER_REQUEST"
+      ? t("WT_EMERGENCY_WATER_TANKER_REQUEST")
+      : "Emergency Water Tanker Request";
   const { data: citizenInboxData, isLoading: isCitizenInboxLoading } = Digit.Hooks.useNewInboxGeneral({
     tenantId,
     ModuleCode: "WT",
@@ -62,6 +66,10 @@ const WTCard = () => {
     {
       label: t("WT_APPLICATION_CREATE"),
       link: `${APPLICATION_PATH}/employee/wt/request-service`,
+    },
+    {
+      label: emergencyRequestLabel,
+      link: `${APPLICATION_PATH}/employee/wt/fixed-point/request-service`,
     },
     {
       label: t("WT_FIXED_POINT_SCHEDULE_MANAGEMENT"),

@@ -68,7 +68,7 @@ export const fixedPointConfig = [
     body: [
       {
         route: "fp-request-details",
-        component: "EmergencyFixedPointRequestDetails",
+        component: "RequestDetails",
         withoutLabel: true,
         key: "requestDetails",
         type: "component",
@@ -76,12 +76,12 @@ export const fixedPointConfig = [
         nextStep: null,
         texts: {
           submitBarLabel: "COMMON_SAVE_NEXT",
-          header: "FP_REQUEST_DETAILS",
+          header: "WT_REQUEST_DETAILS",
         },
         timeLine: [
           {
             currentStep: 3,
-            actions: "FP_REQUEST_DETAILS",
+            actions: "ES_REQUEST_DETAILS",
           },
         ],
       },

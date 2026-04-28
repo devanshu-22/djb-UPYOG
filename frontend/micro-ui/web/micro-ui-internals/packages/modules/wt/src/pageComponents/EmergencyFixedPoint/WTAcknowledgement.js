@@ -2,7 +2,7 @@ import { Banner, Card, CardText, LinkButton, LinkLabel, Loader, Row, StatusTable
 import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import { EmergencyFixedPointInfoPage, APPLICATION_PATH } from "../../utils";
+import { emergencyWaterTankerPayload, APPLICATION_PATH } from "../../utils";
 import getWTAcknowledgementData from "../../utils/getWTAcknowledgementData";
 
 /* This component, WTAcknowledgement, is responsible for displaying the acknowledgement 
@@ -57,19 +57,10 @@ const WTEmergencyFixedPointAcknowledgement = ({ data, onSuccess }) => {
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
 
-
-   const { isLoading, data: workflow } = Digit.Hooks.useWorkflowDetails({
-    tenantId: tenantId,
-    // id: mutation.data?.waterTankerBookingDetail?.processInstanceId,
-    moduleCode: "watertanker-fixedpoint",
-  });
-
-  console.log(workflow,"wt")
-
   useEffect(() => {
     try {
       data.tenantId = tenantId;
-      let formdata = EmergencyFixedPointInfoPage(data);
+      let formdata = emergencyWaterTankerPayload(data);
       mutation.mutate(formdata, { onSuccess });
     } catch (err) {}
   }, []);

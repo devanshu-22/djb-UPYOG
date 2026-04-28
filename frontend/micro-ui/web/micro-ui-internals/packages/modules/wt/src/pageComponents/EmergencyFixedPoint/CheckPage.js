@@ -69,6 +69,7 @@ const WTEmergencyFixedPointCheckPage = ({ onSubmit, value = {} }) => {
   const [agree, setAgree] = useState(false);
   const immediateRequired = requestDetails?.extraCharge ? "YES" : "NO";
   const [fileUrl, setFileUrl] = useState(null);
+  const isWaterTankerService = !serviceType?.serviceType?.code || serviceType?.serviceType?.code === "WT";
 
   const baseUrl = pathname.includes("citizen")
     ? `${APPLICATION_PATH}/citizen/wt/fixed-point/request-service`
@@ -119,7 +120,7 @@ const WTEmergencyFixedPointCheckPage = ({ onSubmit, value = {} }) => {
             <Row label={t("LANDMARK")} text={`${t(checkForNA(address?.landmark))}`} />
             <Row label={t("STREET_NAME")} text={`${t(checkForNA(address?.streetName))}`} />
           </StatusTable>
-          {serviceType?.serviceType?.code === "WT" && (
+          {isWaterTankerService && (
             <>
               <CardSubHeader>{t("WT_REQUEST_DETAILS")}</CardSubHeader>
               <StatusTable style={{ marginTop: "30px", marginBottom: "30px" }}>
