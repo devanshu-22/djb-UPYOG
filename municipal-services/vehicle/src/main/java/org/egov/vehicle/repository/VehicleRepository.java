@@ -283,4 +283,17 @@ public class VehicleRepository {
 
 		return vehicleDriverMap;
 	}
+
+	public List<String> fetchVehicleIdsByVendorOwner(String ownerUuid) {
+
+		String query =
+				"SELECT ev.vechile_id " +
+						"FROM eg_vendor_vehicle ev " +
+						"JOIN eg_vendor v ON ev.vendor_id = v.id " +
+						"WHERE v.owner_id = ? AND ev.vendorvehiclestatus = 'ACTIVE'";
+
+		return jdbcTemplate.query(query, new Object[]{ownerUuid},
+				new SingleColumnRowMapper<>(String.class));
+	}
+
 }

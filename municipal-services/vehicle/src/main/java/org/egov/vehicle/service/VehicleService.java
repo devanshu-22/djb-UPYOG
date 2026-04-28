@@ -7,9 +7,11 @@ import java.util.stream.Collectors;
 import javax.validation.Valid;
 
 import org.egov.common.contract.request.RequestInfo;
+import org.egov.common.contract.request.Role;
 import org.egov.tracer.model.CustomException;
 import org.egov.vehicle.config.VehicleConfiguration;
 import org.egov.vehicle.repository.VehicleRepository;
+import org.egov.vehicle.util.Constants;
 import org.egov.vehicle.util.VehicleErrorConstants;
 import org.egov.vehicle.util.VehicleUtil;
 import org.egov.vehicle.validator.Validator;
@@ -85,8 +87,61 @@ public class VehicleService {
 		return vehicleRequest.getVehicle();
 	}
 
+	private void applyVehicleSearchRestriction(VehicleSearchCriteria criteria, RequestInfo requestInfo) {
+
+		if (isEmployeeUser(requestInfo)) {
+			return;
+		}
+
+		if (requestInfo == null || requestInfo.getUserInfo() == null) {
+			throw new CustomException("AUTH_ERROR", "Invalid user session");
+		}
+
+		String userUuid = requestInfo.getUserInfo().getUuid();
+
+		if (!org.springframework.util.StringUtils.hasLength(userUuid)) {
+			throw new CustomException("AUTH_ERROR", "User UUID not found");
+		}
+
+		log.info("Applying vehicle restriction for user: {}", userUuid);
+
+		List<String> vehicleIds = repository.fetchVehicleIdsByVendorOwner(userUuid);
+
+		if (CollectionUtils.isEmpty(vehicleIds)) {
+			criteria.setIds(Collections.singletonList("NO_DATA"));
+			return;
+		}
+
+		if (CollectionUtils.isEmpty(criteria.getIds())) {
+			criteria.setIds(vehicleIds);
+		} else {
+			criteria.getIds().retainAll(vehicleIds);
+		}
+
+		criteria.setMobileNumber(null);
+	}
+
+	private boolean isEmployeeUser(RequestInfo requestInfo) {
+		if (requestInfo == null || requestInfo.getUserInfo() == null) {
+			return false;
+		}
+
+		if (Constants.EMPLOYEE.equalsIgnoreCase(requestInfo.getUserInfo().getType())) {
+			return true;
+		}
+
+		return !CollectionUtils.isEmpty(requestInfo.getUserInfo().getRoles()) &&
+				requestInfo.getUserInfo().getRoles().stream()
+						.map(Role::getCode)
+						.anyMatch(role ->
+								role.equalsIgnoreCase("EMPLOYEE") ||
+										role.equalsIgnoreCase("SUPERUSER") ||
+										role.equalsIgnoreCase("WT_CEMP"));
+	}
+
 	public VehicleResponse search(@Valid VehicleSearchCriteria criteria, RequestInfo requestInfo) {
 		validator.validateSearch(requestInfo, criteria);
+		applyVehicleSearchRestriction(criteria, requestInfo);
 		UserDetailResponse usersRespnse;
 
 		if (criteria.isVehicleWithNoVendor()) {

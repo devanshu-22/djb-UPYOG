@@ -72,4 +72,26 @@ public class DriverRepository {
 
 	}
 
+	public List<String> getDriverIdsByVendorId(String vendorId) {
+
+		String query = "SELECT driver_id FROM eg_vendor_driver " +
+				"WHERE vendor_id = ? AND vendordriverstatus = 'ACTIVE'";
+
+		return jdbcTemplate.query(
+				query,
+				new Object[]{vendorId},
+				new SingleColumnRowMapper<>(String.class)
+		);
+	}
+
+	public List<String> getVendorIdsByOwner(String ownerId) {
+
+		String query = "SELECT id FROM eg_vendor WHERE owner_id = ?";
+
+		return jdbcTemplate.query(
+				query,
+				new Object[]{ownerId},
+				new SingleColumnRowMapper<>(String.class)
+		);
+	}
 }
