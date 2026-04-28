@@ -625,7 +625,7 @@ public class EnrichmentService {
 		waterTankerFixedPointDetail.setMobileNumber(applicantDetail.getMobileNumber());
 
 		waterTankerFixedPointDetail.getApplicantDetail().setType("FIXED-POINT");
-		//waterTankerFixedPointDetail.getApplicantDetail().setFixedPointId(referenceList.get(0));
+		waterTankerFixedPointDetail.getApplicantDetail().setFixedPointId(referenceList.get(0));
 		waterTankerFixedPointDetail.getApplicantDetail().setApplicantId(RequestServiceUtil.getRandonUUID());
 		waterTankerFixedPointDetail.getAddress().setAddressId(RequestServiceUtil.getRandonUUID());
 		waterTankerFixedPointDetail.getApplicantDetail().setAuditDetails(auditDetails);
