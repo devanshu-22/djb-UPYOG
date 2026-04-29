@@ -480,19 +480,19 @@ const DriverCard = ({ driver, isSelected, onClick, vendorList }) => {
 
   useEffect(() => {
     const resolveDest = async () => {
-      if (driver.deliveryLat && driver.deliveryLng) {
+      if (driver.activeDeliveryLat && driver.activeDeliveryLng) {
         const dist = lastResolvedDest.current.lat
-          ? geoDistance(lastResolvedDest.current.lat, lastResolvedDest.current.lng, driver.deliveryLat, driver.deliveryLng)
+          ? geoDistance(lastResolvedDest.current.lat, lastResolvedDest.current.lng, driver.activeDeliveryLat, driver.activeDeliveryLng)
           : Infinity;
         if (dist > 0.2) {
-          const data = await reverseGeocode(driver.deliveryLat, driver.deliveryLng);
+          const data = await reverseGeocode(driver.activeDeliveryLat, driver.activeDeliveryLng);
           setDeliveryAddress(getAreaName(data));
-          lastResolvedDest.current = { lat: driver.deliveryLat, lng: driver.deliveryLng };
+          lastResolvedDest.current = { lat: driver.activeDeliveryLat, lng: driver.activeDeliveryLng };
         }
       }
     };
     resolveDest();
-  }, [driver.deliveryLat, driver.deliveryLng]);
+  }, [driver.activeDeliveryLat, driver.activeDeliveryLng]);
 
   const driverDetails = useMemo(() => {
     if (!vendorList || !vendorList.length) return { name: "Unknown", vehicle: "N/A" };
@@ -791,7 +791,7 @@ export default function LiveTrackingSystem() {
 
   const onlineCount = Object.values(drivers).filter((d) => d.isOnline).length;
   const offlineCount = Object.values(drivers).filter((d) => !d.isOnline).length;
-  const activeDeliveries = Object.values(drivers).filter((d) => d.isOnline && d.deliveryLat && d.deliveryLng).length;
+  const activeDeliveries = Object.values(drivers).filter((d) => d.isOnline && d.activeDeliveryLat && d.activeDeliveryLng).length;
 
   // Toggle sidebar on mobile
   const toggleSidebar = () => {
@@ -1170,10 +1170,10 @@ export default function LiveTrackingSystem() {
                         <div><Address lat={selectedDriver.lat} lng={selectedDriver.lng} /></div>
                       </div>
 
-                      {selectedDriver.deliveryLat && selectedDriver.deliveryLng && (
+                      {selectedDriver.activeDeliveryLat && selectedDriver.activeDeliveryLng && (
                         <div style={{ marginBottom: "8px" }}>
                           <strong>{t("DELIVERY_DESTINATION")}</strong>
-                          <div><Address lat={selectedDriver.deliveryLat} lng={selectedDriver.deliveryLng} /></div>
+                          <div><Address lat={selectedDriver.activeDeliveryLat} lng={selectedDriver.activeDeliveryLng} /></div>
                         </div>
                       )}
 
@@ -1219,18 +1219,18 @@ export default function LiveTrackingSystem() {
               </Marker>
             )}
 
-            {selectedDriver && selectedDriver.deliveryLat != null && selectedDriver.deliveryLng != null && (
+            {selectedDriver && selectedDriver.activeDeliveryLat != null && selectedDriver.activeDeliveryLng != null && (
               <Marker
                 key={`dest-${selectedDriver.driverId}`}
-                position={[Number(selectedDriver.deliveryLat), Number(selectedDriver.deliveryLng)]}
+                position={[Number(selectedDriver.activeDeliveryLat), Number(selectedDriver.activeDeliveryLng)]}
                 icon={destinationIcon}
               />
             )}
 
-            {showRoutes && selectedDriver && selectedDriver.lat && selectedDriver.lng && selectedDriver.deliveryLat && selectedDriver.deliveryLng && (
+            {showRoutes && selectedDriver && selectedDriver.lat && selectedDriver.lng && selectedDriver.activeDeliveryLat && selectedDriver.activeDeliveryLng && (
               <RouteLayer
                 start={{ lat: selectedDriver.lat, lng: selectedDriver.lng }}
-                end={{ lat: selectedDriver.deliveryLat, lng: selectedDriver.deliveryLng }}
+                end={{ lat: selectedDriver.activeDeliveryLat, lng: selectedDriver.activeDeliveryLng }}
                 color="#2196f3"
                 weight={6}
               />
