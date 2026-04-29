@@ -6,16 +6,10 @@ const EmergencyFixedPointInfoPage = ({ t, onSelect, formData, config, userType }
   const [existingDataSet, setExistingDataSet] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [isExistingPopupRequired, setIsExistingPopupRequired] = useState(false);
-
-  // Module mapping for dynamic header
-  const moduleMap = {
-    MobileToilet: "MT_MODULE",
-    WT: "WT_MODULE",
-    TREE_PRUNING: "TREE_PRUNING",
-  };
-
-  const code = formData?.serviceType?.serviceType?.code;
-  const moduleKey = moduleMap[code];
+  const emergencyRequestLabel =
+    t("WT_EMERGENCY_WATER_TANKER_REQUEST") !== "WT_EMERGENCY_WATER_TANKER_REQUEST"
+      ? t("WT_EMERGENCY_WATER_TANKER_REQUEST")
+      : "Emergency Water Tanker Request";
 
   const handleOpenModal = () => {
     isExistingPopupRequired ? setShowModal(true) : goNext();
@@ -30,8 +24,7 @@ const EmergencyFixedPointInfoPage = ({ t, onSelect, formData, config, userType }
   return (
     <React.Fragment>
       <Card className="search-form-wrapper" style={{ flexDirection: "column", gap: "12px", justifyContent: "flex-start" }}>
-        {moduleKey && <CardHeader>{t(moduleKey)}</CardHeader>}
-         <CardHeader>{t("WT_APPLICATION_CREATE_FIXED_POINT")}</CardHeader>
+        <CardHeader>{emergencyRequestLabel}</CardHeader>
         <div>
           <p className="primaryColor">{t("SV_DOC_REQ_SCREEN_SUB_HEADER")}</p>
           <p className="primaryColor">{t("SV_DOC_REQ_SCREEN_TEXT")}</p>

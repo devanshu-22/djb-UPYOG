@@ -16,6 +16,10 @@ const EmployeeApp = ({ path }) => {
   const { t } = useTranslation();
   const location = useLocation();
   const fixedPointInboxLabel = t("WT_FIXED_POINT") !== "WT_FIXED_POINT" ? `${t("WT_FIXED_POINT")} ${t("ES_COMMON_INBOX")}` : "Fixed Point Inbox";
+  const emergencyRequestLabel =
+    t("WT_EMERGENCY_WATER_TANKER_REQUEST") !== "WT_EMERGENCY_WATER_TANKER_REQUEST"
+      ? t("WT_EMERGENCY_WATER_TANKER_REQUEST")
+      : "Emergency Water Tanker Request";
 
   sessionStorage.removeItem("revalidateddone");
 
@@ -47,7 +51,7 @@ const EmployeeApp = ({ path }) => {
       if (pathname.includes("/tp/my-bookings")) label = "TP_SEARCH_BOOKINGS";
       crumbs.push({ label: t(label) });
     } else if (pathname.includes("/fixed-point/request-service")) {
-      crumbs.push({ label: t("WT_APPLICATION_CREATE_FIXED_POINT") });
+      crumbs.push({ label: emergencyRequestLabel });
     } else if (pathname.includes("/request-service")) {
       crumbs.push({ label: t("WT_REQUEST_SERVICE") });
     } else if (pathname.includes("/fixed-point/booking-details")) {

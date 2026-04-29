@@ -2,7 +2,12 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 const GetCell = (value) => <span className="cell-text">{value}</span>;
-
+const getCreatedTime = (row) => row?.searchData?.auditDetails?.createdTime || row?.workflowData?.auditDetails?.createdTime;
+const getFormattedCreatedAt = (row) => {
+  const createdTime = getCreatedTime(row);
+  if (!createdTime) return "";
+  return `${Digit.DateUtils.ConvertEpochToDate(createdTime)} ${Digit.DateUtils.ConvertEpochToTimeInHours(createdTime)}`;
+};
 
 const GetSlaCell = (value) => {
   if (isNaN(value)) return <span className="sla-cell-success">0</span>;
@@ -67,6 +72,16 @@ export const TableConfig = (t) => ({
         },
         mobileCell: (original) => GetMobCell(t(`${original?.searchData?.["localityCode"]}`)),
     
+      },
+      {
+        Header: t("CREATED_AT"),
+        id: "createdTime",
+        accessor: (row) => getFormattedCreatedAt(row),
+        Cell: ({ row }) => {
+          return GetCell(getFormattedCreatedAt(row?.original));
+        },
+        mobileCell: (original) => GetMobCell(getFormattedCreatedAt(original)),
+        
       },
       {
         Header: t("WT_STATUS"),

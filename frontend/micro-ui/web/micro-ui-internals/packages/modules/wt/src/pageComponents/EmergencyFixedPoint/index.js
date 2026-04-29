@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "react-query";
 import { Redirect, Route, Switch, useHistory, useLocation, useRouteMatch } from "react-router-dom";
@@ -29,15 +29,17 @@ const WTEmergencyFixedPointCreate = () => {
   config.indexRoute = "fp-info";
 
   // Clear params if navigating back to info page
-  if (
-    params &&
-    Object.keys(params).length > 0 &&
-    window.location.href.includes("/fp-info") &&
-    sessionStorage.getItem("docReqScreenByBack") !== "true"
-  ) {
-    clearParams();
-    queryClient.invalidateQueries("FP_Create");
-  }
+  useEffect(() => {
+    if (
+      params &&
+      Object.keys(params).length > 0 &&
+      window.location.href.includes("/fp-info") &&
+      sessionStorage.getItem("docReqScreenByBack") !== "true"
+    ) {
+      clearParams();
+      queryClient.invalidateQueries("FP_Create");
+    }
+  }, [params, clearParams, queryClient]);
 
   /* ------------------------------------------------------------------ */
   /*                            NAVIGATION                               */

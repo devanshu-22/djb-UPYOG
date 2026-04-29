@@ -21,6 +21,11 @@ import SearchApplication from "./inbox/search";
 const WTDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
   const { data, useNewInboxAPI } = props;
   const { t } = useTranslation();
+  const getCreatedAtValue = React.useCallback((row) => {
+    const createdTime = row?.searchData?.auditDetails?.createdTime || row?.workflowData?.auditDetails?.createdTime;
+    if (!createdTime) return "";
+    return `${Digit.DateUtils.ConvertEpochToDate(createdTime)} ${Digit.DateUtils.ConvertEpochToTimeInHours(createdTime)}`;
+  }, []);
   const [FilterComponent, setComp] = useState(() => Digit.ComponentRegistryService?.getComponent(filterComponent));
   const [EmptyInboxComp, setEmptyInboxComp] = useState(() => {
     const com = Digit.ComponentRegistryService?.getComponent(props.EmptyResultInboxComp);
@@ -32,29 +37,41 @@ const WTDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
   const columns = React.useMemo(() => (props.isSearch ? tableConfig.searchColumns(props) : tableConfig.inboxColumns(props) || []), []);
 
   const inboxCsvColumns = React.useMemo(
-    () => [
-      {
-        Header: columns?.[0]?.Header || t("WT_BOOKING_NO"),
-        exportAccessor: (row) => row?.searchData?.bookingNo || "",
-      },
-      {
-        Header: columns?.[1]?.Header || t("WT_APPLICANT_NAME"),
-        exportAccessor: (row) => row?.searchData?.applicantDetail?.name || "",
-      },
-      {
-        Header: columns?.[2]?.Header || t("WT_MOBILE_NUMBER"),
-        exportAccessor: (row) => row?.searchData?.applicantDetail?.mobileNumber || "",
-      },
-      {
-        Header: columns?.[3]?.Header || t("LOCALITY"),
-        exportAccessor: (row) => (row?.searchData?.localityCode ? t(row.searchData.localityCode) : ""),
-      },
-      {
-        Header: columns?.[4]?.Header || t("WT_STATUS"),
+    () => {
+      const csvColumns = [
+        {
+          Header: columns?.[0]?.Header || t("WT_BOOKING_NO"),
+          exportAccessor: (row) => row?.searchData?.bookingNo || "",
+        },
+        {
+          Header: columns?.[1]?.Header || t("WT_APPLICANT_NAME"),
+          exportAccessor: (row) => row?.searchData?.applicantDetail?.name || "",
+        },
+        {
+          Header: columns?.[2]?.Header || t("WT_MOBILE_NUMBER"),
+          exportAccessor: (row) => row?.searchData?.applicantDetail?.mobileNumber || "",
+        },
+        {
+          Header: columns?.[3]?.Header || t("LOCALITY"),
+          exportAccessor: (row) => (row?.searchData?.localityCode ? t(row.searchData.localityCode) : ""),
+        },
+      ];
+
+      if (columns?.some((column) => column?.id === "createdTime")) {
+        csvColumns.push({
+          Header: columns?.find((column) => column?.id === "createdTime")?.Header || t("CREATED_AT"),
+          exportAccessor: (row) => getCreatedAtValue(row),
+        });
+      }
+
+      csvColumns.push({
+        Header: columns?.find((column) => column?.id === "applicationStatus")?.Header || t("WT_STATUS"),
         exportAccessor: (row) => (row?.workflowData?.state?.applicationStatus ? t(row.workflowData.state.applicationStatus) : ""),
-      },
-    ],
-    [columns, t]
+      });
+
+      return csvColumns;
+    },
+    [columns, getCreatedAtValue, t]
   );
 
   let result;
