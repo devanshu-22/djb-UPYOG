@@ -2,12 +2,10 @@ import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useHistory } from "react-router-dom";
 import { Card, Dropdown, Loader, SubmitBar, Toast } from "@djb25/digit-ui-react-components";
-//import FSMLink from "./inbox/FSMLink";
 import VENDORLink from "./inbox/VENDORLink";
 import ApplicationTable from "./inbox/ApplicationTable";
 import Filter from "./inbox/Filter";
 import { ToggleSwitch } from "@djb25/digit-ui-react-components";
-//import RegistrySearch from "./RegistrySearch";
 import RegistredVendorSearch from "./RegisteredVendorSearch";
 import { useQueryClient } from "react-query";
 
@@ -39,7 +37,7 @@ const getFillingPointIdentifiers = (fillingPoint) => {
 };
 
 const getRowFillingPointIdentifiers = (row = {}) => {
-  const getIdentifiers = (fp) => Array.isArray(fp) ? fp.flatMap(getFillingPointIdentifiers) : getFillingPointIdentifiers(fp);
+  const getIdentifiers = (fp) => (Array.isArray(fp) ? fp.flatMap(getFillingPointIdentifiers) : getFillingPointIdentifiers(fp));
   return Array.from(
     new Set([
       ...[
@@ -72,7 +70,7 @@ const getSelectedFillingPointOption = (row, fillingPoints = []) => {
 
 const getFillingPointDisplayValue = (row = {}) => {
   if (Array.isArray(row?.fillingPoint)) {
-    const list = row.fillingPoint.map(fp => fp?.fillingPointName || fp?.fillingPointId).filter(Boolean);
+    const list = row.fillingPoint.map((fp) => fp?.fillingPointName || fp?.fillingPointId).filter(Boolean);
     if (list.length > 0) return list.join(", ");
   }
   return (
@@ -101,7 +99,7 @@ const getSelectedVendorOption = (row = {}, vendors = []) => {
 const getVendorFillingPoints = (vendor = {}) => {
   const fillingPointOptions = [
     ...(Array.isArray(vendor?.fillingPoint) ? vendor.fillingPoint : [vendor?.fillingPoint]),
-    ...(Array.isArray(vendor?.fillingPoints) ? vendor.fillingPoints : [vendor?.fillingPoints])
+    ...(Array.isArray(vendor?.fillingPoints) ? vendor.fillingPoints : [vendor?.fillingPoints]),
   ].filter(Boolean);
   const uniqueFillingPoints = new Map();
 
@@ -558,36 +556,6 @@ const VendorInbox = (props) => {
     });
   };
 
-  // const onCellClick = (row, column, length) => {
-  //   setTableData((old) =>
-  //     old.map((data, index) => {
-  //       if (index == row.id && row.id !== data?.popup?.row && column.id !== data?.popup?.column && length) {
-  //         return {
-  //           ...data,
-  //           popup: {
-  //             row: row.id,
-  //             column: column.id,
-  //           },
-  //         };
-  //       } else {
-  //         return {
-  //           ...data,
-  //           popup: {},
-  //         };
-  //       }
-  //     })
-  //   );
-  // };
-
-  // const onActionSelect = (action, type, data) => {
-  //   if (type === "VEHICLE") {
-  //     history.push("/digit-ui/employee/vendor/registry/vehicle-details/" + action);
-  //   } else {
-  //     let driver = data.find((ele) => ele.name === action);
-  //     history.push("/digit-ui/employee/vendor/registry/driver-details/" + driver?.id);
-  //   }
-  // };
-
   //on search if the card is empty then it will
   const onSelectAdd = () => {
     switch (props.selectedTab) {
@@ -658,38 +626,6 @@ const VendorInbox = (props) => {
               GetCell(row.original?.auditDetails?.createdTime ? Digit.DateUtils.ConvertEpochToDate(row.original?.auditDetails?.createdTime) : ""),
           },
 
-          // {
-          //   Header: t("ES_VENDOR_INBOX_SERVICE_TYPE"),
-          //   disableSortBy: true,
-          //   Cell: ({ row }) => {
-          //     //let description =
-          //     //const description = JSON.parse(payload.dsoDetails.address.additionalDetails).description;
-          //     //console.log("description", description); // Debugging
-          //     console.log("before addressssss",row.original.dsoDetails )
-          //     console.log("service type", row.original.dsoDetails?.additionalDetails?.description);
-          //     //let address = row.original.dsoDetails.address;
-          //     //console.log("vendor", address.additionalDetails); // Debugging
-          //     console.log("");
-          //     const additionalDetails = JSON.parse(row.original.dsoDetails?.additionalDetails?.description);
-          //     //const description = additionalDetails.description;
-
-          //     return (
-          //       <div>
-          //         {/* <span className="link">
-          //           <Link to={`/digit-ui/employee/vendor/registry/new-vendor${row.original["id"] || ""}`}>
-          //             <div>
-          //               {description}
-          //               <br />
-          //             </div>
-          //           </Link>
-          //         </span> */}
-          //         {additionalDetails}
-          //       </div>
-          //     );
-          //   },
-          // },
-        
-
           {
             Header: t("ES_VENDOR_INBOX_SERVICE_TYPE"),
             id: "serviceType",
@@ -720,174 +656,6 @@ const VendorInbox = (props) => {
             },
           },
 
-          // {
-          //   Header: t("ES_VENDOR_INBOX_VENDOR_NAME"),
-          //   disableSortBy: true,
-          //   Cell: ({ row }) => {
-
-          //     return (
-          //       <div>
-          //         {/* <span className="link">
-          //           <Link to={`/digit-ui/employee/vendor/registry/new-vendor${row.original["id"] || ""}`}>
-          //             <div>
-          //               {row}
-          //               <br />
-          //             </div>
-          //           </Link>
-          //         </span> */}
-          //         {row.original.name}
-          //       </div>
-          //     );
-
-          //   }
-          // },
-
-          // {
-          //   Header: t("ES_FSM_REGISTRY_INBOX_VENDOR_NAME"),
-          //   Cell: ({ row }) => {
-          //     return (
-          //       <Dropdown
-          //         className="fsm-registry-dropdown"
-          //         selected={row.original.vendor}
-          //         option={vendors}
-          //         select={(value) => onVendorSelect(row, value)}
-          //         optionKey="name"
-          //         t={t}
-          //       />
-          //     );
-          //   },
-          // },
-
-          // {
-          //   Header: t("ES_VENDOR_INBOX_SERVICE_TYPE"),
-          //   disableSortBy: true,
-          //   cell: ({ row }) => {
-          //     //console.log("vendor", row.original.dsoDetails.address.additionalDetails); // Debugging
-          //     const additionalDetails = JSON.parse(row.original.dsoDetails.address.additionalDetails);
-          //     const description = additionalDetails.description;
-          //     console.log("dsodetails", row.original.dsoDetails);
-          //     return (
-          //       <div>
-          //         <span className="link">
-          //           <Link to={"/digit-ui/employee/vendor/registry/vendor-details/" + row.original["id"]}>
-          //             <div>{description}
-          //             <br />
-          //             </div>
-
-          //           </Link>
-          //         </span>
-          //       </div>
-          //     );
-          //   },
-          // },
-
-          //total vehicles
-          // {
-          //   Header: t("ES_FSM_REGISTRY_INBOX_TOTAL_VEHICLES"),
-          //   Cell: ({ row, column }) => {
-          //     return (
-          //       <div className="action-bar-wrap-registry" style={{ position: "relative" }}>
-          //         <div
-          //           className={row.original?.allVehicles?.length ? "link" : "cell-text"}
-          //           style={{ cursor: "pointer" }}
-          //           onClick={() => onCellClick(row, column, row.original?.allVehicles?.length)}
-          //         >
-          //           {row.original?.allVehicles?.length || 0}
-          //           <br />
-          //         </div>
-          //         {row.id === row.original?.popup?.row && column.id === row.original?.popup?.column && (
-          //           <Menu
-          //             localeKeyPrefix={""}
-          //             options={row.original?.allVehicles?.map((data) => data.registrationNumber)}
-          //             onSelect={(action) => onActionSelect(action, "VEHICLE")}
-          //           />
-          //         )}
-          //       </div>
-          //     );
-          //   },
-          // },
-
-          //active vehicles
-          // {
-          //   Header: t("ES_FSM_REGISTRY_INBOX_ACTIVE_VEHICLES"),
-          //   disableSortBy: true,
-          //   Cell: ({ row, column }) => {
-          //     return (
-          //       <div className="action-bar-wrap-registry" style={{ position: "relative" }}>
-          //         <div
-          //           className={row.original?.vehicles?.length ? "link" : "cell-text"}
-          //           style={{ cursor: "pointer" }}
-          //           onClick={() => onCellClick(row, column, row.original?.vehicles?.length)}
-          //         >
-          //           {row.original?.vehicles?.length || 0}
-          //           <br />
-          //         </div>
-          //         {row.id === row.original?.popup?.row && column.id === row.original?.popup?.column && (
-          //           <Menu
-          //             localeKeyPrefix={""}
-          //             options={row.original?.vehicles?.map((data) => data.registrationNumber)}
-          //             onSelect={(action) => onActionSelect(action, "VEHICLE")}
-          //           />
-          //         )}
-          //       </div>
-          //     );
-          //   },
-          // },
-
-          //total drivers
-          // {
-          //   Header: t("ES_FSM_REGISTRY_INBOX_TOTAL_DRIVERS"),
-          //   disableSortBy: true,
-          //   Cell: ({ row, column }) => {
-          //     return (
-          //       <div className="action-bar-wrap-registry" style={{ position: "relative" }}>
-          //         <div
-          //           className={row.original?.drivers?.length ? "link" : "cell-text"}
-          //           style={{ cursor: "pointer" }}
-          //           onClick={() => onCellClick(row, column, row.original?.drivers?.length)}
-          //         >
-          //           {row.original?.drivers?.length || 0}
-          //           <br />
-          //         </div>
-          //         {row.id === row.original?.popup?.row && column.id === row.original?.popup?.column && (
-          //           <Menu
-          //             localeKeyPrefix={""}
-          //             options={row.original?.drivers?.map((data) => data.name)}
-          //             onSelect={(action) => onActionSelect(action, "DRIVER", row.original?.drivers)}
-          //           />
-          //         )}
-          //       </div>
-          //     );
-          //   },
-          // },
-
-          //active drivers
-          // {
-          //   Header: t("ES_FSM_REGISTRY_INBOX_ACTIVE_DRIVERS"),
-          //   disableSortBy: true,
-          //   Cell: ({ row, column }) => {
-          //     return (
-          //       <div className="action-bar-wrap-registry" style={{ position: "relative" }}>
-          //         <div
-          //           className={row.original?.activeDrivers?.length ? "link" : "cell-text"}
-          //           style={{ cursor: "pointer" }}
-          //           onClick={() => onCellClick(row, column, row.original?.activeDrivers?.length)}
-          //         >
-          //           {row.original?.activeDrivers?.length || 0}
-          //           <br />
-          //         </div>
-          //         {row.id === row.original?.popup?.row && column.id === row.original?.popup?.column && (
-          //           <Menu
-          //             localeKeyPrefix={""}
-          //             options={row.original?.activeDrivers?.map((data) => data.name)}
-          //             onSelect={(action) => onActionSelect(action, "DRIVER", row.original?.activeDrivers)}
-          //           />
-          //         )}
-          //       </div>
-          //     );
-          //   },
-          // },
-
           //enabled/disabled
           {
             Header: t("ES_VENDOR_REGISTRY_INBOX_ENABLED"),
@@ -915,10 +683,6 @@ const VendorInbox = (props) => {
               if (!additionalVendorData) {
                 return <span>Loading...</span>;
               }
-
-              // const hasDetails = additionalVendorData?.VendorDetails?.some((item) => {
-              //   return item?.vendorAdditionalDetails?.vendorId === vendorId;
-              // });
 
               const hasDetails = row.original?.vendorAdditionalDetails !== null;
               return (
@@ -984,40 +748,13 @@ const VendorInbox = (props) => {
                   selected={getSelectedVendorOption(row.original, vendors)}
                   option={vendors}
                   select={(value) => onVehicleVendorSelect(row, value)}
-                  style={{ textAlign: "left" }}
+                  style={{ textAlign: "left", width: "100%", minWidth: "250px" }}
                   optionKey="name"
                   t={t}
                 />
               );
             },
           },
-
-          // {
-          //   Header: t("ES_VENDOR_INBOX_SERVICE_TYPE"),
-          //   disableSortBy: true,
-          //   Cell: ({ row }) => {
-
-          //     let additionalDetails = row.original.additionalDetails;
-          //     console.log("additonal detailssss", additionalDetails)
-          //     if (typeof additionalDetails === "string") {
-          //       try {
-          //         additionalDetails = JSON.parse(additionalDetails);
-          //       } catch (error) {
-          //         console.error("Error parsing additionalDetails:", error);
-          //         additionalDetails = {}; // Fallback to an empty object if parsing fails
-          //       }
-          //     }
-
-          //     let servicetyee = additionalDetails.serviceType || "N/A";
-          //     //const serviceType = additionalDetails?.serviceType || "N/A";
-          //     console.log("servicee type", servicetyee)
-          //     return (
-          //       <div>
-          //        {servicetyee}
-          //       </div>
-          //     );
-          //   },
-          // },
 
           {
             Header: t("ES_VENDOR_INBOX_SERVICE_TYPE"),

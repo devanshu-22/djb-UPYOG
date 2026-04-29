@@ -114,6 +114,7 @@ const SearchApplication = ({ onSearch, type, onClose, onTabChange, isFstpOperato
             })}
             watch={watch}
             shouldUpdate={true}
+            placeholder={input.label}
           />
         );
     }
