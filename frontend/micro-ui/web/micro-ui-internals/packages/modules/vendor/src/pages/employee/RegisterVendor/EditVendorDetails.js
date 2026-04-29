@@ -416,17 +416,16 @@ const EditVendorDetails = (props) => {
                             </span>
                           </div>
                         </div>
-                        {data?.values?.map((value, index) => (
-                          <Row
-                            key={t(String(value.title))}
-                            label={t(String(value.title))}
-                            text={value.value ? t(String(value.value)) : "N/A"}
-                            last={index === detail?.values?.length - 1}
-                            caption={value.caption}
-                            className="border-none"
-                            textStyle={value.value === "ACTIVE" ? { color: "green" } : {}}
-                          />
-                        ))}
+                        <div className="additional-grid" style={{ padding: "8px 16px" }}>
+                          {data?.values?.map((value, index) => (
+                            <React.Fragment key={index}>
+                              <div className="additional-label">{t(String(value.title))}</div>
+                              <div className="additional-value" style={value.value === "ACTIVE" ? { color: "green" } : {}}>
+                                {value.value ? t(String(value.value)) : "N/A"}
+                              </div>
+                            </React.Fragment>
+                          ))}
+                        </div>
                       </Card>
                     );
                   })}

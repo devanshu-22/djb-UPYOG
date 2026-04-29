@@ -325,47 +325,41 @@ const VehicleDetails = (props) => {
             {vehicleData?.[0]?.employeeResponse?.map((detail, index) => (
               <React.Fragment key={index}>
                 {index > 0 && <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t(detail.title)}</CardSectionHeader>}
-                <StatusTable>
-                  {detail?.values?.map((value, index) => {
-                    return value?.type === "custom" ? (
-                      <React.Fragment key={index}>
-                        <div className={`${index === detail?.values?.length - 1 ? "row last" : "row"} border-none`}>
-                          <h2>{t(value.title)}</h2>
-                          <div
-                            className="value add-details-link hover-button"
-                            style={{ color: "#a82227", display: "flex", alignItems: "center", gap: "8px" }}
-                          >
+                <Card className="card-with-background" style={{ margin: "10px 16px", padding: "20px" }}>
+                  <div className="additional-grid">
+                    {detail?.values?.map((value, index) => {
+                      return value?.type === "custom" ? (
+                        <React.Fragment key={index}>
+                          <div className="additional-label">{t(value.title)}</div>
+                          <div className="additional-value" style={{ color: "#a82227", display: "flex", alignItems: "center", gap: "8px" }}>
                             {value.value === "ES_FSM_REGISTRY_DETAILS_ADD_VENDOR" && (
-                              <div onClick={() => onActionSelect("ADD_VENDOR")} style={{ color: "#a82227", display: "flex", alignItems: "center", gap: "8px" }}>
+                              <div onClick={() => onActionSelect("ADD_VENDOR")} style={{ color: "#a82227", display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
                                 <AddIcon className="" fill="#a82227" /> {t(value.value) || "N/A"}
                               </div>
                             )}
                             {value.value !== "ES_FSM_REGISTRY_DETAILS_ADD_VENDOR" && (
-                              <div className="add-details-link hover-button" onClick={() => onActionSelect("EDIT_VENDOR")}>
+                              <div className="add-details-link hover-button" onClick={() => onActionSelect("EDIT_VENDOR")} style={{ cursor: "pointer" }}>
                                 <EditIcon />
                               </div>
                             )}
                             {value.value !== "ES_FSM_REGISTRY_DETAILS_ADD_VENDOR" && (
-                              <div className="add-details-link hover-button" onClick={() => onActionSelect("DELETE_VENDOR")}>
+                              <div className="add-details-link hover-button" onClick={() => onActionSelect("DELETE_VENDOR")} style={{ cursor: "pointer" }}>
                                 <DeleteIcon className="delete" fill="#a82227" />
                               </div>
                             )}
                           </div>
-                        </div>
-                      </React.Fragment>
-                    ) : (
-                      <Row
-                        key={t(value.title)}
-                        label={t(value.title)}
-                        text={t(value.value) || "N/A"}
-                        last={index === detail?.values?.length - 1}
-                        caption={value.caption}
-                        className="border-none"
-                        textStyle={value.value === "ACTIVE" ? { color: "green" } : {}}
-                      />
-                    );
-                  })}
-                </StatusTable>
+                        </React.Fragment>
+                      ) : (
+                        <React.Fragment key={index}>
+                          <div className="additional-label">{t(value.title)}</div>
+                          <div className="additional-value" style={value.value === "ACTIVE" ? { color: "green" } : {}}>
+                            {t(value.value) || "N/A"}
+                          </div>
+                        </React.Fragment>
+                      );
+                    })}
+                  </div>
+                </Card>
               </React.Fragment>
             ))}
           </Card>
