@@ -9,7 +9,10 @@ import MobileInbox from "./components/MobileInbox";
 import Filter from "./components/Filter";
 import EmployeeApp from "./pages/employee";
 import CitizenApp from "./pages/citizen";
-
+import AadhaarVerification from "./pages/employee/AadhaarVerification";
+import AddressDetails from "./pages/employee/AddressDetails";
+import PropertyInfo from "./pages/employee/PropertyInfo";
+import MeterDetails from "./pages/employee/MeterDetails";
 export const EkycModule = ({ stateCode, userType, tenants }) => {
     const { path, url } = useRouteMatch();
     const moduleCode = "EKYC";
@@ -32,6 +35,10 @@ export const EkycLinks = ({ matchPath, userType }) => {
             link: `${matchPath}/create-kyc`,
             i18nKey: t("EKYC_CREATE_KYC"),
         },
+        {
+            link: `${matchPath}/update-kyc`,
+            i18nKey: t("EKYC_UPDATE_KYC"),
+        },
     ];
 
     return <CitizenHomeCard header={t("EKYC_MODULE_NAME")} links={links} Icon={() => <DocumentIcon className="fill-path-primary-main" />} />;
@@ -45,6 +52,10 @@ const componentsToRegister = {
     EKYCMobileInbox: MobileInbox,
     EKYC_INBOX_FILTER: (props) => <Filter {...props} />,
     EkycLinks,
+    AadhaarVerification,
+    AddressDetails,
+    PropertyInfo,
+    MeterDetails,
 };
 
 export const initEkycComponents = () => {

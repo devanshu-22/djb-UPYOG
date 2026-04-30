@@ -1,8 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { Chart, registerables } from "chart.js";
-
-Chart.register(...registerables);
+import { Chart } from "chart.js/auto";
 
 const StatusCards = ({ countData }) => {
   const { t } = useTranslation();

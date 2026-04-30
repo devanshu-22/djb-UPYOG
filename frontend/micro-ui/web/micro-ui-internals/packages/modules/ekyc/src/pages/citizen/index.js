@@ -71,7 +71,7 @@ const CitizenApp = () => {
                         path={`${path}/meter-details`}
                         component={() => <MeterDetails />}
                     />
-                    
+
                     <PrivateRoute
                         path={`${path}/review`}
                         component={() => <Review />}

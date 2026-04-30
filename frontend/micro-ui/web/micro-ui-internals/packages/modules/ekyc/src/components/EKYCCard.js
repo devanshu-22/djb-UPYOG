@@ -20,14 +20,18 @@ const EKYCCard = () => {
                 label: t("EKYC_DASHBOARD"),
                 link: `/digit-ui/employee/ekyc/dashboard`
             },
-            {
-                label: t("EKYC_CREATE_KYC"),
-                link: `/digit-ui/employee/ekyc/create-kyc`
-            },
             // {
-            //     label: t("EKYC_MAPPING"),
-            //     link: `/digit-ui/employee/ekyc/mapping`
-            // }
+            //     label: t("EKYC_CREATE_KYC"),
+            //     link: `/digit-ui/employee/ekyc/create-kyc`
+            // },
+            // {
+            //     label: t("EKYC_UPDATE_KYC"),
+            //     link: `/digit-ui/employee/ekyc/update-kyc`
+            // },
+            {
+                label: t("EKYC_MAPPING"),
+                link: `/digit-ui/employee/ekyc/mapping`
+            }
         ]
     }
 

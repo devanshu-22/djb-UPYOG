@@ -71,7 +71,37 @@ export const useEkycApplicationReview = (params, config = {}) => {
     return useMutation((data) => Digit.EkycService.application_review(data, params), config);
 };
 
+export const useEkycSearchReview = (data, params, config = {}) => {
+    return useQuery(
+        ["useEkycSearchReview", data, params],
+        () => Digit.EkycService.application_review(data, params),
+        config
+    );
+};
+
 export const useEkycApplicationUpdate = (tenantId, config = {}) => {
     return useMutation((data) => Digit.EkycService.application_update(data, tenantId), config);
 };
 
+export const useEkycAPI = (type, tenantId, config = {}) => {
+    const mutation = useMutation(
+        (data) => {
+            if (type === "review") {
+                return Digit.EkycService.application_review(data, tenantId);
+            }
+            // Add other types here if needed
+        },
+        config
+    );
+
+    return {
+        isLoading: mutation.isLoading,
+        error: mutation.error,
+        data: mutation.data,
+        getReview: mutation.mutate,
+    };
+};
+
+export const useEkycApplicationApprove = (tenantId, config = {}) => {
+    return useMutation((data) => Digit.EkycService.application_approve(data, tenantId), config);
+};
