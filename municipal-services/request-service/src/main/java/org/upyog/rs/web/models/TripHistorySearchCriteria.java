@@ -15,6 +15,7 @@ public class TripHistorySearchCriteria {
     private String tripId;
     private String driverId;
     private String vehicleId;
+    private String bookingNo;
     private Long fromTime;
     private Long toTime;
     private Integer offset;
