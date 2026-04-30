@@ -24,6 +24,9 @@ public class TripHistoryResponse {
     @JsonProperty("Count")
     private Integer totalCount;
 
+    @JsonProperty("currentCount")
+    private Integer count;
+
     @JsonProperty("offset")
     private Integer offset;
 

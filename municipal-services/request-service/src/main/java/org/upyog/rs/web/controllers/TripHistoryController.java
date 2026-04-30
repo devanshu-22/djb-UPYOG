@@ -43,6 +43,7 @@ public class TripHistoryController {
                 .responseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(
                         requestInfoWrapper.getRequestInfo(), true))
                 .totalCount(result.getCount())
+                .count(result.getTrips() != null ? result.getTrips().size() : 0)
                 .offset(criteria.getOffset())
                 .limit(criteria.getLimit())
                 .build();

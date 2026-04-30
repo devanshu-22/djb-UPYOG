@@ -29,6 +29,10 @@ public class TripHistoryQueryBuilder {
             builder.append(" AND th.driverId = ? ");
             preparedStmtList.add(criteria.getDriverId());
         }
+        if (StringUtils.isNotBlank(criteria.getBookingNo())) {
+            builder.append(" AND th.bookingno = ? ");
+            preparedStmtList.add(criteria.getBookingNo());
+        }
 
         if (criteria.getFromTime() != null) {
             builder.append(" AND th.startTime >= ? ");
