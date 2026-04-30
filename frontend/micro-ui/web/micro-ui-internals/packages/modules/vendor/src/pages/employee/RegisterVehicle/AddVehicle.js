@@ -107,10 +107,10 @@ const AddVehicle = ({ parentUrl, heading }) => {
     const gender = data?.selectGender?.code;
     const emailId = data?.emailId;
     const dob = new Date(`${data.dob}`).getTime() || new Date(`1/1/1970`).getTime();
-
+const isCitizen = Digit.UserService.getType() === "WT_VENDOR";
     const formData = {
       vehicle: {
-        tenantId: tenantId,
+        tenantId: !isCitizen ? "dl.djb" : tenantId,
         registrationNumber: registrationNumber,
         model: vehicleModal,
         type: vehicleType,
