@@ -883,7 +883,7 @@ const VendorInbox = (props) => {
         return [
           //Username
           {
-            Header: t("ES_FSM_REGISTRY_INBOX_USERNAME"),
+            Header: t("Driver's Mobile No."),
             id: "userName",
             accessor: (row) => row.owner?.userName || "NA",
             Cell: ({ row }) => {

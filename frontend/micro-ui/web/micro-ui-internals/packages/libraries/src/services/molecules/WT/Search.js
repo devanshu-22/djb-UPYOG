@@ -27,7 +27,12 @@ export const WTSearch = {
     return [
       {
         title: "WT_BOOKING_NO", 
-        values:[{title: "WT_BOOKING_NO", value: response?.bookingNo || t("CS_NA")}]
+        values:[
+          {title: "WT_BOOKING_NO", value: response?.bookingNo || t("CS_NA")},
+          {title: "WT_BOOKING_STATUS", value: response?.bookingStatus || t("CS_NA")},
+          {title: "WT_APPLICATION_DATE", value: response?.applicationDate ? Digit.DateUtils.ConvertEpochToDate(response?.applicationDate) : t("CS_NA")},
+          {title: "WT_PAYMENT_DATE", value: response?.paymentDate ? Digit.DateUtils.ConvertEpochToDate(response?.paymentDate) : t("CS_NA")}
+        ]
       },
       {
         title: "WT_APPLICANT_DETAILS",
@@ -51,7 +56,9 @@ export const WTSearch = {
           { title: "WT_HOUSE_NO", value: response?.address?.houseNo  || t("CS_NA")},
           { title: "WT_LANDMARK", value: response?.address?.landmark  || t("CS_NA")},
           { title: "WT_ADDRESS_LINE1", value: response?.address?.addressLine1  || t("CS_NA")},
-          { title: "WT_ADDRESS_LINE2", value: response?.address?.addressLine2  || t("CS_NA")}
+          { title: "WT_ADDRESS_LINE2", value: response?.address?.addressLine2  || t("CS_NA")},
+          { title: "WT_LATITUDE", value: response?.address?.latitude || response?.latitude || t("CS_NA")},
+          { title: "WT_LONGITUDE", value: response?.address?.longitude || response?.longitude || t("CS_NA")}
         ],
       },
       {
@@ -59,6 +66,7 @@ export const WTSearch = {
         asSectionHeader: true,
         values: [
           { title: "WT_TANKER_TYPE", value: response?.tankerType || t("CS_NA")},
+          { title: "WT_WATER_TYPE", value: response?.waterType || t("CS_NA")},
           { title: "WT_TANKER_QUANTITY", value: response?.tankerQuantity || t("CS_NA")},
           { title: "WT_WATER_QUANTITY", value: response?.waterQuantity || t("CS_NA")},
           { title: "WT_DELIVERY_DATE", value: response?.deliveryDate || t("CS_NA")},
