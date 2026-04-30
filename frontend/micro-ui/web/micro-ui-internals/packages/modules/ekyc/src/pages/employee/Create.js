@@ -14,6 +14,7 @@ const Create = () => {
         return sessionStorage.getItem("EKYC_CREATE_SEARCH_PERFORMED") === "true";
     });
     const [showToast, setShowToast] = useState(null);
+    const [formParams, setFormParams, clearParams] = Digit.Hooks.useSessionStorage("EKYC_CREATE", {});
 
     const tenantId = Digit.ULBService.getCurrentTenantId();
 
@@ -36,6 +37,7 @@ const Create = () => {
             setSearchPerformed(false);
             sessionStorage.removeItem("EKYC_CREATE_SEARCH_PARAMS");
             sessionStorage.removeItem("EKYC_CREATE_SEARCH_PERFORMED");
+            clearParams(); // Clear consolidated EKYC data
             return;
         }
 
@@ -49,8 +51,10 @@ const Create = () => {
         // Clear previous EKYC session data if K-number changes
         const currentKno = sessionStorage.getItem("EKYC_K_NUMBER");
         if (currentKno !== params.kNumber) {
+            clearParams();
+            // Clear any other EKYC keys if they exist
             Object.keys(sessionStorage).forEach(key => {
-                if (key.startsWith("EKYC_")) sessionStorage.removeItem(key);
+                if (key.startsWith("EKYC_") && key !== "EKYC_CREATE") sessionStorage.removeItem(key);
             });
         }
 

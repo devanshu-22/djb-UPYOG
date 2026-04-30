@@ -347,7 +347,7 @@ import useSelectedMDMS from "./useSelectedMDMS";
 import useVendorAdditionaldetailsAPI from "./vendor/useVendorAdditionaldetailsAPI";
 import useCreateDemand from "./sv/useCreateDemand";
 import useEmpvendorCommonSearch from "./vendor/useEmpvendorCommonSearch";
-import { useSearchConnection, useGetConnectionTypeV2, useGetUserType, useGetFloorCount, useGetPropertyType, useEkycSurveyorDashboard, useEkycApplicationReview, useEkycApplicationUpdate } from "./ekyc/useEkyc";
+import { useSearchConnection, useGetConnectionTypeV2, useGetUserType, useGetFloorCount, useGetPropertyType, useEkycSurveyorDashboard, useEkycApplicationReview, useEkycSearchReview, useEkycApplicationUpdate, useEkycAPI } from "./ekyc/useEkyc";
 import { useCreateFixedPoint } from "./wt/createFixedPoint";
 import { useCreateFixedPointSchedule } from "./wt/useCreateFixedPointSchedule";
 import { useUpdateFixedPoint } from "./wt/updateFixedPoint";
@@ -523,7 +523,9 @@ const ekyc = {
   useGetFloorCount,
   useEkycSurveyorDashboard,
   useEkycApplicationReview,
+  useEkycSearchReview,
   useEkycApplicationUpdate,
+  useEkycAPI,
 };
 
 const hrms = {

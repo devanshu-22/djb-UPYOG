@@ -1,0 +1,116 @@
+import React, { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
+import { useQueryClient } from "react-query";
+import { Redirect, Route, Switch, useHistory, useLocation, useRouteMatch } from "react-router-dom";
+import { Header, VerticalTimeline } from "@djb25/digit-ui-react-components";
+import { ekycConfig } from "../../config/config";
+
+const EKYCForm = () => {
+  const queryClient = useQueryClient();
+  const match = useRouteMatch();
+  const { t } = useTranslation();
+  const location = useLocation();
+  const { pathname } = location;
+  const history = useHistory();
+
+  let config = [];
+  const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage("EKYC_CREATE", {});
+  const userInfo = Digit.UserService.getUser();
+  const tenantId = Digit.ULBService.getCurrentTenantId();
+
+  useEffect(() => {
+    if (location.state && Object.keys(location.state).length > 0) {
+      const { edits, ...rest } = location.state;
+      setParams({ ...params, ...rest, ...edits });
+    }
+  }, [location.state]);
+
+  const goNext = (skipStep, index, isAddMultiple, key) => {
+    let currentPath = pathname.split("/").pop();
+    let routeObj = config.find((routeObj) => (key ? routeObj.key === key : routeObj.route === currentPath));
+    if (!routeObj) routeObj = config.find((routeObj) => routeObj.route === currentPath);
+
+    let nextStep = null;
+    const currentIndex = config.findIndex(c => c.route === routeObj.route);
+    if (currentIndex > -1 && currentIndex < config.length - 1) {
+      nextStep = config[currentIndex + 1].route;
+    }
+
+    let redirectWithHistory = history.push;
+    if (skipStep) {
+      redirectWithHistory = history.replace;
+    }
+
+    if (nextStep === null) {
+      return redirectWithHistory(`${match.path}/review`, { ...params, edits: params });
+    }
+
+    redirectWithHistory(`${match.path}/${nextStep}`, { ...params });
+  };
+
+  function handleSelect(key, data, skipStep, index, isAddMultiple = false) {
+    setParams({ ...params, ...{ [key]: { ...params[key], ...data } } });
+    goNext(skipStep, index, isAddMultiple, key);
+  }
+
+  const onSuccess = () => {
+    clearParams();
+    queryClient.invalidateQueries("EKYC_CREATE");
+  };
+
+  ekycConfig.forEach((obj) => {
+    config = config.concat(obj.body);
+  });
+
+  config.indexRoute = "aadhaar-verification";
+
+  const formStepRoutes = config.map(c => c.route);
+  const isFormStep = formStepRoutes.some((route) => pathname.includes(route));
+
+  const sectionRefs = useRef({});
+
+  useEffect(() => {
+    if (isFormStep) {
+      const currentRoute = pathname.split("/").pop();
+      if (sectionRefs.current[currentRoute]) {
+        sectionRefs.current[currentRoute].scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+  }, [pathname, isFormStep]);
+
+  return (
+    <React.Fragment>
+      <div className="employee-form-section-wrapper">
+        <VerticalTimeline config={config} showFinalStep={true} />
+        <div className="employee-form-section">
+          <Switch>
+            <Route path={formStepRoutes.map((route) => `${match.path}/${route}`)}>
+              <div className="single-page-form-container">
+                {config.map((routeObj, index) => {
+                  const { component, key } = routeObj;
+                  const Component = typeof component === "string" ? Digit.ComponentRegistryService.getComponent(component) : component;
+
+                  return (
+                    <div key={index} ref={(el) => (sectionRefs.current[routeObj.route] = el)} className="form-section-unit">
+                      <Component
+                        config={{ ...routeObj, isCollapsible: true, defaultOpen: true }}
+                        onSelect={handleSelect}
+                        t={t}
+                        formData={params}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </Route>
+            <Route>
+              <Redirect to={`${match.path}/${config.indexRoute}`} />
+            </Route>
+          </Switch>
+        </div>
+      </div>
+    </React.Fragment>
+  );
+};
+
+export default EKYCForm;

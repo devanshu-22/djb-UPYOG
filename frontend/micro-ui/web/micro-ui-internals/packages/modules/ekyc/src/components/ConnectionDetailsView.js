@@ -189,12 +189,13 @@ const ConnectionDetailsView = ({ kNumber, kName, connectionDetails, isLoading })
             </div>
 
             {/* Action Buttons */}
-            <div className="action-btns-container">
+            <div className="action-btns-container" style={{fontSize:"12px"}}>
               <button
                 onClick={handleStartVerification}
                 className="primary-action-btn"
+                style={{fontSize:"12px"}}
               >
-                {t("EKYC_START_VERIFICATION") || "Start Verification"}
+                {t("EKYC_START_REVIEW") || "Start Review"}
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="5" y1="12" x2="19" y2="12" />
                   <polyline points="12 5 19 12 12 19" />
@@ -222,6 +223,7 @@ const ConnectionDetailsView = ({ kNumber, kName, connectionDetails, isLoading })
         >
           <div style={{ padding: "24px" }}>
             <RadioButtons
+              name="verificationType"
               options={options}
               optionsKey="name"
               selectedOption={selectedOption}

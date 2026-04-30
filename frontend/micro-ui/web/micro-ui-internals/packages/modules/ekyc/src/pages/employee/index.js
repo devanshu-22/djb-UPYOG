@@ -3,13 +3,15 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { Switch, useLocation } from "react-router-dom";
 import Inbox from "./Inbox";
-//import Mapping from "./Mapping";
+import Mapping from "./Mapping";
 import Create from "./Create";
+import Update from "./Update";
 import AadhaarVerification from "./AadhaarVerification";
 import AddressDetails from "./AddressDetails";
 import PropertyInfo from "./PropertyInfo";
 import MeterDetails from "./MeterDetails";
 import Review from "./Review";
+import EKYCForm from "./EKYCForm";
 
 const EmployeeApp = ({ path }) => {
     const { t } = useTranslation();
@@ -35,9 +37,11 @@ const EmployeeApp = ({ path }) => {
         { label: t(getBreadcrumbLabel()) }
     ];
 
+    const formStepRoutes = ["aadhaar-verification", "address-details", "property-info", "meter-details"];
+
     return (
         <AppContainer>
-            <div className="ground-container employee-app-container employee-app-homepage-container">
+            <div className="ground-container employee-app-container form-container">
                 <ModuleHeader
                     leftContent={
                         <React.Fragment>
@@ -49,66 +53,55 @@ const EmployeeApp = ({ path }) => {
                     breadcrumbs={breadcrumbs}
                 />
 
-                <Switch>
-                    <PrivateRoute
-                        path={`${path}/dashboard`}
-                        component={() => (
-                            <Inbox
-                                parentRoute={path}
-                                businessService="EKYC"
-                                moduleCode="EKYC"
-                                isInbox={true}
+                <div className="employee-form">
+                    <div className="employee-form-content">
+                        <Switch>
+                            <PrivateRoute
+                                path={`${path}/dashboard`}
+                                component={() => (
+                                    <Inbox
+                                        parentRoute={path}
+                                        businessService="EKYC"
+                                        moduleCode="EKYC"
+                                        isInbox={true}
+                                    />
+                                )}
                             />
-                        )}
-                    />
 
-                    <PrivateRoute
-                        path={`${path}/create-kyc`}
-                        component={() => <Create />}
-                    />
-
-                    {/* <PrivateRoute
-                        path={`${path}/mapping`}
-                        component={() => <Mapping />}
-                    /> */}
-
-                    <PrivateRoute
-                        path={`${path}/aadhaar-verification`}
-                        component={() => <AadhaarVerification />}
-                    />
-
-                    <PrivateRoute
-                        path={`${path}/address-details`}
-                        component={() => <AddressDetails />}
-                    />
-
-                    <PrivateRoute
-                        path={`${path}/property-info`}
-                        component={() => <PropertyInfo />}
-                    />
-
-                    <PrivateRoute
-                        path={`${path}/meter-details`}
-                        component={() => <MeterDetails />}
-                    />
-                    
-                    <PrivateRoute
-                        path={`${path}/review`}
-                        component={() => <Review />}
-                    />
-
-                    <PrivateRoute
-                        path={`${path}/`}
-                        component={() => (
-                            <Inbox
-                                parentRoute={path}
-                                businessService="EKYC"
-                                moduleCode="EKYC"
-                                isInbox={true}
+                            <PrivateRoute
+                                path={`${path}/create-kyc`}
+                                component={() => <Create />}
                             />
-                        )}
-                    />
-                </Switch>
+
+                            <PrivateRoute
+                                path={`${path}/mapping`}
+                                component={() => <Mapping />}
+                            />
+
+                            <PrivateRoute
+                                path={formStepRoutes.map(route => `${path}/${route}`)}
+                                component={() => <EKYCForm />}
+                            />
+
+                            <PrivateRoute
+                                path={`${path}/review`}
+                                component={() => <Review />}
+                            />
+
+                            <PrivateRoute
+                                path={`${path}/`}
+                                component={() => (
+                                    <Inbox
+                                        parentRoute={path}
+                                        businessService="EKYC"
+                                        moduleCode="EKYC"
+                                        isInbox={true}
+                                    />
+                                )}
+                            />
+                        </Switch>
+                    </div>
+                </div>
             </div>
         </AppContainer>
     );
