@@ -19,6 +19,9 @@ const SearchVendor = () => {
 
   // const userInfo = Digit.UserService.getUser();
 
+  const { data: allVendors } = Digit.Hooks.fsm.useDsoSearch(tenantId, { status: "ACTIVE" }, { staleTime: Infinity });
+  const { data: allFillingPoints } = Digit.Hooks.wt.useFillPointSearch({ tenantId, filters: { limit: 1000 } }, { staleTime: Infinity });
+
   let paginationParms = { limit: pageSize, offset: pageOffset, sortBy: sortParams?.[0]?.id, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" };
 
   const { data: dsoData, isLoading, isSuccess, error, refetch } =
@@ -30,6 +33,8 @@ const SearchVendor = () => {
             ...paginationParms,
             registrationNumber: searchParams?.registrationNumber,
             status: "ACTIVE,DISABLED",
+            vendorId: searchParams?.vendor?.id,
+            fillingPointId: searchParams?.fillingPoint?.id,
           },
           config: { enabled: false },
         })
@@ -40,6 +45,7 @@ const SearchVendor = () => {
             ...paginationParms,
             name: searchParams?.name,
             status: "ACTIVE,DISABLED",
+            vendorId: searchParams?.vendor?.id,
           },
           config: { enabled: false },
         })
@@ -195,6 +201,23 @@ const SearchVendor = () => {
     tab === "VEHICLE"
       ? [
           {
+            label: t("ES_VENDOR_SEARCH_VENDOR_NAME"),
+            name: "vendor",
+            type: "dropdown",
+            options: allVendors?.map((data) => ({
+              ...data.dsoDetails,
+              displayName: `${data.dsoDetails.name} (${data.dsoDetails.mobileNumber || data.dsoDetails.owner?.mobileNumber || "N/A"})`,
+            })),
+            optionsKey: "displayName",
+          },
+          {
+            label: t("ES_FSM_REGISTRY_SEARCH_FILLING_POINT"),
+            name: "fillingPoint",
+            type: "dropdown",
+            options: allFillingPoints?.fillingPoints?.map((fp) => ({ ...fp, name: fp?.name || fp?.fillingPointName || fp?.fillingStationId })),
+            optionsKey: "name",
+          },
+          {
             label: t("ES_VEHICLE_SEARCH_VEHICLE_NUMBER"),
             name: "registrationNumber",
             pattern: "[A-Z]{2}[- ]?[0-9]{2}[- ]?[A-Z]{1,2}[- ]?[0-9]{4}",
@@ -203,6 +226,16 @@ const SearchVendor = () => {
         ]
       : tab === "DRIVER"
       ? [
+          {
+            label: t("ES_VENDOR_SEARCH_VENDOR_NAME"),
+            name: "vendor",
+            type: "dropdown",
+            options: allVendors?.map((data) => ({
+              ...data.dsoDetails,
+              displayName: `${data.dsoDetails.name} (${data.dsoDetails.mobileNumber || data.dsoDetails.owner?.mobileNumber || "N/A"})`,
+            })),
+            optionsKey: "displayName",
+          },
           {
             label: t("ES_DRIVER_SEARCH_DRIVER_NAME"),
             name: "name",

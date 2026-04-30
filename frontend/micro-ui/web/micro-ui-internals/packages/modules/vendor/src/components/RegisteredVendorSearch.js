@@ -1,6 +1,17 @@
 import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { TextInput, Label, SubmitBar, LinkLabel, CloseSvg, DatePicker, CardLabelError, Menu, AddIcon } from "@djb25/digit-ui-react-components";
+import {
+  TextInput,
+  Label,
+  SubmitBar,
+  LinkLabel,
+  CloseSvg,
+  DatePicker,
+  CardLabelError,
+  Menu,
+  AddIcon,
+  Dropdown,
+} from "@djb25/digit-ui-react-components";
 import DropdownStatus from "./inbox/DropdownStatus";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
@@ -97,6 +108,25 @@ const SearchApplication = ({ onSearch, type, onClose, onTabChange, isFstpOperato
                 value={props.value}
                 applicationStatuses={applicationStatuses}
                 areApplicationStatus={areApplicationStatus}
+              />
+            )}
+            name={input.name}
+            control={control}
+            defaultValue={null}
+          />
+        );
+      case "dropdown":
+        return (
+          <Controller
+            render={(props) => (
+              <Dropdown
+                option={input.options}
+                optionKey={input.optionsKey}
+                value={props.value}
+                selected={props.value}
+                select={props.onChange}
+                t={t}
+                placeholder={input.label}
               />
             )}
             name={input.name}

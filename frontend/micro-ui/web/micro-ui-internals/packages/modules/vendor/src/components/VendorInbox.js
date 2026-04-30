@@ -135,7 +135,12 @@ const getDriverFillingPointIdentifiers = (driver = {}) => {
 };
 
 const getVendorDriversForFillingPoint = (vendor, fillingPoint) => {
-  const vendorDrivers = Array.isArray(vendor?.drivers) ? vendor.drivers.filter(Boolean) : [];
+  const vendorDrivers = Array.isArray(vendor?.drivers)
+    ? vendor.drivers.filter(Boolean).map((d) => ({
+        ...d,
+        displayName: `${d.name} (${d.owner?.mobileNumber || "N/A"})`,
+      }))
+    : [];
   if (!fillingPoint) return [];
 
   const selectedFillingPointIdentifiers = getFillingPointIdentifiers(fillingPoint);
@@ -234,14 +239,22 @@ const VendorInbox = (props) => {
 
   useEffect(() => {
     if (vendorData) {
-      let vendors = vendorData.map((data) => data.dsoDetails);
+      let vendors = vendorData.map((data) => ({
+        ...data.dsoDetails,
+        displayName: `${data.dsoDetails.name} (${data.dsoDetails.mobileNumber || data.dsoDetails.owner?.mobileNumber || "N/A"})`,
+      }));
       setVendors(vendors);
     }
   }, [vendorData]);
 
   useEffect(() => {
     if (driverData) {
-      setDrivers(driverData.driver || []);
+      setDrivers(
+        (driverData.driver || []).map((d) => ({
+          ...d,
+          displayName: `${d.name} (${d.owner?.mobileNumber || "N/A"})`,
+        }))
+      );
     }
   }, [driverData]);
 
@@ -473,9 +486,7 @@ const VendorInbox = (props) => {
 
     if (existingVendor?.id) {
       const existingVendorVehicles = Array.isArray(existingVendor?.vehicles)
-        ? existingVendor.vehicles.map((vehicle) =>
-          vehicle?.id === currentVehicle?.id ? { ...vehicle, vendorVehicleStatus: "INACTIVE" } : vehicle
-        )
+        ? existingVendor.vehicles.map((vehicle) => (vehicle?.id === currentVehicle?.id ? { ...vehicle, vendorVehicleStatus: "INACTIVE" } : vehicle))
         : [];
 
       mutateVendor(getVendorPayloadForVehicle(existingVendor, existingVendorVehicles), {
@@ -594,8 +605,6 @@ const VendorInbox = (props) => {
 
   const allFillingPoints = allFillingPointsData?.fillingPoints || [];
 
-
-
   //used for columns in table
   const columns = React.useMemo(() => {
     switch (props.selectedTab) {
@@ -615,6 +624,14 @@ const VendorInbox = (props) => {
                   </span>
                 </div>
               );
+            },
+          },
+
+          {
+            Header: t("WT_MOBILE_NUMBER"),
+            accessor: "mobileNumber",
+            Cell: ({ row }) => {
+              return <div>{row.original.mobileNumber}</div>;
             },
           },
 
@@ -728,6 +745,14 @@ const VendorInbox = (props) => {
             },
           },
 
+          {
+            Header: t("WT_MOBILE_NUMBER"),
+            accessor: "mobileNumber",
+            Cell: ({ row }) => {
+              return <div>{row.original?.owner?.mobileNumber || "N/A"}</div>;
+            },
+          },
+
           //creation date
           {
             Header: t("ES_FSM_REGISTRY_INBOX_DATE_VEHICLE_CREATION"),
@@ -749,7 +774,7 @@ const VendorInbox = (props) => {
                   option={vendors}
                   select={(value) => onVehicleVendorSelect(row, value)}
                   style={{ textAlign: "left", width: "100%", minWidth: "250px" }}
-                  optionKey="name"
+                  optionKey="displayName"
                   t={t}
                 />
               );
@@ -826,7 +851,7 @@ const VendorInbox = (props) => {
                   selected={getSelectedDriverOption(row.original, availableDrivers)}
                   option={availableDrivers}
                   select={(value) => onDriverSelect(row, value)}
-                  optionKey="name"
+                  optionKey="displayName"
                   t={t}
                   style={{ textAlign: "left", width: "100%", minWidth: "250px" }}
                   disable={!selectedFillingPoint || !availableDrivers.length}
@@ -882,11 +907,19 @@ const VendorInbox = (props) => {
                 <div>
                   <span className="link">
                     <Link to={"/digit-ui/employee/vendor/registry/driver-details/" + row.original["id"]}>
-                      <div>{row.original.name}</div>
+                      <div>{`${row.original.name || "N/A"}`}</div>
                     </Link>
                   </span>
                 </div>
               );
+            },
+          },
+
+          {
+            Header: t("WT_MOBILE_NUMBER"),
+            accessor: "mobileNumber",
+            Cell: ({ row }) => {
+              return <div>{row.original?.owner?.mobileNumber || "N/A"}</div>;
             },
           },
 
@@ -917,7 +950,7 @@ const VendorInbox = (props) => {
                   option={vendors}
                   select={(value) => onVendorSelect(row, value)}
                   style={{ textAlign: "left", width: "100%", minWidth: "250px" }}
-                  optionKey="name"
+                  optionKey="displayName"
                   t={t}
                 />
               );
@@ -952,7 +985,10 @@ const VendorInbox = (props) => {
         return [
           {
             Header: t("ES_VENDOR_INBOX_VENDOR_NAME"),
-            exportAccessor: (row) => row?.name || row?.dsoDetails?.name || "NA",
+            exportAccessor: (row) =>
+              `${row?.name || row?.dsoDetails?.name || "NA"} (${
+                row?.mobileNumber || row?.owner?.mobileNumber || row?.dsoDetails?.mobileNumber || row?.dsoDetails?.owner?.mobileNumber || "NA"
+              })`,
           },
           {
             Header: t("ES_VENDOR_INBOX_DATE_VENDOR_CREATION"),
@@ -983,7 +1019,14 @@ const VendorInbox = (props) => {
           },
           {
             Header: "Map Vendor",
-            exportAccessor: (row) => row?.vendor?.name || row?.vendorData?.name || "NA",
+            exportAccessor: (row) =>
+              `${row?.vendor?.name || row?.vendorData?.name || "NA"} (${
+                row?.vendor?.mobileNumber ||
+                row?.vendor?.owner?.mobileNumber ||
+                row?.vendorData?.mobileNumber ||
+                row?.vendorData?.owner?.mobileNumber ||
+                "NA"
+              })`,
           },
           {
             Header: t("ES_VENDOR_INBOX_SERVICE_TYPE"),
@@ -995,7 +1038,10 @@ const VendorInbox = (props) => {
           },
           {
             Header: t("ES_FSM_REGISTRY_SELECT_DRIVER"),
-            exportAccessor: (row) => row?.driverData?.name || row?.driver?.name || "NA",
+            exportAccessor: (row) =>
+              `${row?.driverData?.name || row?.driver?.name || "NA"} (${
+                row?.driverData?.owner?.mobileNumber || row?.driver?.owner?.mobileNumber || "NA"
+              })`,
           },
           {
             Header: t("ES_FSM_REGISTRY_INBOX_ENABLED"),
@@ -1010,7 +1056,7 @@ const VendorInbox = (props) => {
           },
           {
             Header: t("ES_FSM_REGISTRY_INBOX_DRIVER_NAME"),
-            exportAccessor: (row) => row?.name || "NA",
+            exportAccessor: (row) => `${row?.name || "NA"} (${row?.owner?.mobileNumber || "NA"})`,
           },
           {
             Header: t("ES_FSM_REGISTRY_INBOX_DATE_DRIVER_CREATION"),
@@ -1018,7 +1064,14 @@ const VendorInbox = (props) => {
           },
           {
             Header: t("ES_FSM_REGISTRY_INBOX_VENDOR_NAME"),
-            exportAccessor: (row) => row?.vendorData?.name || row?.vendor?.name || "NA",
+            exportAccessor: (row) =>
+              `${row?.vendorData?.name || row?.vendor?.name || "NA"} (${
+                row?.vendorData?.mobileNumber ||
+                row?.vendorData?.owner?.mobileNumber ||
+                row?.vendor?.mobileNumber ||
+                row?.vendor?.owner?.mobileNumber ||
+                "NA"
+              })`,
           },
           {
             Header: t("ES_FSM_REGISTRY_INBOX_ENABLED"),

@@ -16,7 +16,7 @@ import { Link } from "react-router-dom";
 import { APPLICATION_PATH } from "../utils";
 import CollapsibleCardPage from "./CollapseCard";
 
-const WTSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, setShowToast, moduleCode }) => {
+const WTSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, setShowToast, moduleCode, isFixedPoint }) => {
   const isMobile = window.Digit.Utils.browser.isMobile();
   const user = Digit.UserService.getUser().info;
 
@@ -38,6 +38,12 @@ const WTSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, se
   });
 
   const fromDateValue = watch("fromDate");
+  const { data: fillingPointsData } = Digit.Hooks.wt.useFillPointSearch(
+    { tenantId: Digit.ULBService.getCurrentTenantId(), filters: { limit: 1000 } },
+    { enabled: !!isFixedPoint }
+  );
+  const fillingPoints = fillingPointsData?.fillingPoints || [];
+
 
   const GetCell = (value) => <span className="cell-text">{value}</span>;
 
@@ -236,6 +242,26 @@ const WTSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, se
                       control={control}
                     />
                   </div>
+
+                  {isFixedPoint && (
+                    <div className="search-field-wrapper">
+                      <label>{t("WT_FILLING_POINT")}</label>
+                      <Controller
+                        control={control}
+                        name="fillingPointId"
+                        render={(props) => (
+                          <Dropdown
+                            selected={fillingPoints.find((fp) => (fp.id || fp.fillingPointId || fp.bookingId) === props.value)}
+                            select={(val) => props.onChange(val?.id || val?.fillingPointId || val?.bookingId)}
+                            onBlur={props.onBlur}
+                            option={fillingPoints}
+                            optionKey="fillingPointName"
+                            t={t}
+                          />
+                        )}
+                      />
+                    </div>
+                  )}
                 </div>
               )}
 

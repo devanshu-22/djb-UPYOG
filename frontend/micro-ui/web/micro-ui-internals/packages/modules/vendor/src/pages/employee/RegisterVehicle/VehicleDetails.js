@@ -331,21 +331,22 @@ const VehicleDetails = (props) => {
                       return value?.type === "custom" ? (
                         <React.Fragment key={index}>
                           <div className="additional-label">{t(value.title)}</div>
-                          <div className="additional-value" style={{ color: "#a82227", display: "flex", alignItems: "center", gap: "8px" }}>
+                          <div className="additional-value" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                             {value.value === "ES_FSM_REGISTRY_DETAILS_ADD_VENDOR" && (
                               <div onClick={() => onActionSelect("ADD_VENDOR")} style={{ color: "#a82227", display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
                                 <AddIcon className="" fill="#a82227" /> {t(value.value) || "N/A"}
                               </div>
                             )}
                             {value.value !== "ES_FSM_REGISTRY_DETAILS_ADD_VENDOR" && (
-                              <div className="add-details-link hover-button" onClick={() => onActionSelect("EDIT_VENDOR")} style={{ cursor: "pointer" }}>
-                                <EditIcon />
-                              </div>
-                            )}
-                            {value.value !== "ES_FSM_REGISTRY_DETAILS_ADD_VENDOR" && (
-                              <div className="add-details-link hover-button" onClick={() => onActionSelect("DELETE_VENDOR")} style={{ cursor: "pointer" }}>
-                                <DeleteIcon className="delete" fill="#a82227" />
-                              </div>
+                              <React.Fragment>
+                                <span>{value.value}</span>
+                                <div className="add-details-link hover-button" onClick={() => onActionSelect("EDIT_VENDOR")} style={{ cursor: "pointer" }}>
+                                  <EditIcon fill="#a82227" />
+                                </div>
+                                <div className="add-details-link hover-button" onClick={() => onActionSelect("DELETE_VENDOR")} style={{ cursor: "pointer" }}>
+                                  <DeleteIcon className="delete" fill="#a82227" />
+                                </div>
+                              </React.Fragment>
                             )}
                           </div>
                         </React.Fragment>
