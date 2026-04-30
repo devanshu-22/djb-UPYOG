@@ -35,6 +35,11 @@ const AddDriver = ({ parentUrl, heading }) => {
   const [canSubmit, setSubmitValve] = useState(false);
 
   const defaultValues = {
+    serviceType: {
+      code: "WT",
+      name: "WT",
+      i18nKey: "WT",
+    },
     tripData: {
       noOfTrips: 1,
       amountPerTrip: null,
@@ -73,6 +78,8 @@ const AddDriver = ({ parentUrl, heading }) => {
   const closeToast = () => {
     setShowToast(null);
   };
+  const isCitizen = Digit.UserService.getType() === "WT_VENDOR";
+  console.log(isCitizen,'iscitizen')
 
   const onSubmit = (data) => {
     const name = data?.driverName;
@@ -81,10 +88,10 @@ const AddDriver = ({ parentUrl, heading }) => {
     const emailId = data?.emailId;
     const phone = data?.phone;
     const dob = new Date(`${data.dob}`).getTime() || new Date(`1/1/1970`).getTime();
-    const additionalDetails = data?.additionalDetails?.code;
+    const additionalDetails = data?.serviceType?.code;
     const formData = {
       driver: {
-        tenantId: tenantId,
+        tenantId: !isCitizen ? "dl.djb" : tenantId,
         name: name,
         licenseNumber: license,
         status: "ACTIVE",
