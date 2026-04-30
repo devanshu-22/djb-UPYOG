@@ -75,6 +75,13 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
     );
   };
 
+  const isFixedPoint = searchParams?.services?.includes("watertanker-fixedpoint");
+  const { data: fillingPointsData } = Digit.Hooks.wt.useFillPointSearch(
+    { tenantId: Digit.ULBService.getCurrentTenantId(), filters: { limit: 1000 } },
+    { enabled: !!isFixedPoint }
+  );
+  const fillingPoints = fillingPointsData?.fillingPoints || [];
+
   return (
     <form id="search-form" onSubmit={handleSubmit(onSubmitInput)} className="search-form-wrapper search-complaint-container">
       <React.Fragment>
@@ -125,6 +132,27 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                 ) : null}
               </div>
             ))}
+          {isFixedPoint && (
+            <div className="input-fields">
+              <span className="mobile-input">
+                <Label>{t("WT_FILLING_POINT")}</Label>
+                <Controller
+                  control={control}
+                  name="fillingPointId"
+                  render={(props) => (
+                    <Dropdown
+                      selected={fillingPoints.find((fp) => (fp.id || fp.fillingPointId || fp.bookingId) === props.value)}
+                      select={(val) => props.onChange(val?.id || val?.fillingPointId || val?.bookingId)}
+                      onBlur={props.onBlur}
+                      option={fillingPoints}
+                      optionKey="fillingPointName"
+                      t={t}
+                    />
+                  )}
+                />
+              </span>
+            </div>
+          )}
         </div>
         <div className="formcomposer-section-button">
           {isInboxPage ? (

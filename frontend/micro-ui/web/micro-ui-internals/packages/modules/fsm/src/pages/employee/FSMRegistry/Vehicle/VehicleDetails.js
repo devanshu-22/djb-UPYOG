@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -11,13 +11,12 @@ import {
   ActionBar,
   Menu,
   Toast,
-  Header,
   EditIcon,
   DeleteIcon,
   Modal,
   CardText,
-  AddIcon,
   Dropdown,
+  AddIcon,
 } from "@djb25/digit-ui-react-components";
 
 import { useQueryClient } from "react-query";
@@ -45,14 +44,13 @@ const CloseBtn = (props) => {
 
 const VehicleDetails = (props) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const state = Digit.ULBService.getStateId();
   const { t } = useTranslation();
   const history = useHistory();
   const queryClient = useQueryClient();
   let { id: vehicleNumber } = useParams();
+
   const [displayMenu, setDisplayMenu] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
-  const [config, setCurrentConfig] = useState({});
   const [showModal, setShowModal] = useState(false);
   const [showToast, setShowToast] = useState(null);
   const [vendors, setVendors] = useState([]);
@@ -77,13 +75,6 @@ const VehicleDetails = (props) => {
     {}
   );
 
-  useEffect(() => {
-    if (vendorData) {
-      let vendors = vendorData.map((data) => data.dsoDetails);
-      setVendors(vendors);
-    }
-  }, [vendorData]);
-
   const {
     isLoading: isUpdateLoading,
     isError: vehicleUpdatError,
@@ -101,9 +92,16 @@ const VehicleDetails = (props) => {
   } = Digit.Hooks.fsm.useVendorUpdate(tenantId);
 
   function onActionSelect(action) {
-    setDisplayMenu(false);
     setSelectedAction(action);
+    setDisplayMenu(false);
   }
+
+  useEffect(() => {
+    if (vendorData) {
+      let vendors = vendorData.map((data) => data.dsoDetails);
+      setVendors(vendors);
+    }
+  }, [vendorData]);
 
   useEffect(() => {
     refetch();
@@ -129,9 +127,78 @@ const VehicleDetails = (props) => {
     setShowToast(null);
   };
 
-  const closeModal = () => {
-    setSelectedAction(null);
-    setSelectedOption({})
+  const handleModalAction = () => {
+    switch (selectedAction) {
+      case "DELETE":
+        return handleDelete();
+      case "DELETE_VENDOR":
+        return handleDeleteVendor();
+      case "ADD_VENDOR":
+        return handleAddVendor();
+      case "EDIT_VENDOR":
+        return handleEditVendor();
+      default:
+        break;
+    }
+  };
+
+  const handleDelete = () => {
+    let vehicleDetails = vehicleData?.[0]?.vehicleData;
+    const formData = {
+      vehicle: {
+        ...vehicleDetails,
+        status: "INACTIVE",
+      },
+    };
+
+    mutate(formData, {
+      onError: (error, variables) => {
+        setShowToast({ key: "error", action: error });
+        setTimeout(closeToast, 5000);
+      },
+      onSuccess: (data, variables) => {
+        setShowToast({ key: "success", action: "DELETE_VEHICLE" });
+        queryClient.invalidateQueries("FSM_VEICLES_SEARCH");
+        setTimeout(() => {
+          closeToast();
+          history.push(`/digit-ui/employee/fsm/registry`);
+        }, 5000);
+      },
+    });
+    setShowModal(false);
+  };
+
+  const handleDeleteVendor = () => {
+    let formData = {};
+    let dsoDetails = vehicleData?.[0]?.vendorDetails?.vendor?.[0];
+    let getVehicleVendorDetails = dsoDetails?.vehicles;
+
+    getVehicleVendorDetails = getVehicleVendorDetails.map((data) => {
+      if (data.id === vehicleId) {
+        data.vendorVehicleStatus = "INACTIVE";
+      }
+      return data;
+    });
+
+    formData = {
+      vendor: {
+        ...dsoDetails,
+        vehicles: getVehicleVendorDetails,
+      },
+    };
+
+    mutateVendor(formData, {
+      onError: (error, variables) => {
+        setShowToast({ key: "error", action: error });
+        setTimeout(closeToast, 5000);
+      },
+      onSuccess: (data, variables) => {
+        setShowToast({ key: "success", action: "DELETE_VENDOR" });
+        queryClient.invalidateQueries("FSM_VENDOR_SEARCH");
+        refetch();
+        setTimeout(closeToast, 5000);
+      },
+    });
     setShowModal(false);
   };
 
@@ -153,7 +220,7 @@ const VehicleDetails = (props) => {
         setTimeout(closeToast, 5000);
       },
       onSuccess: (data, variables) => {
-        setShowToast({ key: "success", action: "EDIT_VENDOR" });
+        setShowToast({ key: "success", action: "ADD_VENDOR" });
         refetch();
         queryClient.invalidateQueries("DSO_SEARCH");
         setTimeout(closeToast, 5000);
@@ -191,104 +258,11 @@ const VehicleDetails = (props) => {
     setSelectedAction(null);
   };
 
-  const handleDeleteVendor = () => {
-    let formData = {};
-    let dsoDetails = vehicleData?.[0]?.vendorDetails?.vendor?.[0];
-    let getVehicleVendorDetails = dsoDetails?.vehicles;
-
-    getVehicleVendorDetails = getVehicleVendorDetails.map((data) => {
-      if (data.id === vehicleId) {
-        data.vendorVehicleStatus = "INACTIVE";
-      }
-      return data;
-    });
-
-    formData = {
-      vendor: {
-        ...dsoDetails,
-        vehicles: getVehicleVendorDetails,
-      },
-    };
-
-    mutateVendor(formData, {
-      onError: (error, variables) => {
-        setShowToast({ key: "error", action: error });
-        setTimeout(closeToast, 5000);
-      },
-      onSuccess: (data, variables) => {
-        setShowToast({ key: "success", action: "DELETE_VENDOR" });
-        queryClient.invalidateQueries("FSM_VENDOR_SEARCH");
-        refetch();
-        setTimeout(closeToast, 5000);
-      },
-    });
+  const closeModal = () => {
+    setSelectedAction(null);
+    setSelectedOption({});
     setShowModal(false);
   };
-
-  const handleModalAction = () => {
-    switch (selectedAction) {
-      case "DELETE":
-        return handleDelete();
-      case "DELETE_VENDOR":
-        return handleDeleteVendor();
-      case "ADD_VENDOR":
-        return handleAddVendor();
-      case "EDIT_VENDOR":
-        return handleEditVendor();
-      default:
-        break;
-    }
-  };
-
-  const handleDelete = () => {
-    let vehicleDetails = vehicleData?.[0]?.vehicleData;
-    const formData = {
-      vehicle: {
-        ...vehicleDetails,
-        status: "INACTIVE",
-      },
-    };
-
-    mutate(formData, {
-      onError: (error, variables) => {
-        setShowToast({ key: "error", action: error });
-        setTimeout(closeToast, 5000);
-      },
-      onSuccess: (data, variables) => {
-        setShowToast({ key: "success", action: "DELETE_VEHICLE" });
-        queryClient.invalidateQueries("FSM_VEICLES_SEARCH");
-        setTimeout(() => {
-          closeToast;
-          history.push(`/digit-ui/employee/fsm/registry`);
-        }, 5000);
-      },
-    });
-    setShowModal(false);
-  };
-
-  const renderModalContent = () => {
-    if (selectedAction === "DELETE" || selectedAction === "DELETE_VENDOR") {
-      return <ConfirmationBox t={t} title={"ES_FSM_REGISTRY_DELETE_TEXT"} />;
-    }
-    if (selectedAction === "ADD_VENDOR") {
-      return (
-        <>
-          <CardText>{t(`ES_FSM_REGISTRY_SELECT_VENODOR`)}</CardText>
-          <Dropdown t={t} option={vendors} value={selectedOption} selected={selectedOption} select={setSelectedOption} optionKey={"name"} />
-        </>
-      );
-    }
-    if (selectedAction === "EDIT_VENDOR") {
-      return (
-        <>
-          <CardText>{t(`ES_FSM_REGISTRY_SELECT_VENODOR`)}</CardText>
-          <Dropdown t={t} option={vendors} value={selectedOption} selected={selectedOption} select={setSelectedOption} optionKey={"name"} />
-        </>
-      );
-    }
-  };
-
-  const isMobile = window.Digit.Utils.browser.isMobile();
 
   const modalHeading = () => {
     switch (selectedAction) {
@@ -304,97 +278,102 @@ const VehicleDetails = (props) => {
     }
   };
 
+  const renderModalContent = () => {
+    if (selectedAction === "DELETE" || selectedAction === "DELETE_VENDOR") {
+      return <ConfirmationBox t={t} title={"ES_FSM_REGISTRY_DELETE_TEXT"} />;
+    }
+    if (selectedAction === "ADD_VENDOR" || selectedAction === "EDIT_VENDOR") {
+      return (
+        <React.Fragment>
+          <CardText>{t(`ES_FSM_REGISTRY_SELECT_VENODOR`)}</CardText>
+          <Dropdown t={t} option={vendors} value={selectedOption} selected={selectedOption} select={setSelectedOption} optionKey={"name"} />
+        </React.Fragment>
+      );
+    }
+  };
+
   if (isLoading) {
     return <Loader />;
   }
 
-  return (
+  return !isLoading ? (
     <React.Fragment>
-      {!isLoading ? (
-        <React.Fragment>
-          <Header style={{ marginBottom: "16px" }}>{t("ES_FSM_REGISTRY_VEHICLE_DETAILS")}</Header>
-          <div style={!isMobile ? { marginLeft: "-15px" } : {}}>
-            <Card style={{ position: "relative" }}>
-              {vehicleData?.[0]?.employeeResponse?.map((detail, index) => (
-                <React.Fragment key={index}>
-                  {index > 0 && <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t(detail.title)}</CardSectionHeader>}
-                  <StatusTable>
-                    {detail?.values?.map((value, index) => {
-                      return value?.type === "custom" ? (
-                        <>
-                          <div className={`${index === detail?.values?.length - 1 ? "row last" : "row"} border-none`}>
-                            <h2>{t(value.title)}</h2>
-                            <div className="value" style={{ color: "#a82227", display: "flex" }}>
-                              {t(value.value) || "N/A"}
-                              {value.value === "ES_FSM_REGISTRY_DETAILS_ADD_VENDOR" && (
-                                <span onClick={() => onActionSelect("ADD_VENDOR")}>
-                                  <AddIcon className="" fill="#a82227" styles={{ cursor: "pointer", marginLeft: "20px", height: "24px" }} />
-                                </span>
-                              )}
-                              {value.value != "ES_FSM_REGISTRY_DETAILS_ADD_VENDOR" && (
-                                <span onClick={() => onActionSelect("EDIT_VENDOR")}>
-                                  <EditIcon style={{ cursor: "pointer", marginLeft: "20px" }} />
-                                </span>
-                              )}
-                              {value.value != "ES_FSM_REGISTRY_DETAILS_ADD_VENDOR" && (
-                                <span onClick={() => onActionSelect("DELETE_VENDOR")}>
-                                  <DeleteIcon className="delete" fill="#a82227" style={{ cursor: "pointer", marginLeft: "20px" }} />
-                                </span>
-                              )}
+      <div className="employee-form-content">
+        <Card style={{ position: "relative", backgroundColor: "#fff" }}>
+          {vehicleData?.[0]?.employeeResponse?.map((detail, index) => (
+            <React.Fragment key={index}>
+              {index > 0 && <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t(detail.title)}</CardSectionHeader>}
+              <Card className="card-with-background" style={{ margin: "10px 16px", padding: "20px" }}>
+                <div className="additional-grid">
+                  {detail?.values?.map((value, index) => {
+                    return value?.type === "custom" ? (
+                      <React.Fragment key={index}>
+                        <div className="additional-label">{t(value.title)}</div>
+                        <div className="additional-value" style={{ color: "#a82227", display: "flex", gap: "20px", alignItems: "center" }}>
+                          {t(value.value) || "N/A"}
+                          {value.value === "ES_FSM_REGISTRY_DETAILS_ADD_VENDOR" && (
+                            <span className="add-details-link hover-button" onClick={() => onActionSelect("ADD_VENDOR")} style={{ cursor: "pointer" }}>
+                              <AddIcon className="" fill="#a82227" />
+                            </span>
+                          )}
+                          {value.value !== "ES_FSM_REGISTRY_DETAILS_ADD_VENDOR" && (
+                            <div className="add-details-link hover-button" onClick={() => onActionSelect("EDIT_VENDOR")} style={{ cursor: "pointer" }}>
+                              <EditIcon />
                             </div>
-                          </div>
-                        </>
-                      ) : (
-                        <Row
-                          key={t(value.title)}
-                          label={t(value.title)}
-                          text={t(value.value) || "N/A"}
-                          last={index === detail?.values?.length - 1}
-                          caption={value.caption}
-                          className="border-none"
-                          textStyle={value.value === "ACTIVE" ? { color: "green" } : {}}
-                        />
-                      );
-                    })}
-                  </StatusTable>
-                </React.Fragment>
-              ))}
-            </Card>
-          </div>
-
-          {showModal && (
-            <Modal
-              headerBarMain={<Heading label={t(modalHeading())} />}
-              headerBarEnd={<CloseBtn onClick={closeModal} />}
-              actionCancelLabel={t("CS_COMMON_CANCEL")}
-              actionCancelOnSubmit={closeModal}
-              actionSaveLabel={t(selectedAction === "DELETE" || selectedAction === "DELETE_VENDOR" ? "ES_EVENT_DELETE" : "CS_COMMON_SUBMIT")}
-              // actionSaveOnSubmit={handleDelete}
-              actionSaveOnSubmit={handleModalAction}
-            >
-              {selectedAction === "DELETE" || selectedAction === "DELETE_VENDOR" ? (
-                renderModalContent()
-              ) : (
-                <Card style={{ boxShadow: "none" }}>{renderModalContent()}</Card>
-              )}
-            </Modal>
+                          )}
+                          {value.value !== "ES_FSM_REGISTRY_DETAILS_ADD_VENDOR" && (
+                            <div className="add-details-link hover-button" onClick={() => onActionSelect("DELETE_VENDOR")} style={{ cursor: "pointer" }}>
+                              <DeleteIcon className="delete" fill="#a82227" />
+                            </div>
+                          )}
+                        </div>
+                      </React.Fragment>
+                    ) : (
+                      <React.Fragment key={index}>
+                        <div className="additional-label">{t(value.title)}</div>
+                        <div className="additional-value">
+                          {t(value.value) || "N/A"}
+                        </div>
+                      </React.Fragment>
+                    );
+                  })}
+                </div>
+              </Card>
+            </React.Fragment>
+          ))}
+        </Card>
+      </div>
+      {showModal && (
+        <Modal
+          headerBarMain={<Heading label={t(modalHeading())} />}
+          headerBarEnd={<CloseBtn onClick={closeModal} />}
+          actionCancelLabel={t("CS_COMMON_CANCEL")}
+          actionCancelOnSubmit={closeModal}
+          actionSaveLabel={t(selectedAction === "DELETE" || selectedAction === "DELETE_VENDOR" ? "ES_EVENT_DELETE" : "CS_COMMON_SUBMIT")}
+          actionSaveOnSubmit={handleModalAction}
+          formId="modal-action"
+        >
+          {selectedAction === "DELETE" || selectedAction === "DELETE_VENDOR" ? (
+            renderModalContent()
+          ) : (
+            <Card style={{ boxShadow: "none" }}>{renderModalContent()}</Card>
           )}
-          {showToast && (
-            <Toast
-              error={showToast.key === "error" ? true : false}
-              label={t(showToast.key === "success" ? `ES_FSM_REGISTRY_${showToast.action}_SUCCESS` : showToast.action)}
-              onClose={closeToast}
-            />
-          )}
-          <ActionBar style={{ zIndex: "19" }}>
-            {displayMenu ? <Menu localeKeyPrefix={"ES_FSM_REGISTRY_ACTION"} options={["EDIT", "DELETE"]} t={t} onSelect={onActionSelect} /> : null}
-            <SubmitBar label={t("ES_COMMON_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
-          </ActionBar>
-        </React.Fragment>
-      ) : (
-        <Loader />
+        </Modal>
       )}
+      {showToast && (
+        <Toast
+          error={showToast.key === "error" ? true : false}
+          label={t(showToast.key === "success" ? `ES_FSM_REGISTRY_${showToast.action}_SUCCESS` : showToast.action)}
+          onClose={closeToast}
+        />
+      )}
+      <ActionBar style={{ zIndex: "19" }}>
+        {displayMenu ? <Menu localeKeyPrefix={"ES_FSM_REGISTRY_ACTION"} options={["EDIT", "DELETE"]} t={t} onSelect={onActionSelect} /> : null}
+        <SubmitBar label={t("ES_COMMON_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+      </ActionBar>
     </React.Fragment>
+  ) : (
+    <Loader />
   );
 };
 

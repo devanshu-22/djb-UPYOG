@@ -265,7 +265,7 @@ export const filterFunctions = {
     const workflowFilters = {};
 
 
-    const { bookingNo, mobileNumber,limit, offset, sortBy, sortOrder, total, services } = filtersArg || {};
+    const { bookingNo, mobileNumber, fillingPointId, limit, offset, sortBy, sortOrder, total, services } = filtersArg || {};
 
     if (filtersArg?.uuid && filtersArg?.uuid.code === "ASSIGNED_TO_ME") {
       workflowFilters.assignee = uuid;
@@ -273,15 +273,18 @@ export const filterFunctions = {
     if (mobileNumber) {
       searchFilters.mobileNumber = mobileNumber;
     }
-    if(bookingNo) {   
+    if (bookingNo) {
       searchFilters.bookingNo = bookingNo;
+    }
+    if (fillingPointId) {
+      searchFilters.fillingPointId = fillingPointId;
     }
     if (services) {
       workflowFilters.businessService = services;
     }
     searchFilters["isInboxSearch"] = true;
     searchFilters["creationReason"] = [""];
-    workflowFilters["moduleName"] = "request-service.water_tanker";    
+    workflowFilters["moduleName"] = "request-service.water_tanker";
     return { searchFilters, workflowFilters, limit, offset, sortBy, sortOrder };
   },
   MT: (filtersArg) => {
