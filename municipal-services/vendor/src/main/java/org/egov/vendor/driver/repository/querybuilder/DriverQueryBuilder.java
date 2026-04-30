@@ -39,6 +39,16 @@ public class DriverQueryBuilder {
 				builder.append(" driver.tenantid=? ");
 				preparedStmtList.add(criteria.getTenantId());
 			}
+		}
+
+			// New vendorId Filter Logic
+			if (StringUtils.isNotBlank(criteria.getVendorId())) {
+				addClauseIfRequired(preparedStmtList, builder);
+				// Using EXISTS to ensure the count(*) OVER() remains accurate
+				// even if a driver was linked to multiple vendors historically
+				builder.append(" EXISTS (SELECT 1 FROM eg_vendor_driver vd WHERE vd.driver_id = driver.id AND vd.vendor_id = ? AND vd.vendordriverstatus = 'ACTIVE') ");
+				preparedStmtList.add(criteria.getVendorId());
+			}
 
 			/*
 			 * Enable part search with DriverName
@@ -83,7 +93,6 @@ public class DriverQueryBuilder {
 				addToPreparedStatement(preparedStmtList, status);
 			}
 
-		}
 		return addPaginationWrapper(builder.toString(), preparedStmtList, criteria);
 	}
 

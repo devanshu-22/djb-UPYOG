@@ -79,6 +79,9 @@ public class Vehicle {
     @JsonProperty("fitnessValidTill")
     private Long fitnessValidTill;
 
+    @JsonProperty("vendorName")
+    private String vendorName;
+
     @JsonProperty("roadTaxPaidTill")
     private Long  roadTaxPaidTill;
 

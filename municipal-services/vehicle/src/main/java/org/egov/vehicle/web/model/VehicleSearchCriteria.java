@@ -24,6 +24,12 @@ public class VehicleSearchCriteria {
 	@JsonProperty("driverId")
 	private String driverId;
 
+	@JsonProperty("vendorId")
+	private String vendorId;
+
+	@JsonProperty("fillingPointId")
+	private String fillingPointId;
+
 	@JsonProperty("limit")
 	private Integer limit;
 
