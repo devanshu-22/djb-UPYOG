@@ -323,44 +323,42 @@ const DriverDetails = (props) => {
           {driverData?.[0]?.employeeResponse?.map((detail, index) => (
             <React.Fragment key={index}>
               {index > 0 && <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t(detail.title)}</CardSectionHeader>}
-              <StatusTable>
-                {detail?.values?.map((value, index) =>
-                  value?.type === "custom" ? (
-                    <React.Fragment key={index}>
-                      <div className={`${index === detail?.values?.length - 1 ? "row last" : "row"} border-none`}>
-                        <h2>{t(value.title)}</h2>
-                        <div className="value" style={{ color: "#a82227", display: "flex", gap: "20px", alignItems: "center" }}>
+              <Card className="card-with-background" style={{ margin: "10px 16px", padding: "20px" }}>
+                <div className="additional-grid">
+                  {detail?.values?.map((value, index) => {
+                    return value?.type === "custom" ? (
+                      <React.Fragment key={index}>
+                        <div className="additional-label">{t(value.title)}</div>
+                        <div className="additional-value" style={{ color: "#a82227", display: "flex", gap: "20px", alignItems: "center" }}>
                           {t(value.value) || "N/A"}
                           {value.value === "ES_FSM_REGISTRY_DETAILS_ADD_VENDOR" && (
-                            <span className="add-details-link hover-button hover-button-round" onClick={() => onActionSelect("ADD_VENDOR")}>
-                              <AddIcon className="" fill="#a82227" styles={{ cursor: "pointer", height: "24px" }} />
+                            <span className="add-details-link hover-button" onClick={() => onActionSelect("ADD_VENDOR")} style={{ cursor: "pointer" }}>
+                              <AddIcon className="" fill="#a82227" />
                             </span>
                           )}
                           {value.value !== "ES_FSM_REGISTRY_DETAILS_ADD_VENDOR" && (
-                            <div className="add-details-link hover-button hover-button-round" onClick={() => onActionSelect("EDIT_VENDOR")}>
-                              <EditIcon style={{ cursor: "pointer" }} />
+                            <div className="add-details-link hover-button" onClick={() => onActionSelect("EDIT_VENDOR")} style={{ cursor: "pointer" }}>
+                              <EditIcon />
                             </div>
                           )}
                           {value.value !== "ES_FSM_REGISTRY_DETAILS_ADD_VENDOR" && (
-                            <div className="add-details-link hover-button hover-button-round" onClick={() => onActionSelect("DELETE_VENDOR")}>
-                              <DeleteIcon className="delete" fill="#a82227" style={{ cursor: "pointer" }} />
+                            <div className="add-details-link hover-button" onClick={() => onActionSelect("DELETE_VENDOR")} style={{ cursor: "pointer" }}>
+                              <DeleteIcon className="delete" fill="#a82227" />
                             </div>
                           )}
                         </div>
-                      </div>
-                    </React.Fragment>
-                  ) : (
-                    <Row
-                      key={t(value.title)}
-                      label={t(value.title)}
-                      text={t(value.value) || "N/A"}
-                      last={index === detail?.values?.length - 1}
-                      caption={value.caption}
-                      className="border-none"
-                    />
-                  )
-                )}
-              </StatusTable>
+                      </React.Fragment>
+                    ) : (
+                      <React.Fragment key={index}>
+                        <div className="additional-label">{t(value.title)}</div>
+                        <div className="additional-value">
+                          {t(value.value) || "N/A"}
+                        </div>
+                      </React.Fragment>
+                    );
+                  })}
+                </div>
+              </Card>
             </React.Fragment>
           ))}
         </Card>

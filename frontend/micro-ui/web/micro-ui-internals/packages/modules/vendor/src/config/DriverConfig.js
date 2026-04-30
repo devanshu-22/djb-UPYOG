@@ -52,9 +52,17 @@ const DriverConfig = (t, disabled = false) => {
           type: "component",
           route: "select-service",
           hideInEmployee: false,
-          key: "additionalDetails",
+          key: "serviceType",
           component: "SelectServiceType",
           disable: disabled,
+          populators: {
+            name: "serviceType",
+            defaultValue: {
+              code: "WT",
+              name: "WT",
+              i18nKey: "WT",
+            },
+          },
           texts: {
             headerCaption: "",
             header: "CS_COMMON_CHOOSE_GENDER",

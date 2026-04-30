@@ -47,10 +47,16 @@ if (!user || !user.info) {
   // const employeeInfo = getFromStorage("Employee.user-info");
   const employeeTenantId = getFromStorage("Employee.tenant-id");
 
-  const userInfo = getFromStorage("user-info");
+  const userInfo =
+    window.sessionStorage.getItem("userType") ||
+    process.env.REACT_APP_USER_TYPE ||
+    "CITIZEN";
 
   // const userType = token === citizenToken ? "citizen" : "employee";
-  const userType = userInfo.type;
+  const userType =
+    window.sessionStorage.getItem("userType") ||
+    process.env.REACT_APP_USER_TYPE ||
+    "CITIZEN";
   window.Digit.SessionStorage.set("user_type", userType);
   window.Digit.SessionStorage.set("userType", userType);
 

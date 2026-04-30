@@ -5,7 +5,9 @@ const useEmpvendorCommonSearch = ({ tenantId, filters, auth, searchedFrom = "" }
   const args = tenantId ? { tenantId, filters, auth } : { filters, auth };
 
   const defaultSelect = (data) => {
-    if (data.VendorDetails.length > 0) data.VendorDetails[0] = data.VendorDetails[0] || [];
+    if (data?.VendorDetails?.length > 0) {
+      data.VendorDetails[0] = data.VendorDetails[0] || [];
+    }
     return data;
   };
 

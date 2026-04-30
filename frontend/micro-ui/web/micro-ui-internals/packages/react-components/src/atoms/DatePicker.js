@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { LuCalendarIcon } from "./svgindex";
 import Toast from "./Toast";
 
-const DatePicker = ({ date, onChange, disabled, style, isDOB }) => {
+const DatePicker = ({ date, onChange, disabled, style, isDOB, minAge = 18 }) => {
   const [toast, setToast] = useState(null);
   const [inputValue, setInputValue] = useState("");
   const hiddenDateRef = useRef();
@@ -95,7 +95,7 @@ const DatePicker = ({ date, onChange, disabled, style, isDOB }) => {
         if (isDOB && !isValidAge(isoDate)) {
           setToast({
             type: "warning",
-            message: "User must be at least 18 years old",
+            message: `User must be at least ${minAge} years old`,
           });
 
           setInputValue(date ? formatDisplay(date) : "");
@@ -195,6 +195,7 @@ DatePicker.propTypes = {
   disabled: PropTypes.bool,
   style: PropTypes.object,
   isDOB: PropTypes.bool,
+  minAge: PropTypes.number,
 };
 
 export default DatePicker;

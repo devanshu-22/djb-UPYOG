@@ -250,50 +250,9 @@ export const fixedPointPayload = (data) => {
   };
 };
 
-export const EmergencyFixedPointInfoPage = (data) => {
-  const formdata = {
-    waterTankerBookingDetail: {
-      tenantId: data?.tenantId,
-      tankerType: data?.requestDetails?.tankerType?.code,
-      waterType: data?.requestDetails?.waterType?.code,
-      tankerQuantity: data?.requestDetails?.tankerQuantity?.code,
-      waterQuantity: data?.requestDetails?.waterQuantity?.code,
-      description: data?.requestDetails?.description,
-      deliveryDate: data?.requestDetails?.deliveryDate,
-      deliveryTime: data?.requestDetails?.deliveryTime,
-      extraCharge: data?.requestDetails?.extraCharge ? "Y" : "N",
-      addressDetailId: data?.address?.addressDetailId || "",
-      applicantDetail: {
-        name: data?.owner?.applicantName,
-        mobileNumber: data?.owner?.mobileNumber,
-        alternateNumber: data?.owner?.alternateNumber,
-        emailId: data?.owner?.emailId,
-      },
-      address: {
-        addressType: data?.address?.addressType?.code,
-        pincode: data?.address?.pincode,
-        city: data?.address?.city?.city?.name,
-        cityCode: data?.address?.city?.city?.code,
-        addressLine1: data?.address?.addressLine1,
-        addressLine2: data?.address?.addressLine2,
-        locality: data?.address?.locality?.i18nKey,
-        localityCode: data?.address?.locality?.code,
-        streetName: data?.address?.streetName,
-        houseNo: data?.address?.houseNo,
-        landmark: data?.address?.landmark,
-        latitude: data?.address?.latitude,
-        longitude: data?.address?.longitude,
-      },
-
-      WTfileStoreId: data?.requestDetails?.fileStoreId,
-      bookingStatus: "BOOKING_CREATED",
-      workflow: {
-        action: "APPLY",
-        comments: "",
-        businessService: "watertanker",
-        moduleName: "request-service.water_tanker",
-      },
-    },
-  };
+export const emergencyWaterTankerPayload = (data) => {
+  const formdata = waterTankerPayload(data);
+  formdata.waterTankerBookingDetail.workflow.action = "CREATE";
+  formdata.waterTankerBookingDetail.workflow.businessService = "watertanker-fixedpoint";
   return formdata;
 };
