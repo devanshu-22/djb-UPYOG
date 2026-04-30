@@ -26,10 +26,13 @@ public class QueryBuilder {
 //	private static final String QUERY = " SELECT count(*) OVER() AS full_count, * FROM eg_vehicle ";
 
 	private static final String QUERY = "SELECT count(*) OVER() AS full_count, " +
-			"veh.*, fp.id as fp_id, fp.filling_point_id as fp_filling_point_id, fp.tenant_id as fp_tenant_id, " +
+			"veh.*,v.name AS vendor_name, fp.id as fp_id, fp.filling_point_id as fp_filling_point_id, fp.tenant_id as fp_tenant_id, " +
 			"fp.filling_point_name, fp.emergency_name, fp.ee_name, fp.ee_email, fp.ee_mobile, " +
 			"fp.ae_name, fp.ae_email, fp.ae_mobile, fp.je_name, fp.je_email, fp.je_mobile " +
 			"FROM eg_vehicle veh " +
+			"LEFT JOIN eg_vendor_vehicle evv  ON evv.vechile_id = veh.id " +
+			" AND evv.vendorvehiclestatus = 'ACTIVE'" +
+			"LEFT JOIN eg_vendor v  ON v.id = evv.vendor_id "+
 			"LEFT JOIN upyog_rs_water_tanker_filling_point fp ON veh.filling_point_id = fp.id ";
 	private static final String VEH_EXISTS_QUERY = " SELECT COUNT(*) FROM eg_vehicle WHERE tenantid=? AND registrationNumber=? AND STATUS= ?";
 
@@ -168,6 +171,30 @@ public class QueryBuilder {
 			preparedStmtList.add(criteria.getTankCapacity());
 		}
 
+		if (StringUtils.hasText(criteria.getFillingPointId())) {
+			addClauseIfRequired(preparedStmtList, builder);
+			builder.append(" veh.filling_point_id = ? ");
+			preparedStmtList.add(criteria.getFillingPointId());
+		}
+
+		if (StringUtils.hasText(criteria.getVendorId())) {
+			addClauseIfRequired(preparedStmtList, builder);
+			builder.append(" EXISTS (SELECT 1 FROM eg_vendor_vehicle evv ")
+					.append(" WHERE evv.vechile_id = veh.id ")
+					.append(" AND evv.vendor_id = ? ")
+					.append(" AND evv.vendorvehiclestatus = 'ACTIVE') ");
+			preparedStmtList.add(criteria.getVendorId());
+		}
+
+		if (StringUtils.hasText(criteria.getDriverId())) {
+			addClauseIfRequired(preparedStmtList, builder);
+			builder.append(" EXISTS (SELECT 1 FROM eg_vendor_vehicle evv ")
+					.append(" JOIN eg_vendor_driver evd ON evv.vendor_id = evd.vendor_id ")
+					.append(" WHERE evv.vechile_id = veh.id ")
+					.append(" AND evd.driver_id = ? ")
+					.append(" AND evd.vendordriverstatus = 'ACTIVE') ");
+			preparedStmtList.add(criteria.getDriverId());
+		}
 		List<String> ownerIds = criteria.getOwnerId();
 		if (!CollectionUtils.isEmpty(ownerIds)) {
 			addClauseIfRequired(preparedStmtList, builder);
