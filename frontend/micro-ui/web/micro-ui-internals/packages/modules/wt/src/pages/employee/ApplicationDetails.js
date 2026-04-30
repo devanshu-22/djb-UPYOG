@@ -1,4 +1,5 @@
-import { Header, MultiLink } from "@djb25/digit-ui-react-components";
+import { Header, MultiLink, Button, SubmitBar, EditIcon } from "@djb25/digit-ui-react-components";
+import WTEditApplicationModal from "../../components/WTEditApplicationModal";
 import _ from "lodash";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -24,6 +25,7 @@ const ApplicationDetails = () => {
   const { id: bookingNo } = useParams();
   const [showToast, setShowToast] = useState(null);
   const [appDetailsToShow, setAppDetailsToShow] = useState({});
+  const [showEditModal, setShowEditModal] = useState(false);
   // const [showOptions, setShowOptions] = useState(false);
   const [BusinessService, setBusinessService] = useState("watertanker"); // Default to water tanker service
   // Determine business service dynamically
@@ -85,31 +87,32 @@ const ApplicationDetails = () => {
   // let dowloadOptions = [];
   return (
     <div className="employee-form-content-with-action-bar" style={{ padding: user?.type === "CITIZEN" ? "0 15px" : "", height: "100%" }}>
-      {/* <div className={"employee-application-details"} style={{ marginBottom: "15px" }}>
-        <Header styles={{ marginLeft: "0px", paddingTop: "10px", fontSize: "32px" }}>{t("BOOKING_DETAILS")}</Header>
-        <div style={{ zIndex: "10", display: "flex", flexDirection: "row-reverse", alignItems: "center", marginTop: "-25px" }}>
-          {dowloadOptions && dowloadOptions.length > 0 && (
-            <MultiLink
-              className="multilinkWrapper employee-mulitlink-main-div"
-              onHeadClick={() => setShowOptions(!showOptions)}
-              displayOptions={showOptions}
-              options={dowloadOptions}
-              downloadBtnClassName={"employee-download-btn-className"}
-              optionsClassName={"employee-options-btn-className"}
-              // ref={menuRef}
-            />
-          )}
+      <div className="employee-application-details" style={{ marginBottom: "20px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
+        <Header styles={{ margin: "0px", fontSize: "32px" }}>{t("BOOKING_DETAILS")}</Header>
+        <div 
+          onClick={() => setShowEditModal(true)} 
+          style={{ display: "flex", alignItems: "center", cursor: "pointer", color: "#f47738", gap: "8px", padding: "8px 16px", backgroundColor: "#fff", borderRadius: "4px", border: "1px solid #f47738", transition: "all 0.2s ease" }}
+        >
+          <EditIcon style={{ fill: "#f47738", width: "20px", height: "20px" }} />
+          <span style={{ fontWeight: "600", fontSize: "16px" }}>{t("WT_EDIT_FIELDS")}</span>
         </div>
-      </div> */}
+      </div>
+      {showEditModal && (
+        <WTEditApplicationModal
+          t={t}
+          applicationData={appDetailsToShow?.applicationData?.applicationData}
+          closeModal={() => setShowEditModal(false)}
+        />
+      )}
 
-      <div style={{ display: "flex", flexDirection: "row", gap: "20px", height: "100%" }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "24px", height: "100%" }}>
         {/* Left Column: Workflow Timeline */}
-        <div className={`workflow-timeline-wrapper ${hideTimeline ? "hide-workflow" : ""}`}>
+        <div className={`workflow-timeline-wrapper ${hideTimeline ? "hide-workflow" : ""}`} style={{ flex: "1 1 300px", maxWidth: hideTimeline ? "0px" : "400px", transition: "max-width 0.3s" }}>
           <WorkflowTimeline hideTimeline={hideTimeline} setHideTimeline={setHideTimeline} workflowDetails={workflowDetails} />
         </div>
 
         {/* Right Column: Application Details */}
-        <div className={!hideTimeline ? "hidden-card " : ""} style={{ flex: "1", overflowY: "scroll" }}>
+        <div style={{ flex: "2 1 500px", minWidth: "300px", overflowY: "auto" }}>
           <ApplicationDetailsTemplate
             applicationDetails={appDetailsToShow?.applicationData}
             isLoading={isLoading}
