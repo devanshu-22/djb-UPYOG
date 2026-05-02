@@ -149,6 +149,12 @@ public class UserResultSetExtractor implements ResultSetExtractor<List<User>> {
                 .pinCode(rs.getString("addr_pincode"))
                 .userId(rs.getLong("addr_userid"))
                 .tenantId(rs.getString("addr_tenantid"))
+                .houseNumber(rs.getString("housenumber"))
+                .houseName(rs.getString("housename"))
+                .streetName(rs.getString("streetname"))
+                .address2(rs.getString("address2"))
+                .landmark(rs.getString("landmark"))
+                .locality(rs.getString("locality"))
                 .build();
 
         return address;

@@ -249,6 +249,21 @@ public class AddressRepository {
         addressInputs.put("locality", address.getLocality());
         addressInputs.put("status", UserConstants.ADDRESS_ACTIVE_STATUS); // Set status to active
 
+
+        log.info("===== ADDRESS DEBUG START =====");
+        log.info("type: {}", address.getType());
+        log.info("address: {}", address.getAddress());
+        log.info("city: {}", address.getCity());
+        log.info("pincode: {} (length={})", address.getPinCode(),
+                address.getPinCode() != null ? address.getPinCode().length() : 0);
+        log.info("address2: {}", address.getAddress2());
+        log.info("houseNumber: {}", address.getHouseNumber());
+        log.info("houseName: {}", address.getHouseName());
+        log.info("streetName: {}", address.getStreetName());
+        log.info("landmark: {}", address.getLandmark());
+        log.info("locality: {}", address.getLocality());
+        log.info("===== ADDRESS DEBUG END =====");
+
         try {
             String query = AddressQueryBuilder.INSERT_ADDRESS_BYUSERID_V2;
             namedParameterJdbcTemplate.update(query, addressInputs);
