@@ -352,6 +352,50 @@ public class UserService {
         return list;
     }
 
+    public List<org.egov.user.domain.model.User> searchUser(UserSearchCriteria searchCriteria,
+                                                             boolean isInterServiceCall, RequestInfo requestInfo) {
+        log.info("searchCriteria"+searchCriteria);
+        searchCriteria.validate(isInterServiceCall);
+
+        searchCriteria.setTenantId(getStateLevelTenantForCitizen(searchCriteria.getTenantId(), searchCriteria.getType()));
+
+        String altmobnumber = null;
+
+        if (searchCriteria.getMobileNumber() != null) {
+            altmobnumber = searchCriteria.getMobileNumber();
+        }
+
+        searchCriteria = encryptionDecryptionUtil.encryptObject(searchCriteria, "User", UserSearchCriteria.class);
+
+        if (altmobnumber != null) {
+            searchCriteria.setAlternatemobilenumber(altmobnumber);
+        }
+        log.info("Search Criteria :-"+ searchCriteria);
+        List<org.egov.user.domain.model.User> list = userRepository.findAllUser(searchCriteria);
+
+        if (list.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        /* decrypt here / final reponse decrypted*/
+
+        // Decrypt user list - role preservation is now handled in EncryptionDecryptionUtil
+        // Use same defensive error handling as /oauth/token endpoint to handle corrupted ciphertext
+        try {
+            list = encryptionDecryptionUtil.decryptObject(list, null, User.class, requestInfo);
+            log.info("Successfully decrypted user list with {} users", list != null ? list.size() : 0);
+        } catch (Exception e) {
+            log.warn("Failed to decrypt user list, returning encrypted/partial data. Error: {}", e.getMessage());
+            log.debug("Decryption error stack trace:", e);
+            // Return list as-is (encrypted or partially encrypted)
+            // This matches the behavior of /oauth/token which returns encrypted user on decryption error
+            // allowing the request to succeed even with corrupted ciphertext in database
+        }
+
+        //setFileStoreUrlsByFileStoreIds(list);
+        return list;
+    }
+
     /**
      * api will create the user based on some validations
      *
@@ -923,7 +967,7 @@ public class UserService {
             }
         }
         // Encrypt address before saving
-        address = encryptionDecryptionUtil.encryptObject(address, UserConstants.USER_ADDRESS_ENCRYPTION_KEY, Address.class);
+        //address = encryptionDecryptionUtil.encryptObject(address, UserConstants.USER_ADDRESS_ENCRYPTION_KEY, Address.class);
         Address savedAddress = addressRepository.createAddressV2(address, userId, address.getTenantId());
         // Decrypt address before returning
         return encryptionDecryptionUtil.decryptObject(savedAddress, UserConstants.USER_ADDRESS_ENCRYPTION_KEY, Address.class, null);
@@ -975,13 +1019,37 @@ public class UserService {
             throw new IllegalArgumentException("ADDRESS_NOT_VALID: Address ID " + address.getId() + " does not exist.");
         }
         // Encrypt address before updating
-        address = encryptionDecryptionUtil.encryptObject(address, UserConstants.USER_ADDRESS_ENCRYPTION_KEY, Address.class);
+        //address = encryptionDecryptionUtil.encryptObject(address, UserConstants.USER_ADDRESS_ENCRYPTION_KEY, Address.class);
         // Update the old address status to inactive
         addressRepository.updateAddressV2(address.getId(), address.getUserId(), UserConstants.ADDRESS_INACTIVE_STATUS);
         // Create a new address entry with the updated details with the same user id
         Address savedAddress = addressRepository.createAddressV2(address, address.getUserId(), address.getTenantId());
         // Decrypt address before returning
-        return encryptionDecryptionUtil.decryptObject(savedAddress, UserConstants.USER_ADDRESS_ENCRYPTION_KEY, Address.class, null);
+        return savedAddress;
+               // encryptionDecryptionUtil.decryptObject(savedAddress, UserConstants.USER_ADDRESS_ENCRYPTION_KEY, Address.class, null);
+    }
+
+    public Address updateAddressV2(Address address) {
+
+        // Validate mandatory fields if enabled
+        if (addressMandatoryFieldsEnabled && address.isMandatoryFieldsMissing(addressMandatoryFieldsEnabled)) {
+            log.error("Address validation failed - mandatory fields missing for address update with ID: {}", address.getId());
+            throw new CustomException("ADDRESS_VALIDATION_ERROR", "City, pincode, and address are mandatory fields for address creation");
+        }
+
+        AddressSearchCriteria addressSearchCriteria = AddressSearchCriteria.builder()
+                .id(address.getId())
+                .status(UserConstants.ADDRESS_ACTIVE_STATUS)
+                .build();
+        Address existingAddress = addressRepository.getAddressV2(addressSearchCriteria).get(0);
+        if (existingAddress == null) {
+            throw new IllegalArgumentException("ADDRESS_NOT_VALID: Address ID " + address.getId() + " does not exist.");
+        }
+        // Encrypt address before updating
+        // Update the old address status to inactive
+        addressRepository.updateAddressV2(address.getId(), address.getUserId(), UserConstants.ADDRESS_INACTIVE_STATUS);
+        // Create a new address entry with the updated details with the same user id
+        return addressRepository.createAddressV2(address, address.getUserId(), address.getTenantId());
     }
 
     /**

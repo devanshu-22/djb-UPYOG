@@ -330,6 +330,24 @@ public class UserController {
         return new UserSearchResponse(responseInfo, userContracts);
     }
 
+    private UserSearchResponse searchUser(@RequestBody UserSearchRequest request, HttpHeaders headers) {
+
+        UserSearchCriteria searchCriteria = request.toDomain();
+        log.info("searchCriteria_in controller"+searchCriteria);
+        log.info("headers"+headers);
+
+        if (!isInterServiceCall(headers)) {
+            if ((isEmpty(searchCriteria.getId()) && isEmpty(searchCriteria.getUuid())) && (searchCriteria.getLimit() > defaultSearchSize
+                    || searchCriteria.getLimit() == 0))
+                searchCriteria.setLimit(defaultSearchSize);
+        }
+
+        List<User> userModels = userService.searchUser(searchCriteria, isInterServiceCall(headers), request.getRequestInfo());
+        List<UserSearchResponseContent> userContracts = userModels.stream().map(UserSearchResponseContent::new)
+                .collect(Collectors.toList());
+        ResponseInfo responseInfo = ResponseInfo.builder().status(String.valueOf(HttpStatus.OK.value())).build();
+        return new UserSearchResponse(responseInfo, userContracts);
+    }
     private boolean isMobileValidationRequired(HttpHeaders headers) {
         boolean x_pass_through_gateway = !isInterServiceCall(headers);
         if (mobileValidationWorkaroundEnabled != null && Boolean.valueOf(mobileValidationWorkaroundEnabled)
@@ -382,6 +400,16 @@ public class UserController {
     public AddressResponse updateAddress(@RequestBody AddressRequest addressRequest) {
 
         Address userAddress = userService.updateAddress(addressRequest.getAddress());
+        List<Address> userAddressList = new ArrayList<>();
+        userAddressList.add(userAddress);
+        ResponseInfo responseInfo = ResponseInfo.builder().status(String.valueOf(HttpStatus.OK.value())).build();
+        return new AddressResponse(responseInfo, userAddressList);
+    }
+
+    @PostMapping("/v1/_updateAddress")
+    public AddressResponse updateAddressV2(@RequestBody AddressRequest addressRequest) {
+
+        Address userAddress = userService.updateAddressV2(addressRequest.getAddress());
         List<Address> userAddressList = new ArrayList<>();
         userAddressList.add(userAddress);
         ResponseInfo responseInfo = ResponseInfo.builder().status(String.valueOf(HttpStatus.OK.value())).build();

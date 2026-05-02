@@ -114,6 +114,45 @@ public class UserRepository {
     }
 
 
+    public List<User> findAllUser(UserSearchCriteria userSearch) {
+        log.info("user find all method call");
+        final List<Object> preparedStatementValues = new ArrayList<>();
+        boolean RoleSearchHappend = false;
+        List<Long> userIds = new ArrayList<>();
+        if (!isEmpty(userSearch.getRoleCodes()) && userSearch.getTenantId() != null) {
+            log.info("User with role if condition");
+            userIds = findUsersWithRole(userSearch);
+            RoleSearchHappend = true;
+        }
+        List<User> users = new ArrayList<>();
+        if (RoleSearchHappend) {
+            if (!CollectionUtils.isEmpty(userIds)) {
+                if (CollectionUtils.isEmpty(userSearch.getId()))
+                    userSearch.setId(userIds);
+                else {
+                    userSearch.setId(userSearch.getId().stream().filter(userIds::contains).collect(Collectors.toList()));
+                    if (CollectionUtils.isEmpty(userSearch.getId()))
+                        return users;
+                }
+                userSearch.setTenantId(null);
+                userSearch.setRoleCodes(null);
+            } else {
+                return users;
+            }
+        }
+        String queryStr = userTypeQueryBuilder.getQueryV1(userSearch, preparedStatementValues);
+        log.info("User search Query : {}", queryStr);
+        log.info("User search Parameters: {}", preparedStatementValues);
+        log.info("User search Criteria - UUID: {}, tenantId: {}, active: {}",
+                userSearch.getUuid(), userSearch.getTenantId(), userSearch.getActive());
+
+        users = jdbcTemplate.query(queryStr, preparedStatementValues.toArray(), userResultSetExtractor);
+        enrichRoles(users);
+
+        return users;
+    }
+
+
     /**
      * get list of all userids with role in given tenant
      *
