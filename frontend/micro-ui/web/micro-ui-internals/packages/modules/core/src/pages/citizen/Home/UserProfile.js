@@ -18,6 +18,7 @@ import {
   ArrowLeft,
   HomeIcon,
   EditPencilIcon,
+  Table,
 } from "@djb25/digit-ui-react-components";
 import React, { useEffect, useState, Fragment } from "react";
 import { useTranslation } from "react-i18next";
@@ -97,8 +98,14 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
     if (uuid) {
       try {
         const usersResponse = await Digit.UserService.userSearch(tenant, { uuid: [uuid] }, {});
-        if (usersResponse && usersResponse.user && usersResponse.user.length && isMounted.current) {
-          setUserDetails(usersResponse.user[0]);
+        const userList = usersResponse && (usersResponse.user || usersResponse.userList || usersResponse.users) ? (usersResponse.user || usersResponse.userList || usersResponse.users) : [];
+
+        if (userList && userList.length && isMounted.current) {
+          const fetchedUser = userList[0];
+          setUserDetails(fetchedUser);
+          if (fetchedUser.addresses && fetchedUser.addresses.length > 0) {
+            setUserAddresses(fetchedUser.addresses);
+          }
         } else if (isMounted.current) {
           setLoading(false);
         }
@@ -113,6 +120,11 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
         setLoading(false);
       }
     }
+  };
+
+  const handleModalClose = () => {
+    setShowModal(false);
+    getUserInfo({ current: true });
   };
 
   // Window resize listener with cleanup
@@ -437,12 +449,74 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
     }
   };
 
-  if (loading) return <Loader />;
-
-  //function for edit button with edit icon and functioanality of redirecting to differnt URL's
   const ActionButton = ({ onClick }) => {
     return <LinkButton label={<EditIcon style={{ float: "right" }} />} className="check-page-link-button" onClick={onClick} />;
   };
+
+  const columns = React.useMemo(
+    () => [
+      {
+        Header: t("ADDRESS_TYPE"),
+        accessor: "addressType",
+        Cell: ({ row }) => {
+          const address = row.original;
+          return (
+            <span
+              style={{
+                padding: "4px 12px",
+                borderRadius: "999px",
+                background: address.addressType === "CORRESPONDENCE" ? "#E3F2FD" : "#E8F5E9",
+                color: address.addressType === "CORRESPONDENCE" ? "#1976D2" : "#2E7D32",
+                fontSize: "12px",
+                fontWeight: "600",
+              }}
+            >
+              {t(`${address.addressType}`)}
+            </span>
+          );
+        },
+      },
+      {
+        Header: t("ADDRESS_DETAILS"),
+        accessor: (row) => `${row.houseNumber || ""} ${row.locality || ""}`,
+        Cell: ({ row }) => {
+          const address = row.original;
+          return (
+            <div>
+              <div style={{ fontWeight: "600", color: "#1f2937" }}>{address.houseNumber || t("CS_NA")}</div>
+              <div style={{ fontSize: "13px", color: "#6b7280" }}>{address.locality || ""}</div>
+            </div>
+          );
+        },
+      },
+      {
+        Header: t("CITY"),
+        accessor: "city",
+      },
+      {
+        Header: t("PINCODE"),
+        accessor: "pinCode",
+      },
+      {
+        Header: t("ACTIONS"),
+        Cell: ({ row }) => {
+          const address = row.original;
+          return (
+            <ActionButton
+              onClick={() => {
+                setSelectedAddress(address);
+                setShowModal(true);
+                setisEdit(true);
+              }}
+            />
+          );
+        },
+      },
+    ],
+    [t]
+  );
+
+  if (loading) return <Loader />;
 
   if (userType === "citizen") {
     return (
@@ -524,7 +598,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
               </section>
             ) : null}
 
-            <div className="user-form no-scrollbar" style={{ minWidth: "1110px", maxWidth: "1110px", margin: "0 auto", height: "fit-content" }}>
+            <div className="user-form no-scrollbar" style={{ width: "100%", margin: "0 auto", height: "fit-content" }}>
               <section
                 className={`profile-content employee ${activeTab === "address" ? "address-tab" : "default-tab"}`}
                 style={{ maxWidth: "unset", height: activeTab === "address" ? "fit-content" : "100%" }}
@@ -627,37 +701,23 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
                             {t("ADD_NEW_ADDRESS")}
                           </button>
                         </div>
-                        {showModal && <Address isEdit={isEdit} address={selectedAddress} actionCancelOnSubmit={() => setShowModal(false)} />}
+                        {showModal && <Address isEdit={isEdit} address={selectedAddress} actionCancelOnSubmit={handleModalClose} />}
                         {userAddresses.length > 0 ? (
-                          <Fragment>
-                            {userAddresses.map((address, index) => (
-                              <Card key={index} style={{ margin: "16px 0" }}>
-                                <StatusTable>
-                                  <Row
-                                    className="border-none"
-                                    label={t(`${address.addressType}`)}
-                                    text=""
-                                    actionButton={
-                                      <ActionButton
-                                        onClick={() => {
-                                          setSelectedAddress(address);
-                                          setShowModal(true);
-                                          setisEdit(true);
-                                        }}
-                                      />
-                                    }
-                                  />
-                                  <Row className="border-none" label={t("COMMON_HOUSE_NO")} text={address.houseNumber || t("CS_NA")} />
-                                  <Row className="border-none" label={t("COMMON_CITY")} text={address.city || t("CS_NA")} />
-                                  <Row className="border-none" label={t("COMMON_LOCALITY")} text={address.locality || t("CS_NA")} />
-                                </StatusTable>
-                              </Card>
-                            ))}
-                          </Fragment>
+                          <div>
+                            <Table t={t} data={userAddresses} columns={columns} disableSort={true} autoWidth={true} className="user-address-table" />
+                          </div>
                         ) : (
-                          <Card>
-                            <p>{t("CS_NO_ADDRESS_AVAILABLE")}</p>
-                          </Card>
+                          <div
+                            style={{
+                              background: "#fff",
+                              borderRadius: "16px",
+                              padding: "48px",
+                              textAlign: "center",
+                              border: "1px dashed #d1d5db",
+                            }}
+                          >
+                            <p style={{ color: "#6b7280", fontSize: "16px" }}>{t("CS_NO_ADDRESS_AVAILABLE")}</p>
+                          </div>
                         )}
                       </div>
                     ) : null}

@@ -28,6 +28,7 @@ import { newConfig as newConfigEDCR } from "../../config/edcrConfig";
 import CreateAnonymousEDCR from "./Home/EDCR";
 import EDCRAcknowledgement from "./Home/EDCR/EDCRAcknowledgement";
 import { APPLICATION_PATH } from "./Home/EDCR/utils";
+import LogoutDialog from "../../components/Dialog/LogoutDialog";
 const sidebarHiddenFor = [
   "digit-ui/citizen/register",
   "digit-ui/citizen/register/name",
@@ -57,6 +58,33 @@ const Home = ({
   pathname,
   initData,
 }) => {
+  const [showDialog, setShowDialog] = React.useState(false);
+
+  const handleLogout = () => {
+    setShowDialog(true);
+  };
+
+  const handleOnSubmit = async () => {
+    try {
+      const kc = window.keycloak;
+      sessionStorage.clear();
+      localStorage.clear();
+      if (kc) {
+        await kc.logout({
+          idTokenHint: kc.idToken,
+        });
+      }
+    } catch (e) {
+      console.error("Logout failed", e);
+      window.location.replace("/digit-ui/citizen/login");
+    }
+    setShowDialog(false);
+  };
+
+  const handleOnCancel = () => {
+    setShowDialog(false);
+  };
+
   const { isLoading: islinkDataLoading, data: linkData, isFetched: isLinkDataFetched } = Digit.Hooks.useCustomMDMS(
     Digit.ULBService.getStateId(),
     "ACCESSCONTROL-ACTIONS-TEST",
@@ -261,7 +289,7 @@ const Home = ({
         mobileView={mobileView}
         handleUserDropdownSelection={handleUserDropdownSelection}
         logoUrl={logoUrl}
-        showSidebar={true}
+        showSidebar={mobileView}
         linkData={linkData}
         islinkDataLoading={islinkDataLoading}
       />
@@ -269,7 +297,7 @@ const Home = ({
       <div className={`main ${hideSidebar ? "fullWidth" : "center-container"} citizen-home-container mb-25`}>
         {hideSidebar ? null : (
           <div className="SideBarStatic">
-            <StaticCitizenSideBar linkData={linkData} islinkDataLoading={islinkDataLoading} />
+            <StaticCitizenSideBar linkData={linkData} islinkDataLoading={islinkDataLoading} logout={handleLogout} />
           </div>
         )}
 
@@ -382,8 +410,8 @@ const Home = ({
           <span className="" style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile() ? "12px" : "14px", fontWeight: "400" }} onClick={() => { window.open('https://mcdonline.nic.in/', '_blank').focus(); }} >Copyright © 2025 Municipal Corporation of Delhi</span>
         </div> */}
       </div>
+      {showDialog && <LogoutDialog onSelect={handleOnSubmit} onCancel={handleOnCancel} onDismiss={handleOnCancel} />}
     </div>
-  );
-};
+  );};
 
 export default Home;

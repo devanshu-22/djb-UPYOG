@@ -26,86 +26,81 @@ const LogoutDialog = ({ onSelect, onCancel, onDismiss }) => {
   const { t } = useTranslation();
   const mobileDeviceWidth = 780;
   const [isMobileView, setIsMobileView] = React.useState(window.innerWidth <= mobileDeviceWidth);
-  const onResize = () => {
-    if (window.innerWidth <= mobileDeviceWidth) {
-      if (!isMobileView) {
-        setIsMobileView(true);
-      }
-    } else {
-      if (isMobileView) {
-        setIsMobileView(false);
-      }
-    }
-  }
+
   React.useEffect(() => {
-    window.addEventListener("resize", () => {
-      onResize();
-    });
-    return () => {
-      window.addEventListener("resize", () => {
-        onResize();
-      });
+    const onResize = () => {
+      setIsMobileView(window.innerWidth <= mobileDeviceWidth);
     };
-  });
+
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("resize", onResize);
+    };
+  }, []);
+
+  const modalStyles = isMobileView
+    ? {
+        height: "auto",
+        minHeight: "180px",
+        width: "90%",
+        maxWidth: "400px",
+        position: "fixed",
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+        borderRadius: "12px",
+        boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
+        padding: "20px",
+        zIndex: "10001",
+      }
+    : {
+        width: "100%",
+        maxWidth: "480px",
+        margin: "auto",
+        borderRadius: "12px",
+        overflow: "hidden",
+      };
+
   return (
-    isMobileView
-      ? <Modal
-        popupStyles={{
-          height: "174px",
-          maxHeight: "174px",
-          width: "324px",
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: 'translate(-50%, -50%)',
-        }}
-        popupModuleActionBarStyles={{
-          display: "flex",
-          flex: 1,
-          justifyContent: "flex-start",
-          width: "100%",
-          position: "absolute",
-          left: 0,
-          bottom: 0,
-          padding: "18px",
-        }}
-        style={{
-          flex: 1,
-        }}
-        popupModuleMianStyles={{
-          padding: "18px",
-        }}
-        headerBarMain={<Heading label={t("CORE_LOGOUT_WEB_HEADER")} />}
-        headerBarEnd={<CloseBtn onClick={onDismiss} isMobileView={isMobileView} />}
-        actionCancelLabel={t("TL_COMMON_NO")}
-        actionCancelOnSubmit={onCancel}
-        actionSaveLabel={t("TL_COMMON_YES")}
-        actionSaveOnSubmit={onSelect}
-        formId="modal-action">
-        <div>
-          <CardText style={{ margin: 0 }}>
-            {t("CORE_LOGOUT_MOBILE_CONFIRMATION_MESSAGE") + " "}
-          </CardText>
-        </div>
-      </Modal>
-      : <Modal
-        popupModuleMianStyles={{
-          paddingTop: "30px",
-        }}
-        headerBarMain={<Heading label={t("CORE_LOGOUT_WEB_HEADER")} />}
-        headerBarEnd={<CloseBtn onClick={onDismiss} isMobileView={false} />}
-        actionCancelLabel={t("CORE_LOGOUT_CANCEL")}
-        actionCancelOnSubmit={onCancel}
-        actionSaveLabel={t("CORE_LOGOUT_WEB_YES")}
-        actionSaveOnSubmit={onSelect}
-        formId="modal-action">
-        <div>
-          <CardText style={{ marginBottom: "54px", marginLeft: "8px", marginRight: "8px" }}>
-            {t("CORE_LOGOUT_WEB_CONFIRMATION_MESSAGE") + " "}
-            <strong>{t("CORE_LOGOUT_MESSAGE")}?</strong>
-          </CardText>
-        </div>
-      </Modal>
-  )
-}
+    <Modal
+      popupStyles={modalStyles}
+      popupModuleMianStyles={{
+        paddingTop: isMobileView ? "10px" : "30px",
+        paddingBottom: isMobileView ? "80px" : "20px",
+      }}
+      headerBarMain={<Heading label={t("CORE_LOGOUT_WEB_HEADER")} />}
+      headerBarEnd={<CloseBtn onClick={onDismiss} isMobileView={isMobileView} />}
+      actionCancelLabel={isMobileView ? t("TL_COMMON_NO") : t("CORE_LOGOUT_CANCEL")}
+      actionCancelOnSubmit={onCancel}
+      actionSaveLabel={isMobileView ? t("TL_COMMON_YES") : t("CORE_LOGOUT_WEB_YES")}
+      actionSaveOnSubmit={onSelect}
+      formId="modal-action"
+      popupModuleActionBarStyles={
+        isMobileView
+          ? {
+              display: "flex",
+              justifyContent: "space-between",
+              width: "100%",
+              position: "absolute",
+              left: 0,
+              bottom: 0,
+              padding: "18px",
+              borderTop: "1px solid #eee",
+            }
+          : {}
+      }
+    >
+      <div style={{ padding: isMobileView ? "0" : "0 8px" }}>
+        <CardText style={{ margin: 0, fontSize: "16px", color: "#505A5F" }}>
+          {isMobileView
+            ? t("CORE_LOGOUT_MOBILE_CONFIRMATION_MESSAGE")
+            : t("CORE_LOGOUT_WEB_CONFIRMATION_MESSAGE")}
+          {" "}
+          <strong>{t("CORE_LOGOUT_MESSAGE")}?</strong>
+        </CardText>
+      </div>
+    </Modal>
+  );
+};
+
 export default LogoutDialog;

@@ -42,8 +42,18 @@ export const UserService = {
 
       // 2️⃣ Clear Digit session
       await Digit.SessionStorage.del();
+      Digit.SessionStorage.del("User");
+      Digit.SessionStorage.del("userType");
+      Digit.SessionStorage.del("user_type");
+
+      // 3️⃣ Clear all storage
       sessionStorage.clear();
       localStorage.clear();
+      localStorage.removeItem("Digit.User");
+      localStorage.removeItem("Digit.userType");
+      localStorage.removeItem("user-info");
+      localStorage.removeItem("Citizen.user-info");
+      localStorage.removeItem("Employee.user-info");
       localStorage.removeItem("token");
       localStorage.removeItem("Employee.token");
       localStorage.removeItem("Employee.user-info");
@@ -64,14 +74,34 @@ export const UserService = {
     }
   },
   getType: () => {
-    return Storage.get("userType") || "citizen";
+    return Storage.get("userType") || localStorage.getItem("Digit.userType") || "citizen";
   },
   setType: (userType) => {
     Storage.set("userType", userType);
     Storage.set("user_type", userType);
+    localStorage.setItem("Digit.userType", userType);
   },
   getUser: () => {
-    return Digit.SessionStorage.get("User");
+    let user = Digit.SessionStorage.get("User");
+
+    // 🔄 Fallback to localStorage if sessionStorage is lost or corrupted
+    if (!user || !user.info) {
+      const localUser = JSON.parse(localStorage.getItem("Digit.User") || "null");
+      const infoOnly = JSON.parse(localStorage.getItem("user-info") || "null") || 
+                       JSON.parse(localStorage.getItem("Citizen.user-info") || "null") || 
+                       JSON.parse(localStorage.getItem("Employee.user-info") || "null");
+
+      if (localUser && localUser.info) {
+        user = localUser;
+      } else if (infoOnly) {
+        user = { info: infoOnly };
+      }
+
+      if (user && user.info) {
+        Digit.SessionStorage.set("User", user);
+      }
+    }
+    return user;
   },
   logout: async () => {
     const userType = UserService.getType();
@@ -98,11 +128,18 @@ export const UserService = {
       params: { tenantId: stateCode },
     }),
   setUser: (data) => {
-    return Digit.SessionStorage.set("User", data);
+    Digit.SessionStorage.set("User", data);
+    localStorage.setItem("Digit.User", JSON.stringify(data));
+    if (data?.info) {
+      const prefix = data.info.type === "CITIZEN" ? "Citizen" : "Employee";
+      localStorage.setItem("user-info", JSON.stringify(data.info));
+      localStorage.setItem(`${prefix}.user-info`, JSON.stringify(data.info));
+    }
   },
   setExtraRoleDetails: (data) => {
-    const userDetails = Digit.SessionStorage.get("User");
-    return Digit.SessionStorage.set("User", { ...userDetails, extraRoleInfo: data });
+    const userDetails = UserService.getUser();
+    const updatedUser = { ...userDetails, extraRoleInfo: data };
+    UserService.setUser(updatedUser);
   },
   getExtraRoleDetails: () => {
     return Digit.SessionStorage.get("User")?.extraRoleInfo;
@@ -128,17 +165,7 @@ export const UserService = {
     }),
 
   //create address for user
-  createAddressV2: async (details, stateCode, userUuid) =>
-    ServiceRequest({
-      serviceName: "createAddress",
-      url: Urls.UserCreateAddressV2,
-      auth: true,
-      data: {
-        address: details,
-        userUuid: userUuid,
-      },
-      params: { tenantId: stateCode },
-    }),
+
   hasAccess: (accessTo) => {
     const user = Digit.UserService.getUser();
     if (!user || !user.info) return false;
@@ -192,15 +219,4 @@ export const UserService = {
       data: data.pageSize ? { tenantId, ...data } : { tenantId, ...data, pageSize: "100" },
     });
   },
-  //update address for user
-  updateAddressV2: async (details, stateCode) =>
-    ServiceRequest({
-      serviceName: "updateAddress",
-      url: Urls.UserUpdateAddressV2,
-      auth: true,
-      data: {
-        address: details,
-      },
-      params: { tenantId: stateCode },
-    }),
 };
