@@ -48,8 +48,8 @@
   overflow: hidden;
   position: relative;
   z-index: 101;
-  padding-top: 56px;
-  height: 100vh;
+  padding-top: 70px;
+  min-height: calc(100vh - 70px);
 }
 
 .citizen-static-sidebar.expanded {

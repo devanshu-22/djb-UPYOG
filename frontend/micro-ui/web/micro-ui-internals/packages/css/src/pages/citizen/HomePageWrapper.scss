@@ -315,9 +315,9 @@
     display: flex;
     align-items: flex-start;
     position: sticky;
-    top: 58px;
-    height: calc(100vh - 58px);
-    min-height: calc(100vh - 58px);
+    top: 70px;
+    height: calc(100vh - 70px);
+    min-height: calc(100vh - 70px);
     align-self: flex-start;
   }
 }
@@ -450,8 +450,6 @@
 @screen dt {
   .HomePageWrapper {
     width: 100%;
-    padding: 28px 32px 64px;
-
     .BannerWithSearch {
       margin-bottom: 56px;
       width: 100% !important;

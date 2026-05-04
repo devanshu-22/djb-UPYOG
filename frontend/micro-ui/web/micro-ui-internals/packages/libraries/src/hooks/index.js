@@ -37,6 +37,7 @@ import { useEvents, useClearNotifications, useNotificationCount } from "./events
 import useCreateEvent from "./events/useCreateEvent";
 import useUpdateEvent from "./events/useUpdateEvent";
 import useNewInboxGeneral from "./useInboxGeneral/useNewInbox";
+import useAddress from "./useAddress";
 import useDynamicData from "./useDynamicData";
 
 import useComplaintDetails from "./pgr/useComplaintDetails";
@@ -824,6 +825,7 @@ const Hooks = {
   vendor,
   ekyc,
   useRouteSubscription,
+  useAddress,
 };
 
 export default Hooks;

@@ -109,7 +109,7 @@ const IconsObject = {
   AddressBookIcon: <AddressBookIcon className="icon" />,
   LocationIcon: <LocationIcon className="icon" />,
 };
-const StaticCitizenSideBar = ({ linkData, islinkDataLoading }) => {
+const StaticCitizenSideBar = ({ linkData, islinkDataLoading, logout }) => {
   const { t } = useTranslation();
   const history = useHistory();
   const location = useLocation();
@@ -123,7 +123,6 @@ const StaticCitizenSideBar = ({ linkData, islinkDataLoading }) => {
   const [isSidebarOpen, toggleSidebar] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [showDialog, setShowDialog] = useState(false);
 
   useEffect(() => {
     setIsMobileOpen(false);
@@ -140,18 +139,6 @@ const StaticCitizenSideBar = ({ linkData, islinkDataLoading }) => {
     if (isMobileOpen) document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isMobileOpen]);
-
-  const handleLogout = () => {
-    toggleSidebar(false);
-    setShowDialog(true);
-  };
-  const handleOnSubmit = () => {
-    Digit.UserService.logout();
-    setShowDialog(false);
-  };
-  const handleOnCancel = () => {
-    setShowDialog(false);
-  };
 
   if (islinkDataLoading || !isFetched) {
     return <Loader />;
@@ -235,13 +222,13 @@ const StaticCitizenSideBar = ({ linkData, islinkDataLoading }) => {
         text: t("CORE_COMMON_LOGOUT"),
         element: "LOGOUT",
         icon: "LogoutIcon",
-        populators: { onClick: handleLogout },
+        populators: { onClick: logout },
       },
       {
         text: (
           <React.Fragment>
             {t("CS_COMMON_HELPLINE")}
-            <div className="telephone" style={{ marginTop: "-10%" }}>
+            <div className="telephone">
               <div className="link">
                 <a href={`tel:${filteredTenantContact}`}>{filteredTenantContact}</a>
               </div>
@@ -339,9 +326,9 @@ const StaticCitizenSideBar = ({ linkData, islinkDataLoading }) => {
           </div>
         </div>
       </div>
-      <div>{showDialog && <LogoutDialog onSelect={handleOnSubmit} onCancel={handleOnCancel} onDismiss={handleOnCancel}></LogoutDialog>}</div>
     </React.Fragment>
   );
 };
+
 
 export default StaticCitizenSideBar;

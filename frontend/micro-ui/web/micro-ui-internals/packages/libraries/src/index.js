@@ -63,6 +63,8 @@ import { WTService } from "./services/elements/WT";
 import { VendorService } from "./services/elements/EmpVendor";
 import { MTService } from "./services/elements/MT";
 import { EkycService } from "./services/elements/Ekyc";
+import { AddressService } from "./services/address";
+import useAddress from "./hooks/useAddress";
 
 
 
@@ -112,11 +114,12 @@ const initLibraries = () => {
   setupLibraries("EventsServices", EventsServices);
   setupLibraries("WSService", WSService);
   setupLibraries("EkycService", EkycService);
+  setupLibraries("AddressService", AddressService);
 
   setupLibraries("InboxGeneral", InboxGeneral);
   setupLibraries("ShareFiles", ShareFiles);
   setupLibraries("Contexts", Contexts);
-  setupLibraries("Hooks", Hooks);
+  setupLibraries("Hooks", { ...Hooks, useAddress });
   setupLibraries("Customizations", {});
   setupLibraries("Utils", Utils);
   setupLibraries("Download", Download);

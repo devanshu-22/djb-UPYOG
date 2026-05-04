@@ -70,7 +70,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
   }, [usedAddressTypes]);
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const { data: egovLocationData } = Digit.Hooks.useCommonMDMS(tenantId, "egov-location", ["TenantBoundary"]);
+  const { data: egovLocationData } = Digit.Hooks.useCommonMDMS("dl.djb", "egov-location", ["TenantBoundary"]);
 
   const boundaryData = useMemo(() => {
     const tenantBoundary = egovLocationData?.["egov-location"]?.TenantBoundary || [];
