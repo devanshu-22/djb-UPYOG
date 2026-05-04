@@ -21,12 +21,18 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
   const [landmark, setLandmark] = useState(formData?.address?.landmark || "");
   const [addressLine1, setAddressLine1] = useState(formData?.address?.addressLine1 || "");
   const [addressLine2, setAddressLine2] = useState(formData?.address?.addressLine2 || "");
-  const [addressType, setAddressType] = useState(formData?.address?.addressType || null);
+  const [addressType, setAddressType] = useState(
+    formData?.address?.addressType
+      ? allOptions.find((a) => a.code === formData.address.addressType) || formData.address.addressType
+      : allOptions.find((a) => a.code === "PERMANENT")
+  );
   const [zone, setZone] = useState(formData?.address?.zone || "");
   const [block, setBlock] = useState(formData?.address?.block || "");
+  const [assembly, setAssembly] = useState(formData?.address?.assembly || "");
   const [latitude, setLatitude] = useState(formData?.address?.latitude || "");
   const [longitude, setLongitude] = useState(formData?.address?.longitude || "");
   const [selectedAddress, setSelectedAddress] = useState("");
+  const [showPincodeSuggestions, setShowPincodeSuggestions] = useState(false);
   const isInitialized = useRef(!isEdit);
   const lastSyncedAddress = useRef(null);
   const lastBookingId = useRef(null);
@@ -61,17 +67,21 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
     let localities = [];
     const boundaries = Array.isArray(boundaryData) ? boundaryData : boundaryData ? [boundaryData] : [];
 
-    const extractLocalities = (node, zone = null, ward = null) => {
+    const extractLocalities = (node, zone = null, ward = null, assembly = null) => {
       if (!node) return;
 
       let currentZone = zone;
       let currentWard = ward;
+      let currentAssembly = assembly;
 
       if (node.label === "Zone" || node.label === "ZONE") {
         currentZone = node.localname || node.code || node.name;
       }
       if (node.label === "Ward" || node.label === "WARD" || node.label === "Block" || node.label === "BLOCK") {
         currentWard = node.code || node.localname || node.name;
+      }
+      if (node.label === "Assembly Constituency" || node.label === "ASSEMBLY_CONSTITUENCY") {
+        currentAssembly = node.code || node.localname || node.name;
       }
 
       // Specifically target nodes that are officially labeled as Locality
@@ -82,11 +92,12 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
           i18nkey: node.i18nkey || `${tenantId.replace(".", "_")}_REVENUE_${node.code}`.toUpperCase(),
           zone: currentZone,
           ward: currentWard,
+          assembly: currentAssembly,
         });
       }
       // Always traverse down in case there are nested boundaries underneath
       if (node.children && node.children.length > 0) {
-        node.children.forEach((child) => extractLocalities(child, currentZone, currentWard));
+        node.children.forEach((child) => extractLocalities(child, currentZone, currentWard, currentAssembly));
       }
     };
 
@@ -135,12 +146,19 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
   // ✅ Filter Localities based on selected Pincode
   const filteredLocalities = useMemo(() => {
     if (!pincode) return structuredLocality;
+
+    // Check if current pincode exists in the fetched list
+    const isPincodeInList = fetchedPincodes.some((p) => p.code === pincode);
+
+    // If pincode is entered manually (not in list), show all localities
+    if (!isPincodeInList) return structuredLocality;
+
     return structuredLocality.filter((loc) => {
       if (!loc.pincode) return false;
       const pins = Array.isArray(loc.pincode) ? loc.pincode : [loc.pincode];
       return pins.some((p) => p.toString() === pincode);
     });
-  }, [structuredLocality, pincode]);
+  }, [structuredLocality, pincode, fetchedPincodes]);
 
   // ✅ Sync with formData if it changes (edit mode) - only run once or when externally changed
   useEffect(() => {
@@ -168,28 +186,25 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
       setLandmark(addressData.landmark || "");
       setAddressLine1(addressData.addressLine1 || "");
       setAddressLine2(addressData.addressLine2 || "");
-      setAddressType(allOptions.find((a) => a.code === addressData.addressType) || addressData.addressType || null);
+      setAddressType(allOptions.find((a) => a.code === addressData.addressType) || addressData.addressType || allOptions.find((a) => a.code === "PERMANENT"));
       setZone(addressData.zone || "");
       setBlock(addressData.block || "");
+      setAssembly(addressData.assembly || "");
       setLatitude(addressData.latitude || "");
       setLongitude(addressData.longitude || "");
 
-      // Phase 2: Wait for boundaryData or if there is no cityCode to wait for
-      if (boundaryData || !addressData.cityCode) {
-        if (Array.isArray(boundaryData)) {
-          const localityObj = boundaryData.find(
-            (l) => l.code === addressData.localityCode || l.code === addressData.locality || l.i18nkey === addressData.locality
-          );
-          setLocality(localityObj || addressData.locality || null);
-        } else if (boundaryData && typeof boundaryData === "object") {
-          // If it's a single object, check if it matches
-          const match =
-            boundaryData.code === addressData.localityCode ||
-            boundaryData.code === addressData.locality ||
-            boundaryData.i18nkey === addressData.locality;
-          setLocality(match ? boundaryData : addressData.locality || null);
-        } else {
-          setLocality(addressData.locality || null);
+      // Phase 2: Wait for structuredLocality or if there is no cityCode to wait for
+      if (structuredLocality?.length > 0 || !addressData.cityCode) {
+        const localityObj = structuredLocality.find(
+          (l) => l.code === addressData.localityCode || l.code === addressData.locality || l.i18nkey === addressData.locality
+        );
+        setLocality(localityObj || addressData.locality || null);
+
+        // If Zone/Block/Assembly are missing in addressData, try to get them from localityObj
+        if (localityObj) {
+          if (!addressData.zone && localityObj.zone) setZone(localityObj.zone);
+          if (!addressData.block && localityObj.ward) setBlock(localityObj.ward);
+          if (!addressData.assembly && localityObj.assembly) setAssembly(localityObj.assembly);
         }
 
         // Only mark as fully initialized once everything (locality included) is ready
@@ -197,7 +212,7 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
         lastSyncedAddress.current = JSON.stringify(addressData);
       }
     }
-  }, [formData?.address, city, allCities, boundaryData]);
+  }, [formData?.address, city, allCities, structuredLocality]);
 
   // ✅ Get current location
   useEffect(() => {
@@ -208,7 +223,7 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
         setLatitude(pos.coords.latitude);
         setLongitude(pos.coords.longitude);
       },
-      () => {}
+      () => { }
     );
   }, []);
 
@@ -225,11 +240,12 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
       setAddressLine2(selectedAddress.address2);
       setZone(selectedAddress.zone);
       setBlock(selectedAddress.block);
+      setAssembly(selectedAddress.assembly);
       setLatitude(selectedAddress.latitude);
       setLongitude(selectedAddress.longitude);
       setAddressType(allOptions.find((a) => a.code === selectedAddress.addressType));
     }
-  }, [selectedAddress]);
+  }, [selectedAddress, structuredLocality]);
 
   // ✅ 🔥 MAIN SYNC (replaces onSelect)
   useEffect(() => {
@@ -247,6 +263,7 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
       addressType: addressType?.code || addressType || null,
       zone: zone || "",
       block: block || "",
+      assembly: assembly || "",
       latitude: latitude || "",
       longitude: longitude || "",
     };
@@ -257,7 +274,7 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
       lastSyncedAddress.current = addressString;
       onSelect(config?.key || "address", currentAddress);
     }
-  }, [pincode, city, locality, houseNo, landmark, addressLine1, addressLine2, streetName, addressType, zone, block, latitude, longitude]);
+  }, [pincode, city, locality, houseNo, landmark, addressLine1, addressLine2, streetName, addressType, zone, block, assembly, latitude, longitude]);
 
   return (
     <CollapsibleCardPage title={t("WT_ADDRESS_DETAILS")} defaultOpen={true}>
@@ -297,14 +314,14 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
           <Dropdown selected={city} select={setCity} option={allCities || []} optionKey="i18nKey" t={t} disable={true} />
         </div>
 
-        <div>
+        <div style={{ position: "relative" }}>
           <CardLabel>
             {t("PINCODE")} <span className="astericColor">*</span>
           </CardLabel>
-          <Dropdown
-            selected={fetchedPincodes?.find((p) => p.code === pincode) || (pincode ? { code: pincode, name: pincode, i18nKey: pincode } : null)}
-            select={(val) => {
-              const newPin = val?.code;
+          <TextInput
+            value={pincode}
+            onChange={(e) => {
+              const newPin = e.target.value.replace(/\D/g, "").slice(0, 6);
               if (newPin !== pincode) {
                 setLocality(null);
                 setZone("");
@@ -315,12 +332,46 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
                 setAddressLine2("");
               }
               setPincode(newPin);
+              setShowPincodeSuggestions(true);
             }}
-            option={fetchedPincodes || []}
-            optionKey="i18nKey"
-            t={t}
+            onFocus={() => setShowPincodeSuggestions(true)}
+            onBlur={() => {
+              // Small delay to allow click on suggestion list items
+              setTimeout(() => setShowPincodeSuggestions(false), 200);
+            }}
             style={{ width: "100%" }}
+            maxlength={6}
           />
+          {showPincodeSuggestions && fetchedPincodes?.length > 0 && (
+            <div
+              className="options-card"
+              style={{
+                position: "absolute",
+                zIndex: 100,
+                width: "100%",
+                maxHeight: "200px",
+                overflowY: "auto",
+                backgroundColor: "white",
+                boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+              }}
+            >
+              {fetchedPincodes
+                .filter((p) => !pincode || p.code.toLowerCase().includes(pincode.toLowerCase()))
+                .map((p, index) => (
+                  <div
+                    key={index}
+                    className="cp profile-dropdown--item"
+                    style={{ padding: "10px", borderBottom: "1px solid #eee", cursor: "pointer" }}
+                    onClick={() => {
+                      setPincode(p.code);
+                      setShowPincodeSuggestions(false);
+                    }}
+                  >
+                    {p.code}
+                  </div>
+                ))}
+            </div>
+          )}
         </div>
 
         <div>
@@ -337,13 +388,7 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
               if (val?.name) setAddressLine2(val.name);
               if (val?.zone) setZone(val.zone);
               if (val?.ward) setBlock(val.ward);
-              if (val?.pincode) {
-                const p = Array.isArray(val.pincode) ? val.pincode[0] : val.pincode;
-                if (p) {
-                  const sanitizedPin = p.toString().split(".")[0];
-                  setPincode(sanitizedPin);
-                }
-              }
+              if (val?.assembly) setAssembly(val.assembly);
             }}
             option={filteredLocalities}
             optionKey="i18nkey"
@@ -397,6 +442,13 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
             {t("ZONE")} <span className="astericColor">*</span>
           </CardLabel>
           <TextInput value={zone} onChange={(e) => setZone(e.target.value)} style={{ width: "100%" }} />
+        </div>
+
+        <div>
+          <CardLabel>
+            {t("ASSEMBLY_CONSTITUENCY")} <span className="astericColor">*</span>
+          </CardLabel>
+          <TextInput value={assembly} onChange={(e) => setAssembly(e.target.value)} style={{ width: "100%" }} />
         </div>
 
         {/* Latitude */}
