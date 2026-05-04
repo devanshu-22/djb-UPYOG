@@ -63,6 +63,9 @@ public class VendorSearchCriteria {
 	@JsonProperty("sortOrder")
 	private SortOrder sortOrder;
 
+	@JsonProperty("fillingPointId")
+	private List<String> fillingPointId;
+
 	public enum SortOrder {
 		ASC, DESC
 	}
@@ -77,14 +80,16 @@ public class VendorSearchCriteria {
 				&& CollectionUtils.isEmpty(this.vehicleRegistrationNumber) && this.ownerIds == null
 				&& CollectionUtils.isEmpty(this.name) && CollectionUtils.isEmpty(this.vehicleIds)
 				&& CollectionUtils.isEmpty(this.ids) && this.vehicleType == null && this.vehicleCapacity == null
-				&& CollectionUtils.isEmpty(this.status));
+				&& CollectionUtils.isEmpty(this.status) && CollectionUtils.isEmpty(this.fillingPointId)
+		);
 	}
 
 	public boolean tenantIdOnly() {
 		return (this.tenantId != null && this.mobileNumber == null && this.ownerIds == null
 				&& CollectionUtils.isEmpty(this.vehicleRegistrationNumber) && CollectionUtils.isEmpty(this.vehicleIds)
 				&& CollectionUtils.isEmpty(this.name) && CollectionUtils.isEmpty(this.ids) && this.vehicleType == null
-				&& this.vehicleCapacity == null && CollectionUtils.isEmpty(this.status));
+				&& this.vehicleCapacity == null && CollectionUtils.isEmpty(this.status) && CollectionUtils.isEmpty(this.fillingPointId)
+		);
 	}
 
 }

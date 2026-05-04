@@ -90,7 +90,7 @@ public class VendorQueryBuilder {
 	// ─── helper: builds the LEFT JOIN fragment ────────────────────────────────────
 	private static final String VAD_JOIN =
 			" LEFT JOIN " + VENDOR_ADDITIONAL_DETAILS_TABLE + " " + VENDOR_ADDITIONAL_DETAILS_ALIAS
-					+ " ON " + VENDOR_ADDITIONAL_DETAILS_ALIAS + "." + VENDOR_ID + " = vendor.id ";
+					+ " ON " + VENDOR_ADDITIONAL_DETAILS_ALIAS + ".vendor_id = vendor.id ";
 
 	private static final String QUERY = "SELECT count(*) OVER() AS full_count, vendor.*, vendor_address.*, vendor_driver.*, vendor_vehicle.*, "
 			+ " vwo.id as vwo_id, vwo.name as vwo_name, vwo.vendor_id as vwo_vendor_id, vwo.tenant_id as vwo_tenantid, "
@@ -185,6 +185,17 @@ public class VendorQueryBuilder {
 				preparedStmtList.add(criteria.getTenantId());
 			}
 
+			List<String> fillingPointIds = criteria.getFillingPointId();
+			if (!CollectionUtils.isEmpty(fillingPointIds)) {
+				addClauseIfRequired(preparedStmtList, builder);
+				builder.append(" vendor.id IN ( ")
+						.append("SELECT fvm2.vendor_id::varchar FROM eg_wt_fillingpoint_vendor_map fvm2 ")
+						.append("WHERE fvm2.filling_point_id::varchar IN (")
+						.append(createQuery(fillingPointIds))
+						.append(") ) ");
+				addToPreparedStatement(preparedStmtList, fillingPointIds);
+			}
+
 			// Name Filter
 			List<String> vendorNames = criteria.getName();
 			if (!CollectionUtils.isEmpty(vendorNames)) {
@@ -242,6 +253,17 @@ public class VendorQueryBuilder {
 			/*
 			 * Enable part search with VendorName
 			 */
+
+			List<String> fillingPointIds = criteria.getFillingPointId();
+			if (!CollectionUtils.isEmpty(fillingPointIds)) {
+				addClauseIfRequired(preparedStmtList, builder);
+				builder.append(" vendor.id IN ( ")
+						.append("SELECT fvm2.vendor_id::varchar FROM eg_wt_fillingpoint_vendor_map fvm2 ")
+						.append("WHERE fvm2.filling_point_id::varchar IN (")
+						.append(createQuery(fillingPointIds))
+						.append(") ) ");
+				addToPreparedStatement(preparedStmtList, fillingPointIds);
+			}
 
 			List<String> vendorName = criteria.getName();
 			if (!CollectionUtils.isEmpty(vendorName)
