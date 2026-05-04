@@ -3,6 +3,8 @@ import { useForm, Controller } from "react-hook-form";
 import CardLabel from "../atoms/CardLabel";
 import TextInput from "../atoms/TextInput";
 import Dropdown from "../atoms/Dropdown";
+import UploadFile from "../atoms/UploadFile";
+import Toast from "../atoms/Toast";
 import FormStep from "./FormStep";
 import { useLocation } from "react-router-dom";
 
@@ -36,11 +38,14 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
     formData?.landmark || formData?.address?.landmark || formData?.infodetails?.existingDataSet?.address?.landmark || ""
   );
   const [addressLine1, setAddressLine1] = useState(
-    formData?.addressLine1 || formData?.address?.addressLine1 || formData?.infodetails?.existingDataSet?.address?.addressline1 || ""
+    formData?.addressLine1 || formData?.subLocality || formData?.address?.addressLine1 || formData?.address?.subLocality || formData?.infodetails?.existingDataSet?.address?.addressline1 || ""
   );
   const [addressLine2, setAddressLine2] = useState(
     formData?.addressLine2 || formData?.address?.addressLine2 || formData?.infodetails?.existingDataSet?.address?.addressline2 || ""
   );
+  const [doorImage, setDoorImage] = useState(formData?.doorImage || null);
+  const [doorImageId, setDoorImageId] = useState(formData?.doorImageId || null);
+  const [toast, setToast] = useState(null);
   const [addressType, setAddressType] = useState(
     convertToObject(formData?.addressType) || formData?.address?.addressType || formData?.infodetails?.existingDataSet?.address?.addressType || ""
   );
@@ -164,6 +169,22 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
     handleGetLocation();
   }, []);
 
+  const uploadFile = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      const res = await Digit.UploadServices.Filestorage("EKYC", file);
+      const id = res?.data?.files?.[0]?.fileStoreId;
+      if (id) {
+        setDoorImage(file.name);
+        setDoorImageId(id);
+      }
+    } catch (err) {
+      setToast({ type: "error", message: "Upload failed" });
+    }
+  };
+
   const goNext = () => {
     let ownerAddress = formData.address;
     let addressStep = {
@@ -182,10 +203,9 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
       assembly,
       zone,
       block,
+      ...(config?.doorImage ? { doorImage, doorImageId } : {}),
     };
     onSelect(config.key, { ...formData[config.key], ...addressStep }, false);
-    // Checks if the `config` is undefined, and if so, calls the `onSelect` function with the `addressStep` object.
-    // This ensures that the address step is selected when no specific configuration is provided.
     if (config === undefined) {
       onSelect(addressStep);
     }
@@ -194,7 +214,12 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
     containing the address details and calls the `onSelect` function with it.
    **/
   useEffect(() => {
-    if (config === undefined && houseNo && city && locality && pincode && addressLine1 && streetName && addressLine2 && latitude && longitude) {
+    const isEkyc = config?.doorImage;
+    const mandatoryFields = isEkyc 
+      ? (houseNo && locality && pincode && addressLine1 && streetName && latitude && longitude && doorImageId)
+      : (houseNo && city && locality && pincode && addressLine1 && streetName && addressLine2 && latitude && longitude);
+
+    if (config === undefined && mandatoryFields) {
       let addressStep = {
         pincode,
         city,
@@ -210,10 +235,11 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
         assembly,
         zone,
         block,
+        ...(isEkyc ? { doorImage, doorImageId } : {}),
       };
       onSelect(addressStep);
     }
-  }, [pincode, city, locality, houseNo, landmark, addressLine1, addressLine2, streetName, addressType, latitude, longitude, zone, block, assembly]);
+  }, [pincode, city, locality, houseNo, landmark, addressLine1, addressLine2, streetName, addressType, latitude, longitude, zone, block, assembly, doorImageId]);
 
   useEffect(() => {
     if (selectedAddress && Object.keys(selectedAddress).length) {
@@ -231,6 +257,10 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
       setZone(selectedAddress.zone);
       setBlock(selectedAddress.block);
       setAddressType(allOptions?.find((ele) => ele.code === selectedAddress.addressType));
+      if (config?.doorImage) {
+        setDoorImage(selectedAddress.doorImage);
+        setDoorImageId(selectedAddress.doorImageId);
+      }
     }
   }, [selectedAddress]);
 
@@ -261,7 +291,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
         config={config}
         onSelect={goNext}
         t={t}
-        isDisabled={!houseNo || !city || !locality || !pincode || !addressLine1 || !streetName || !addressLine2}
+        isDisabled={config?.doorImage ? (!houseNo || !locality || !pincode || !addressLine1 || !streetName || !doorImageId) : (!houseNo || !city || !locality || !pincode || !addressLine1 || !streetName || !addressLine2)}
       >
         {userDetails?.addresses?.length && (
           <div style={{ gridColumn: "span 2" }}>
@@ -297,30 +327,32 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
             placeholder={"Select Address Type"}
           />
         </div>
-        <div>
-          <CardLabel>
-            {`${t("CITY")}`} <span className="check-page-link-button">*</span>
-          </CardLabel>
-          <Controller
-            control={control}
-            name={"city"}
-            defaultValue={city}
-            rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
-            render={(props) => (
-              <Dropdown
-                className="form-field"
-                selected={city}
-                select={setCity}
-                option={allCities}
-                optionCardStyles={{ overflowY: "auto", maxHeight: "300px" }}
-                optionKey="i18nKey"
-                t={t}
-                style={{ width: "100%" }}
-                placeholder={"Select"}
-              />
-            )}
-          />
-        </div>
+        {!config?.doorImage && (
+          <div>
+            <CardLabel>
+              {`${t("CITY")}`} <span className="check-page-link-button">*</span>
+            </CardLabel>
+            <Controller
+              control={control}
+              name={"city"}
+              defaultValue={city}
+              rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
+              render={(props) => (
+                <Dropdown
+                  className="form-field"
+                  selected={city}
+                  select={setCity}
+                  option={allCities}
+                  optionCardStyles={{ overflowY: "auto", maxHeight: "300px" }}
+                  optionKey="i18nKey"
+                  t={t}
+                  style={{ width: "100%" }}
+                  placeholder={"Select"}
+                />
+              )}
+            />
+          </div>
+        )}
         <div>
           <CardLabel>
             {`${t("PINCODE")}`} <span className="check-page-link-button">*</span>
@@ -441,7 +473,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
         </div>
         <div>
           <CardLabel>
-            {`${t("ADDRESS_LINE1")}`} <span className="check-page-link-button">*</span>
+            {`${t(config?.doorImage ? "EKYC_SUB_LOCALITY" : "ADDRESS_LINE1")}`} <span className="check-page-link-button">*</span>
           </CardLabel>
           <TextInput
             t={t}
@@ -451,7 +483,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
             name="addressLine1"
             value={addressLine1}
             style={{ width: "100%" }}
-            placeholder={"Enter Address"}
+            placeholder={config?.doorImage ? "Enter Sub-locality" : "Enter Address"}
             onChange={(e) => {
               setAddressLine1(e.target.value);
             }}
@@ -464,31 +496,51 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
             })}
           />
         </div>
-        <div>
-          <CardLabel>
-            {`${t("ADDRESS_LINE2")}`} <span className="check-page-link-button">*</span>
-          </CardLabel>
-          <TextInput
-            t={t}
-            type={"text"}
-            isMandatory={false}
-            optionKey="i18nKey"
-            name="addressLine2"
-            value={addressLine2}
-            style={{ width: "100%" }}
-            placeholder={"Enter Address"}
-            onChange={(e) => {
-              setAddressLine2(e.target.value);
-            }}
-            ValidationRequired={false}
-            {...(validation = {
-              isRequired: false,
-              pattern: "^[a-zA-Z,-/ ]*$",
-              type: "textarea",
-              title: t("ADDRESS_ERROR_MESSAGE"),
-            })}
-          />
-        </div>
+        {!config?.doorImage && (
+          <div>
+            <CardLabel>
+              {`${t("ADDRESS_LINE2")}`} <span className="check-page-link-button">*</span>
+            </CardLabel>
+            <TextInput
+              t={t}
+              type={"text"}
+              isMandatory={false}
+              optionKey="i18nKey"
+              name="addressLine2"
+              value={addressLine2}
+              style={{ width: "100%" }}
+              placeholder={"Enter Address"}
+              onChange={(e) => {
+                setAddressLine2(e.target.value);
+              }}
+              ValidationRequired={false}
+              {...(validation = {
+                isRequired: false,
+                pattern: "^[a-zA-Z,-/ ]*$",
+                type: "textarea",
+                title: t("ADDRESS_ERROR_MESSAGE"),
+              })}
+            />
+          </div>
+        )}
+        {config?.doorImage && (
+          <div>
+            <CardLabel>
+              {`${t("EKYC_DOOR_IMAGE")}`} <span className="check-page-link-button">*</span>
+            </CardLabel>
+            <UploadFile
+              onUpload={uploadFile}
+              onDelete={() => {
+                setDoorImage(null);
+                setDoorImageId(null);
+              }}
+              id={"doorImage"}
+              message={doorImage ? `1 ${t("COMMON_FILE_ADDED")}` : t("CS_COMMON_NO_FILE_SELECTED")}
+              accept="image/*"
+              buttonProps={{ label: t("CS_COMMON_CHOOSE_FILE") }}
+            />
+          </div>
+        )}
 
         <div>
           <CardLabel>
@@ -629,6 +681,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
           />
         </div>
       </FormStep>
+      {toast && <Toast label={t(toast.message)} error={toast.type === "error"} onClose={() => setToast(null)} />}
     </React.Fragment>
   );
 };

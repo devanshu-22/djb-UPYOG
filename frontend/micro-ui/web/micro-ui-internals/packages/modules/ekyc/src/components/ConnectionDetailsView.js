@@ -22,7 +22,7 @@ const ConnectionDetailsView = ({ kNumber, kName, connectionDetails, isLoading })
     const parentPath = path.includes("/create-kyc")
       ? path.replace("/create-kyc", "")
       : path.replace("/k-details", "");
-    history.push(`${parentPath}/aadhaar-verification`, { kNumber, selectedOption, connectionDetails });
+    history.push(`${parentPath}/consumer-details`, { kNumber, selectedOption, connectionDetails });
     setShowModal(false);
   };
 
@@ -189,11 +189,11 @@ const ConnectionDetailsView = ({ kNumber, kName, connectionDetails, isLoading })
             </div>
 
             {/* Action Buttons */}
-            <div className="action-btns-container" style={{fontSize:"12px"}}>
+            <div className="action-btns-container" style={{ fontSize: "12px" }}>
               <button
                 onClick={handleStartVerification}
                 className="primary-action-btn"
-                style={{fontSize:"12px"}}
+                style={{ fontSize: "12px" }}
               >
                 {t("EKYC_START_REVIEW") || "Start Review"}
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

@@ -377,83 +377,116 @@ const MeterDetails = ({ config, onSelect }) => {
   return (
     <Fragment>
       <FormStep onSelect={onStepSelect} config={config}>
+        <div>
+          <CardLabel>Connection Category *</CardLabel>
+          <TextInput value={connectionCategory} onChange={(e) => setConnectionCategory(e.target.value)} />
+        </div>
 
-        <CardLabel>Connection Category *</CardLabel>
-        <TextInput value={connectionCategory} onChange={(e)=>setConnectionCategory(e.target.value)} />
+        <div>
+          <CardLabel>SA Type</CardLabel>
+          <TextInput value={saType} onChange={(e) => setSaType(e.target.value)} />
+        </div>
 
-        <CardLabel>SA Type</CardLabel>
-        <TextInput value={saType} onChange={(e)=>setSaType(e.target.value)} />
+        <div>
+          <CardLabel>Status</CardLabel>
+          <TextInput value={status} onChange={(e) => setStatus(e.target.value)} />
+        </div>
 
-        <CardLabel>Status</CardLabel>
-        <TextInput value={status} onChange={(e)=>setStatus(e.target.value)} />
+        <div>
+          <CardLabel>MR Code</CardLabel>
+          <TextInput value={mrCode} onChange={(e) => setMrCode(e.target.value)} />
+        </div>
 
-        <CardLabel>MR Code</CardLabel>
-        <TextInput value={mrCode} onChange={(e)=>setMrCode(e.target.value)} />
+        <div>
+          <CardLabel>Area Code</CardLabel>
+          <TextInput value={areaCode} onChange={(e) => setAreaCode(e.target.value)} />
+        </div>
 
-        <CardLabel>Area Code</CardLabel>
-        <TextInput value={areaCode} onChange={(e)=>setAreaCode(e.target.value)} />
-
-        <CardLabel>MR Key</CardLabel>
-        <TextInput value={mrKey} onChange={(e)=>setMrKey(e.target.value)} />
+        <div>
+          <CardLabel>MR Key</CardLabel>
+          <TextInput value={mrKey} onChange={(e) => setMrKey(e.target.value)} />
+        </div>
 
         {!isFrozen && (
-          <>
-            <CardLabel>Meter Number</CardLabel>
-            <TextInput value={meterNumber} onChange={(e)=>setMeterNumber(e.target.value)} />
+          <Fragment>
+            <div>
+              <CardLabel>Meter Number</CardLabel>
+              <TextInput value={meterNumber} onChange={(e) => setMeterNumber(e.target.value)} />
+            </div>
 
-            <CardLabel>Meter Maker</CardLabel>
-            <TextInput value={meterMaker} onChange={(e)=>setMeterMaker(e.target.value)} />
+            <div>
+              <CardLabel>Meter Maker</CardLabel>
+              <TextInput value={meterMaker} onChange={(e) => setMeterMaker(e.target.value)} />
+            </div>
 
-            <CardLabel>Meter Condition</CardLabel>
-            <Dropdown option={meterConditionOptions} selected={meterCondition} select={setMeterCondition} />
+            <div>
+              <CardLabel>Meter Condition</CardLabel>
+              <Dropdown option={meterConditionOptions} selected={meterCondition} select={setMeterCondition} />
+            </div>
 
             {meterStatus?.name === "Metered" && (
-              <>
-                <CardLabel>Meter Photo *</CardLabel>
-                <UploadFile onUpload={uploadPhoto} message={meterPhotoId ? "Uploaded" : "No file"} />
-                {meterPhoto && <img src={meterPhoto} style={{ width:"100%" }} />}
-              </>
+              <Fragment>
+                <div>
+                  <CardLabel>Meter Photo *</CardLabel>
+                  <UploadFile onUpload={uploadPhoto} message={meterPhotoId ? "Uploaded" : "No file"} />
+                </div>
+                {meterPhoto && (
+                  <div style={{ gridColumn: "span 2" }}>
+                    <img src={meterPhoto} style={{ width: "100%" }} />
+                  </div>
+                )}
+              </Fragment>
             )}
-          </>
+          </Fragment>
         )}
 
-        <CardLabel>Meter Status *</CardLabel>
-        <Dropdown option={meterStatusOptions} selected={meterStatus} select={setMeterStatus} />
+        <div>
+          <CardLabel>Meter Status *</CardLabel>
+          <Dropdown option={meterStatusOptions} selected={meterStatus} select={setMeterStatus} />
+        </div>
 
-        <CardLabel>Meter Location *</CardLabel>
-        <Dropdown option={meterLocationOptions} selected={meterLocation} select={setMeterLocation} />
+        <div>
+          <CardLabel>Meter Location *</CardLabel>
+          <Dropdown option={meterLocationOptions} selected={meterLocation} select={setMeterLocation} />
+        </div>
 
-        <CardLabel>Last Bill Received *</CardLabel>
-        <Dropdown option={yesNo} selected={lastBillReceived} select={setLastBillReceived} />
+        <div>
+          <CardLabel>Last Bill Received *</CardLabel>
+          <Dropdown option={yesNo} selected={lastBillReceived} select={setLastBillReceived} />
+        </div>
 
         {lastBillReceived?.name === "Yes" && (
-          <>
+          <div>
             <CardLabel>When was the last bill received *</CardLabel>
             <Dropdown option={monthYearOptions} selected={billMonthYear} select={setBillMonthYear} />
-          </>
+          </div>
         )}
 
         {lastBillReceived?.name === "No" && (
-          <>
+          <div>
             <CardLabel>Reason *</CardLabel>
-            <TextInput value={reason} onChange={(e)=>setReason(e.target.value)} />
-          </>
+            <TextInput value={reason} onChange={(e) => setReason(e.target.value)} />
+          </div>
         )}
 
-        <CardLabel>Access to Meter</CardLabel>
-        <Dropdown option={yesNo} selected={accessToMeter} select={setAccessToMeter} />
+        <div>
+          <CardLabel>Access to Meter</CardLabel>
+          <Dropdown option={yesNo} selected={accessToMeter} select={setAccessToMeter} />
+        </div>
 
-        <CardLabel>Sewer Connection *</CardLabel>
-        <Dropdown option={yesNo} selected={sewerConnection} select={setSewerConnection} />
+        <div>
+          <CardLabel>Sewer Connection *</CardLabel>
+          <Dropdown option={yesNo} selected={sewerConnection} select={setSewerConnection} />
+        </div>
 
         {sewerConnection?.name === "No" && (
-          <>
+          <div>
             <CardLabel>Septic Tank *</CardLabel>
             <Dropdown option={yesNo} selected={septicTank} select={setSepticTank} />
-          </>
+          </div>
         )}
 
-        {toast && <Toast label={toast.message} error={toast.type==="error"} onClose={()=>setToast(null)} />}
+        {toast && <Toast label={toast.message} error={toast.type === "error"} onClose={() => setToast(null)} />}
 
       </FormStep>
     </Fragment>

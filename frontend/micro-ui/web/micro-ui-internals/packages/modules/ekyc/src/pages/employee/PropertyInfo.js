@@ -367,100 +367,111 @@ const PropertyInfo = ({ config, onSelect }) => {
         config={config}
         label={t("ES_COMMON_CONTINUE")}
       >
-        {/* PID */}
-        <CardLabel>PID Number</CardLabel>
-        <TextInput value={pidNumber} onChange={(e) => setPidNumber(e.target.value)} />
+        <div>
+          <CardLabel>PID Number</CardLabel>
+          <TextInput value={pidNumber} onChange={(e) => setPidNumber(e.target.value)} />
+        </div>
 
-        {/* PROPERTY TYPE */}
-        <CardLabel>Property Type</CardLabel>
-        <Dropdown
-          option={propertyTypeOptions}
-          selected={propertyType}
-          select={setPropertyType}
-        />
+        <div>
+          <CardLabel>Property Type</CardLabel>
+          <Dropdown
+            option={propertyTypeOptions}
+            selected={propertyType}
+            select={setPropertyType}
+          />
+        </div>
 
-        {/* SUB CATEGORY */}
-        <CardLabel>Sub Property Category</CardLabel>
-        <Dropdown option={[]} selected={subPropertyCategory} select={setSubPropertyCategory} />
+        <div>
+          <CardLabel>Sub Property Category</CardLabel>
+          <Dropdown option={[]} selected={subPropertyCategory} select={setSubPropertyCategory} />
+        </div>
 
-        {/* FLOORS */}
-        <CardLabel>No. of Floors *</CardLabel>
-        <TextInput
-          type="number"
-          value={noOfFloors}
-          onChange={(e) => setNoOfFloors(e.target.value)}
-        />
+        <div>
+          <CardLabel>No. of Floors *</CardLabel>
+          <TextInput
+            type="number"
+            value={noOfFloors}
+            onChange={(e) => setNoOfFloors(e.target.value)}
+          />
+        </div>
 
-        {/* FLOOR NUMBER */}
-        <CardLabel>Floor No. of this KNO</CardLabel>
-        <TextInput value={floorNo} onChange={(e) => setFloorNo(e.target.value)} />
+        <div>
+          <CardLabel>Floor No. of this KNO</CardLabel>
+          <TextInput value={floorNo} onChange={(e) => setFloorNo(e.target.value)} />
+        </div>
 
-        {/* FLOORS */}
-        <CardLabel>No of Beds</CardLabel>
-        <TextInput
-          type="number"
-          value={noOfBeds}
-          onChange={(e) => setNoOfBeds(e.target.value)}
-        />
+        <div>
+          <CardLabel>No of Beds</CardLabel>
+          <TextInput
+            type="number"
+            value={noOfBeds}
+            onChange={(e) => setNoOfBeds(e.target.value)}
+          />
+        </div>
 
-        {/* No. of Rooms */}
-        <CardLabel>No. of Rooms</CardLabel>
-        <TextInput
-          type="number"
-          value={noOfRooms}
-          onChange={(e) => setNoOfRooms(e.target.value)}
-        />
+        <div>
+          <CardLabel>No. of Rooms</CardLabel>
+          <TextInput
+            type="number"
+            value={noOfRooms}
+            onChange={(e) => setNoOfRooms(e.target.value)}
+          />
+        </div>
 
         {/* HOTEL CONDITION */}
         {propertyType?.name === "Hotel" && (
-          <>
+          <div>
             <CardLabel>No. of Rooms *</CardLabel>
             <TextInput
               type="number"
               value={noOfRooms}
               onChange={(e) => setNoOfRooms(e.target.value)}
             />
-          </>
+          </div>
         )}
 
         {/* HOSPITAL CONDITION */}
         {(propertyType?.name === "Hospital" ||
           propertyType?.name === "Nursing Home") && (
-            <>
+            <div>
               <CardLabel>No. of Beds *</CardLabel>
               <TextInput
                 type="number"
                 value={noOfBeds}
                 onChange={(e) => setNoOfBeds(e.target.value)}
               />
-            </>
+            </div>
           )}
 
-        {/* DWELLING */}
-        <CardLabel>Number of Dwelling Units</CardLabel>
-        <TextInput
-          type="number"
-          value={dwellingUnits}
-          onChange={(e) => setDwellingUnits(e.target.value)}
-        />
+        <div>
+          <CardLabel>Number of Dwelling Units</CardLabel>
+          <TextInput
+            type="number"
+            value={dwellingUnits}
+            onChange={(e) => setDwellingUnits(e.target.value)}
+          />
+        </div>
 
-        {/* IMAGE */}
-        <CardLabel>Building Image *</CardLabel>
-        <UploadFile
-          onUpload={handleUpload}
-          onDelete={() => {
-            setBuildingImage(null);
-            setBuildingImageId(null);
-          }}
-          message={buildingImageId ? "Uploaded" : "No file selected"}
-        />
+        <div>
+          <CardLabel>Building Image *</CardLabel>
+          <UploadFile
+            onUpload={handleUpload}
+            onDelete={() => {
+              setBuildingImage(null);
+              setBuildingImageId(null);
+            }}
+            message={buildingImageId ? "Uploaded" : "No file selected"}
+          />
+        </div>
 
         {buildingImage && (
-          <img
-            src={buildingImage}
-            alt="preview"
-            style={{ width: "100%", marginTop: "10px" }}
-          />
+          <div style={{ gridColumn: "span 2" }}>
+            <img
+              src={buildingImage}
+              alt="preview"
+              style={{ width: "100%", marginTop: "10px" }}
+            />
+          </div>
         )}
 
         {toast && (

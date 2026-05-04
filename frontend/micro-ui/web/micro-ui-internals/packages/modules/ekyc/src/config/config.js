@@ -1,28 +1,28 @@
-import AddressDetails from "../pages/employee/AddressDetails";
 import AadhaarVerification from "../pages/employee/AadhaarVerification";
 
 export const ekycConfig = [
   {
     body: [
       {
-        route: "aadhaar-verification",
+        route: "consumer-details",
         component: AadhaarVerification,
-        key: "aadhaarData",
+        key: "aadhaarVerification",
         texts: {
-          header: "EKYC_CONSUMER_DETAILS",
+          header: "EKYC_CONSUMER_CONNECTION",
           submitBarLabel: "COMMON_SAVE_NEXT",
         },
         timeLine: [
           {
             currentStep: 1,
-            actions: "EKYC_AADHAAR_VERIFICATION",
+            actions: "EKYC_CONSUMER_CONNECTION",
           },
         ],
       },
       {
         route: "address-details",
-        component: AddressDetails,
+        component: "AddressDetails",
         key: "addressDetails",
+        doorImage: true,
         texts: {
           header: "EKYC_ADDRESS_DETAILS",
           submitBarLabel: "COMMON_SAVE_NEXT",
