@@ -235,7 +235,7 @@ import {
   FormStep,
 } from "@djb25/digit-ui-react-components";
 
-const AadhaarVerification = ({ config, onSelect }) => {
+const ConsumerDetails = ({ config, onSelect }) => {
 
   // 🔹 STATES
   const [kno, setKno] = useState("");
@@ -278,11 +278,6 @@ const AadhaarVerification = ({ config, onSelect }) => {
   const [idNumber, setIdNumber] = useState("");
   const [idFile, setIdFile] = useState(null);
 
-  // Consent
-  const [consent, setConsent] = useState(false);
-  const [informantIsConsumer, setInformantIsConsumer] = useState(true);
-  const [informantName, setInformantName] = useState("");
-  const [informantRelation, setInformantRelation] = useState("");
 
   const [toast, setToast] = useState(null);
 
@@ -504,9 +499,14 @@ const AadhaarVerification = ({ config, onSelect }) => {
             </div>
           </Fragment>
         )}
+
+        
+
+        {toast && <Toast label={toast.message} error={toast.type === "error"} onClose={() => setToast(null)} />}
+
       </FormStep>
     </Fragment>
   );
 };
 
-export default AadhaarVerification;
+export default ConsumerDetails;

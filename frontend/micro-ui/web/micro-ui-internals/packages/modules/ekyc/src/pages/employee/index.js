@@ -5,11 +5,7 @@ import { Switch, useLocation } from "react-router-dom";
 import Inbox from "./Inbox";
 import Mapping from "./Mapping";
 import Create from "./Create";
-import Update from "./Update";
-import AadhaarVerification from "./AadhaarVerification";
-import AddressDetails from "./AddressDetails";
-import PropertyInfo from "./PropertyInfo";
-import MeterDetails from "./MeterDetails";
+
 import Review from "./Review";
 import EKYCForm from "./EKYCForm";
 
@@ -24,7 +20,7 @@ const EmployeeApp = ({ path }) => {
         if (pathname.includes("/dashboard")) return "ES_COMMON_INBOX";
         if (pathname.includes("/create-kyc")) return "EKYC_CREATE_KYC";
         if (pathname.includes("/k-details")) return "EKYC_K_DETAILS";
-        if (pathname.includes("/aadhaar-verification")) return "EKYC_AADHAAR_VERIFICATION";
+        if (pathname.includes("/consumer-details")) return "EKYC_CONSUMER_DETAILS";
         if (pathname.includes("/address-details")) return "EKYC_ADDRESS_DETAILS";
         if (pathname.includes("/property-info")) return "EKYC_PROPERTY_INFO";
         if (pathname.includes("/meter-details")) return "EKYC_METER_DETAILS";
@@ -37,7 +33,7 @@ const EmployeeApp = ({ path }) => {
         { label: t(getBreadcrumbLabel()) }
     ];
 
-    const formStepRoutes = ["aadhaar-verification", "address-details", "property-info", "meter-details"];
+    const formStepRoutes = ["consumer-details", "address-details", "property-info", "meter-details"];
 
     return (
         <AppContainer>
@@ -80,7 +76,7 @@ const EmployeeApp = ({ path }) => {
 
                             <PrivateRoute
                                 path={formStepRoutes.map(route => `${path}/${route}`)}
-                                component={() => <EKYCForm />}
+                                component={(props) => <EKYCForm {...props} path={path} />}
                             />
 
                             <PrivateRoute

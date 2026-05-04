@@ -5,7 +5,7 @@ import { Redirect, Route, Switch, useHistory, useLocation, useRouteMatch } from 
 import { Header, VerticalTimeline } from "@djb25/digit-ui-react-components";
 import { ekycConfig } from "../../config/config";
 
-const EKYCForm = () => {
+const EKYCForm = ({ path: passedPath }) => {
   const queryClient = useQueryClient();
   const match = useRouteMatch();
   const { t } = useTranslation();
@@ -41,11 +41,12 @@ const EKYCForm = () => {
       redirectWithHistory = history.replace;
     }
 
+    const base = passedPath || match.path.split('/').slice(0, -1).join('/');
     if (nextStep === null) {
-      return redirectWithHistory(`${match.path}/review`, { ...params, edits: params });
+      return redirectWithHistory(`${base}/review`, { ...params, edits: params });
     }
 
-    redirectWithHistory(`${match.path}/${nextStep}`, { ...params });
+    redirectWithHistory(`${base}/${nextStep}`, { ...params });
   };
 
   function handleSelect(key, data, skipStep, index, isAddMultiple = false) {
@@ -62,7 +63,7 @@ const EKYCForm = () => {
     config = config.concat(obj.body);
   });
 
-  config.indexRoute = "aadhaar-verification";
+  config.indexRoute = "consumer-details";
 
   const formStepRoutes = config.map(c => c.route);
   const isFormStep = formStepRoutes.some((route) => pathname.includes(route));
@@ -84,7 +85,7 @@ const EKYCForm = () => {
         <VerticalTimeline config={config} showFinalStep={true} />
         <div className="employee-form-section">
           <Switch>
-            <Route path={formStepRoutes.map((route) => `${match.path}/${route}`)}>
+            <Route path={formStepRoutes.map((route) => `${(passedPath || match.path.split('/').slice(0, -1).join('/'))}/${route}`)}>
               <div className="single-page-form-container">
                 {config.map((routeObj, index) => {
                   const { component, key } = routeObj;
@@ -104,7 +105,7 @@ const EKYCForm = () => {
               </div>
             </Route>
             <Route>
-              <Redirect to={`${match.path}/${config.indexRoute}`} />
+              <Redirect to={`${(passedPath || match.path.split('/').slice(0, -1).join('/'))}/${config.indexRoute}`} />
             </Route>
           </Switch>
         </div>

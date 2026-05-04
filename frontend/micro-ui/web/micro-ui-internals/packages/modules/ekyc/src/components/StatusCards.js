@@ -1,6 +1,11 @@
 import React, { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { Chart } from "chart.js/auto";
+import * as Chartjs from "chart.js/auto";
+
+const getChartConstructor = () => {
+  const C = Chartjs.Chart || Chartjs.default || Chartjs;
+  return C;
+};
 
 const StatusCards = ({ countData }) => {
   const { t } = useTranslation();
@@ -25,7 +30,8 @@ const StatusCards = ({ countData }) => {
     if (chartRef1.current) {
       if (chartInstance1.current) chartInstance1.current.destroy();
       const ctx1 = chartRef1.current.getContext("2d");
-      chartInstance1.current = new Chart(ctx1, {
+      const ChartConstructor = getChartConstructor();
+      chartInstance1.current = new ChartConstructor(ctx1, {
         type: "doughnut",
         data: {
           labels: [t("EKYC_ACTIVE"), t("EKYC_PENDING"), t("EKYC_COMPLETED")],
