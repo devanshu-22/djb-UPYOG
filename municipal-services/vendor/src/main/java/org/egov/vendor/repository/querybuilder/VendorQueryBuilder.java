@@ -94,7 +94,7 @@ public class VendorQueryBuilder {
 
 	private static final String QUERY = "SELECT count(*) OVER() AS full_count, vendor.*, vendor_address.*, vendor_driver.*, vendor_vehicle.*, "
 			+ " vwo.id as vwo_id, vwo.name as vwo_name, vwo.vendor_id as vwo_vendor_id, vwo.tenant_id as vwo_tenantid, "
-			+ " vwo.valid_from as vwo_valid_from, vwo.valid_to as vwo_valid_to, vwo.mobileNumber as vwo_mobileNumber, "
+			+ " vwo.valid_from as vwo_valid_from, vwo.valid_to as vwo_valid_to, vwo.mobileNumber as vwo_mobileNumber, vwo.filling_station_id, vwo.wt_file_store_id, "
 			+ " vwo.alternateNumber as vwo_alternateNumber, vwo.emailId as vwo_emailId, vwo.servicetype as vwo_servicetype, "
 			+ " vendor.id as vendor_id, vendor.createdby as vendor_createdby, vendor.lastmodifiedby as vendor_lastmodifiedby, "
 			+ " vendor.createdtime as vendor_createdtime, vendor.lastmodifiedtime as vendor_lastmodifiedtime, "
