@@ -300,7 +300,7 @@ const Table = ({
     previousPage,
     setPageSize,
     setGlobalFilter,
-    state: { pageIndex, pageSize, sortBy, globalFilter },
+    state: { pageIndex = 0, pageSize = 10, sortBy, globalFilter },
   } = useTable(
     {
       columns: tableColumns,
@@ -310,7 +310,7 @@ const Table = ({
         pageSize: pageSizeLimit,
         sortBy: autoSort ? [{ id: initSortId, desc: false }] : sortParams,
       },
-      // ── Keep ALL original pagination logic exactly as it was ──────────────
+      // ── Keep ALL originalpageIndex pagination logic exactly as it was ──────────────
       pageCount: totalRecords > 0 ? Math.ceil(totalRecords / pageSizeLimit) : -1,
       manualPagination: manualPagination,
       disableMultiSort: false,
@@ -331,10 +331,10 @@ const Table = ({
           });
         }),
       useControlledState: (state) => {
-        return React.useMemo(() => ({
+        return {
           ...state,
           pageIndex: manualPagination ? currentPage : state.pageIndex,
-        }));
+        };
       },
       // ─────────────────────────────────────────────────────────────────────
     },
@@ -351,12 +351,13 @@ const Table = ({
 
   // Integrated Search box
   useEffect(() => {
-    if (onSearch !== false && typeof onSearch === "string") {
-      setGlobalFilter(onSearch);
-    } else {
-      setGlobalFilter(internalSearch || undefined);
+    const value = onSearch !== false && typeof onSearch === "string" ? onSearch : internalSearch || undefined;
+
+    if (globalFilter !== value) {
+      setGlobalFilter(value);
     }
-  }, [onSearch, internalSearch, setGlobalFilter]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onSearch, internalSearch, globalFilter]);
 
   const tref = useRef();
 
@@ -819,9 +820,14 @@ const Table = ({
 
           {/* Record range — original display logic */}
           <span style={{ fontSize: 12.5 }}>
-            <strong style={{ fontFamily: T.fontMono, fontWeight: 700, color: T.textPrimary, fontSize: 12 }}>{pageIndex * pageSize + 1}</strong>
+            <strong style={{ fontFamily: T.fontMono, fontWeight: 700, color: T.textPrimary, fontSize: 12 }}>
+              {Number.isNaN(pageIndex * pageSize + 1) ? 0 : pageIndex * pageSize + 1}
+            </strong>
             {"–"}
-            <strong style={{ fontFamily: T.fontMono, fontWeight: 700, color: T.textPrimary, fontSize: 12 }}>{rangeEnd}</strong> {totalLabel}
+            <strong style={{ fontFamily: T.fontMono, fontWeight: 700, color: T.textPrimary, fontSize: 12 }}>
+              {Number.isNaN(rangeEnd) ? 0 : rangeEnd}
+            </strong>{" "}
+            {totalLabel}
           </span>
 
           {/* ── Navigation — original conditions, modernised buttons ─────── */}

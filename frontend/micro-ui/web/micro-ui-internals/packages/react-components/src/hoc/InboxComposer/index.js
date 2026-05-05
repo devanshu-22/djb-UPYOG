@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useReducer } from "react";
 import InboxLinks from "../../atoms/InboxLinks";
 import Table from "../../atoms/Table";
-import { SearchField, SearchForm } from "../../molecules/SearchForm";
+import { SearchForm } from "../../molecules/SearchForm";
 import { FilterForm } from "../../molecules/FilterForm";
 import SubmitBar from "../../atoms/SubmitBar";
 import { useTranslation } from "react-i18next";
@@ -60,7 +60,6 @@ const InboxComposer = ({
     control: controlSearchForm,
     handleSubmit: handleSearchFormSubmit,
     setValue: setSearchFormValue,
-    getValues: getSearchFormValue,
     reset: resetSearchForm,
     formState: searchFormState,
     clearErrors: clearSearchFormErrors,
@@ -98,12 +97,15 @@ const InboxComposer = ({
 
   const isMobile = window.Digit.Utils.browser.isMobile();
 
-  if (isMobile) {
-    const CurrentMobileModalComponent = useCallback(
-      ({ ...props }) => (currentlyActiveMobileModal ? MobileComponentDirectory[currentlyActiveMobileModal]({ ...props }) : null),
-      [currentlyActiveMobileModal]
-    );
+  const CurrentMobileModalComponent = useCallback(
+    ({ ...props }) => {
+      if (!isMobile || !currentlyActiveMobileModal) return null;
+      return MobileComponentDirectory[currentlyActiveMobileModal]({ ...props });
+    },
+    [currentlyActiveMobileModal, isMobile]
+  );
 
+  if (isMobile) {
     const propsForCurrentMobileModalComponent = {
       SearchFormFields,
       FilterFormFields,
@@ -196,20 +198,22 @@ const InboxComposer = ({
           </div>
         </div>
         <div style={propsForInboxTable?.tableStyle ? { flex: 1, ...propsForInboxTable?.tableStyle } : { flex: 1 }}>
-          <SearchForm onSubmit={onSearchFormSubmit} handleSubmit={handleSearchFormSubmit} id="search-form" className="rm-mb form-field-flex-one">
-            <SearchFormFields
-              registerRef={registerSearchFormField}
-              searchFormState={searchFormState}
-              {...{ controlSearchForm }}
-              searchFieldComponents={
-                <div style={window.location.href.includes("/citizen/obps") ? { display: "flex" } : {}}>
-                  <SubmitBar label={t("ES_COMMON_SEARCH")} submit form="search-form" className="submit-bar-search" />
-                  <p onClick={onResetSearchForm} className="clear-search" style={{ paddingTop: "9px", color: " #a82227" }}>
-                    {t(`ES_COMMON_CLEAR_SEARCH`)}
-                  </p>
-                </div>
-              }
-            />
+          <SearchForm onSubmit={onSearchFormSubmit} handleSubmit={handleSearchFormSubmit} id="search-form" className="search-complaint-container">
+            <div className="formcomposer-section-grid">
+              <SearchFormFields
+                registerRef={registerSearchFormField}
+                searchFormState={searchFormState}
+                {...{ controlSearchForm }}
+                searchFieldComponents={
+                  <div style={window.location.href.includes("/citizen/obps") ? { display: "flex" } : {}}>
+                    <SubmitBar label={t("ES_COMMON_SEARCH")} submit form="search-form" className="submit-bar-search" />
+                    <p onClick={onResetSearchForm} className="clear-search" style={{ paddingTop: "9px", color: " #a82227" }}>
+                      {t(`ES_COMMON_CLEAR_SEARCH`)}
+                    </p>
+                  </div>
+                }
+              />
+            </div>
           </SearchForm>
           <div className="result" style={{ marginLeft: "24px", flex: 1 }}>
             {isInboxLoading ? (
@@ -278,36 +282,43 @@ const InboxComposer = ({
 
   return (
     <div className="inbox-container">
-      <InboxLinks {...PropsForInboxLinks} />
-      <SearchForm onSubmit={onSearchFormSubmit} handleSubmit={handleSearchFormSubmit} id="search-form" className="rm-mb form-field-flex-one">
-        <SearchFormFields registerRef={registerSearchFormField} searchFormState={searchFormState} {...{ controlSearchForm }} />
-        <div className="SubmitAndClearAllContainer">
-          <SearchField className="submit">
-            <SubmitBar label={t("ES_COMMON_SEARCH")} submit form="search-form" />
-            <p onClick={onResetSearchForm}>{t(`ES_COMMON_CLEAR_SEARCH`)}</p>
-          </SearchField>
-        </div>
-      </SearchForm>
-      <FilterForm onSubmit={onFilterFormSubmit} handleSubmit={handleFilterFormSubmit} id="filter-form" onResetFilterForm={onResetFilterForm}>
-        <FilterFormFields
-          registerRef={registerFilterFormField}
-          {...{ controlFilterForm, handleFilterFormSubmit, setFilterFormValue, getFilterFormValue }}
-        />
-        {/* <SubmitBar label={t("ES_COMMON_SEARCH")} submit form="filter-form"/> */}
-      </FilterForm>
-      {isInboxLoading ? (
-        <Loader />
-      ) : (
-        <div>
-          {propsForInboxTable?.data?.length < 1 ? (
-            <Card className="margin-unset text-align-center">
-              {propsForInboxTable.noResultsMessage ? t(propsForInboxTable.noResultsMessage) : t("CS_MYAPPLICATIONS_NO_APPLICATION")}
-            </Card>
-          ) : (
-            <Table t={t} {...propsForInboxTable} />
-          )}
-        </div>
-      )}
+      <div className="side-panel-item">
+        <InboxLinks {...PropsForInboxLinks} />
+
+        <FilterForm onSubmit={onFilterFormSubmit} handleSubmit={handleFilterFormSubmit} id="filter-form" onResetFilterForm={onResetFilterForm}>
+          <FilterFormFields
+            registerRef={registerFilterFormField}
+            {...{ controlFilterForm, handleFilterFormSubmit, setFilterFormValue, getFilterFormValue }}
+          />
+          {/* <SubmitBar label={t("ES_COMMON_SEARCH")} submit form="filter-form"/> */}
+        </FilterForm>
+      </div>
+      <div className="employee-form-content">
+        <SearchForm onSubmit={onSearchFormSubmit} handleSubmit={handleSearchFormSubmit} id="search-form" className="search-complaint-container">
+          <div className="formcomposer-section-grid">
+            <SearchFormFields registerRef={registerSearchFormField} searchFormState={searchFormState} {...{ controlSearchForm }} />
+          </div>
+          <div className="formcomposer-section-button">
+            <div className="generic-button clear-search">
+              <p onClick={onResetSearchForm}>{t(`ES_COMMON_CLEAR_SEARCH`)}</p>
+            </div>
+            <SubmitBar className="generic-button" label={t("ES_COMMON_SEARCH")} submit form="search-form" />
+          </div>
+        </SearchForm>
+        {isInboxLoading ? (
+          <Loader />
+        ) : (
+          <div>
+            {propsForInboxTable?.data?.length < 1 ? (
+              <Card className="margin-unset text-align-center">
+                {propsForInboxTable.noResultsMessage ? t(propsForInboxTable.noResultsMessage) : t("CS_MYAPPLICATIONS_NO_APPLICATION")}
+              </Card>
+            ) : (
+              <Table t={t} {...propsForInboxTable} />
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
