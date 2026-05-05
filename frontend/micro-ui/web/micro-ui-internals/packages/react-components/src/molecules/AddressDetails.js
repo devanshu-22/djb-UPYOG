@@ -7,6 +7,8 @@ import UploadFile from "../atoms/UploadFile";
 import Toast from "../atoms/Toast";
 import FormStep from "./FormStep";
 import { useLocation } from "react-router-dom";
+import LabelFieldPair from "../atoms/LabelFieldPair";
+import CardLabelError from "../atoms/CardLabelError";
 
 const allOptions = [
   { name: "Correspondence", code: "CORRESPONDENCE", i18nKey: "COMMON_ADDRESS_TYPE_CORRESPONDENCE" },
@@ -14,7 +16,23 @@ const allOptions = [
   { name: "Other", code: "OTHER", i18nKey: "COMMON_ADDRESS_TYPE_OTHER" },
 ];
 
-const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) => {
+const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, ...props }) => {
+  const { showZRO: configShowZRO, mappedZROLocation: configMappedZROLocation, hideNextButton: configHideNextButton } = config || {};
+  const showZRO = props.showZRO !== undefined ? props.showZRO : configShowZRO;
+  const mappedZROLocation = props.mappedZROLocation !== undefined ? props.mappedZROLocation : configMappedZROLocation;
+  const hideNextButton = props.hideNextButton !== undefined ? props.hideNextButton : configHideNextButton;
+
+  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const { data: zroLocationsData } = Digit.Hooks.ws.useWSConfigMDMS.ZROLocation(tenantId, { enabled: !!showZRO && !mappedZROLocation });
+
+  const _mappedZROLocation = useMemo(() => {
+    if (mappedZROLocation) return mappedZROLocation;
+    return zroLocationsData?.map((item) => ({
+      ...item,
+      i18nKey: item?.i18nKey || item?.name || item?.code,
+    }));
+  }, [mappedZROLocation, zroLocationsData]);
+
   const { data: allCities, isLoading } = Digit.Hooks.useTenants();
   let validation = {};
   const convertToObject = (String) => (String ? { i18nKey: String, code: String, value: String } : null);
@@ -38,7 +56,12 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
     formData?.landmark || formData?.address?.landmark || formData?.infodetails?.existingDataSet?.address?.landmark || ""
   );
   const [addressLine1, setAddressLine1] = useState(
-    formData?.addressLine1 || formData?.subLocality || formData?.address?.addressLine1 || formData?.address?.subLocality || formData?.infodetails?.existingDataSet?.address?.addressline1 || ""
+    formData?.addressLine1 ||
+      formData?.subLocality ||
+      formData?.address?.addressLine1 ||
+      formData?.address?.subLocality ||
+      formData?.infodetails?.existingDataSet?.address?.addressline1 ||
+      ""
   );
   const [addressLine2, setAddressLine2] = useState(
     formData?.addressLine2 || formData?.address?.addressLine2 || formData?.infodetails?.existingDataSet?.address?.addressline2 || ""
@@ -47,8 +70,21 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
   const [doorImageId, setDoorImageId] = useState(formData?.doorImageId || null);
   const [toast, setToast] = useState(null);
   const [addressType, setAddressType] = useState(
-    convertToObject(formData?.addressType) || formData?.address?.addressType || formData?.infodetails?.existingDataSet?.address?.addressType || ""
+    convertToObject(formData?.addressType) || formData?.address?.addressType || formData?.infodetails?.existingDataSet?.address?.addressType
+      ? allOptions.find(
+          (a) =>
+            a.code ===
+            (formData?.addressType?.code ||
+              formData?.addressType ||
+              formData?.address?.addressType ||
+              formData?.infodetails?.existingDataSet?.address?.addressType)
+        ) ||
+          convertToObject(formData?.addressType) ||
+          formData?.address?.addressType ||
+          formData?.infodetails?.existingDataSet?.address?.addressType
+      : allOptions.find((a) => a.code === "PERMANENT")
   );
+  const [showPincodeSuggestions, setShowPincodeSuggestions] = useState(false);
   const [latitude, setLatitude] = useState(
     formData?.latitude || formData?.address?.latitude || formData?.infodetails?.existingDataSet?.address?.latitude || ""
   );
@@ -58,8 +94,20 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
   const [zone, setZone] = useState(formData?.zone || formData?.address?.zone || "");
   const [block, setBlock] = useState(formData?.block || formData?.address?.block || "");
   const [assembly, setAssembly] = useState(formData?.assembly || formData?.address?.assembly || "");
+  const [zro, setZro] = useState(formData?.zro || formData?.address?.zro || formData?.infodetails?.existingDataSet?.address?.zro || "");
   const [selectedAddress, setSelectedAddress] = useState("");
-  const { control } = useForm();
+  const {
+    control,
+    formState: { errors },
+  } = useForm();
+
+  const resolveNestedValue = (value, path) =>
+    path.split(".").reduce((accumulator, currentKey) => {
+      if (accumulator === null || accumulator === undefined) return undefined;
+      return accumulator[currentKey];
+    }, value);
+
+  const getFieldError = (fieldName) => resolveNestedValue(errors, fieldName);
   const location = useLocation();
   const usedAddressTypes = location.state?.usedAddressTypes || [];
 
@@ -73,8 +121,6 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
     // Otherwise, show whatever is not used
     return allOptions.filter((opt) => !usedAddressTypes.includes(opt.code));
   }, [usedAddressTypes]);
-
-  const tenantId = Digit.ULBService.getCurrentTenantId();
   const { data: egovLocationData } = Digit.Hooks.useCommonMDMS("dl.djb", "egov-location", ["TenantBoundary"]);
 
   const boundaryData = useMemo(() => {
@@ -157,12 +203,26 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
   }, [structuredLocalityData, city]);
 
   const filteredLocalities = useMemo(() => {
+    // If pincode is not provided, show all localities
     if (!pincode) return structuredLocalityData;
-    return structuredLocalityData.filter((loc) => {
+
+    // Check if the entered pincode exists in our data
+    const pincodeExists = structuredLocalityData.some((loc) => {
       if (!loc.pincode) return false;
       const pins = Array.isArray(loc.pincode) ? loc.pincode : [loc.pincode];
       return pins.some((p) => p.toString() === pincode);
     });
+
+    // If pincode exists in data, filter localities. If not (manual entry), show all localities.
+    if (pincodeExists) {
+      return structuredLocalityData.filter((loc) => {
+        if (!loc.pincode) return false;
+        const pins = Array.isArray(loc.pincode) ? loc.pincode : [loc.pincode];
+        return pins.some((p) => p.toString() === pincode);
+      });
+    }
+
+    return structuredLocalityData;
   }, [structuredLocalityData, pincode]);
 
   useEffect(() => {
@@ -185,6 +245,43 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
     }
   };
 
+  useEffect(() => {
+    if (formData?.address && structuredLocalityData?.length > 0) {
+      const addressData = formData.address;
+
+      const cityObj =
+        allCities?.find((c) => c.code === addressData.cityCode || c.code === addressData.city || c.name === addressData.city) || addressData.city;
+      if (cityObj) setCity(cityObj);
+
+      setPincode(addressData.pincode?.toString().split(".")[0] || "");
+      setHouseNo(addressData.houseNo || "");
+      setstreetName(addressData.streetName || "");
+      setLandmark(addressData.landmark || "");
+      setAddressLine1(addressData.addressLine1 || addressData.subLocality || "");
+      setAddressLine2(addressData.addressLine2 || "");
+      setLatitude(addressData.latitude || "");
+      setLongitude(addressData.longitude || "");
+      setZro(addressData.zro || "");
+      if (addressData.doorImageId) {
+        setDoorImage(addressData.doorImage);
+        setDoorImageId(addressData.doorImageId);
+      }
+
+      const localityObj = structuredLocalityData.find(
+        (l) => l.code === addressData.localityCode || l.code === addressData.locality || l.i18nKey === addressData.locality
+      );
+      setLocality(localityObj || addressData.locality || null);
+
+      // Derive Zone/Block/Assembly from Locality if missing
+      setZone(addressData.zone || localityObj?.zone || "");
+      setBlock(addressData.block || localityObj?.ward || "");
+      setAssembly(addressData.assembly || localityObj?.assembly || "");
+
+      const typeObj = allOptions.find((a) => a.code === addressData.addressType);
+      if (typeObj) setAddressType(typeObj);
+    }
+  }, [formData?.address, allCities, structuredLocalityData]);
+
   const goNext = () => {
     let ownerAddress = formData.address;
     let addressStep = {
@@ -203,6 +300,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
       assembly,
       zone,
       block,
+      zro,
       ...(config?.doorImage ? { doorImage, doorImageId } : {}),
     };
     onSelect(config.key, { ...formData[config.key], ...addressStep }, false);
@@ -215,31 +313,54 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
    **/
   useEffect(() => {
     const isEkyc = config?.doorImage;
-    const mandatoryFields = isEkyc 
-      ? (houseNo && locality && pincode && addressLine1 && streetName && latitude && longitude && doorImageId)
-      : (houseNo && city && locality && pincode && addressLine1 && streetName && addressLine2 && latitude && longitude);
+    const addressStep = {
+      pincode,
+      city,
+      locality,
+      houseNo,
+      landmark,
+      addressLine1,
+      addressLine2,
+      streetName,
+      addressType,
+      latitude,
+      longitude,
+      assembly,
+      zone,
+      block,
+      zro,
+      ...(isEkyc ? { doorImage, doorImageId } : {}),
+    };
 
-    if (config === undefined && mandatoryFields) {
-      let addressStep = {
-        pincode,
-        city,
-        locality,
-        houseNo,
-        landmark,
-        addressLine1,
-        addressLine2,
-        streetName,
-        addressType,
-        latitude,
-        longitude,
-        assembly,
-        zone,
-        block,
-        ...(isEkyc ? { doorImage, doorImageId } : {}),
-      };
-      onSelect(addressStep);
+    if (config?.key) {
+      onSelect(config.key, addressStep, false);
+    } else if (config === undefined) {
+      const mandatoryFields = isEkyc
+        ? houseNo && locality && pincode && addressLine1 && streetName && latitude && longitude && doorImageId
+        : houseNo && city && locality && pincode && addressLine1 && streetName && addressLine2 && latitude && longitude;
+
+      if (mandatoryFields) {
+        onSelect(addressStep);
+      }
     }
-  }, [pincode, city, locality, houseNo, landmark, addressLine1, addressLine2, streetName, addressType, latitude, longitude, zone, block, assembly, doorImageId]);
+  }, [
+    pincode,
+    city,
+    locality,
+    houseNo,
+    landmark,
+    addressLine1,
+    addressLine2,
+    streetName,
+    addressType,
+    latitude,
+    longitude,
+    zone,
+    block,
+    assembly,
+    zro,
+    doorImageId,
+  ]);
 
   useEffect(() => {
     if (selectedAddress && Object.keys(selectedAddress).length) {
@@ -257,12 +378,26 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
       setZone(selectedAddress.zone);
       setBlock(selectedAddress.block);
       setAddressType(allOptions?.find((ele) => ele.code === selectedAddress.addressType));
+      setZro(selectedAddress.zro);
       if (config?.doorImage) {
         setDoorImage(selectedAddress.doorImage);
         setDoorImageId(selectedAddress.doorImageId);
       }
     }
   }, [selectedAddress]);
+
+  const lastErrorState = React.useRef(null);
+  useEffect(() => {
+    const hasErrors = Object.keys(errors).length > 0;
+    if (lastErrorState.current !== hasErrors) {
+      lastErrorState.current = hasErrors;
+      if (hasErrors && props.setError) {
+        props.setError(config.key, { type: "custom", message: "Validation failed" });
+      } else if (props.clearErrors) {
+        props.clearErrors(config.key);
+      }
+    }
+  }, [errors, config.key, props.setError, props.clearErrors]);
 
   const handleGetLocation = () => {
     if (!navigator.geolocation) {
@@ -288,10 +423,14 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
   return (
     <React.Fragment>
       <FormStep
-        config={config}
+        config={hideNextButton ? { ...config, texts: { ...config?.texts, submitBarLabel: null } } : config}
         onSelect={goNext}
         t={t}
-        isDisabled={config?.doorImage ? (!houseNo || !locality || !pincode || !addressLine1 || !streetName || !doorImageId) : (!houseNo || !city || !locality || !pincode || !addressLine1 || !streetName || !addressLine2)}
+        isDisabled={
+          config?.doorImage
+            ? !houseNo || !locality || !pincode || !addressLine1 || !streetName || !doorImageId
+            : !houseNo || !city || !locality || !pincode || !addressLine1 || !streetName || !addressLine2 || (showZRO && !zro)
+        }
       >
         {userDetails?.addresses?.length && (
           <div style={{ gridColumn: "span 2" }}>
@@ -309,6 +448,36 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
               placeholder={"Select Address Type"}
             />
           </div>
+        )}
+
+        {showZRO && (
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">
+              {t("WS_ZRO_LOCATION")} <span className="check-page-link-button">*</span>
+            </CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name={"zro"}
+                defaultValue={zro}
+                rules={{ required: t("REQUIRED_FIELD") }}
+                render={(props) => (
+                  <Dropdown
+                    className="form-field"
+                    selected={zro}
+                    disable={false}
+                    option={_mappedZROLocation}
+                    errorStyle={!!getFieldError("zro")}
+                    select={setZro}
+                    optionKey="i18nKey"
+                    t={t}
+                    placeholder={"Select ZRO Location"}
+                  />
+                )}
+              />
+              {getFieldError("zro") && <CardLabelError>{getFieldError("zro")?.message}</CardLabelError>}
+            </div>
+          </LabelFieldPair>
         )}
         <div>
           <CardLabel>
@@ -353,14 +522,14 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
             />
           </div>
         )}
-        <div>
+        <div style={{ position: "relative" }}>
           <CardLabel>
             {`${t("PINCODE")}`} <span className="check-page-link-button">*</span>
           </CardLabel>
-          <Dropdown
-            selected={fetchedPincodes?.find((p) => p.code === pincode) || (pincode ? { code: pincode, name: pincode, i18nKey: pincode } : null)}
-            select={(val) => {
-              const newPin = val?.code;
+          <TextInput
+            value={pincode}
+            onChange={(e) => {
+              const newPin = e.target.value.replace(/\D/g, "").slice(0, 6);
               if (newPin !== pincode) {
                 setLocality(null);
                 setAssembly("");
@@ -372,13 +541,46 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
                 setAddressLine2("");
               }
               setPincode(newPin);
+              setShowPincodeSuggestions(true);
             }}
-            option={fetchedPincodes || []}
-            optionKey="i18nKey"
-            t={t}
+            onFocus={() => setShowPincodeSuggestions(true)}
+            onBlur={() => {
+              // Small delay to allow click on suggestion list items
+              setTimeout(() => setShowPincodeSuggestions(false), 200);
+            }}
             style={{ width: "100%" }}
-            placeholder={"Select or enter pincode"}
+            maxlength={6}
           />
+          {showPincodeSuggestions && fetchedPincodes?.length > 0 && (
+            <div
+              className="options-card"
+              style={{
+                position: "absolute",
+                zIndex: 100,
+                width: "100%",
+                maxHeight: "200px",
+                overflowY: "auto",
+                backgroundColor: "white",
+                boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+              }}
+            >
+              {fetchedPincodes
+                .filter((p) => !pincode || p.code.toLowerCase().includes(pincode.toLowerCase()))
+                .map((p, index) => (
+                  <div
+                    key={index}
+                    className="cp profile-dropdown--item"
+                    style={{ padding: "10px", borderBottom: "1px solid #eee", cursor: "pointer" }}
+                    onClick={() => {
+                      setPincode(p.code);
+                      setShowPincodeSuggestions(false);
+                    }}
+                  >
+                    {p.code}
+                  </div>
+                ))}
+            </div>
+          )}
         </div>
         <div>
           <CardLabel>
@@ -403,13 +605,6 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails }) 
                   if (val?.zone) setZone(val.zone);
                   if (val?.ward) {
                     setBlock(val.ward);
-                  }
-                  if (val?.pincode) {
-                    const p = Array.isArray(val.pincode) ? val.pincode[0] : val.pincode;
-                    if (p) {
-                      const sanitizedPin = p.toString().split(".")[0];
-                      setPincode(sanitizedPin);
-                    }
                   }
                 }}
                 option={filteredLocalities}

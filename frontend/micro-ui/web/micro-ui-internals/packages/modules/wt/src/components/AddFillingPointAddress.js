@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { SubmitBar, Toast, Loader } from "@djb25/digit-ui-react-components";
 import { fillingPointPayload } from "../utils";
 import { useLocation, useHistory } from "react-router-dom";
+import { useQueryClient } from "react-query";
 import AddFillingPointMetaData from "./AddFillingPointMetaData";
 import AddFixFillAddress from "./AddFixFillAddress";
 import VerticalTimeline from "./VerticalTimeline";
@@ -11,6 +12,7 @@ const AddFillingPointAddress = () => {
   const { t } = useTranslation();
   const location = useLocation();
   const history = useHistory();
+  const queryClient = useQueryClient();
   const queryParams = new URLSearchParams(location.search);
   const editId = queryParams.get("id");
 
@@ -84,6 +86,7 @@ const AddFillingPointAddress = () => {
     mutation(payload, {
       onSuccess: () => {
         setShowToast({ label: editId ? t("WT_FILLING_POINT_UPDATED_SUCCESS") : t("WT_FILLING_POINT_CREATED_SUCCESS") });
+        queryClient.invalidateQueries("wtFillPointSearchList");
         setTimeout(() => {
           setShowToast(null);
           history.push(`/digit-ui/employee/wt/search-filling-fix-point`);
