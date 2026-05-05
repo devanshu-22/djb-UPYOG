@@ -24,7 +24,7 @@
 
 //   const flowState = location.state || {};
 //   const { isEditing, kNumber } = flowState;
-  
+
 //   // Robust data extraction from formData (which includes reviewData and edits from EKYCForm)
 //   const activeEdits = formData || {};
 //   const rawReviewData = formData?.reviewData || formData?.connectionDetails || {};
@@ -339,17 +339,8 @@
 
 // export default AddressDetails;
 
-
 import React, { useState, useEffect, Fragment } from "react";
-import {
-  CardLabel,
-  TextInput,
-  Dropdown,
-  UploadFile,
-  Toast,
-  FormStep,
-  Loader,
-} from "@djb25/digit-ui-react-components";
+import { CardLabel, TextInput, Dropdown, UploadFile, Toast, FormStep, Loader } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 
 const AddressDetails = ({ config, onSelect }) => {
@@ -380,29 +371,31 @@ const AddressDetails = ({ config, onSelect }) => {
   const [toast, setToast] = useState(null);
 
   // 🔹 MDMS DATA
-  const { data: mdmsData, isLoading } = Digit.Hooks.useCommonMDMS(
-    tenantId,
-    "egov-location",
-    ["TenantBoundary"]
-  );
+  const { data: mdmsData, isLoading } = Digit.Hooks.useCommonMDMS(tenantId, "egov-location", ["TenantBoundary"]);
 
-  const assemblies =
-    mdmsData?.MdmsRes?.["egov-location"]?.TenantBoundary?.[0]?.boundary
-      ?.children || [];
+  const assemblies = mdmsData?.MdmsRes?.["egov-location"]?.TenantBoundary?.[0]?.boundary?.children || [];
 
   // 🔹 AUTO GPS
   useEffect(() => {
+    let isMounted = true;
+
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
+          if (!isMounted) return;
           setLatitude(pos.coords.latitude);
           setLongitude(pos.coords.longitude);
         },
         () => {
+          if (!isMounted) return;
           setToast({ type: "error", message: "GPS access denied" });
         }
       );
     }
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // 🔹 PIN CODE HANDLER
@@ -425,6 +418,8 @@ const AddressDetails = ({ config, onSelect }) => {
 
   // 🔹 FILE UPLOAD
   const selectphoto = async (e) => {
+    let isMounted = true;
+
     const file = e.target.files[0];
     if (!file) return;
 
@@ -434,11 +429,9 @@ const AddressDetails = ({ config, onSelect }) => {
     }
 
     try {
-      const res = await Digit.UploadServices.Filestorage(
-        "EKYC",
-        file,
-        tenantId
-      );
+      const res = await Digit.UploadServices.Filestorage("EKYC", file, tenantId);
+
+      if (!isMounted) return;
 
       const fileStoreId = res?.data?.files?.[0]?.fileStoreId;
 
@@ -447,6 +440,7 @@ const AddressDetails = ({ config, onSelect }) => {
 
         const reader = new FileReader();
         reader.onloadend = () => {
+          if (!isMounted) return;
           setDoorPhoto(reader.result);
         };
         reader.readAsDataURL(file);
@@ -454,8 +448,13 @@ const AddressDetails = ({ config, onSelect }) => {
         setToast({ type: "success", message: "Upload successful" });
       }
     } catch {
+      if (!isMounted) return;
       setToast({ type: "error", message: "Upload failed" });
     }
+
+    return () => {
+      isMounted = false;
+    };
   };
 
   const removePhoto = () => {
@@ -465,17 +464,7 @@ const AddressDetails = ({ config, onSelect }) => {
 
   // 🔹 VALIDATION
   const isValid = () => {
-    return (
-      houseNo &&
-      street &&
-      pinCode.length === 6 &&
-      assembly &&
-      ward &&
-      zone &&
-      latitude &&
-      longitude &&
-      doorPhotoFileStoreId
-    );
+    return houseNo && street && pinCode.length === 6 && assembly && ward && zone && latitude && longitude && doorPhotoFileStoreId;
   };
 
   // 🔹 SUBMIT
@@ -508,12 +497,7 @@ const AddressDetails = ({ config, onSelect }) => {
 
   return (
     <Fragment>
-      <FormStep
-        t={t}
-        onSelect={onStepSelect}
-        config={config}
-        label={t("ES_COMMON_CONTINUE")}
-      >
+      <FormStep t={t} onSelect={onStepSelect} config={config} label={t("ES_COMMON_CONTINUE")}>
         <CardLabel>House No / Flat No *</CardLabel>
         <TextInput value={houseNo} onChange={(e) => setHouseNo(e.target.value)} />
 
@@ -536,18 +520,10 @@ const AddressDetails = ({ config, onSelect }) => {
         <Dropdown option={assemblies} selected={assembly} select={setAssembly} />
 
         <CardLabel>Ward *</CardLabel>
-        <Dropdown
-          option={assembly?.children || []}
-          selected={ward}
-          select={setWard}
-        />
+        <Dropdown option={assembly?.children || []} selected={ward} select={setWard} />
 
         <CardLabel>Zone *</CardLabel>
-        <Dropdown
-          option={ward?.children || []}
-          selected={zone}
-          select={setZone}
-        />
+        <Dropdown option={ward?.children || []} selected={zone} select={setZone} />
 
         <CardLabel>Latitude</CardLabel>
         <TextInput value={latitude} disabled />
@@ -556,38 +532,14 @@ const AddressDetails = ({ config, onSelect }) => {
         <TextInput value={longitude} disabled />
 
         <CardLabel>Address Type</CardLabel>
-        <Dropdown
-          option={[
-            { name: "Permanent" },
-            { name: "Correspondence" },
-            { name: "Other" },
-          ]}
-          selected={addressType}
-          select={setAddressType}
-        />
+        <Dropdown option={[{ name: "Permanent" }, { name: "Correspondence" }, { name: "Other" }]} selected={addressType} select={setAddressType} />
 
         <CardLabel>Door Image *</CardLabel>
-        <UploadFile
-          onUpload={selectphoto}
-          onDelete={removePhoto}
-          message={doorPhotoFileStoreId ? "Uploaded" : "No file selected"}
-        />
+        <UploadFile onUpload={selectphoto} onDelete={removePhoto} message={doorPhotoFileStoreId ? "Uploaded" : "No file selected"} />
 
-        {doorPhoto && (
-          <img
-            src={doorPhoto}
-            alt="preview"
-            style={{ width: "100%", marginTop: "10px" }}
-          />
-        )}
+        {doorPhoto && <img src={doorPhoto} alt="preview" style={{ width: "100%", marginTop: "10px" }} />}
 
-        {toast && (
-          <Toast
-            label={toast.message}
-            error={toast.type === "error"}
-            onClose={() => setToast(null)}
-          />
-        )}
+        {toast && <Toast label={toast.message} error={toast.type === "error"} onClose={() => setToast(null)} />}
       </FormStep>
     </Fragment>
   );

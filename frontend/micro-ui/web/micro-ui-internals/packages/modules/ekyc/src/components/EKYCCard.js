@@ -3,39 +3,43 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 
 const EKYCCard = () => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
 
-    const propsForModuleCard = {
-        Icon: <PersonIcon />,
-        moduleName: t("ACTION_TEST_EKYC"),
-        kpis: [
-            {
-                count: "-",
-                label: t("TOTAL_EKYC"),
-                link: `/digit-ui/employee/ekyc/dashboard`
-            }
-        ],
-        links: [
-            {
-                label: t("EKYC_DASHBOARD"),
-                link: `/digit-ui/employee/ekyc/dashboard`
-            },
-            // {
-            //     label: t("EKYC_CREATE_KYC"),
-            //     link: `/digit-ui/employee/ekyc/create-kyc`
-            // },
-            // {
-            //     label: t("EKYC_UPDATE_KYC"),
-            //     link: `/digit-ui/employee/ekyc/update-kyc`
-            // },
-            {
-                label: t("EKYC_MAPPING"),
-                link: `/digit-ui/employee/ekyc/mapping`
-            }
-        ]
-    }
+  const propsForModuleCard = {
+    Icon: <PersonIcon />,
+    moduleName: t("ACTION_TEST_EKYC"),
+    kpis: [
+      {
+        count: "-",
+        label: t("TOTAL_EKYC"),
+        link: `/digit-ui/employee/ekyc/dashboard`,
+      },
+    ],
+    links: [
+      {
+        label: t("EKYC_DASHBOARD"),
+        link: `/digit-ui/employee/ekyc/dashboard`,
+      },
+      {
+        label: t("EKYC_INBOX"),
+        link: `/digit-ui/employee/ekyc/inbox`,
+      },
+      // {
+      //     label: t("EKYC_CREATE_KYC"),
+      //     link: `/digit-ui/employee/ekyc/create-kyc`
+      // },
+      // {
+      //     label: t("EKYC_UPDATE_KYC"),
+      //     link: `/digit-ui/employee/ekyc/update-kyc`
+      // },
+      {
+        label: t("EKYC_MAPPING"),
+        link: `/digit-ui/employee/ekyc/mapping`,
+      },
+    ],
+  };
 
-    return <EmployeeModuleCard {...propsForModuleCard} />
+  return <EmployeeModuleCard {...propsForModuleCard} />;
 };
 
 export default EKYCCard;

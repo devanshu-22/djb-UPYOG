@@ -2,13 +2,14 @@ import React from "react";
 import Card from "../atoms/Card";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
+import { HomeIcon } from "./svgindex";
 
 const InboxLinks = ({ logoIcon, headerText, links }) => {
   const { t } = useTranslation();
 
   const GetLogo = () => (
-    <div className="header">
-      <span className="logo">{logoIcon}</span> <span className="text">{t(headerText)}</span>
+    <div className="header inbox-link">
+      <span className="logo">{logoIcon || <HomeIcon />}</span> <span className="text">{t(headerText)}</span>
     </div>
   );
 

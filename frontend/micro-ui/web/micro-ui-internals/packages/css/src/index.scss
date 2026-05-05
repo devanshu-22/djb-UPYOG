@@ -141,6 +141,10 @@ h6 {
   @apply flex-1;
 }
 
+.flex-roww {
+  display: flex;
+}
+
 .display-flex-gap-2 {
   @apply flex gap-3;
 }
