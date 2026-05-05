@@ -107,6 +107,11 @@ public class WaterTankerFixedPointQueryBuilder {
             preparedStmtList.add("%" + criteria.getName() + "%");
         }
 
+        if (criteria.getFillingPointId() != null && !criteria.getFillingPointId().trim().isEmpty()) {
+            query.append(" AND m.filling_pt_name = ? ");
+            preparedStmtList.add(criteria.getFillingPointId());
+        }
+
 //        if (criteria.getFromDate() != null) {
 //            query.append(" AND ad.createdtime >= ? ");
 //            preparedStmtList.add(criteria.getFromDate());
@@ -154,6 +159,13 @@ public class WaterTankerFixedPointQueryBuilder {
         if (criteria.getName() != null && !criteria.getName().trim().isEmpty()) {
             query.append(" AND ad.name ILIKE ? ");
             preparedStmtList.add("%" + criteria.getName() + "%");
+        }
+
+        if (criteria.getFillingPointId() != null && !criteria.getFillingPointId().trim().isEmpty()) {
+            query.append(" AND ad.applicant_id IN ( " +
+                    "SELECT fixed_pt_name FROM upyog_rs_water_tanker_filling_point_fixed_point_mapping " +
+                    "WHERE filling_pt_name = ? ) ");
+            preparedStmtList.add(criteria.getFillingPointId());
         }
 //
 //        if (criteria.getFromDate() != null) {
