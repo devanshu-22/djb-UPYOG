@@ -1,147 +1,255 @@
-import React, { useCallback, useEffect, useState, useMemo } from "react";
-import { useTranslation } from "react-i18next";
-import DesktopInbox from "../../components/DesktopInbox";
-import MobileInbox from "../../components/MobileInbox";
-import Filter from "../../components/Filter";
+import React, { useMemo, useCallback, useReducer } from "react";
+import { useLocation } from "react-router-dom";
+import { InboxComposer } from "@djb25/digit-ui-react-components";
+import useInboxTableConfig from "../../hook/useInboxTableConfig";
+import SearchFormFieldsComponents from "../../components/SearchFormFieldsComponent";
 
 // Mock data removed in favor of API integration
 
-const Inbox = ({
-    parentRoute,
-    businessService = "EKYC",
-    initialStates = {},
-    filterComponent,
-    isInbox,
-}) => {
-    const tenantId = Digit.ULBService.getCurrentTenantId();
-    const { t } = useTranslation();
+const Inbox = ({ parentRoute, businessService = "EKYC", initialStates = {}, filterComponent, isInbox }) => {
+  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const location = useLocation();
 
-    // 1. Unified State Management
-    const [pageOffset, setPageOffset] = useState(initialStates.pageOffset || 0);
-    const [pageSize, setPageSize] = useState(initialStates.pageSize || 10);
-    const [sortParams, setSortParams] = useState(initialStates.sortParams || [{ id: "createdTime", desc: true }]);
+  const formInitValue = {
+    filterForm: {},
+    searchForm: {},
+    tableForm: {
+      limit: 10,
+      offset: 0,
+      sortBy: "createdTime",
+      sortOrder: "DESC",
+    },
+  };
 
-    // Define the default option for the dropdown
-    const defaultStatusOption = useMemo(() => ({ label: t("EKYC_STATUS_ALL"), value: "" }), [t]);
+  const [formState, dispatch] = useReducer(formReducer, formInitValue);
 
-    // Maintain the full search objects for the Search component
-    const [searchParams, setSearchParams] = useState(initialStates.searchParams || { status: defaultStatusOption });
-
-    // 2. API Data Fetching
-    const { isLoading, data: dashboardData, isFetching } = Digit.Hooks.ekyc.useEkycSurveyorDashboard(
-        {}, 
-        { 
-            tenantId, 
-            offset: pageOffset, 
-            limit: pageSize,
-        },
-        {
-            enabled: !!tenantId,
-        }
-    );
-
-    const filteredData = useMemo(() => {
-        let items = dashboardData?.dashboardInfo?.consumerList || [];
-        
-        // Frontend filtering since we no longer send status to API
-        const selectedStatus = searchParams.status?.value;
-        if (selectedStatus && selectedStatus !== "") {
-            items = items.filter(item => item.status === selectedStatus);
-        }
-
-        return items.map(item => ({
-            ...item,
-            applicationNumber: item.kno || item.applicationNumber,
-            citizenName: item.consumerName || item.citizenName,
-        }));
-    }, [dashboardData, searchParams.status]);
-
-    const countData = useMemo(() => {
-        const info = dashboardData?.dashboardInfo || {};
-        return {
-            total: info.total || 0,
-            completed: info.completed || 0,
-            pending: info.pending || 0,
-            rejected: info.rejected || 0,
-            active: info.active || 0,
-        };
-    }, [dashboardData]);
-
-    const totalRecords = dashboardData?.dashboardInfo?.totalRecords || dashboardData?.totalCount || 0;
-
-    // 3. Handlers
-    const handleSearch = useCallback((filterParam) => {
-        // Here we keep the full objects (like for dropdowns) in searchParams
-        // so that the Search component can display them correctly.
-        setSearchParams((prev) => ({ ...prev, ...filterParam }));
-        setPageOffset(0);
-    }, []);
-
-    const fetchNextPage = () => setPageOffset((prev) => prev + pageSize);
-    const fetchPrevPage = () => setPageOffset((prev) => Math.max(prev - pageSize, 0));
-
-    const handlePageSizeChange = (e) => {
-        const newSize = Number(e.target.value);
-        setPageSize(newSize);
-        setPageOffset(0);
+  const queryParams = useMemo(() => {
+    return {
+      tenantId,
+      offset: formState?.tableForm?.offset || 0,
+      limit: formState?.tableForm?.limit || 10,
+      search: formState?.searchForm || {},
     };
+  }, [tenantId, formState?.tableForm?.offset, formState?.tableForm?.limit, formState?.searchForm]);
 
-    const handleSort = useCallback((args) => {
-        if (args.length > 0) setSortParams(args);
-    }, []);
+  const { isLoading, data: dashboardData = {} } = Digit.Hooks.ekyc.useEkycSurveyorDashboard({}, queryParams, {
+    enabled: !!tenantId,
+    keepPreviousData: true,
+  });
 
-    // 4. Form Configuration
-    const searchFields = useMemo(() => [
-        {
-            label: t("EKYC_STATUS"),
-            name: "status",
-            type: "dropdown",
-            options: [
-                { label: t("EKYC_STATUS_ALL"), value: "" },
-                { label: t("EKYC_STATUS_ACTIVE"), value: "ACTIVE" },
-                { label: t("EKYC_STATUS_PENDING"), value: "PENDING START" },
-            ],
-            optionsKey: "label"
-        },
-    ], [t]);
+  const searchDetails = useMemo(
+    () => ({
+      kno: formState?.searchForm?.kNumber || "",
+      name: formState?.searchForm?.kName || "",
+    }),
+    [formState?.searchForm?.kNumber, formState?.searchForm?.kName]
+  );
 
-    return (
-        <div className="ekyc-employee-container">
-            <div className="inbox-main-container">
-                {Digit.Utils.browser.isMobile() ? (
-                    <MobileInbox
-                        data={{ items: filteredData, totalCount: totalRecords }}
-                        isLoading={isLoading || isFetching}
-                        onSearch={handleSearch}
-                        searchFields={searchFields}
-                        searchParams={searchParams}
-                        parentRoute={parentRoute}
-                        countData={countData}
-                    />
-                ) : (
-                    <DesktopInbox
-                        businessService={businessService}
-                        data={{ items: filteredData, totalCount: totalRecords }}
-                        isLoading={isLoading || isFetching}
-                        searchFields={searchFields}
-                        onSearch={handleSearch}
-                        onSort={handleSort}
-                        onNextPage={fetchNextPage}
-                        onPrevPage={fetchPrevPage}
-                        currentPage={Math.floor(pageOffset / pageSize)}
-                        pageSizeLimit={pageSize}
-                        onPageSizeChange={handlePageSizeChange}
-                        parentRoute={parentRoute}
-                        searchParams={searchParams}
-                        sortParams={sortParams}
-                        totalRecords={totalRecords}
-                        countData={countData}
-                        filterComponent="EKYC_INBOX_FILTER"
-                    />
-                )}
-            </div>
-        </div>
-    );
+  const isSearchActive = !!(searchDetails.kno || searchDetails.name);
+
+  const { isLoading: isSearchLoading, data: searchData } = Digit.Hooks.ekyc.useSearchConnection(
+    {
+      tenantId,
+      details: searchDetails,
+    },
+    {
+      enabled: !!tenantId && !!searchDetails.kno, // 🔥 important
+      keepPreviousData: true,
+    }
+  );
+
+  const sourceData = useMemo(() => {
+    if (isSearchActive) {
+      if (!searchData) return [];
+      return [searchData];
+    }
+
+    return dashboardData?.dashboardInfo?.consumerList || [];
+  }, [isSearchActive, searchData, dashboardData]);
+
+  const filteredData = useMemo(() => {
+    return (sourceData || []).map((item) => {
+      // ✅ detect search response
+      const isSearchItem = !!item.connectionDetails;
+
+      if (isSearchItem) {
+        return {
+          applicationNo: item.propertyInfo?.kno || "",
+          connectionNo: item.propertyInfo?.kno || "",
+          owner: item.connectionDetails?.consumerName || "",
+          applicationNumber: item.propertyInfo?.kno || "",
+          citizenName: item.connectionDetails?.consumerName || "",
+          status: item.connectionDetails?.statusflag || "",
+          sla: 0,
+        };
+      }
+
+      // ✅ dashboard mapping
+      return {
+        ...item,
+        applicationNo: item.kno || item.applicationNumber || "",
+        connectionNo: item.connectionNo || "",
+        owner: item.consumerName || item.citizenName || "",
+        applicationNumber: item.kno || item.applicationNumber || "",
+        citizenName: item.consumerName || item.citizenName || "",
+        status: item.status || "",
+        sla: item.sla ?? 0,
+      };
+    });
+  }, [sourceData]);
+
+  const totalRecords = dashboardData?.dashboardInfo?.totalRecords || dashboardData?.totalCount || 0;
+
+  const checkPathName = location.pathname.includes("ekyc/inbox");
+  const PropsForInboxLinks = {
+    headerText: checkPathName ? "MODULE_WATER" : "MODULE_SW",
+  };
+
+  const SearchFormFields = useCallback(
+    ({ registerRef, searchFormState, controlSearchForm }) => (
+      <SearchFormFieldsComponents {...{ registerRef, searchFormState, controlSearchForm }} className="search" />
+    ),
+    []
+  );
+
+  const tableOrderFormDefaultValues = {
+    sortBy: "createdTime",
+    limit: window.Digit.Utils.browser.isMobile() ? 50 : 10,
+    offset: 0,
+    sortOrder: "DESC",
+  };
+
+  const onSearchFormSubmit = (data) => {
+    data.hasOwnProperty("") && delete data?.[""];
+    dispatch({ action: "mutateTableForm", data: { ...tableOrderFormDefaultValues }, checkPathName });
+    dispatch({ action: "mutateSearchForm", data, checkPathName });
+  };
+
+  const searchFormDefaultValues = {
+    mobileNumber: "",
+    applicationNumber: "",
+    consumerNo: "",
+  };
+
+  const onSearchFormReset = (setSearchFormValue) => {
+    setSearchFormValue("mobileNumber", null);
+    setSearchFormValue("applicationNumber", null);
+    setSearchFormValue("consumerNo", null);
+    dispatch({ action: "mutateSearchForm", data: searchFormDefaultValues });
+  };
+
+  const propsForSearchForm = {
+    SearchFormFields,
+    onSearchFormSubmit,
+    searchFormDefaultValues: formState?.searchForm,
+    resetSearchFormDefaultValues: searchFormDefaultValues,
+    onSearchFormReset,
+    className: "search-form-wns-inbox",
+  };
+
+  const FilterFormFields = useCallback(
+    ({ registerRef, controlFilterForm, setFilterFormValue, getFilterFormValue }) => <React.Fragment></React.Fragment>,
+    []
+  );
+
+  const propsForFilterForm = {
+    FilterFormFields,
+    onFilterFormSubmit: () => {},
+    filterFormDefaultValues: "",
+    resetFilterFormDefaultValues: "",
+    onFilterFormReset: () => {},
+  };
+
+  function formReducer(state, payload) {
+    const storageKey = payload.checkPathName ? "EKYC.INBOX" : "EKYC.SW.INBOX";
+
+    // ✅ safety for SLA
+    switch (payload.action) {
+      case "mutateSearchForm":
+        Digit.SessionStorage.set(storageKey, { ...state, searchForm: payload.data });
+        return { ...state, searchForm: payload.data };
+
+      case "mutateFilterForm":
+        Digit.SessionStorage.set(storageKey, { ...state, filterForm: payload.data });
+        return { ...state, filterForm: payload.data };
+
+      case "mutateTableForm":
+        Digit.SessionStorage.set(storageKey, { ...state, tableForm: payload.data });
+        return { ...state, tableForm: payload.data };
+
+      default:
+        return state; // ✅ IMPORTANT
+    }
+  }
+
+  const onPageSizeChange = (e) => {
+    const newLimit = Number(e.target.value);
+
+    dispatch({
+      action: "mutateTableForm",
+      data: {
+        ...formState.tableForm,
+        limit: newLimit,
+        offset: 0, // reset page
+      },
+      checkPathName,
+    });
+  };
+
+  const onSortingByData = (e) => {
+    if (e.length > 0) {
+      const [{ id, desc }] = e;
+      const sortOrder = desc ? "DESC" : "ASC";
+      const sortBy = id;
+
+      if (!(formState.tableForm.sortBy === sortBy && formState.tableForm.sortOrder === sortOrder)) {
+        dispatch({
+          action: "mutateTableForm",
+          data: {
+            ...formState.tableForm,
+            sortBy: id,
+            sortOrder: desc ? "DESC" : "ASC",
+          },
+          checkPathName,
+        });
+      }
+    }
+  };
+
+  const propsForInboxTable = useInboxTableConfig({
+    ...{
+      parentRoute,
+      onPageSizeChange,
+      formState,
+      totalCount: totalRecords,
+      table: filteredData,
+      dispatch,
+      onSortingByData,
+      tenantId,
+      checkPathName,
+      inboxStyles: { overflowX: "scroll", overflowY: "hidden" },
+      tableStyle: { width: "70%" },
+    },
+  });
+
+  const isInboxLoading = isLoading || isSearchLoading;
+
+  return (
+    <div className="app-container">
+      <InboxComposer
+        {...{
+          isInboxLoading,
+          PropsForInboxLinks,
+          ...propsForSearchForm,
+          ...propsForFilterForm,
+          // ...propsForMobileSortForm,
+          propsForInboxTable,
+          // propsForInboxMobileCards,
+          formState,
+        }}
+      />
+    </div>
+  );
 };
 
 export default Inbox;
