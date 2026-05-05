@@ -16,6 +16,7 @@ const SearchFillingPointAddress = () => {
   const [fixedPointStatus, setFixedPointStatus] = useState(null);
   const [appliedFixedPointStatus, setAppliedFixedPointStatus] = useState(null);
   const [searchParams, setSearchParams] = useState({});
+  const [selectedFillingPoint, setSelectedFillingPoint] = useState(null);
   const [toast, setToast] = useState(null);
   const [showLocalityModal, setShowLocalityModal] = useState(false);
   const [selectedLocalityRow, setSelectedLocalityRow] = useState(null);
@@ -115,6 +116,7 @@ const SearchFillingPointAddress = () => {
     setStatus(null);
     setFixedPointStatus(null);
     setAppliedFixedPointStatus(null);
+    setSelectedFillingPoint(null);
     setSearchParams({});
   };
 
@@ -144,6 +146,8 @@ const SearchFillingPointAddress = () => {
       ...(selectedTab === "FILLING_POINT" ? { fillingPointName: searchValue } : { name: searchValue }),
       mobileNumber: mobileNumber,
       status: selectedTab === "FILLING_POINT" ? status?.code : null,
+      fillingPointId:
+        selectedFillingPoint?.id || selectedFillingPoint?.bookingId || selectedFillingPoint?.fillingPointId || selectedFillingPoint?.uuid,
     };
     setAppliedFixedPointStatus(fixedPointStatus);
     setSearchParams(filters);
@@ -491,15 +495,33 @@ const SearchFillingPointAddress = () => {
         },
         {
           Header: t("WT_FILLING_POINT"),
-          exportAccessor: (row) =>
-            row?.fillingPointId ||
-            row?.fillingpointmetadata?.fillingPointId ||
-            row?.fillingPtName ||
-            row?.filling_pt_name ||
-            (row?.fillingPoint && typeof row.fillingPoint === "object" ? row.fillingPoint?.id : row?.fillingPoint) ||
-            row?.fillingPointDetail?.id ||
-            row?.fillingPointDetail?.bookingId ||
-            "NA",
+          exportAccessor: (row) => {
+            const rowFpId = String(
+              row?.fillingPointId ||
+                row?.fillingpointmetadata?.fillingPointId ||
+                row?.fillingPtName ||
+                row?.filling_pt_name ||
+                (row?.fillingPoint && typeof row.fillingPoint === "object" ? row.fillingPoint?.id : row?.fillingPoint) ||
+                row?.fillingPointDetail?.id ||
+                row?.fillingPointDetail?.bookingId ||
+                ""
+            );
+
+            const found = allFillingPoints?.find((fp) => {
+              const fpId = String(fp.id || fp.bookingId || fp.fillingPointId || fp.uuid || fp.fillingpointmetadata?.fillingPointId);
+              return fpId === rowFpId && rowFpId !== "undefined" && rowFpId !== "null" && rowFpId !== "";
+            });
+
+            const name =
+              found?.fillingPointName ||
+              row?.fillingPointName ||
+              row?.fillingPoint?.fillingPointName ||
+              row?.fillingpointmetadata?.fillingPointName ||
+              row?.fillingPtName ||
+              row?.filling_pt_name;
+
+            return name && name !== "undefined" && name !== "null" ? name : rowFpId && rowFpId !== "undefined" && rowFpId !== "null" ? rowFpId : "NA";
+          },
         },
       ];
     }
@@ -592,10 +614,24 @@ const SearchFillingPointAddress = () => {
             </div>
           )}
 
+          {selectedTab === "FIXED_POINT" && (
+            <div className="finance-mainlayout-col1">
+              <Label>{t("WT_FILLING_POINT")}</Label>
+              <Dropdown
+                option={allFillingPoints}
+                optionKey="fillingPointName"
+                selected={selectedFillingPoint}
+                select={setSelectedFillingPoint}
+                t={t}
+                placeholder={t("ES_COMMON_STATUS")}
+              />
+            </div>
+          )}
+
           {selectedTab === "FILLING_POINT" && (
             <div className="finance-mainlayout-col1">
               <Label>{t("WT_FILLING_POINT_DESIGNATION")}</Label>
-              <Dropdown option={statusOptions} optionKey="i18nKey" selected={status} select={setStatus} t={t} />
+              <Dropdown option={statusOptions} optionKey="i18nKey" selected={status} select={setStatus} t={t} placeholder={t("ES_COMMON_STATUS")} />
             </div>
           )}
 

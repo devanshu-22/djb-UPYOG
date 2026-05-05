@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { CardLabel, TextInput, Dropdown, Card, CardSubHeader, CollapsibleCardPage } from "@djb25/digit-ui-react-components";
 import { useLocation } from "react-router-dom";
+import { geocodeAddress } from "../utils/geocodingUtils";
 
 const allOptions = [
   { name: "Correspondence", code: "CORRESPONDENCE", i18nKey: "COMMON_ADDRESS_TYPE_CORRESPONDENCE" },
@@ -33,6 +34,9 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
   const [longitude, setLongitude] = useState(formData?.address?.longitude || "");
   const [selectedAddress, setSelectedAddress] = useState("");
   const [showPincodeSuggestions, setShowPincodeSuggestions] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [geocodedAddress, setGeocodedAddress] = useState(null);
   const isInitialized = useRef(!isEdit);
   const lastSyncedAddress = useRef(null);
   const lastBookingId = useRef(null);
@@ -186,7 +190,9 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
       setLandmark(addressData.landmark || "");
       setAddressLine1(addressData.addressLine1 || "");
       setAddressLine2(addressData.addressLine2 || "");
-      setAddressType(allOptions.find((a) => a.code === addressData.addressType) || addressData.addressType || allOptions.find((a) => a.code === "PERMANENT"));
+      setAddressType(
+        allOptions.find((a) => a.code === addressData.addressType) || addressData.addressType || allOptions.find((a) => a.code === "PERMANENT")
+      );
       setZone(addressData.zone || "");
       setBlock(addressData.block || "");
       setAssembly(addressData.assembly || "");
@@ -223,7 +229,7 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
         setLatitude(pos.coords.latitude);
         setLongitude(pos.coords.longitude);
       },
-      () => { }
+      () => {}
     );
   }, []);
 
@@ -246,6 +252,56 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
       setAddressType(allOptions.find((a) => a.code === selectedAddress.addressType));
     }
   }, [selectedAddress, structuredLocality]);
+
+  const getLatLng = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const parts = [
+        houseNo,
+        streetName,
+        addressLine1,
+        addressLine2,
+        locality?.name || (typeof locality === "string" ? locality : ""),
+        city?.name || (typeof city === "string" ? city : ""),
+        pincode,
+      ].filter(Boolean);
+
+      const fullAddress = parts.join(", ");
+
+      if (!fullAddress.trim()) {
+        setError(t("WT_ENTER_ADDRESS_DETAILS_FIRST"));
+        setLoading(false);
+        return;
+      }
+
+      const data = await geocodeAddress(fullAddress);
+
+      if (data && data.length > 0) {
+        setLatitude(data[0].lat);
+        setLongitude(data[0].lon);
+        setGeocodedAddress(data[0].display_name);
+      } else {
+        setError(t("WT_LOCATION_NOT_FOUND"));
+      }
+    } catch (err) {
+      setError(t("WT_GEOCODING_ERROR"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ✅ Auto-trigger geocoding on Address Line 1 change
+  useEffect(() => {
+    if (!addressLine1 || addressLine1.trim().length < 5) return;
+
+    const timer = setTimeout(() => {
+      getLatLng();
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [addressLine1]);
 
   // ✅ 🔥 MAIN SYNC (replaces onSelect)
   useEffect(() => {
@@ -424,9 +480,7 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
 
         {/* Address Line 2 */}
         <div>
-          <CardLabel>
-            {t("ADDRESS_LINE2")} <span className="astericColor">*</span>
-          </CardLabel>
+          <CardLabel>{t("ADDRESS_LINE2")}</CardLabel>
           <TextInput value={addressLine2} onChange={(e) => setAddressLine2(e.target.value)} style={{ width: "100%" }} />
         </div>
 
@@ -443,14 +497,6 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
           </CardLabel>
           <TextInput value={zone} onChange={(e) => setZone(e.target.value)} style={{ width: "100%" }} />
         </div>
-
-        <div>
-          <CardLabel>
-            {t("ASSEMBLY_CONSTITUENCY")} <span className="astericColor">*</span>
-          </CardLabel>
-          <TextInput value={assembly} onChange={(e) => setAssembly(e.target.value)} style={{ width: "100%" }} />
-        </div>
-
         {/* Latitude */}
         <div>
           <CardLabel>
@@ -466,8 +512,13 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
           </CardLabel>
           <TextInput value={longitude} onChange={(e) => setLongitude(e.target.value)} style={{ width: "100%" }} />
         </div>
-
-        <div style={{ gridColumn: "span 2" }}>
+        <div>
+          <CardLabel>
+            {t("ASSEMBLY_CONSTITUENCY")} <span className="astericColor">*</span>
+          </CardLabel>
+          <TextInput value={assembly} onChange={(e) => setAssembly(e.target.value)} style={{ width: "100%" }} />
+        </div>
+        <div>
           <CardLabel>{t("LANDMARK")}</CardLabel>
           <TextInput value={landmark} onChange={(e) => setLandmark(e.target.value)} style={{ width: "100%" }} />
         </div>

@@ -92,3 +92,34 @@ export const calculateDistance = (lat1, lon1, lat2, lon2) => {
 function deg2rad(deg) {
   return deg * (Math.PI / 180);
 }
+
+/**
+ * Forward geocodes an address string into coordinates.
+ * @param {string} address - The address string
+ * @returns {Promise<Array>} - The geocoding results from Nominatim
+ */
+export const geocodeAddress = async (address) => {
+  if (!address || !address.trim()) return null;
+
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`,
+      {
+        headers: {
+          "Accept-Language": "en",
+          "User-Agent": "Digit-UI-WT-Module",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Geocoding failed: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error in geocodeAddress:", error);
+    return null;
+  }
+};
