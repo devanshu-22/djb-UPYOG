@@ -135,6 +135,8 @@ public class VendorRowMapper implements ResultSetExtractor<List<Vendor>> {
 					.alternateNumber(rs.getString("vwo_alternateNumber"))
 					.emailId(rs.getString("vwo_emailId"))
 					.serviceType(rs.getString("vwo_servicetype"))
+					.fileStoreId(rs.getString("wt_file_store_id"))
+					.fillingStationId(rs.getString("filling_station_id"))
 					.build();
 
 			if (vendor.getVendorWorkOrder().stream().noneMatch(wo -> wo.getId().equals(vwoId))) {

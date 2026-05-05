@@ -43,4 +43,10 @@ public class VendorWorkOrder {
 
     @JsonProperty("auditDetails")
     private AuditDetails auditDetails;
+
+    @JsonProperty("fileStoreId")
+    private String fileStoreId;
+
+    @JsonProperty("fillingStationId")
+    private String fillingStationId;
 }
