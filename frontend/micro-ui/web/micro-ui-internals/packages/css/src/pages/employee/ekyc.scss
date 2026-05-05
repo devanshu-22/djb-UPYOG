@@ -10,6 +10,7 @@
 }
 
 .ekyc-employee-container {
+  width: 100%;
   .inbox-main-container {
     flex: 1;
     padding-right: 0px;
@@ -49,7 +50,7 @@
       left: 0;
       width: 4px;
       height: 100%;
-      background: #185FA5;
+      background: #185fa5;
       opacity: 0.1;
     }
   }
@@ -123,7 +124,7 @@
       margin-bottom: 4px;
 
       &.total {
-        background: #185FA5;
+        background: #185fa5;
         box-shadow: 0 0 8px rgba(24, 95, 165, 0.2);
       }
 
@@ -756,7 +757,7 @@
 
   /* StatusCards Styles */
   .status-cards-wrapper {
-    font-family: 'Segoe UI', sans-serif;
+    font-family: "Segoe UI", sans-serif;
     width: 100%;
     background: #eef3fb;
     border-radius: 16px;
@@ -777,7 +778,7 @@
         gap: 6px;
         font-size: 11px;
         font-weight: 700;
-        color: #185FA5;
+        color: #185fa5;
         letter-spacing: 1.2px;
         text-transform: uppercase;
         margin-bottom: 6px;
@@ -785,7 +786,7 @@
         .eyebrow-dot {
           width: 12px;
           height: 12px;
-          background: #185FA5;
+          background: #185fa5;
           border-radius: 3px;
           flex-shrink: 0;
         }
@@ -983,7 +984,7 @@
           .progress-fill {
             height: 100%;
             border-radius: 3px;
-            background: linear-gradient(90deg, #0c2a52, #185FA5);
+            background: linear-gradient(90deg, #0c2a52, #185fa5);
           }
         }
 

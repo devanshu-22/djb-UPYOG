@@ -1,0 +1,134 @@
+import React, { useState } from "react";
+import { useHistory } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+
+const useInboxTableConfig = ({
+  parentRoute,
+  onPageSizeChange,
+  formState,
+  totalCount,
+  table,
+  dispatch,
+  checkPathName,
+  onSortingByData,
+  tenantId,
+  inboxStyles = {},
+  tableStyle = {},
+}) => {
+  const { t } = useTranslation();
+  const history = useHistory();
+  const [selectedKno, setSelectedKno] = useState("");
+  const { data: reviewData, getReview } = Digit.Hooks.ekyc.useEkycAPI("review", tenantId);
+  const handleReview = (kno) => {
+    setSelectedKno(kno);
+    getReview({ kno });
+  };
+
+  const limit = formState?.tableForm?.limit || 10;
+  const offset = formState?.tableForm?.offset || 0;
+
+  React.useEffect(() => {
+    if (reviewData) {
+      history.push("/digit-ui/employee/ekyc/review", { kNumber: selectedKno, aadhaarData: reviewData?.aadhaarData, reviewData });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reviewData]);
+
+  const tableColumnConfig = [
+    {
+      Header: t("EKYC_APPLICATION_NO"),
+      accessor: "applicationNumber",
+      disableSortBy: true,
+      Cell: ({ row }) => {
+        const kno = row.original?.kno || row.original?.applicationNumber || "NA";
+        return (
+          <span
+            className="ekyc-application-link"
+            style={{ color: "#add8f7", cursor: "pointer", fontWeight: "bold" }}
+            onClick={() => handleReview(kno)}
+          >
+            {kno}
+          </span>
+        );
+      },
+    },
+    {
+      Header: t("EKYC_CITIZEN_NAME"),
+      accessor: "citizenName",
+      Cell: ({ row }) => <span>{row.original?.citizenName || "NA"}</span>,
+    },
+    {
+      Header: t("EKYC_STATUS"),
+      accessor: "actionStatus",
+      Cell: ({ row }) => {
+        const status = row.original?.status || "DEFAULT";
+        return <span className={`ekyc-status-tag ${status}`}>{t(`${status}`)}</span>;
+      },
+    },
+    {
+      Header: t("EKYC_ACTION"),
+      accessor: "status",
+      Cell: ({ row }) => {
+        const kno = row.original?.kno || row.original?.applicationNumber || "NA";
+        return (
+          <span
+            className="ekyc-application-link"
+            style={{ color: "#add8f7", cursor: "pointer", fontWeight: "bold" }}
+            onClick={() => handleReview(kno)}
+          >
+            {t("EKYC_REVIEW")}
+          </span>
+        );
+      },
+    },
+  ];
+
+  return {
+    getCellProps: (cellInfo) => {
+      return {
+        style: {
+          padding: "8px",
+          fontSize: "12px",
+        },
+      };
+    },
+    disableSort: false,
+    autoSort: false,
+    manualPagination: true,
+    initSortId: "applicationDate",
+    onPageSizeChange: onPageSizeChange,
+    currentPage: Math.floor(offset / limit),
+    onNextPage: () =>
+      dispatch({
+        action: "mutateTableForm",
+        data: { ...formState.tableForm, offset: parseInt(formState.tableForm?.offset) + parseInt(formState.tableForm?.limit) },
+        checkPathName,
+      }),
+    onPrevPage: () =>
+      dispatch({
+        action: "mutateTableForm",
+        data: { ...formState.tableForm, offset: parseInt(formState.tableForm?.offset) - parseInt(formState.tableForm?.limit) },
+        checkPathName,
+      }),
+    pageSizeLimit: limit,
+    onSort: onSortingByData,
+    // sortParams: [{id: getValues("sortBy"), desc: getValues("sortOrder") === "DESC" ? true : false}],
+    totalRecords: totalCount,
+    onSearch: formState?.searchForm?.message,
+    onLastPage: () =>
+      dispatch({
+        action: "mutateTableForm",
+        data: { ...formState.tableForm, offset: Math.ceil(totalCount / 10) * 10 - parseInt(formState.tableForm?.limit) },
+        checkPathName,
+      }),
+    onFirstPage: () => dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 }, checkPathName }),
+    // globalSearch: {searchForItemsInTable},
+    // searchQueryForTable,
+    data: table,
+    columns: tableColumnConfig,
+    inboxStyles: { ...inboxStyles },
+    tableStyle: { ...tableStyle },
+  };
+};
+
+export default useInboxTableConfig;

@@ -614,20 +614,18 @@ export default function LiveTrackingSystem() {
 
   const { data: vendorOptions } = Digit.Hooks.fsm.useVendorSearch({
     tenantId,
-    filters: { status: "ACTIVE" },
+    filters: { 
+      status: "ACTIVE",
+      ...(selectedFillingPoint?.id ? { fillingPointId: selectedFillingPoint?.id } : {}),
+    },
     config: {
       select: (data) => data?.vendor || [],
     },
   });
 
   const filteredVendorOptions = useMemo(() => {
-    if (!vendorOptions || !vendorOptions.length) return [];
-    if (!selectedFillingPoint) return vendorOptions;
-
-    return vendorOptions.filter(
-      (vendor) => vendor?.fillingPoint?.id === selectedFillingPoint?.id
-    );
-  }, [vendorOptions, selectedFillingPoint]);
+    return vendorOptions || [];
+  }, [vendorOptions]);
   useEffect(() => {
     if (vendorOptions?.length && Object.keys(drivers).length) {
       console.log("=== VENDOR DEBUG ===");
@@ -762,7 +760,6 @@ export default function LiveTrackingSystem() {
       if (!vendorOptions || !vendorOptions.length) return false;
       // Check karo ki driver kisi aisi vendor ka part hai jo is filling point se linked hai
       return vendorOptions.some((vendor) => {
-        if (vendor?.fillingPoint?.id !== selectedFillingPoint?.id) return false;
         return vendor.drivers?.some((d) =>
           d.owner?.mobileNumber === driver.driverId ||
           d.owner?.uuid === driver.driverId ||
